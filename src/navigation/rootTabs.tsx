@@ -4,6 +4,7 @@ import { Text } from 'react-native';
 
 import HistoryScreen from '../screens/historyScreen';
 import LookupScreen from '../screens/lookupScreen';
+import { useTheme } from '../theme';
 import CalcStack from './calcStack';
 import type { CalcStackParamList } from './calcStack';
 
@@ -22,13 +23,19 @@ function tabIcon(glyph: string) {
 }
 
 export default function RootTabs() {
+  const theme = useTheme();
   return (
     <Tab.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: '#0F2B46' },
-        headerTintColor: '#FFFFFF',
-        tabBarActiveTintColor: '#0F2B46',
-        tabBarInactiveTintColor: '#6B7280',
+        headerStyle: { backgroundColor: theme.colors.primary },
+        headerTintColor: theme.colors.onPrimary,
+        tabBarActiveTintColor: theme.colors.accent,
+        tabBarInactiveTintColor: theme.colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.border,
+        },
+        sceneStyle: { backgroundColor: theme.colors.background },
       }}
     >
       <Tab.Screen

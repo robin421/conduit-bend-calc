@@ -18,7 +18,7 @@
       验收：Given 打开速查表 When 切换分段 Then 两张表数据与 PRD 第 10 节一致
 - [x] T9 历史记录：AsyncStorage 存取 + 列表 + 点击回填 + 清空（依赖 T5/T6/T7）
       验收：Given 完成一次计算 When 打开历史 Then 记录在顶部；Given 点击记录 When 返回计算器 Then 参数已填入
-- [ ] T10 深色模式：跟随系统 + 手动切换（依赖 T3）
+- [x] T10 深色模式：跟随系统 + 手动切换（依赖 T3）
       验收：Given 系统深色模式 When 打开 App Then 显示深色配色且对比度达标
 - [ ] T11 常数表核对：所有 multiplier/shrink/take-up 值与 PRD 第 10 节逐项比对（依赖 T5/T6/T7/T8）
       验收：Given PRD 常数表 When 抽查 App 内每个值 Then 全部一致

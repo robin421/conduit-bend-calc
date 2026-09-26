@@ -1,3 +1,8 @@
+import {
+  DarkTheme as NavigationDarkTheme,
+  DefaultTheme as NavigationDefaultTheme,
+  Theme as NavigationTheme,
+} from '@react-navigation/native';
 import { useColorScheme } from 'react-native';
 
 export type ColorSchemeName = 'light' | 'dark';
@@ -141,4 +146,22 @@ export function getTheme(scheme: ColorSchemeName | null | undefined): Theme {
 
 export function useTheme(): Theme {
   return getTheme(useColorScheme());
+}
+
+/** 将应用主题映射为 React Navigation 主题，保证导航容器/页面底色跟随深色模式 */
+export function getNavigationTheme(theme: Theme): NavigationTheme {
+  const base = theme.scheme === 'dark' ? NavigationDarkTheme : NavigationDefaultTheme;
+  return {
+    ...base,
+    dark: theme.scheme === 'dark',
+    colors: {
+      ...base.colors,
+      primary: theme.colors.primary,
+      background: theme.colors.background,
+      card: theme.colors.card,
+      text: theme.colors.textPrimary,
+      border: theme.colors.border,
+      notification: theme.colors.accent,
+    },
+  };
 }

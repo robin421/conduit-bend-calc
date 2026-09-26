@@ -7,6 +7,7 @@ import FourPointSaddleScreen from '../screens/fourPointSaddleScreen';
 import OffsetScreen from '../screens/offsetScreen';
 import StubScreen from '../screens/stubScreen';
 import ThreePointSaddleScreen from '../screens/threePointSaddleScreen';
+import { useTheme } from '../theme';
 
 export type CalcStackParamList = {
   CalcHome: undefined;
@@ -20,11 +21,13 @@ export type CalcStackParamList = {
 const Stack = createNativeStackNavigator<CalcStackParamList>();
 
 export default function CalcStack() {
+  const theme = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: '#0F2B46' },
-        headerTintColor: '#FFFFFF',
+        headerStyle: { backgroundColor: theme.colors.primary },
+        headerTintColor: theme.colors.onPrimary,
+        contentStyle: { backgroundColor: theme.colors.background },
       }}
     >
       <Stack.Screen name="CalcHome" component={CalcHomeScreen} options={{ title: 'BendCalc' }} />
