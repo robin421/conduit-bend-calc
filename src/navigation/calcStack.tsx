@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import type { HistoryParams } from '../lib/historyStore';
 import CalcHomeScreen from '../screens/calcHomeScreen';
 import CalculatorPlaceholderScreen from '../screens/calculatorPlaceholderScreen';
 import FourPointSaddleScreen from '../screens/fourPointSaddleScreen';
@@ -9,10 +10,10 @@ import ThreePointSaddleScreen from '../screens/threePointSaddleScreen';
 
 export type CalcStackParamList = {
   CalcHome: undefined;
-  Offset: undefined;
-  Stub: undefined;
-  ThreePointSaddle: undefined;
-  FourPointSaddle: undefined;
+  Offset: { backfill?: HistoryParams } | undefined;
+  Stub: { backfill?: HistoryParams } | undefined;
+  ThreePointSaddle: { backfill?: HistoryParams } | undefined;
+  FourPointSaddle: { backfill?: HistoryParams } | undefined;
   Placeholder: { title: string };
 };
 

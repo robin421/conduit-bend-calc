@@ -1,12 +1,14 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import type { NavigatorScreenParams } from '@react-navigation/native';
 import { Text } from 'react-native';
 
 import HistoryScreen from '../screens/historyScreen';
 import LookupScreen from '../screens/lookupScreen';
 import CalcStack from './calcStack';
+import type { CalcStackParamList } from './calcStack';
 
 export type RootTabParamList = {
-  CalcHome: undefined;
+  CalcHome: NavigatorScreenParams<CalcStackParamList>;
   Lookup: undefined;
   History: undefined;
 };

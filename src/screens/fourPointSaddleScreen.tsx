@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { calculateFourPointSaddle } from '../calculators/saddle/saddle';
@@ -7,7 +8,12 @@ import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import type { HistoryEntry } from '../lib/historyStore';
+import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
+
+type Props = NativeStackScreenProps<CalcStackParamList, 'FourPointSaddle'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 30;
 
@@ -24,7 +30,7 @@ function formatFromCenter(value: number): string {
   return value < 0 ? `中心 −${abs}"` : `中心 +${abs}"`;
 }
 
-export default function FourPointSaddleScreen() {
+export default function FourPointSaddleScreen({ route }: Props) {
   const theme = useTheme();
   const [heightText, setHeightText] = useState('');
   const [heightInches, setHeightInches] = useState<number | null>(null);
@@ -32,12 +38,46 @@ export default function FourPointSaddleScreen() {
   const [widthInches, setWidthInches] = useState<number | null>(null);
   const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
 
+  useEffect(() => {
+    const backfill = route.params?.backfill;
+    if (!backfill) {
+      return;
+    }
+    if (backfill.heightText !== undefined) {
+      setHeightText(backfill.heightText);
+    }
+    if (backfill.widthText !== undefined) {
+      setWidthText(backfill.widthText);
+    }
+    if (backfill.angle !== undefined) {
+      setAngle(backfill.angle);
+    }
+  }, [route.params?.backfill]);
+
   const result = useMemo(() => {
     if (heightInches === null || widthInches === null) {
       return null;
     }
     return calculateFourPointSaddle(heightInches, widthInches, angle);
   }, [angle, heightInches, widthInches]);
+
+  const historyEntry = useMemo<HistoryEntry | null>(() => {
+    if (!result || heightInches === null || widthInches === null) {
+      return null;
+    }
+    return {
+      id: createHistoryId(),
+      kind: 'fourPointSaddle',
+      title: '4-Point Saddle',
+      inputSummary: `${heightText.trim()} · ${widthText.trim()} · ${angle}°`,
+      resultSummary: `间距 ${formatInches(result.markSpacingInches)}" · 跨度 ${formatInches(result.spanInches)}"`,
+      timestamp: Date.now(),
+      params: { heightText, widthText, angle },
+      signature: `four-point-saddle|${heightInches}|${widthInches}|${angle}`,
+    };
+  }, [angle, heightInches, heightText, result, widthInches, widthText]);
+
+  useHistoryAutoSave(historyEntry);
 
   const handleClear = useCallback(() => {
     setHeightText('');

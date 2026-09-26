@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -13,7 +14,12 @@ import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import { EmtTakeUpSize, TAKE_UP_OPTIONS } from '../constants';
+import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import type { HistoryEntry } from '../lib/historyStore';
+import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
+
+type Props = NativeStackScreenProps<CalcStackParamList, 'Stub'>;
 
 function formatInches(value: number): string {
   const rounded = Math.round(value * 10) / 10;
@@ -32,12 +38,26 @@ function parseTakeUp(text: string): number | null {
   return value;
 }
 
-export default function StubScreen() {
+export default function StubScreen({ route }: Props) {
   const theme = useTheme();
   const [heightText, setHeightText] = useState('');
   const [heightInches, setHeightInches] = useState<number | null>(null);
   const [takeUpText, setTakeUpText] = useState('');
   const [selectedSize, setSelectedSize] = useState<EmtTakeUpSize | null>(null);
+
+  useEffect(() => {
+    const backfill = route.params?.backfill;
+    if (!backfill) {
+      return;
+    }
+    if (backfill.heightText !== undefined) {
+      setHeightText(backfill.heightText);
+    }
+    if (backfill.takeUpText !== undefined) {
+      setTakeUpText(backfill.takeUpText);
+    }
+    setSelectedSize(backfill.selectedSize ?? null);
+  }, [route.params?.backfill]);
 
   const takeUp = useMemo(() => parseTakeUp(takeUpText), [takeUpText]);
 
@@ -47,6 +67,27 @@ export default function StubScreen() {
     }
     return calculateStub(heightInches, takeUp);
   }, [heightInches, takeUp]);
+
+  const historyEntry = useMemo<HistoryEntry | null>(() => {
+    if (!result || heightInches === null || takeUp === null) {
+      return null;
+    }
+    const takeUpLabel = selectedSize
+      ? `${selectedSize}" EMT`
+      : `take-up ${takeUpText.trim()}"`;
+    return {
+      id: createHistoryId(),
+      kind: 'stub',
+      title: '90° Stub',
+      inputSummary: `${heightText.trim()} · ${takeUpLabel}`,
+      resultSummary: `标记点 ${formatInches(result.markPoint)}"`,
+      timestamp: Date.now(),
+      params: { heightText, takeUpText, selectedSize },
+      signature: `stub|${heightInches}|${takeUp}`,
+    };
+  }, [heightInches, heightText, result, selectedSize, takeUp, takeUpText]);
+
+  useHistoryAutoSave(historyEntry);
 
   const handleSelect = useCallback((size: EmtTakeUpSize, value: number) => {
     setSelectedSize(size);

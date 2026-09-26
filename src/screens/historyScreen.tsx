@@ -1,29 +1,229 @@
-import { StyleSheet, Text, View } from 'react-native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { useIsFocused } from '@react-navigation/native';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import {
+  Alert,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
-export default function HistoryScreen() {
+import Card from '../components/card';
+import {
+  clearHistory,
+  formatHistoryTime,
+  loadHistory,
+} from '../lib/history';
+import type { HistoryEntry } from '../lib/historyStore';
+import type { RootTabParamList } from '../navigation/rootTabs';
+import { useTheme } from '../theme';
+
+type Props = BottomTabScreenProps<RootTabParamList, 'History'>;
+
+export default function HistoryScreen({ navigation }: Props) {
+  const theme = useTheme();
+  const isFocused = useIsFocused();
+  const [entries, setEntries] = useState<HistoryEntry[]>([]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+    let active = true;
+    void loadHistory()
+      .then((list) => {
+        if (active) {
+          setEntries(list);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [isFocused]);
+
+  const handleClear = useCallback(() => {
+    Alert.alert('清空历史', '确定要清空全部历史记录吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '清空',
+        style: 'destructive',
+        onPress: () => {
+          void clearHistory()
+            .then(() => setEntries([]))
+            .catch(() => undefined);
+        },
+      },
+    ]);
+  }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>
+        entries.length > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={handleClear}
+            hitSlop={8}
+            style={styles.headerButton}
+          >
+            <Text style={[styles.headerButtonText, { color: theme.colors.accent }]}>
+              清空
+            </Text>
+          </Pressable>
+        ) : null,
+    });
+  }, [entries.length, handleClear, navigation, theme.colors.accent]);
+
+  const handlePress = useCallback(
+    (entry: HistoryEntry) => {
+      const backfill = entry.params;
+      switch (entry.kind) {
+        case 'offset':
+          navigation.navigate('CalcHome', {
+            screen: 'Offset',
+            params: { backfill },
+          });
+          break;
+        case 'stub':
+          navigation.navigate('CalcHome', {
+            screen: 'Stub',
+            params: { backfill },
+          });
+          break;
+        case 'threePointSaddle':
+          navigation.navigate('CalcHome', {
+            screen: 'ThreePointSaddle',
+            params: { backfill },
+          });
+          break;
+        case 'fourPointSaddle':
+          navigation.navigate('CalcHome', {
+            screen: 'FourPointSaddle',
+            params: { backfill },
+          });
+          break;
+      }
+    },
+    [navigation],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: HistoryEntry }) => (
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => handlePress(item)}
+        android_ripple={{ color: theme.colors.border }}
+      >
+        <Card style={styles.itemCard}>
+          <View style={styles.itemHeader}>
+            <Text
+              style={{
+                color: theme.colors.textPrimary,
+                fontSize: theme.fontSize.body,
+                fontWeight: theme.fontWeight.semibold,
+              }}
+            >
+              {item.title}
+            </Text>
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {formatHistoryTime(item.timestamp)}
+            </Text>
+          </View>
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+              marginTop: theme.spacing.xs,
+              fontVariant: ['tabular-nums'],
+            }}
+          >
+            {item.inputSummary}
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.primary,
+              fontSize: theme.fontSize.body,
+              fontWeight: theme.fontWeight.semibold,
+              marginTop: theme.spacing.xs,
+              fontVariant: ['tabular-nums'],
+            }}
+          >
+            {item.resultSummary}
+          </Text>
+        </Card>
+      </Pressable>
+    ),
+    [handlePress, theme],
+  );
+
+  if (entries.length === 0) {
+    return (
+      <View style={[styles.empty, { backgroundColor: theme.colors.background }]}>
+        <Text
+          style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.body }}
+        >
+          还没有计算记录
+        </Text>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            marginTop: theme.spacing.xs,
+          }}
+        >
+          完成一次计算后会自动记录在这里
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>历史</Text>
-      <Text style={styles.hint}>占位页面</Text>
-    </View>
+    <FlatList
+      style={{ backgroundColor: theme.colors.background }}
+      contentContainerStyle={[
+        styles.listContent,
+        { padding: theme.spacing.md, gap: theme.spacing.sm },
+      ]}
+      data={entries}
+      keyExtractor={(item) => item.id}
+      renderItem={renderItem}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  listContent: {
+    flexGrow: 1,
+  },
+  itemCard: {
+    gap: 0,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  headerButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  empty: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1F2933',
-  },
-  hint: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#6B7280',
+    padding: 24,
   },
 });
