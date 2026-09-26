@@ -6,7 +6,7 @@
       验收：Given App 已启动 When 点击每个 Tab Then 对应占位页正常显示
 - [x] T3 设计系统：颜色/字号/圆角常量 + 可复用组件（大按钮、卡片、结果显示区）（依赖 T2）
       验收：Given DESIGN.md 规范 When 检查 theme.ts Then 色值与文档一致
-- [ ] T4 英制分数输入组件：支持 ft-in-fraction 输入输出，带校验（依赖 T3）
+- [x] T4 英制分数输入组件：支持 ft-in-fraction 输入输出，带校验（依赖 T3）
       验收：Given 输入 2' 3-1/2" When 确认 Then 解析为 27.5；Given 输入 abc When 确认 Then 显示错误不崩溃
 - [ ] T5 Offset 计算器：UI + 计算逻辑 + 实时结果（依赖 T4）
       验收：Given 输入 6" + 30° When 查看结果 Then 间距=12"，shrink=1.5"
