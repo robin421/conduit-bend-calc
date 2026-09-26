@@ -12,7 +12,7 @@
       验收：Given 输入 6" + 30° When 查看结果 Then 间距=12"，shrink=1.5"
 - [x] T6 Stub 计算器：UI + take-up 表 + 计算逻辑（依赖 T4）
       验收：Given 目标 12" + 1/2" EMT（take-up 5"）When 查看结果 Then 标记点=7"
-- [ ] T7 Saddle 计算器（3-point + 4-point）：UI + 分步标记逻辑（依赖 T4）
+- [x] T7 Saddle 计算器（3-point + 4-point）：UI + 分步标记逻辑（依赖 T4）
       验收：Given 输入完整参数 When 查看结果 Then 显示所有标记点及步骤说明
 - [ ] T8 速查表页面：角度常数表 + take-up 表（依赖 T3）
       验收：Given 打开速查表 When 切换分段 Then 两张表数据与 PRD 第 10 节一致
