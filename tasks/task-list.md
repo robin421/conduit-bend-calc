@@ -22,5 +22,6 @@
       验收：Given 系统深色模式 When 打开 App Then 显示深色配色且对比度达标
 - [x] T11 常数表核对：所有 multiplier/shrink/take-up 值与 PRD 第 10 节逐项比对（依赖 T5/T6/T7/T8）
       验收：Given PRD 常数表 When 抽查 App 内每个值 Then 全部一致
-- [ ] T12 打包验证：EAS Build 出 iOS + Android 包，可安装运行（依赖 T11）
+- [x] T12 打包验证：EAS Build 出 iOS + Android 包，可安装运行（依赖 T11）
       验收：Given 构建产物 When 安装到真机 Then App 正常启动、无闪退
+      注：EAS 云构建 22e03d19-f671-4a60-b15b-ad0f22e680a7（preview, Android, SDK 52）于 2026-09-27 01:xx CST 完成（status=FINISHED），APK 已产出
