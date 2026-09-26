@@ -16,7 +16,7 @@ interface CalculatorEntry {
 
 const ENTRIES: CalculatorEntry[] = [
   { key: 'Offset', icon: '⌐', name: 'Offset Bend', description: '偏移弯：间距与 shrink' },
-  { key: 'Placeholder', icon: '∟', name: '90° Stub', description: '直角弯：标记点位置' },
+  { key: 'Stub', icon: '∟', name: '90° Stub', description: '直角弯：标记点位置' },
   { key: 'Placeholder', icon: '⋀⋀', name: '3-Point Saddle', description: '三点马鞍弯' },
   { key: 'Placeholder', icon: '⋀⋀⋀', name: '4-Point Saddle', description: '四点马鞍弯' },
 ];
@@ -27,6 +27,8 @@ export default function CalcHomeScreen({ navigation }: Props) {
   const handlePress = (entry: CalculatorEntry) => {
     if (entry.key === 'Offset') {
       navigation.navigate('Offset');
+    } else if (entry.key === 'Stub') {
+      navigation.navigate('Stub');
     } else {
       navigation.navigate('Placeholder', { title: entry.name });
     }
