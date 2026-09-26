@@ -4,7 +4,7 @@
       验收：Given 全新安装 When 打开 App Then 显示占位首页且不闪退
 - [x] T2 底部导航框架：3 个 Tab（计算/速查表/历史），占位页面（依赖 T1）
       验收：Given App 已启动 When 点击每个 Tab Then 对应占位页正常显示
-- [ ] T3 设计系统：颜色/字号/圆角常量 + 可复用组件（大按钮、卡片、结果显示区）（依赖 T2）
+- [x] T3 设计系统：颜色/字号/圆角常量 + 可复用组件（大按钮、卡片、结果显示区）（依赖 T2）
       验收：Given DESIGN.md 规范 When 检查 theme.ts Then 色值与文档一致
 - [ ] T4 英制分数输入组件：支持 ft-in-fraction 输入输出，带校验（依赖 T3）
       验收：Given 输入 2' 3-1/2" When 确认 Then 解析为 27.5；Given 输入 abc When 确认 Then 显示错误不崩溃
