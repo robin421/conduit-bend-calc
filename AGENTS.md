@@ -29,3 +29,9 @@
 ## Git
 - 每个任务完成并通过验收后 commit，message 格式：`T<n>: <标题>`
 - 不 force push
+
+## 环境注意事项（2026-09-26）
+- npm install 必须加 --no-bin-links（overlay fs 不支持 chown）
+- 每次 npm install 后需手动重建 node_modules/.bin/{expo,tsc} 软链接
+- 不要用 `npx tsc`（会误装 tsc@2.0.4），用 `npm run typecheck` 或 `node node_modules/typescript/bin/tsc --noEmit`
+- expo-asset 版本必须与 Expo SDK 52 对齐（~11.0.5），不要装 latest
