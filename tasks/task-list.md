@@ -8,7 +8,7 @@
       验收：Given DESIGN.md 规范 When 检查 theme.ts Then 色值与文档一致
 - [x] T4 英制分数输入组件：支持 ft-in-fraction 输入输出，带校验（依赖 T3）
       验收：Given 输入 2' 3-1/2" When 确认 Then 解析为 27.5；Given 输入 abc When 确认 Then 显示错误不崩溃
-- [ ] T5 Offset 计算器：UI + 计算逻辑 + 实时结果（依赖 T4）
+- [x] T5 Offset 计算器：UI + 计算逻辑 + 实时结果（依赖 T4）
       验收：Given 输入 6" + 30° When 查看结果 Then 间距=12"，shrink=1.5"
 - [ ] T6 Stub 计算器：UI + take-up 表 + 计算逻辑（依赖 T4）
       验收：Given 目标 12" + 1/2" EMT（take-up 5"）When 查看结果 Then 标记点=7"

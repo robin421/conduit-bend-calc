@@ -1,0 +1,198 @@
+import { useCallback, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { calculateOffset } from '../calculators/offset/offset';
+import BigButton from '../components/bigButton';
+import Card from '../components/card';
+import ImperialInput from '../components/imperialInput';
+import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { useTheme } from '../theme';
+
+const DEFAULT_ANGLE: OffsetAngle = 30;
+
+function formatInches(value: number): string {
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+export default function OffsetScreen() {
+  const theme = useTheme();
+  const [heightText, setHeightText] = useState('');
+  const [heightInches, setHeightInches] = useState<number | null>(null);
+  const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
+
+  const result = useMemo(() => {
+    if (heightInches === null) {
+      return null;
+    }
+    return calculateOffset(heightInches, angle);
+  }, [angle, heightInches]);
+
+  const handleClear = useCallback(() => {
+    setHeightText('');
+    setHeightInches(null);
+    setAngle(DEFAULT_ANGLE);
+  }, []);
+
+  const distance = result ? formatInches(result.distanceBetweenBends) : '—';
+  const shrink = result ? formatInches(result.shrink) : '—';
+
+  return (
+    <ScrollView
+      style={{ backgroundColor: theme.colors.background }}
+      contentContainerStyle={[
+        styles.content,
+        { padding: theme.spacing.md, gap: theme.spacing.md },
+      ]}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Card>
+        <ImperialInput
+          label="障碍高度"
+          value={heightText}
+          onChangeText={setHeightText}
+          onParsedChange={setHeightInches}
+          placeholder={`例如 6"`}
+        />
+
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            marginTop: theme.spacing.md,
+            marginBottom: theme.spacing.sm,
+          }}
+        >
+          弯曲角度
+        </Text>
+        <View style={styles.angleRow}>
+          {OFFSET_ANGLES.map((value) => (
+            <BigButton
+              key={value}
+              title={`${value}°`}
+              size="selection"
+              selected={angle === value}
+              onPress={() => setAngle(value)}
+              style={styles.angleButton}
+            />
+          ))}
+        </View>
+      </Card>
+
+      <View
+        style={[
+          styles.resultCard,
+          {
+            backgroundColor: theme.colors.resultBackground,
+            borderRadius: theme.radius,
+            padding: theme.spacing.lg,
+          },
+        ]}
+      >
+        <Text
+          style={{
+            color: theme.colors.resultLabel,
+            fontSize: theme.fontSize.secondary,
+          }}
+        >
+          两标记间距
+        </Text>
+        <View style={styles.valueRow}>
+          <Text
+            style={{
+              color: theme.colors.resultText,
+              fontSize: theme.fontSize.result,
+              fontWeight: theme.fontWeight.semibold,
+              fontVariant: ['tabular-nums'],
+            }}
+          >
+            {distance}
+          </Text>
+          {result ? (
+            <Text
+              style={{
+                color: theme.colors.accent,
+                fontSize: theme.fontSize.body,
+                fontWeight: theme.fontWeight.semibold,
+                marginLeft: theme.spacing.xs,
+              }}
+            >
+              &quot;
+            </Text>
+          ) : null}
+        </View>
+
+        <Text
+          style={{
+            color: theme.colors.resultLabel,
+            fontSize: theme.fontSize.secondary,
+            marginTop: theme.spacing.md,
+          }}
+        >
+          Shrink 回补
+        </Text>
+        <View style={styles.valueRow}>
+          <Text
+            style={{
+              color: theme.colors.resultText,
+              fontSize: theme.fontSize.title,
+              fontWeight: theme.fontWeight.semibold,
+              fontVariant: ['tabular-nums'],
+            }}
+          >
+            {shrink}
+          </Text>
+          {result ? (
+            <Text
+              style={{
+                color: theme.colors.accent,
+                fontSize: theme.fontSize.body,
+                fontWeight: theme.fontWeight.semibold,
+                marginLeft: theme.spacing.xs,
+              }}
+            >
+              &quot;
+            </Text>
+          ) : null}
+        </View>
+
+        {!result ? (
+          <Text
+            style={{
+              color: theme.colors.resultLabel,
+              fontSize: theme.fontSize.secondary,
+              marginTop: theme.spacing.sm,
+            }}
+          >
+            输入参数查看结果
+          </Text>
+        ) : null}
+      </View>
+
+      <BigButton title="清空" variant="secondary" onPress={handleClear} />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  content: {
+    flexGrow: 1,
+  },
+  angleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  angleButton: {
+    flexBasis: '30%',
+    flexGrow: 1,
+  },
+  resultCard: {
+    width: '100%',
+  },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginTop: 4,
+  },
+});
