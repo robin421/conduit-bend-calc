@@ -2,7 +2,7 @@
 
 - [ ] T1 项目初始化：Expo + TypeScript + React Navigation，能跑通空壳 App
       验收：Given 全新安装 When 打开 App Then 显示占位首页且不闪退
-- [ ] T2 底部导航框架：3 个 Tab（计算/速查表/历史），占位页面（依赖 T1）
+- [x] T2 底部导航框架：3 个 Tab（计算/速查表/历史），占位页面（依赖 T1）
       验收：Given App 已启动 When 点击每个 Tab Then 对应占位页正常显示
 - [ ] T3 设计系统：颜色/字号/圆角常量 + 可复用组件（大按钮、卡片、结果显示区）（依赖 T2）
       验收：Given DESIGN.md 规范 When 检查 theme.ts Then 色值与文档一致
