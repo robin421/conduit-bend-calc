@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
-import CalcHomeScreen from '../screens/calcHomeScreen';
 import HistoryScreen from '../screens/historyScreen';
 import LookupScreen from '../screens/lookupScreen';
+import CalcStack from './calcStack';
 
 export type RootTabParamList = {
   CalcHome: undefined;
@@ -31,8 +31,8 @@ export default function RootTabs() {
     >
       <Tab.Screen
         name="CalcHome"
-        component={CalcHomeScreen}
-        options={{ title: '计算', tabBarIcon: tabIcon('⌐') }}
+        component={CalcStack}
+        options={{ title: '计算', headerShown: false, tabBarIcon: tabIcon('⌐') }}
       />
       <Tab.Screen
         name="Lookup"
