@@ -410,7 +410,7 @@ export function validateLayout(input: ValidateInput): LayoutWarning[] {
     if (Number.isFinite(straight) && straight < 0) {
       warnings.push({
         level: 'error',
-        message: '这个弯做不出来：两个弯的标记点重叠了，加大间距或换小角度',
+        message: "Can't make this bend: the two bend marks overlap — increase the spacing or use a smaller angle",
       });
       break;
     }
@@ -427,7 +427,7 @@ export function validateLayout(input: ValidateInput): LayoutWarning[] {
     if (entry && stubHeight < entry.minStubInches) {
       warnings.push({
         level: 'warning',
-        message: `目标高度低于该弯管机最小 stub（${entry.minStubInches}"），可能弯不出来`,
+        message: `Target height is below this bender's minimum stub (${entry.minStubInches}") — the bend may not be possible`,
       });
     }
   }
@@ -435,7 +435,7 @@ export function validateLayout(input: ValidateInput): LayoutWarning[] {
     if (spec.conduit.startsWith('1/2') && spec.centerlineRadius < 4) {
       warnings.push({
         level: 'info',
-        message: 'NEC 要求 1/2" 管最小弯曲半径 4"，当前 R 偏小',
+        message: 'NEC requires a minimum 4" bend radius for 1/2" conduit — current R is too small',
       });
     }
   }

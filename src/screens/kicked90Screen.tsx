@@ -108,8 +108,8 @@ export default function Kicked90Screen({ route }: Props) {
       id: createHistoryId(),
       kind: 'kicked90',
       title: 'Kicked 90°',
-      inputSummary: `kick ${kickText.trim()}° · 直段 ${lengthText.trim()}`,
-      resultSummary: `总 gain ${formatInches(result.totalGain)}"`,
+      inputSummary: `kick ${kickText.trim()}° · straight ${lengthText.trim()}`,
+      resultSummary: `Total gain ${formatInches(result.totalGain)}"`,
       timestamp: Date.now(),
       params: { kickText, lengthText, specKey: specKey(spec) },
       signature: `kicked90|${kickAngle}|${lengthInches}|${specKey(spec)}`,
@@ -136,7 +136,7 @@ export default function Kicked90Screen({ route }: Props) {
 
   let hint: string | undefined;
   if (kickAngle === null || lengthInches === null) {
-    hint = kickInvalid ? 'kick 角需为 0–90 之间的数字' : '输入参数查看结果';
+    hint = kickInvalid ? 'Kick angle must be a number between 0–90' : 'Enter values to see results';
   }
 
   return (
@@ -163,12 +163,12 @@ export default function Kicked90Screen({ route }: Props) {
               marginBottom: theme.spacing.xs,
             }}
           >
-            Kick 角 κ（度，常用 10–30）
+            Kick angle κ (degrees, typically 10–30)
           </Text>
           <TextInput
             value={kickText}
             onChangeText={setKickText}
-            placeholder="例如 15"
+            placeholder="e.g. 15"
             placeholderTextColor={theme.colors.textSecondary}
             keyboardType="decimal-pad"
             autoCapitalize="none"
@@ -189,18 +189,18 @@ export default function Kicked90Screen({ route }: Props) {
           />
           <View style={{ marginTop: theme.spacing.md }}>
             <ImperialInput
-              label="两弯直段 L（切点到切点）"
+              label="Straight L between bends (tangent to tangent)"
               value={lengthText}
               onChangeText={setLengthText}
               onParsedChange={setLengthInches}
-              placeholder={`例如 10"`}
+              placeholder={`e.g. 10"`}
             />
           </View>
         </View>
       </Card>
 
       <ResultDisplay
-        label="总 gain（料长用）"
+        label="Total gain (for conduit length)"
         value={result ? formatInches(result.totalGain) : undefined}
         unit='"'
         hint={hint}
@@ -222,7 +222,7 @@ export default function Kicked90Screen({ route }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            分步标记（沿管展开长）
+            Mark layout (developed length along conduit)
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -256,7 +256,7 @@ export default function Kicked90Screen({ route }: Props) {
                 }}
               >
                 {mark.developedInches === 0
-                  ? '起点'
+                  ? 'Start'
                   : `+${formatInches(mark.developedInches)}"`}
               </Text>
             </View>
@@ -267,14 +267,14 @@ export default function Kicked90Screen({ route }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            {`先弯 90°，从 Mark 1 沿管量 ${formatInches(
+            {`Bend 90° first, measure ${formatInches(
               result.marks[1]?.developedInches ?? 0,
-            )}" 到 Mark 2，再弯 ${formatInches(result.kickAngleDeg)}°`}
+            )}" along the conduit from Mark 1 to Mark 2, then bend ${formatInches(result.kickAngleDeg)}°`}
           </Text>
         </Card>
       ) : null}
 
-      <BigButton title="清空" variant="secondary" onPress={handleClear} />
+      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
   );
 }

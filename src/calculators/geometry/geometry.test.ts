@@ -192,7 +192,7 @@ test('validateLayout: 直段为负 → error「这个弯做不出来」', () => 
   const warnings = validateLayout({ straights: [9.5, -0.2] });
   const error = warnings.find((w) => w.level === 'error');
   assert.ok(error);
-  assert.ok(error.message.includes('这个弯做不出来'));
+  assert.ok(error.message.includes("Can't make this bend"));
 });
 
 test('validateLayout: 正常直段无 error', () => {

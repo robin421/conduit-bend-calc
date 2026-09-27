@@ -41,17 +41,17 @@ export default function RootTabs() {
       <Tab.Screen
         name="CalcHome"
         component={CalcStack}
-        options={{ title: '计算', headerShown: false, tabBarIcon: tabIcon('⌐') }}
+        options={{ title: 'Calculate', headerShown: false, tabBarIcon: tabIcon('⌐') }}
       />
       <Tab.Screen
         name="Lookup"
         component={LookupScreen}
-        options={{ title: '速查表', tabBarIcon: tabIcon('▦') }}
+        options={{ title: 'Reference', tabBarIcon: tabIcon('▦') }}
       />
       <Tab.Screen
         name="History"
         component={HistoryScreen}
-        options={{ title: '历史', tabBarIcon: tabIcon('↺') }}
+        options={{ title: 'History', tabBarIcon: tabIcon('↺') }}
       />
     </Tab.Navigator>
   );

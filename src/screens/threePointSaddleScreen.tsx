@@ -38,10 +38,10 @@ function formatInches(value: number): string {
 
 function formatFromCenter(value: number): string {
   if (value === 0) {
-    return '中心';
+    return 'Center';
   }
   const abs = formatInches(Math.abs(value));
-  return value < 0 ? `中心 −${abs}"` : `中心 +${abs}"`;
+  return value < 0 ? `Center −${abs}"` : `Center +${abs}"`;
 }
 
 export default function ThreePointSaddleScreen({ route }: Props) {
@@ -111,7 +111,7 @@ export default function ThreePointSaddleScreen({ route }: Props) {
       kind: 'threePointSaddle',
       title: '3-Point Saddle',
       inputSummary: `${heightText.trim()} · ${angle}°`,
-      resultSummary: `间距 ${formatInches(result.markSpacingInches)}" · 跨度 ${formatInches(result.spanInches)}"`,
+      resultSummary: `Spacing ${formatInches(result.markSpacingInches)}" · span ${formatInches(result.spanInches)}"`,
       timestamp: Date.now(),
       params: { heightText, angle, specKey: specKey(spec) },
       signature: `three-point-saddle|${heightInches}|${angle}`,
@@ -134,7 +134,7 @@ export default function ThreePointSaddleScreen({ route }: Props) {
     setSpec(defaultBenderSpec());
   }, []);
 
-  const hint = result ? undefined : '输入参数查看结果';
+  const hint = result ? undefined : 'Enter values to see results';
 
   return (
     <ScrollView
@@ -154,11 +154,11 @@ export default function ThreePointSaddleScreen({ route }: Props) {
         />
         <View style={{ marginTop: theme.spacing.md }}>
           <ImperialInput
-            label="障碍高度"
+            label="Obstacle height"
             value={heightText}
             onChangeText={setHeightText}
             onParsedChange={setHeightInches}
-            placeholder={`例如 6"`}
+            placeholder={`e.g. 6"`}
             />
         </View>
 
@@ -170,7 +170,7 @@ export default function ThreePointSaddleScreen({ route }: Props) {
             marginBottom: theme.spacing.sm,
           }}
         >
-          弯曲角度
+          Bend angle
         </Text>
         <View style={styles.angleRow}>
           {OFFSET_ANGLES.map((value) => (
@@ -187,7 +187,7 @@ export default function ThreePointSaddleScreen({ route }: Props) {
       </Card>
 
       <ResultDisplay
-        label="弯曲点间距（中心 ↔ 两侧）"
+        label="Bend spacing (center ↔ sides)"
         value={result ? formatInches(result.markSpacingInches) : undefined}
         unit='"'
         hint={hint}
@@ -209,7 +209,7 @@ export default function ThreePointSaddleScreen({ route }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            分步标记 · 总跨度 {formatInches(result.spanInches)}&quot;
+            Mark layout · total span {formatInches(result.spanInches)}&quot;
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -246,7 +246,7 @@ export default function ThreePointSaddleScreen({ route }: Props) {
         </Card>
       ) : null}
 
-      <BigButton title="清空" variant="secondary" onPress={handleClear} />
+      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
   );
 }

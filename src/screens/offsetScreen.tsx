@@ -97,7 +97,7 @@ export default function OffsetScreen({ route }: Props) {
       kind: 'offset',
       title: 'Offset Bend',
       inputSummary: `${heightText.trim()} · ${angle}°`,
-      resultSummary: `间距 ${formatInches(result.distanceBetweenBends)}" · shrink ${formatInches(result.shrink)}"`,
+      resultSummary: `Spacing ${formatInches(result.distanceBetweenBends)}" · shrink ${formatInches(result.shrink)}"`,
       timestamp: Date.now(),
       params: { heightText, angle, specKey: specKey(spec) },
       signature: `offset|${heightInches}|${angle}`,
@@ -141,11 +141,11 @@ export default function OffsetScreen({ route }: Props) {
         />
         <View style={{ marginTop: theme.spacing.md }}>
           <ImperialInput
-            label="障碍高度"
+            label="Obstacle height"
             value={heightText}
             onChangeText={setHeightText}
             onParsedChange={setHeightInches}
-            placeholder={`例如 6"`}
+            placeholder={`e.g. 6"`}
           />
         </View>
 
@@ -157,7 +157,7 @@ export default function OffsetScreen({ route }: Props) {
             marginBottom: theme.spacing.sm,
           }}
         >
-          弯曲角度
+          Bend angle
         </Text>
         <View style={styles.angleRow}>
           {OFFSET_ANGLES.map((value) => (
@@ -189,7 +189,7 @@ export default function OffsetScreen({ route }: Props) {
             fontSize: theme.fontSize.secondary,
           }}
         >
-          两标记间距
+          Mark spacing
         </Text>
         <View style={styles.valueRow}>
           <Text
@@ -223,7 +223,7 @@ export default function OffsetScreen({ route }: Props) {
             marginTop: theme.spacing.md,
           }}
         >
-          Shrink 回补
+          Shrink
         </Text>
         <View style={styles.valueRow}>
           <Text
@@ -258,7 +258,7 @@ export default function OffsetScreen({ route }: Props) {
               marginTop: theme.spacing.sm,
             }}
           >
-            输入参数查看结果
+            Enter values to see results
           </Text>
         ) : null}
       </View>
@@ -271,7 +271,7 @@ export default function OffsetScreen({ route }: Props) {
 
       <WarningBar warnings={warnings} />
 
-      <BigButton title="清空" variant="secondary" onPress={handleClear} />
+      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
   );
 }

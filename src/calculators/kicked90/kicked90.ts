@@ -56,15 +56,15 @@ export function calculateKicked90(
     marks: [
       {
         id: 1,
-        label: 'Mark 1（90° 弯起点）',
+        label: 'Mark 1 (start of 90° bend)',
         developedInches: 0,
-        instruction: '90° 弯的切点起点，作为参考点',
+        instruction: 'Tangent start of the 90° bend — reference point',
       },
       {
         id: 2,
-        label: 'Mark 2（kick 弯起点）',
+        label: 'Mark 2 (start of kick bend)',
         developedInches: kickStart,
-        instruction: 'kick 弯的切点起点：从 Mark 1 沿管展开长量起',
+        instruction: 'Tangent start of the kick bend: measure developed length from Mark 1',
       },
     ],
     geometry,

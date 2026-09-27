@@ -25,7 +25,7 @@ export default function ImperialInput({
   value,
   onChangeText,
   onParsedChange,
-  placeholder = `例如 2' 3-1/2"`,
+  placeholder = `e.g. 2' 3-1/2"`,
   style,
 }: ImperialInputProps) {
   const theme = useTheme();
@@ -36,9 +36,9 @@ export default function ImperialInput({
   let error: string | null = null;
   if (!isBlank) {
     if (parsed === null) {
-      error = '格式无效，示例：2\' 3-1/2"';
+      error = 'Invalid format, e.g. 2\' 3-1/2"';
     } else if (parsed <= 0) {
-      error = '数值必须大于 0';
+      error = 'Must be greater than 0';
     }
   }
 

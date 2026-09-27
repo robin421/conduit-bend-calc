@@ -26,7 +26,7 @@ export default function CalculatorPlaceholderScreen() {
           marginTop: theme.spacing.sm,
         }}
       >
-        敬请期待
+        Coming soon
       </Text>
     </View>
   );

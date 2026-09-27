@@ -15,13 +15,13 @@ interface CalculatorEntry {
 }
 
 const ENTRIES: CalculatorEntry[] = [
-  { key: 'Offset', icon: '⌐', name: 'Offset Bend', description: '偏移弯：间距与 shrink' },
-  { key: 'Stub', icon: '∟', name: '90° Stub', description: '直角弯：标记点位置' },
-  { key: 'ThreePointSaddle', icon: '⋀', name: '3-Point Saddle', description: '三点马鞍弯' },
-  { key: 'FourPointSaddle', icon: '⋀⋀', name: '4-Point Saddle', description: '四点马鞍弯' },
-  { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: '滚动偏移：rise/roll 双维度' },
-  { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: '踢角弯：90° + kick 复合' },
-  { key: 'Calibration', icon: '◎', name: '试弯校准', description: '一次试弯：校准 R / take-up' },
+  { key: 'Offset', icon: '⌐', name: 'Offset Bend', description: 'Offset: mark spacing & shrink' },
+  { key: 'Stub', icon: '∟', name: '90° Stub', description: 'Stub-up: mark location' },
+  { key: 'ThreePointSaddle', icon: '⋀', name: '3-Point Saddle', description: '3-point saddle' },
+  { key: 'FourPointSaddle', icon: '⋀⋀', name: '4-Point Saddle', description: '4-point saddle' },
+  { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
+  { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
+  { key: 'Calibration', icon: '◎', name: 'Calibration', description: 'One test bend: calibrate R / take-up' },
 ];
 
 export default function CalcHomeScreen({ navigation }: Props) {

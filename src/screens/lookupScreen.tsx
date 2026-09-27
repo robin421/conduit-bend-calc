@@ -99,13 +99,13 @@ export default function LookupScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <Text style={[styles.title, { color: theme.colors.textPrimary }]}>常数速查</Text>
+      <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Quick Reference</Text>
       <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-        数值与 PRD 第 10 节一致 · 全离线可用
+        Field constants · works fully offline
       </Text>
 
-      <Section title="Offset 角度常数">
-        <TableHeader cols={['角度', '倍数', 'Shrink/英寸']} theme={theme} />
+      <Section title="Offset angle multipliers">
+        <TableHeader cols={['Angle', 'Multiplier', 'Shrink/in']} theme={theme} />
         {OFFSET_ANGLES.map((angle, i) => {
           const c = OFFSET_CONSTANTS[angle];
           return (
@@ -118,12 +118,12 @@ export default function LookupScreen() {
           );
         })}
         <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
-          间距 = 障碍高度 × 倍数；Shrink = 高度 × Shrink/英寸
+          Spacing = obstacle height × multiplier; shrink = height × shrink/in
         </Text>
       </Section>
 
-      <Section title="90° Stub Take-up（EMT）">
-        <TableHeader cols={['规格', 'Take-up']} theme={theme} />
+      <Section title="90° Stub Take-up (EMT)">
+        <TableHeader cols={['Size', 'Take-up']} theme={theme} />
         {TAKE_UP_OPTIONS.map((opt, i) => (
           <TableRow
             key={opt.size}
@@ -133,19 +133,19 @@ export default function LookupScreen() {
           />
         ))}
         <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
-          标记点 = 目标高度 − Take-up
+          Mark = target height − take-up
         </Text>
       </Section>
 
-      <Section title="Saddle 常数说明">
+      <Section title="Saddle notes">
         <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          3 点 / 4 点 Saddle 复用上表角度倍数：
+          3-point / 4-point saddles reuse the multipliers above:
         </Text>
         <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          · 3 点：两侧弯曲点间距 = 高度 × 倍数
+          · 3-point: outer bend spacing = height × multiplier
         </Text>
         <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          · 4 点：外侧标记 = 障碍半宽 + 高度 × 倍数
+          · 4-point: outer marks = half obstacle width + height × multiplier
         </Text>
       </Section>
     </ScrollView>

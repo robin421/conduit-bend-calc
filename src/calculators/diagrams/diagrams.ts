@@ -449,10 +449,10 @@ function buildRollingInch(
   base.angles[1] = add({ x: spacingDisplay, y: trueOffset }, { x: 2.2, y: 0.5 });
   base.notes.push(add(m, { x: 0, y: -4.2 }));
   base.noteTexts.push(
-    `rise ${formatImperial(rise)} · roll ${formatImperial(roll)} · 真实偏移 ${formatImperial(trueOffset)}`,
+    `rise ${formatImperial(rise)} · roll ${formatImperial(roll)} · true offset ${formatImperial(trueOffset)}`,
   );
   base.notes.push(add(m, { x: 0, y: -6.8 }));
-  base.noteTexts.push(`旋转角 ${rollAngleDeg.toFixed(1)}°`);
+  base.noteTexts.push(`Rotation ${rollAngleDeg.toFixed(1)}°`);
   return base;
 }
 
@@ -498,7 +498,7 @@ function buildKicked90Inch(
     ],
     angleTexts: ['90°', `${kickDeg}°`],
     notes: [add(M2, { x: 2.8, y: -0.8 })],
-    noteTexts: [`总 gain ${formatImperial(totalGain)}`],
+    noteTexts: [`Total gain ${formatImperial(totalGain)}`],
   };
 }
 

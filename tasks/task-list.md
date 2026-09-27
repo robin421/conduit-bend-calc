@@ -70,3 +70,8 @@
 
 - [x] T25 三处结构性视觉/UX 修复 + 一处回归修复：①首页 3/4 点鞍弯图标换行 bug（`⋀⋀`/`⋀⋀⋀` 在 44px 槽内换行）→ 改为单/双峰单行图标 + `numberOfLines={1}`；②10 个屏内容容器加 `maxWidth: 720` 居中，宽屏不再全幅拉伸（手机逐像素无变化）；③BenderPicker 默认折叠为摘要行（规格名 + R/take-up + 展开箭头），点展开展开，7 个计算屏输入框回到首屏；④走查中发现 maxWidth 暴露的新 bug：`BendDiagram` 用窗口宽度定 SVG 宽导致宽屏溢出 → 改用容器 `onLayout` 实测宽度
       验收：Given 桌面宽视口 When 查看任意屏 Then 内容 720px 居中、无通栏死白；Given 打开计算屏 When 未展开选择器 Then 输入框首屏可见、摘要行显示当前规格；Given 宽视口查看图解 When 渲染 Then 绘制内容完整收进卡片内、无溢出；Given 98 测试 When 运行 Then 全过
+
+## v1.2.4 美国区纯英文（用户 2026-09-27 拍板：美国区上架用纯英文）
+
+- [x] T26 全 App 用户文案中 → 英：约 150 处用户可见字符串改为行业英文（Obstacle height / Mark spacing / Bender / Calibration / Rise / Roll / True offset 等），含 7 个计算屏、校准页、速查表、历史页、导航标题、BenderPicker、输入校验、图解注释、预警文案、mark 指令；代码注释与测试用例名保留中文
+      验收：Given 全仓库扫描 When 过滤注释/测试名 Then 用户可见中文为 0；Given 98 测试 When 运行 Then 全过（含两处预警断言同步为英文）

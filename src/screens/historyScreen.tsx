@@ -45,10 +45,10 @@ export default function HistoryScreen({ navigation }: Props) {
   }, [isFocused]);
 
   const handleClear = useCallback(() => {
-    Alert.alert('清空历史', '确定要清空全部历史记录吗？', [
-      { text: '取消', style: 'cancel' },
+    Alert.alert('Clear history', 'Delete all history entries?', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: '清空',
+        text: 'Clear',
         style: 'destructive',
         onPress: () => {
           void clearHistory()
@@ -70,7 +70,7 @@ export default function HistoryScreen({ navigation }: Props) {
             style={styles.headerButton}
           >
             <Text style={[styles.headerButtonText, { color: theme.colors.accent }]}>
-              清空
+              Clear
             </Text>
           </Pressable>
         ) : null,
@@ -183,7 +183,7 @@ export default function HistoryScreen({ navigation }: Props) {
         <Text
           style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.body }}
         >
-          还没有计算记录
+          No calculations yet
         </Text>
         <Text
           style={{
@@ -192,7 +192,7 @@ export default function HistoryScreen({ navigation }: Props) {
             marginTop: theme.spacing.xs,
           }}
         >
-          完成一次计算后会自动记录在这里
+          Calculations you run will be recorded here
         </Text>
       </View>
     );

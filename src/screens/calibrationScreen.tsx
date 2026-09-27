@@ -134,7 +134,7 @@ export default function CalibrationScreen() {
       .then(() => {
         setSpec(built);
         setSavedMessage(
-          `已保存「${displaySpecName(built)}」：R=${formatInches(built.centerlineRadius)}"、take-up=${formatInches(built.takeUp)}"，各计算器可在弯管机选择器中找到它。`,
+          `Saved "${displaySpecName(built)}": R=${formatInches(built.centerlineRadius)}", take-up=${formatInches(built.takeUp)}" — available in every calculator's bender picker.`,
         );
       })
       .finally(() => setSaving(false));
@@ -173,7 +173,7 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          第 1 步：选择要校准的弯管机
+          Step 1: Pick the bender to calibrate
         </Text>
         <BenderPicker
           spec={spec}
@@ -191,38 +191,38 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          第 2 步：Gain 法校 R（可选）
+          Step 2: Calibrate R with the gain method (optional)
         </Text>
         <SectionHint>
-          取一段已知长度 L₀ 的废料，在中部弯一个 90°，量两腿 A、B（从弯背到端头）。
+          Take a scrap of known length L₀, bend a 90° in the middle, and measure legs A and B (from the back of the bend to each end).
         </SectionHint>
         <ImperialInput
-          label="废料原长 L₀"
+          label="Scrap length L₀"
           value={l0Text}
           onChangeText={setL0Text}
           onParsedChange={setL0}
-          placeholder={`例如 30"`}
+          placeholder={`e.g. 30"`}
         />
         <ImperialInput
-          label="腿 A"
+          label="Leg A"
           value={legAText}
           onChangeText={setLegAText}
           onParsedChange={setLegA}
-          placeholder={`例如 17"`}
+          placeholder={`e.g. 17"`}
         />
         <ImperialInput
-          label="腿 B"
+          label="Leg B"
           value={legBText}
           onChangeText={setLegBText}
           onParsedChange={setLegB}
-          placeholder={`例如 14.3"`}
+          placeholder={`e.g. 14.3"`}
         />
         <InfoRow
           label="Gain（A+B−L₀）"
           value={gainResult ? `${formatInches(gainResult.gain)}"` : undefined}
         />
         <InfoRow
-          label="校准半径 R"
+          label="Calibrated radius R"
           value={gainResult ? `${formatInches(gainResult.radius)}"` : undefined}
         />
       </Card>
@@ -235,31 +235,31 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          第 3 步：Stub 法校 take-up（可选）
+          Step 3: Calibrate take-up with the stub method (optional)
         </Text>
         <SectionHint>
-          用当前 take-up 做一个目标高度的 stub，量出实际弯出的高度。
+          Bend a stub to the target height using the current take-up, then measure the actual height you got.
         </SectionHint>
         <ImperialInput
-          label="目标高度"
+          label="Target height"
           value={targetText}
           onChangeText={setTargetText}
           onParsedChange={setTarget}
-          placeholder={`例如 12"`}
+          placeholder={`e.g. 12"`}
         />
         <ImperialInput
-          label="实际高度"
+          label="Actual height"
           value={actualText}
           onChangeText={setActualText}
           onParsedChange={setActual}
-          placeholder={`例如 12.4"`}
+          placeholder={`e.g. 12.4"`}
         />
         <InfoRow
-          label={`旧 take-up（${displaySpecName(spec)}）`}
+          label={`Old take-up (${displaySpecName(spec)})`}
           value={`${formatInches(spec.takeUp)}"`}
         />
         <InfoRow
-          label="校准 take-up"
+          label="Calibrated take-up"
           value={takeUpResult !== null ? `${formatInches(takeUpResult)}"` : undefined}
         />
       </Card>
@@ -272,15 +272,15 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          第 4 步：保存为 Custom 弯管机
+          Step 4: Save as a custom bender
         </Text>
         <SectionHint>
-          未校准的项沿用第 1 步所选规格。保存后自动存入本机，各计算器的弯管机选择器都能选到。
+          Uncalibrated values keep the Step 1 spec. Saved on this device and available in every calculator's bender picker.
         </SectionHint>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="起个名字，例如：我的 Ideal（实测）"
+          placeholder="Name it, e.g. My Ideal (field-tested)"
           placeholderTextColor={theme.colors.textSecondary}
           autoCapitalize="none"
           autoCorrect={false}
@@ -297,7 +297,7 @@ export default function CalibrationScreen() {
           ]}
         />
         <BigButton
-          title={saving ? '保存中…' : '保存为 Custom'}
+          title={saving ? 'Saving…' : 'Save as Custom'}
           onPress={handleSave}
           disabled={!canSave || saving}
         />
@@ -314,7 +314,7 @@ export default function CalibrationScreen() {
         ) : null}
       </Card>
 
-      <BigButton title="清空" variant="secondary" onPress={handleClear} />
+      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
   );
 }

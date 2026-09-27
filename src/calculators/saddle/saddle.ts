@@ -81,19 +81,19 @@ export function calculateThreePointSaddle(
       id: 1,
       label: 'Mark 1',
       fromCenterInches: -spacing,
-      instruction: '左侧弯曲点：从中心标记向左量「弯曲点间距」',
+      instruction: 'Left bend point: measure "bend spacing" left from the center mark',
     },
     {
       id: 2,
-      label: 'Mark 2（中心）',
+      label: 'Mark 2 (center)',
       fromCenterInches: 0,
-      instruction: '鞍座中心：对准障碍物中心',
+      instruction: 'Saddle center: align with the obstacle center',
     },
     {
       id: 3,
       label: 'Mark 3',
       fromCenterInches: spacing,
-      instruction: '右侧弯曲点：从中心标记向右量「弯曲点间距」',
+      instruction: 'Right bend point: measure "bend spacing" right from the center mark',
     },
   ];
 
@@ -136,25 +136,25 @@ export function calculateFourPointSaddle(
       id: 1,
       label: 'Mark 1',
       fromCenterInches: -(halfWidth + leg),
-      instruction: '左侧弯曲点：从左侧障碍边缘向外量「弯曲点间距」',
+      instruction: 'Left bend point: measure "bend spacing" outward from the left obstacle edge',
     },
     {
       id: 2,
       label: 'Mark 2',
       fromCenterInches: -halfWidth,
-      instruction: '左侧障碍边缘',
+      instruction: 'Left obstacle edge',
     },
     {
       id: 3,
       label: 'Mark 3',
       fromCenterInches: halfWidth,
-      instruction: '右侧障碍边缘',
+      instruction: 'Right obstacle edge',
     },
     {
       id: 4,
       label: 'Mark 4',
       fromCenterInches: halfWidth + leg,
-      instruction: '右侧弯曲点：从右侧障碍边缘向外量「弯曲点间距」',
+      instruction: 'Right bend point: measure "bend spacing" outward from the right obstacle edge',
     },
   ];
 

@@ -116,7 +116,7 @@ export default function RollingOffsetScreen({ route }: Props) {
       kind: 'rollingOffset',
       title: 'Rolling Offset',
       inputSummary: `rise ${riseText.trim()} · roll ${rollText.trim()} · ${angle}°`,
-      resultSummary: `间距 ${formatInches(result.spacingDisplay)}" · 旋转 ${formatDeg(result.rollAngleDeg)}°`,
+      resultSummary: `Spacing ${formatInches(result.spacingDisplay)}" · rotation ${formatDeg(result.rollAngleDeg)}°`,
       timestamp: Date.now(),
       params: { riseText, rollText, angle, specKey: specKey(spec) },
       signature: `rollingOffset|${riseInches}|${rollInches}|${angle}|${specKey(spec)}`,
@@ -141,7 +141,7 @@ export default function RollingOffsetScreen({ route }: Props) {
     setSpec(defaultBenderSpec());
   }, []);
 
-  const hint = result ? undefined : '输入参数查看结果';
+  const hint = result ? undefined : 'Enter values to see results';
 
   return (
     <ScrollView
@@ -161,19 +161,19 @@ export default function RollingOffsetScreen({ route }: Props) {
         />
         <View style={{ marginTop: theme.spacing.md }}>
           <ImperialInput
-            label="上升高度（rise）"
+            label="Rise"
             value={riseText}
             onChangeText={setRiseText}
             onParsedChange={setRiseInches}
-            placeholder={`例如 6"`}
+            placeholder={`e.g. 6"`}
           />
           <View style={{ marginTop: theme.spacing.md }}>
             <ImperialInput
-              label="侧滚距离（roll）"
+              label="Roll"
               value={rollText}
               onChangeText={setRollText}
               onParsedChange={setRollInches}
-              placeholder={`例如 8"`}
+              placeholder={`e.g. 8"`}
             />
           </View>
         </View>
@@ -186,7 +186,7 @@ export default function RollingOffsetScreen({ route }: Props) {
             marginBottom: theme.spacing.sm,
           }}
         >
-          弯曲角度
+          Bend angle
         </Text>
         <View style={styles.angleRow}>
           {OFFSET_ANGLES.map((value) => (
@@ -203,7 +203,7 @@ export default function RollingOffsetScreen({ route }: Props) {
       </Card>
 
       <ResultDisplay
-        label="两标记间距"
+        label="Mark spacing"
         value={result ? formatInches(result.spacingDisplay) : undefined}
         unit='"'
         hint={hint}
@@ -221,7 +221,7 @@ export default function RollingOffsetScreen({ route }: Props) {
         <Card style={{ gap: theme.spacing.md }}>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-              真实偏移量
+              True offset
             </Text>
             <Text
               style={[
@@ -234,7 +234,7 @@ export default function RollingOffsetScreen({ route }: Props) {
           </View>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-              弯管机旋转角度
+              Bender rotation
             </Text>
             <Text
               style={[
@@ -247,7 +247,7 @@ export default function RollingOffsetScreen({ route }: Props) {
           </View>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-              Shrink 回补
+              Shrink
             </Text>
             <Text
               style={[
@@ -264,7 +264,7 @@ export default function RollingOffsetScreen({ route }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            分步标记
+            Mark layout
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -285,7 +285,7 @@ export default function RollingOffsetScreen({ route }: Props) {
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {mark.id === 1 ? '起点' : `+${formatInches(mark.fromStartInches)}"`}
+                {mark.id === 1 ? 'Start' : `+${formatInches(mark.fromStartInches)}"`}
               </Text>
             </View>
           ))}
@@ -295,12 +295,12 @@ export default function RollingOffsetScreen({ route }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            先按旋转角度转弯管机，再按两标记间距打点
+            Rotate the bender to the rotation angle first, then mark the spacing
           </Text>
         </Card>
       ) : null}
 
-      <BigButton title="清空" variant="secondary" onPress={handleClear} />
+      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
   );
 }

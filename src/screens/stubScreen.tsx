@@ -64,7 +64,7 @@ export default function StubScreen({ route }: Props) {
       const typed = Number(backfill.takeUpText.trim());
       if (Number.isFinite(typed) && typed > 0) {
         const custom = createCustomSpec(
-          '手动 take-up',
+          'Manual take-up',
           defaultBenderSpec().centerlineRadius,
           typed,
         );
@@ -106,7 +106,7 @@ export default function StubScreen({ route }: Props) {
       kind: 'stub',
       title: '90° Stub',
       inputSummary: `${heightText.trim()} · ${displaySpecName(spec)}`,
-      resultSummary: `标记点 ${formatInches(markPoint)}"`,
+      resultSummary: `Mark at ${formatInches(markPoint)}"`,
       timestamp: Date.now(),
       params: { heightText, specKey: specKey(spec) },
       signature: `stub|${heightInches}|${specKey(spec)}`,
@@ -130,9 +130,9 @@ export default function StubScreen({ route }: Props) {
 
   let hint: string | undefined;
   if (heightInches === null) {
-    hint = '输入参数查看结果';
+    hint = 'Enter values to see results';
   } else if (markPoint === null) {
-    hint = '目标高度需大于 take-up';
+    hint = 'Target height must exceed take-up';
   }
 
   return (
@@ -153,17 +153,17 @@ export default function StubScreen({ route }: Props) {
         />
         <View style={{ marginTop: theme.spacing.md }}>
           <ImperialInput
-            label="目标高度"
+            label="Target height"
             value={heightText}
             onChangeText={setHeightText}
             onParsedChange={setHeightInches}
-            placeholder={`例如 12"`}
+            placeholder={`e.g. 12"`}
           />
         </View>
       </Card>
 
       <ResultDisplay
-        label="标记点位置"
+        label="Mark location"
         value={markPoint !== null ? formatInches(markPoint) : undefined}
         unit='"'
         hint={hint}
@@ -176,7 +176,7 @@ export default function StubScreen({ route }: Props) {
 
       <WarningBar warnings={warnings} />
 
-      <BigButton title="清空" variant="secondary" onPress={handleClear} />
+      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
   );
 }

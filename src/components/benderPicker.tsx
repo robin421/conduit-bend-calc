@@ -110,7 +110,7 @@ export default function BenderPicker({
       Number(customTakeUp),
     );
     if (!created) {
-      setCustomError('名称、R、take-up 都要填，且 R/take-up 为大于 0 的数字');
+      setCustomError('Enter a name, R and take-up — R / take-up must be numbers greater than 0');
       return;
     }
     setCustomError(null);
@@ -123,13 +123,13 @@ export default function BenderPicker({
 
   const specCaption = `R ${formatNum(spec.centerlineRadius)}" · take-up ${formatNum(
     spec.takeUp,
-  )}"${isHookDatum(spec) ? '（hook 前缘基准）' : ''}`;
+  )}"${isHookDatum(spec) ? '(hook front-edge datum)' : ''}`;
 
   return (
     <View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={expanded ? '收起弯管机选择' : '展开更换弯管机'}
+        accessibilityLabel={expanded ? 'Collapse bender picker' : 'Expand to change bender'}
         onPress={() => setExpanded((value) => !value)}
         android_ripple={{ color: theme.colors.border }}
         style={styles.summaryRow}
@@ -141,7 +141,7 @@ export default function BenderPicker({
               fontSize: theme.fontSize.secondary,
             }}
           >
-            弯管机
+            Bender
           </Text>
           <Text
             numberOfLines={1}
@@ -178,7 +178,7 @@ export default function BenderPicker({
         {brands.map((value) => (
           <BigButton
             key={value}
-            title={value === 'Custom' ? '自定义' : value}
+            title={value === 'Custom' ? 'Custom' : value}
             size="selection"
             selected={brand === value}
             onPress={() => handleBrandPress(value)}
@@ -189,7 +189,7 @@ export default function BenderPicker({
 
       {brand !== 'Custom' ? (
         <View>
-          <SectionLabel>型号</SectionLabel>
+          <SectionLabel>Model</SectionLabel>
           <View style={styles.row}>
             {listPresetModels(brand).map((model) => (
               <BigButton
@@ -202,7 +202,7 @@ export default function BenderPicker({
               />
             ))}
           </View>
-          <SectionLabel>管径</SectionLabel>
+          <SectionLabel>Conduit size</SectionLabel>
           <View style={styles.row}>
             {listPresetConduits(brand, spec.model).map((conduit) => (
               <BigButton
@@ -220,7 +220,7 @@ export default function BenderPicker({
         <View>
           {customSpecs.length > 0 ? (
             <View>
-              <SectionLabel>已保存</SectionLabel>
+              <SectionLabel>Saved</SectionLabel>
               <View style={styles.row}>
                 {customSpecs.map((custom) => (
                   <BigButton
@@ -239,11 +239,11 @@ export default function BenderPicker({
               </View>
             </View>
           ) : null}
-          <SectionLabel>手动创建（R / take-up）</SectionLabel>
+          <SectionLabel>Create manually (R / take-up)</SectionLabel>
           <TextInput
             value={customName}
             onChangeText={setCustomName}
-            placeholder="名称，例如 我的弯管器"
+            placeholder="Name, e.g. My bender (field-tested)"
             placeholderTextColor={theme.colors.textSecondary}
             autoCapitalize="none"
             autoCorrect={false}
@@ -263,7 +263,7 @@ export default function BenderPicker({
             <TextInput
               value={customR}
               onChangeText={setCustomR}
-              placeholder="R（英寸）"
+              placeholder="R (inches)"
               placeholderTextColor={theme.colors.textSecondary}
               keyboardType="decimal-pad"
               autoCapitalize="none"
@@ -284,7 +284,7 @@ export default function BenderPicker({
             <TextInput
               value={customTakeUp}
               onChangeText={setCustomTakeUp}
-              placeholder="take-up（英寸）"
+              placeholder="take-up (inches)"
               placeholderTextColor={theme.colors.textSecondary}
               keyboardType="decimal-pad"
               autoCapitalize="none"
@@ -316,7 +316,7 @@ export default function BenderPicker({
           ) : null}
           <View style={{ marginTop: theme.spacing.sm }}>
             <BigButton
-              title="保存并使用"
+              title="Save & use"
               variant="secondary"
               onPress={handleSaveCustom}
             />

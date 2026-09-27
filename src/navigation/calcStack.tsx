@@ -62,7 +62,7 @@ export default function CalcStack() {
       <Stack.Screen
         name="Calibration"
         component={CalibrationScreen}
-        options={{ title: '试弯校准' }}
+        options={{ title: 'Calibration' }}
       />
       <Stack.Screen
         name="Placeholder"

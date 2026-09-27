@@ -17,7 +17,7 @@ test('offsetWarnings: H=1、θ=60°、R=5.5 → 红色「这个弯做不出来�
   // H·csc60° ≈ 1.155；直段 = 1.155 − 2×5.5×tan30° < 0
   const tight = offsetWarnings(1.155, 60, bigRadius);
   assert.ok(tight.some((w) => w.level === 'error'));
-  assert.ok(tight.some((w) => w.message.includes('这个弯做不出来')));
+  assert.ok(tight.some((w) => w.message.includes("Can't make this bend")));
 });
 
 test('offsetWarnings: 正常尺寸无红色预警', () => {
