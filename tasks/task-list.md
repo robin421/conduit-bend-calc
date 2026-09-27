@@ -42,5 +42,5 @@
       验收：Given 输入导致切点间距为负 When 查看结果 Then 红色「这个弯做不出来」；Given 正常输入 When 查看 Then 无预警条
 - [ ] T18 一次试弯校准流程：gain 法校 R（R=G/0.4292）+ stub-up 校 take-up，结果写入 Custom 规格（依赖 T13/T14）
       验收：Given L₀=30、A=17、B=14.3 When 校准 Then G=1.3、R≈3.03 写入 Custom；Given 校准完成 When 回到计算器 Then 可选用该 Custom 规格
-- [ ] T19 常数表核对 + PRD 同步 + 回归构建：`src/constants.ts` 与 PRD 第 10 节逐项比对并更新 PRD，全量测试通过后走 EAS 云构建（依赖 T15/T16/T17/T18）
+- [x] T19 常数表核对 + PRD 同步 + 回归构建：`src/constants.ts` 与 PRD 第 10 节逐项比对并更新 PRD，全量测试通过后走 EAS 云构建（依赖 T15/T16/T17/T18）
       验收：Given PRD 第 10 节 When 抽查 App 内每个 R/take-up Then 全部一致；Given EAS 构建产物 When 安装 Then 正常启动

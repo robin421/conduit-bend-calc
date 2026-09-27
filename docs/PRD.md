@@ -53,6 +53,8 @@
 - 隐私：不收集任何用户数据，无需网络权限（除应用商店更新）
 
 ## 10. 常数表（开发时必须逐项核对）
+
+Offset 常数（trade 习惯值，与 `OFFSET_CONSTANTS` 一致）：
 | 角度 | Multiplier | Shrink (per inch) |
 |---|---|---|
 | 10° | 6.0 | 1/16" |
@@ -62,7 +64,7 @@
 | 45° | 1.4 | 3/8" |
 | 60° | 1.2 | 1/2" |
 
-常用弯管器 take-up 值（90° stub）：
+常用弯管器 90° stub take-up（v1.0 `TAKE_UP_OPTIONS`；v1.1 各计算器改用弯管机选择器，R 与 take-up 配对存储见 10.1）：
 | 弯管器 | 1/2" EMT | 3/4" EMT | 1" EMT |
 |---|---|---|---|
 | Ideal | 5" | 6" | 8" |
@@ -70,3 +72,34 @@
 | Greenlee | 5" | 6" | 8" |
 
 > [ASSUMPTION-MEDIUM] take-up 值以主流品牌为准，允许用户手动覆盖输入
+
+### 10.1 v1.1 几何引擎常数（与 `src/constants.ts` 逐项一致）
+
+- 90° gain 系数 `GAIN_90_FACTOR = 2 − π/2 ≈ 0.4292`：G₉₀ = R × 0.4292；一次试弯校准时反推 R = G / 0.4292。
+- 全工程 gain 取 trade 正值；QuickBend 文档符号相反，见 `docs/geometry-engine-spec.md` D3。
+- D2：take-up 无跨厂商普适公式，必须与 R 配对存储，禁止用公式互相推导（Klein 与 Ideal 的经验关系互相冲突；Greenlee 存的是 hook 前缘基准的 deduct）。
+
+弯管机预设（`BENDER_SPECS`，14 条）：
+| 品牌 | 型号 | 管径 | R（英寸） | take-up（英寸） | 测量基准 |
+|---|---|---|---|---|---|
+| Ideal | 74-026 | 1/2" EMT | 4.3125 | 5 | arrow（箭头） |
+| Ideal | 74-027 | 3/4" EMT | 5.25 | 6 | arrow |
+| Klein | 51603 | 1/2" EMT | 4.625 | 5 | arrow |
+| Klein | 51604 | 3/4" EMT | 5.5 | 6 | arrow |
+| Klein | 51605 | 1" EMT | 7.375 | 8 | arrow |
+| Greenlee | 1800 | 1/2" Rigid | 2.625 | 5.5 | hook（hook 前缘，存 deduct） |
+| Greenlee | 1800 | 3/4" Rigid | 4.625 | 8.5 | hook |
+| Greenlee | 1800 | 1" Rigid | 5.875 | 11 | hook |
+| Greenlee | 555 | 1/2" EMT | 4.3125 | 7 | hook |
+| Greenlee | 555 | 3/4" EMT | 5.5 | 8.875 | hook |
+| Greenlee | 555 | 1" EMT | 7 | 10.75 | hook |
+| Greenlee | 555 | 1-1/4" EMT | 8.8125 | 13.125 | hook |
+| Greenlee | 555 | 1-1/2" EMT | 8.375 | 13.875 | hook |
+| Greenlee | 555 | 2" EMT | 9.25 | 15.375 | hook |
+
+最小 stub 高度表（`MIN_STUB_TABLE`，D5：只收录有公开来源的值，其余不硬编）：
+| 品牌 | 型号 | 管径 | 最小 stub |
+|---|---|---|---|
+| Greenlee | 1800 | 1/2" Rigid | 6.5" |
+
+NEC 半径提示（`validateLayout`，D5 有依据才提示）：1/2" 管 R < 4" 时提示 NEC 最小弯曲半径要求。
