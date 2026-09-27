@@ -4,6 +4,9 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { calculateThreePointSaddle } from '../calculators/saddle/saddle';
 import {
+  threePointSaddleWarnings,
+} from '../calculators/warnings/warnings';
+import {
   defaultBenderSpec,
   resolveSpecKey,
   specKey,
@@ -13,6 +16,7 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
+import WarningBar from '../components/warningBar';
 import type { BenderSpec } from '../constants';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useCustomSpecs } from '../lib/customSpecs';
@@ -76,6 +80,13 @@ export default function ThreePointSaddleScreen({ route }: Props) {
       spec.centerlineRadius,
     );
   }, [angle, heightInches, spec]);
+
+  const warnings = useMemo(() => {
+    if (!result) {
+      return [];
+    }
+    return threePointSaddleWarnings(result.markSpacingInches, angle, spec);
+  }, [angle, result, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null) {
@@ -167,6 +178,8 @@ export default function ThreePointSaddleScreen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+
+      <WarningBar warnings={warnings} />
 
       {result ? (
         <Card style={{ gap: theme.spacing.md }}>

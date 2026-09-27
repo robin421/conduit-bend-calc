@@ -38,7 +38,7 @@
       验收：Given v1.0.0 与 v1.1 同样输入 When 对比四个计算器输出 Then 显示值一致（允差 ±1/16"）；Given 现有 35 个测试 When 运行 Then 全过
 - [x] T16 新增 Rolling Offset + Kicked 90° 计算器：基于引擎，κ/L 参数化（依赖 T13/T14）
       验收：Given rise=6、roll=8、θ=30° When 计算 Rolling Offset Then trueOffset=10、间距=20；Given κ=15°、L=10 When 计算 Kicked 90° Then 返回两弯 marks 与总 gain
-- [ ] T17 不可行弯预警 UI：直段<0 红色条、min stub 橙色条、R 过小 NEC 提示（依赖 T13）
+- [x] T17 不可行弯预警 UI：直段<0 红色条、min stub 橙色条、R 过小 NEC 提示（依赖 T13）
       验收：Given 输入导致切点间距为负 When 查看结果 Then 红色「这个弯做不出来」；Given 正常输入 When 查看 Then 无预警条
 - [ ] T18 一次试弯校准流程：gain 法校 R（R=G/0.4292）+ stub-up 校 take-up，结果写入 Custom 规格（依赖 T13/T14）
       验收：Given L₀=30、A=17、B=14.3 When 校准 Then G=1.3、R≈3.03 写入 Custom；Given 校准完成 When 回到计算器 Then 可选用该 Custom 规格

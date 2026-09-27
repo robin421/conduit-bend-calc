@@ -8,11 +8,13 @@ import {
   specKey,
 } from '../calculators/geometry/benderSpecs';
 import { calculateRollingOffset } from '../calculators/rollingOffset/rollingOffset';
+import { offsetWarnings } from '../calculators/warnings/warnings';
 import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
+import WarningBar from '../components/warningBar';
 import type { BenderSpec } from '../constants';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useCustomSpecs } from '../lib/customSpecs';
@@ -79,6 +81,13 @@ export default function RollingOffsetScreen({ route }: Props) {
       spec.centerlineRadius,
     );
   }, [angle, riseInches, rollInches, spec]);
+
+  const warnings = useMemo(() => {
+    if (!result) {
+      return [];
+    }
+    return offsetWarnings(result.geometry.vertexSpacing, angle, spec);
+  }, [angle, result, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || riseInches === null || rollInches === null) {
@@ -181,6 +190,8 @@ export default function RollingOffsetScreen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+
+      <WarningBar warnings={warnings} />
 
       {result ? (
         <Card style={{ gap: theme.spacing.md }}>

@@ -8,11 +8,13 @@ import {
   specKey,
 } from '../calculators/geometry/benderSpecs';
 import { calculateKicked90 } from '../calculators/kicked90/kicked90';
+import { kicked90Warnings } from '../calculators/warnings/warnings';
 import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
+import WarningBar from '../components/warningBar';
 import type { BenderSpec } from '../constants';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
@@ -75,6 +77,13 @@ export default function Kicked90Screen({ route }: Props) {
       return null;
     }
     return calculateKicked90(kickAngle, lengthInches, spec.centerlineRadius);
+  }, [kickAngle, lengthInches, spec]);
+
+  const warnings = useMemo(() => {
+    if (kickAngle === null || lengthInches === null) {
+      return [];
+    }
+    return kicked90Warnings(kickAngle, lengthInches, spec);
   }, [kickAngle, lengthInches, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
@@ -182,6 +191,8 @@ export default function Kicked90Screen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+
+      <WarningBar warnings={warnings} />
 
       {result ? (
         <Card style={{ gap: theme.spacing.md }}>

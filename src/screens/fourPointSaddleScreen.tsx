@@ -4,6 +4,9 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { calculateFourPointSaddle } from '../calculators/saddle/saddle';
 import {
+  fourPointSaddleWarnings,
+} from '../calculators/warnings/warnings';
+import {
   defaultBenderSpec,
   resolveSpecKey,
   specKey,
@@ -13,6 +16,7 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
+import WarningBar from '../components/warningBar';
 import type { BenderSpec } from '../constants';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useCustomSpecs } from '../lib/customSpecs';
@@ -82,6 +86,18 @@ export default function FourPointSaddleScreen({ route }: Props) {
       spec.centerlineRadius,
     );
   }, [angle, heightInches, spec, widthInches]);
+
+  const warnings = useMemo(() => {
+    if (!result || widthInches === null) {
+      return [];
+    }
+    return fourPointSaddleWarnings(
+      result.markSpacingInches,
+      widthInches,
+      angle,
+      spec,
+    );
+  }, [angle, result, spec, widthInches]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null || widthInches === null) {
@@ -184,6 +200,8 @@ export default function FourPointSaddleScreen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+
+      <WarningBar warnings={warnings} />
 
       {result ? (
         <Card style={{ gap: theme.spacing.md }}>

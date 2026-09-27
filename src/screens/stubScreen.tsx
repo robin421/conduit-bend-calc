@@ -11,11 +11,13 @@ import {
   specKey,
 } from '../calculators/geometry/benderSpecs';
 import { calculateStubUpMark } from '../calculators/geometry/geometry';
+import { stubWarnings } from '../calculators/warnings/warnings';
 import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
+import WarningBar from '../components/warningBar';
 import type { BenderSpec } from '../constants';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
@@ -77,6 +79,13 @@ export default function StubScreen({ route }: Props) {
       return null;
     }
     return calculateStubUpMark(heightInches, spec);
+  }, [heightInches, spec]);
+
+  const warnings = useMemo(() => {
+    if (heightInches === null) {
+      return [];
+    }
+    return stubWarnings(heightInches, spec);
   }, [heightInches, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
@@ -150,6 +159,7 @@ export default function StubScreen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+      <WarningBar warnings={warnings} />
 
       <BigButton title="清空" variant="secondary" onPress={handleClear} />
     </ScrollView>
