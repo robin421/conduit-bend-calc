@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
 
@@ -32,7 +32,15 @@ const VALUE_GAP = DIAGRAM_VALUE_GAP;
 export default function BendDiagram({ input, height = 180 }: BendDiagramProps) {
   const theme = useTheme();
   const { width: windowWidth } = useWindowDimensions();
-  const width = Math.max(240, windowWidth - theme.spacing.md * 2);
+  /**
+   * 图解宽度取所在容器的实测宽度，而非窗口宽度：
+   * 宽屏下内容列仅 720px 居中，用窗口宽度会导致 SVG 溢出容器（v1.2.3 走查发现）。
+   * 首次渲染未测得时回退到窗口宽度，避免空白。
+   */
+  const [containerWidth, setContainerWidth] = useState(0);
+  const measuredWidth =
+    containerWidth > 0 ? containerWidth : windowWidth - theme.spacing.md * 2;
+  const width = Math.max(240, measuredWidth);
 
   const diagram = useMemo(
     () => (input ? buildBendDiagram(input, width, height) : null),
@@ -44,11 +52,19 @@ export default function BendDiagram({ input, height = 180 }: BendDiagramProps) {
   const dimColor = theme.colors.textSecondary;
 
   if (!diagram) {
-    return <View style={{ height }} />;
+    return (
+      <View
+        style={{ height }}
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      />
+    );
   }
 
   return (
-    <View style={{ height }}>
+    <View
+      style={{ height }}
+      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+    >
       <Svg
         width={diagram.width}
         height={diagram.height}

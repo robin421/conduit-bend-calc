@@ -17,8 +17,8 @@ interface CalculatorEntry {
 const ENTRIES: CalculatorEntry[] = [
   { key: 'Offset', icon: '⌐', name: 'Offset Bend', description: '偏移弯：间距与 shrink' },
   { key: 'Stub', icon: '∟', name: '90° Stub', description: '直角弯：标记点位置' },
-  { key: 'ThreePointSaddle', icon: '⋀⋀', name: '3-Point Saddle', description: '三点马鞍弯' },
-  { key: 'FourPointSaddle', icon: '⋀⋀⋀', name: '4-Point Saddle', description: '四点马鞍弯' },
+  { key: 'ThreePointSaddle', icon: '⋀', name: '3-Point Saddle', description: '三点马鞍弯' },
+  { key: 'FourPointSaddle', icon: '⋀⋀', name: '4-Point Saddle', description: '四点马鞍弯' },
   { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: '滚动偏移：rise/roll 双维度' },
   { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: '踢角弯：90° + kick 复合' },
   { key: 'Calibration', icon: '◎', name: '试弯校准', description: '一次试弯：校准 R / take-up' },
@@ -63,7 +63,12 @@ export default function CalcHomeScreen({ navigation }: Props) {
           android_ripple={{ color: theme.colors.border }}
         >
           <Card style={styles.card}>
-            <Text style={[styles.icon, { color: theme.colors.primary }]}>{entry.icon}</Text>
+            <Text
+              numberOfLines={1}
+              style={[styles.icon, { color: theme.colors.primary }]}
+            >
+              {entry.icon}
+            </Text>
             <View style={styles.textBlock}>
               <Text
                 style={{
@@ -95,6 +100,9 @@ export default function CalcHomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
   },
   card: {
     minHeight: 72,
@@ -103,7 +111,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 28,
-    width: 44,
+    width: 48,
+    flexShrink: 0,
   },
   textBlock: {
     flex: 1,

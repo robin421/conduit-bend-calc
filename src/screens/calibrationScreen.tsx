@@ -322,6 +322,9 @@ export default function CalibrationScreen() {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
   },
   infoRow: {
     flexDirection: 'row',

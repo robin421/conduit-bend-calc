@@ -215,6 +215,9 @@ export default function HistoryScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   listContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
   },
   itemCard: {
     gap: 0,

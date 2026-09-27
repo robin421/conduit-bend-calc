@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   createCustomSpec,
@@ -53,6 +53,8 @@ export default function BenderPicker({
 }: BenderPickerProps) {
   const theme = useTheme();
   const [activeBrand, setActiveBrand] = useState<BenderBrand>(spec.brand);
+  /** 默认折叠为摘要行：选择器纵向太占空间，输入框应首屏可见 */
+  const [expanded, setExpanded] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customR, setCustomR] = useState('');
   const [customTakeUp, setCustomTakeUp] = useState('');
@@ -119,9 +121,59 @@ export default function BenderPicker({
   };
 
 
+  const specCaption = `R ${formatNum(spec.centerlineRadius)}" · take-up ${formatNum(
+    spec.takeUp,
+  )}"${isHookDatum(spec) ? '（hook 前缘基准）' : ''}`;
+
   return (
     <View>
-      <SectionLabel>弯管机</SectionLabel>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={expanded ? '收起弯管机选择' : '展开更换弯管机'}
+        onPress={() => setExpanded((value) => !value)}
+        android_ripple={{ color: theme.colors.border }}
+        style={styles.summaryRow}
+      >
+        <View style={styles.summaryText}>
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+            }}
+          >
+            弯管机
+          </Text>
+          <Text
+            numberOfLines={1}
+            style={{
+              color: theme.colors.textPrimary,
+              fontSize: theme.fontSize.body,
+              fontWeight: theme.fontWeight.semibold,
+              marginTop: 2,
+            }}
+          >
+            {displaySpecName(spec)}
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+              marginTop: 2,
+              fontVariant: ['tabular-nums'],
+            }}
+          >
+            {specCaption}
+          </Text>
+        </View>
+        <Text
+          style={[styles.summaryChevron, { color: theme.colors.textSecondary }]}
+        >
+          {expanded ? '▾' : '▸'}
+        </Text>
+      </Pressable>
+
+      {expanded ? (
+        <View>
       <View style={styles.row}>
         {brands.map((value) => (
           <BigButton
@@ -280,15 +332,27 @@ export default function BenderPicker({
           fontVariant: ['tabular-nums'],
         }}
       >
-        {`R ${formatNum(spec.centerlineRadius)}" · take-up ${formatNum(spec.takeUp)}"${
-          isHookDatum(spec) ? '（hook 前缘基准）' : ''
-        }`}
+        {specCaption}
       </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  summaryText: {
+    flex: 1,
+  },
+  summaryChevron: {
+    fontSize: 22,
+    marginLeft: 8,
+  },
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',

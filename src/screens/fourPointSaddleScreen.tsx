@@ -277,6 +277,9 @@ export default function FourPointSaddleScreen({ route }: Props) {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
   },
   angleRow: {
     flexDirection: 'row',
