@@ -21,6 +21,7 @@ const ENTRIES: CalculatorEntry[] = [
   { key: 'FourPointSaddle', icon: '⋀⋀⋀', name: '4-Point Saddle', description: '四点马鞍弯' },
   { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: '滚动偏移：rise/roll 双维度' },
   { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: '踢角弯：90° + kick 复合' },
+  { key: 'Calibration', icon: '◎', name: '试弯校准', description: '一次试弯：校准 R / take-up' },
 ];
 
 export default function CalcHomeScreen({ navigation }: Props) {
@@ -39,6 +40,8 @@ export default function CalcHomeScreen({ navigation }: Props) {
       navigation.navigate('RollingOffset');
     } else if (entry.key === 'Kicked90') {
       navigation.navigate('Kicked90');
+    } else if (entry.key === 'Calibration') {
+      navigation.navigate('Calibration');
     } else {
       navigation.navigate('Placeholder', { title: entry.name });
     }

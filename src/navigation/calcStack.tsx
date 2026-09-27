@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { HistoryParams } from '../lib/historyStore';
 import CalcHomeScreen from '../screens/calcHomeScreen';
 import CalculatorPlaceholderScreen from '../screens/calculatorPlaceholderScreen';
+import CalibrationScreen from '../screens/calibrationScreen';
 import FourPointSaddleScreen from '../screens/fourPointSaddleScreen';
 import Kicked90Screen from '../screens/kicked90Screen';
 import OffsetScreen from '../screens/offsetScreen';
@@ -19,6 +20,7 @@ export type CalcStackParamList = {
   FourPointSaddle: { backfill?: HistoryParams } | undefined;
   RollingOffset: { backfill?: HistoryParams } | undefined;
   Kicked90: { backfill?: HistoryParams } | undefined;
+  Calibration: undefined;
   Placeholder: { title: string };
 };
 
@@ -56,6 +58,11 @@ export default function CalcStack() {
         name="Kicked90"
         component={Kicked90Screen}
         options={{ title: 'Kicked 90°' }}
+      />
+      <Stack.Screen
+        name="Calibration"
+        component={CalibrationScreen}
+        options={{ title: '试弯校准' }}
       />
       <Stack.Screen
         name="Placeholder"
