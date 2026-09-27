@@ -61,8 +61,8 @@ export default function OffsetScreen({ route }: Props) {
     if (heightInches === null) {
       return null;
     }
-    return calculateOffset(heightInches, angle);
-  }, [angle, heightInches]);
+    return calculateOffset(heightInches, angle, spec.centerlineRadius);
+  }, [angle, heightInches, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null) {

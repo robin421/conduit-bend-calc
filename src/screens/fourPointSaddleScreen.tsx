@@ -75,8 +75,13 @@ export default function FourPointSaddleScreen({ route }: Props) {
     if (heightInches === null || widthInches === null) {
       return null;
     }
-    return calculateFourPointSaddle(heightInches, widthInches, angle);
-  }, [angle, heightInches, widthInches]);
+    return calculateFourPointSaddle(
+      heightInches,
+      widthInches,
+      angle,
+      spec.centerlineRadius,
+    );
+  }, [angle, heightInches, spec, widthInches]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null || widthInches === null) {

@@ -34,7 +34,7 @@
       验收：Given R=4.625、θ=90° When 调用 gain Then 返回约 1.985（=0.4292×4.625）；Given H=6、θ=30° When 调用 offset Then vertexSpacing=12、shrinkDisplay=1.5；Given spec 未验证公式 When 检查代码 Then 标有 ⚠️ 注释未当作既定事实
 - [x] T14 弯管机选择器 UI：品牌→型号→管径三级选择 + Custom 自定义（R/take-up 手填），缺省为等效 v1.0.0 常数的预设（依赖 T13）
       验收：Given 打开任意计算器 When 切换 Klein 51603/1/2" EMT Then R=4.625、take-up=5 生效；Given 选 Greenlee 1800 When 查看 take-up Then 标注 hook 前缘基准
-- [ ] T15 老计算器切换引擎：Offset/Stub/Saddle3/Saddle4 改用引擎计算，保持 trade 显示值（依赖 T13/T14）
+- [x] T15 老计算器切换引擎：Offset/Stub/Saddle3/Saddle4 改用引擎计算，保持 trade 显示值（依赖 T13/T14）
       验收：Given v1.0.0 与 v1.1 同样输入 When 对比四个计算器输出 Then 显示值一致（允差 ±1/16"）；Given 现有 35 个测试 When 运行 Then 全过
 - [ ] T16 新增 Rolling Offset + Kicked 90° 计算器：基于引擎，κ/L 参数化（依赖 T13/T14）
       验收：Given rise=6、roll=8、θ=30° When 计算 Rolling Offset Then trueOffset=10、间距=20；Given κ=15°、L=10 When 计算 Kicked 90° Then 返回两弯 marks 与总 gain

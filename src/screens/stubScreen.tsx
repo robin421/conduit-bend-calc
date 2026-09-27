@@ -10,7 +10,7 @@ import {
   resolveSpecKey,
   specKey,
 } from '../calculators/geometry/benderSpecs';
-import { calculateStub } from '../calculators/stub/stub';
+import { calculateStubUpMark } from '../calculators/geometry/geometry';
 import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
@@ -71,18 +71,16 @@ export default function StubScreen({ route }: Props) {
     }
   }, [backfill, customSpecs]);
 
-  // take-up 取自所选弯管机规格（D2：与 R 配对存储）
-  const takeUp = spec.takeUp;
-
-  const result = useMemo(() => {
+  // 经由几何引擎：mark = H − takeUp，take-up 取自所选规格（D2 配对存储）
+  const markPoint = useMemo(() => {
     if (heightInches === null) {
       return null;
     }
-    return calculateStub(heightInches, takeUp);
-  }, [heightInches, takeUp]);
+    return calculateStubUpMark(heightInches, spec);
+  }, [heightInches, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
-    if (!result || heightInches === null) {
+    if (markPoint === null || heightInches === null) {
       return null;
     }
     return {
@@ -90,12 +88,12 @@ export default function StubScreen({ route }: Props) {
       kind: 'stub',
       title: '90° Stub',
       inputSummary: `${heightText.trim()} · ${displaySpecName(spec)}`,
-      resultSummary: `标记点 ${formatInches(result.markPoint)}"`,
+      resultSummary: `标记点 ${formatInches(markPoint)}"`,
       timestamp: Date.now(),
       params: { heightText, specKey: specKey(spec) },
       signature: `stub|${heightInches}|${specKey(spec)}`,
     };
-  }, [heightInches, heightText, result, spec]);
+  }, [heightInches, heightText, markPoint, spec]);
 
   useHistoryAutoSave(historyEntry);
 
@@ -115,7 +113,7 @@ export default function StubScreen({ route }: Props) {
   let hint: string | undefined;
   if (heightInches === null) {
     hint = '输入参数查看结果';
-  } else if (!result) {
+  } else if (markPoint === null) {
     hint = '目标高度需大于 take-up';
   }
 
@@ -148,7 +146,7 @@ export default function StubScreen({ route }: Props) {
 
       <ResultDisplay
         label="标记点位置"
-        value={result ? formatInches(result.markPoint) : undefined}
+        value={markPoint !== null ? formatInches(markPoint) : undefined}
         unit='"'
         hint={hint}
       />

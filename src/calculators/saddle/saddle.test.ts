@@ -93,3 +93,35 @@ test('calculateFourPointSaddle: 非法高度/宽度返回 null', () => {
 test('calculateFourPointSaddle: 非预设角度返回 null', () => {
   assert.equal(calculateFourPointSaddle(6, 4, 20 as never), null);
 });
+
+test('T15 回归：不同 R 下三点/四点显示值与 v1.0.0 一致（允差 ±1/16"）', () => {
+  const radii = [4.3125, 4.625, 5.25, 5.5, 2.625];
+  for (const angle of [10, 30, 60] as const) {
+    for (const height of [2, 6]) {
+      const legacy3 = calculateThreePointSaddle(height, angle);
+      assert.ok(legacy3);
+      const legacy4 = calculateFourPointSaddle(height, 4, angle);
+      assert.ok(legacy4);
+      for (const r of radii) {
+        const next3 = calculateThreePointSaddle(height, angle, r);
+        assert.ok(next3);
+        assert.ok(
+          Math.abs(next3.markSpacingInches - legacy3.markSpacingInches) <= 1 / 16,
+        );
+        assert.ok(
+          Math.abs(next3.spanInches - legacy3.spanInches) <= 1 / 16,
+        );
+        assert.ok(next3.legGeometry);
+        const next4 = calculateFourPointSaddle(height, 4, angle, r);
+        assert.ok(next4);
+        assert.ok(
+          Math.abs(next4.markSpacingInches - legacy4.markSpacingInches) <= 1 / 16,
+        );
+        assert.ok(
+          Math.abs(next4.spanInches - legacy4.spanInches) <= 1 / 16,
+        );
+        assert.ok(next4.legGeometry);
+      }
+    }
+  }
+});

@@ -70,8 +70,12 @@ export default function ThreePointSaddleScreen({ route }: Props) {
     if (heightInches === null) {
       return null;
     }
-    return calculateThreePointSaddle(heightInches, angle);
-  }, [angle, heightInches]);
+    return calculateThreePointSaddle(
+      heightInches,
+      angle,
+      spec.centerlineRadius,
+    );
+  }, [angle, heightInches, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null) {
