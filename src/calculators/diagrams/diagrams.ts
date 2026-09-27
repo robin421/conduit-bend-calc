@@ -20,6 +20,12 @@ export const DIAGRAM_TICK_HALF = 8;
 export const DIAGRAM_LABEL_GAP = 18;
 export const DIAGRAM_VALUE_GAP = 52;
 
+/** 角度数字格式化：30 -> "30°"，22.5 -> "22.5°"，11.25 -> "11.25°"。 */
+function fmtAngle(deg: number): string {
+  const rounded = Math.round(deg * 100) / 100;
+  return `${rounded}°`;
+}
+
 /** SVG 坐标点（y 向下为正，已完成 inch→SVG 映射） */
 export interface DiagramPoint {
   x: number;
@@ -72,7 +78,7 @@ export type DiagramInput =
       shrinkDisplay: number;
     }
   | { kind: 'stub'; stubHeight: number; markPoint: number }
-  | { kind: 'saddle3'; height: number; sideSpacingDisplay: number }
+  | { kind: 'saddle3'; height: number; sideSpacingDisplay: number; thetaDeg: number }
   | {
       kind: 'saddle4';
       height: number;
@@ -305,10 +311,14 @@ function buildStubInch(stubHeight: number, markPoint: number): InchDiagram | nul
   };
 }
 
-function buildSaddle3Inch(height: number, sideSpacing: number): InchDiagram | null {
+function buildSaddle3Inch(height: number, sideSpacing: number, thetaDeg: number): InchDiagram | null {
   if (!isPositiveFinite(height) || !isPositiveFinite(sideSpacing)) {
     return null;
   }
+  if (!Number.isFinite(thetaDeg) || thetaDeg <= 0 || thetaDeg >= 90) {
+    return null;
+  }
+  // 3 点鞍弯：中心弯 thetaDeg，两侧各 thetaDeg/2（几何要求净转向为 0）。
   const side = sideSpacing;
   const S1: InchPt = { x: -side, y: 0 };
   const C: InchPt = { x: 0, y: height };
@@ -345,7 +355,7 @@ function buildSaddle3Inch(height: number, sideSpacing: number): InchDiagram | nu
       add(C, { x: 1.8, y: 0.9 }),
       add(S2, { x: 0.7, y: -1.4 }),
     ],
-    angleTexts: ['22.5°', '45°', '22.5°'],
+    angleTexts: [fmtAngle(thetaDeg / 2), fmtAngle(thetaDeg), fmtAngle(thetaDeg / 2)],
     notes: [],
     noteTexts: [],
   };
@@ -719,7 +729,7 @@ export function buildBendDiagram(
       inch = buildStubInch(input.stubHeight, input.markPoint);
       break;
     case 'saddle3':
-      inch = buildSaddle3Inch(input.height, input.sideSpacingDisplay);
+      inch = buildSaddle3Inch(input.height, input.sideSpacingDisplay, input.thetaDeg);
       break;
     case 'saddle4':
       inch = buildSaddle4Inch(

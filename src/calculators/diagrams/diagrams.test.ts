@@ -101,7 +101,7 @@ test('stub：mark 位置与值标注正确', () => {
 
 test('saddle3：三处 mark 与角度标注', () => {
   const d = buildBendDiagram(
-    { kind: 'saddle3', height: 4, sideSpacingDisplay: 10 },
+    { kind: 'saddle3', height: 4, sideSpacingDisplay: 10, thetaDeg: 45 },
     W,
     H,
   );
@@ -124,6 +124,20 @@ test('saddle3：三处 mark 与角度标注', () => {
   assert.ok(ys[1] < ys[0] && ys[1] < ys[2]);
   assertInside(d);
   assertTickUnit(d);
+});
+
+test('saddle3：角度标注随所选角度变化（中心=所选，两侧=一半）', () => {
+  const d = buildBendDiagram(
+    { kind: 'saddle3', height: 6, sideSpacingDisplay: 12, thetaDeg: 30 },
+    W,
+    H,
+  );
+  assert.ok(d);
+  assert.deepEqual(
+    d.angles.map((a) => a.text),
+    ['15°', '30°', '15°'],
+  );
+  assertInside(d);
 });
 
 test('saddle4：四处 mark、三段尺寸', () => {
@@ -209,7 +223,7 @@ test('非法输入返回 null，不抛异常', () => {
     { kind: 'offset', height: NaN, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1 },
     { kind: 'stub', stubHeight: 12, markPoint: 12 },
     { kind: 'stub', stubHeight: -5, markPoint: 2 },
-    { kind: 'saddle3', height: 4, sideSpacingDisplay: -1 },
+    { kind: 'saddle3', height: 4, sideSpacingDisplay: -1, thetaDeg: 30 },
     { kind: 'saddle4', height: 6, thetaDeg: 30, legSpacingDisplay: 12, flatWidth: 0 },
     {
       kind: 'rolling',
@@ -245,7 +259,7 @@ test('标注避让：六种弯法 × 两种宽度，文字包围盒无重叠', (
   const inputs: [string, DiagramInput][] = [
     ['offset', { kind: 'offset', height: 6, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1.5 }],
     ['stub', { kind: 'stub', stubHeight: 12, markPoint: 7 }],
-    ['saddle3', { kind: 'saddle3', height: 4, sideSpacingDisplay: 10 }],
+    ['saddle3', { kind: 'saddle3', height: 4, sideSpacingDisplay: 10, thetaDeg: 30 }],
     ['saddle4', { kind: 'saddle4', height: 6, thetaDeg: 30, legSpacingDisplay: 12, flatWidth: 8 }],
     ['rolling', { kind: 'rolling', rise: 6, roll: 8, trueOffset: 10, rollAngleDeg: 53.13, thetaDeg: 30, spacingDisplay: 20, shrinkDisplay: 2.5 }],
     ['kicked90', { kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: 2.5 }],

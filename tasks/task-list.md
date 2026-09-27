@@ -55,3 +55,13 @@
       验收：Given 修改 offset 高度 When 查看结果区 Then 图解标注数字与计算结果一致；Given 切换深色模式 When 查看图解 Then 线条颜色跟随、mark 红色不变
 - [x] T22 回归与构建：全量测试 + typecheck + DESIGN 配色检查通过后，经 Jim 验收再 push，push 后走 EAS 云构建（依赖 T21）
       验收：Given 现有 89 测试 When 运行 Then 全过；Given push main When CI workflow Then 成功并提交 EAS 构建
+
+## v1.2.1 标注碰撞修复（Jim 自主截图评审发现）
+
+- [x] T23 标注避让：SVG 空间标注松弛避让（mark/尺寸固定、只挪角度/注释）+ 标注常量统一导出 + 6 种弯法×360/240 宽回归测试
+      验收：Given 六种弯法在 360/240 宽下渲染 When 检查文字包围盒 Then 无重叠、无出界；Given 97 测试 When 运行 Then 全过
+
+## v1.2.2 3 点鞍弯图解角度标注修复（Jim 第二轮视觉验收发现）
+
+- [x] T24 saddle3 图解角度跟随所选角度：`DiagramInput` 新增 `thetaDeg`，标注改为中心=所选角度、两侧=一半（如 30°→15°/30°/15°）；修复前写死 22.5°/45°/22.5°
+      验收：Given 高度 6、选 30° When 查看 3 点鞍弯图解 Then 标注为 15°/30°/15°；Given 98 测试 When 运行 Then 全过

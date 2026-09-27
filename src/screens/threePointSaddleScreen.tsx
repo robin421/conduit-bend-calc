@@ -91,8 +91,9 @@ export default function ThreePointSaddleScreen({ route }: Props) {
       kind: 'saddle3',
       height: heightInches,
       sideSpacingDisplay: result.markSpacingInches,
+      thetaDeg: angle,
     };
-  }, [result, heightInches]);
+  }, [result, heightInches, angle]);
 
   const warnings = useMemo(() => {
     if (!result) {
