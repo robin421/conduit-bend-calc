@@ -36,7 +36,7 @@
       验收：Given 打开任意计算器 When 切换 Klein 51603/1/2" EMT Then R=4.625、take-up=5 生效；Given 选 Greenlee 1800 When 查看 take-up Then 标注 hook 前缘基准
 - [x] T15 老计算器切换引擎：Offset/Stub/Saddle3/Saddle4 改用引擎计算，保持 trade 显示值（依赖 T13/T14）
       验收：Given v1.0.0 与 v1.1 同样输入 When 对比四个计算器输出 Then 显示值一致（允差 ±1/16"）；Given 现有 35 个测试 When 运行 Then 全过
-- [ ] T16 新增 Rolling Offset + Kicked 90° 计算器：基于引擎，κ/L 参数化（依赖 T13/T14）
+- [x] T16 新增 Rolling Offset + Kicked 90° 计算器：基于引擎，κ/L 参数化（依赖 T13/T14）
       验收：Given rise=6、roll=8、θ=30° When 计算 Rolling Offset Then trueOffset=10、间距=20；Given κ=15°、L=10 When 计算 Kicked 90° Then 返回两弯 marks 与总 gain
 - [ ] T17 不可行弯预警 UI：直段<0 红色条、min stub 橙色条、R 过小 NEC 提示（依赖 T13）
       验收：Given 输入导致切点间距为负 When 查看结果 Then 红色「这个弯做不出来」；Given 正常输入 When 查看 Then 无预警条

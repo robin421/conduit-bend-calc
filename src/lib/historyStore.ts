@@ -10,7 +10,9 @@ export type HistoryKind =
   | 'offset'
   | 'stub'
   | 'threePointSaddle'
-  | 'fourPointSaddle';
+  | 'fourPointSaddle'
+  | 'rollingOffset'
+  | 'kicked90';
 
 /** 回填到计算器的原始输入参数。 */
 export interface HistoryParams {
@@ -21,6 +23,12 @@ export interface HistoryParams {
   angle?: OffsetAngle;
   /** v1.1：所选弯管机规格键（见 benderSpecs.specKey），回填时解析 */
   specKey?: string;
+  /** v1.1 Rolling Offset：上升/侧滚输入 */
+  riseText?: string;
+  rollText?: string;
+  /** v1.1 Kicked 90°：kick 角 / 直段输入 */
+  kickText?: string;
+  lengthText?: string;
 }
 
 export interface HistoryEntry {

@@ -105,6 +105,18 @@ export default function HistoryScreen({ navigation }: Props) {
             params: { backfill },
           });
           break;
+        case 'rollingOffset':
+          navigation.navigate('CalcHome', {
+            screen: 'RollingOffset',
+            params: { backfill },
+          });
+          break;
+        case 'kicked90':
+          navigation.navigate('CalcHome', {
+            screen: 'Kicked90',
+            params: { backfill },
+          });
+          break;
       }
     },
     [navigation],

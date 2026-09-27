@@ -4,7 +4,9 @@ import type { HistoryParams } from '../lib/historyStore';
 import CalcHomeScreen from '../screens/calcHomeScreen';
 import CalculatorPlaceholderScreen from '../screens/calculatorPlaceholderScreen';
 import FourPointSaddleScreen from '../screens/fourPointSaddleScreen';
+import Kicked90Screen from '../screens/kicked90Screen';
 import OffsetScreen from '../screens/offsetScreen';
+import RollingOffsetScreen from '../screens/rollingOffsetScreen';
 import StubScreen from '../screens/stubScreen';
 import ThreePointSaddleScreen from '../screens/threePointSaddleScreen';
 import { useTheme } from '../theme';
@@ -15,6 +17,8 @@ export type CalcStackParamList = {
   Stub: { backfill?: HistoryParams } | undefined;
   ThreePointSaddle: { backfill?: HistoryParams } | undefined;
   FourPointSaddle: { backfill?: HistoryParams } | undefined;
+  RollingOffset: { backfill?: HistoryParams } | undefined;
+  Kicked90: { backfill?: HistoryParams } | undefined;
   Placeholder: { title: string };
 };
 
@@ -42,6 +46,16 @@ export default function CalcStack() {
         name="FourPointSaddle"
         component={FourPointSaddleScreen}
         options={{ title: '4-Point Saddle' }}
+      />
+      <Stack.Screen
+        name="RollingOffset"
+        component={RollingOffsetScreen}
+        options={{ title: 'Rolling Offset' }}
+      />
+      <Stack.Screen
+        name="Kicked90"
+        component={Kicked90Screen}
+        options={{ title: 'Kicked 90°' }}
       />
       <Stack.Screen
         name="Placeholder"
