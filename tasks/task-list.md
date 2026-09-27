@@ -25,3 +25,22 @@
 - [x] T12 打包验证：EAS Build 出 iOS + Android 包，可安装运行（依赖 T11）
       验收：Given 构建产物 When 安装到真机 Then App 正常启动、无闪退
       注：EAS 云构建 22e03d19-f671-4a60-b15b-ad0f22e680a7（preview, Android, SDK 52）于 2026-09-27 01:xx CST 完成（status=FINISHED），APK 已产出
+
+## v1.1 几何引擎（bender-aware）
+
+规格见 `docs/geometry-engine-spec.md`。符号约定：全工程 trade 正 gain，QuickBend 文档 gain 取反。
+
+- [x] T13 几何引擎核心库：`src/calculators/geometry/` 纯函数（gain/offset/stubUp/saddle3/saddle4/kicked90/rollingOffset/layout/validate）+ BenderSpec 配对表（§3）+ 单元测试（依赖 T12）
+      验收：Given R=4.625、θ=90° When 调用 gain Then 返回约 1.985（=0.4292×4.625）；Given H=6、θ=30° When 调用 offset Then vertexSpacing=12、shrinkDisplay=1.5；Given spec 未验证公式 When 检查代码 Then 标有 ⚠️ 注释未当作既定事实
+- [ ] T14 弯管机选择器 UI：品牌→型号→管径三级选择 + Custom 自定义（R/take-up 手填），缺省为等效 v1.0.0 常数的预设（依赖 T13）
+      验收：Given 打开任意计算器 When 切换 Klein 51603/1/2" EMT Then R=4.625、take-up=5 生效；Given 选 Greenlee 1800 When 查看 take-up Then 标注 hook 前缘基准
+- [ ] T15 老计算器切换引擎：Offset/Stub/Saddle3/Saddle4 改用引擎计算，保持 trade 显示值（依赖 T13/T14）
+      验收：Given v1.0.0 与 v1.1 同样输入 When 对比四个计算器输出 Then 显示值一致（允差 ±1/16"）；Given 现有 35 个测试 When 运行 Then 全过
+- [ ] T16 新增 Rolling Offset + Kicked 90° 计算器：基于引擎，κ/L 参数化（依赖 T13/T14）
+      验收：Given rise=6、roll=8、θ=30° When 计算 Rolling Offset Then trueOffset=10、间距=20；Given κ=15°、L=10 When 计算 Kicked 90° Then 返回两弯 marks 与总 gain
+- [ ] T17 不可行弯预警 UI：直段<0 红色条、min stub 橙色条、R 过小 NEC 提示（依赖 T13）
+      验收：Given 输入导致切点间距为负 When 查看结果 Then 红色「这个弯做不出来」；Given 正常输入 When 查看 Then 无预警条
+- [ ] T18 一次试弯校准流程：gain 法校 R（R=G/0.4292）+ stub-up 校 take-up，结果写入 Custom 规格（依赖 T13/T14）
+      验收：Given L₀=30、A=17、B=14.3 When 校准 Then G=1.3、R≈3.03 写入 Custom；Given 校准完成 When 回到计算器 Then 可选用该 Custom 规格
+- [ ] T19 常数表核对 + PRD 同步 + 回归构建：`src/constants.ts` 与 PRD 第 10 节逐项比对并更新 PRD，全量测试通过后走 EAS 云构建（依赖 T15/T16/T17/T18）
+      验收：Given PRD 第 10 节 When 抽查 App 内每个 R/take-up Then 全部一致；Given EAS 构建产物 When 安装 Then 正常启动
