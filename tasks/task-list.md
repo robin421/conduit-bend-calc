@@ -44,3 +44,14 @@
       验收：Given L₀=30、A=17、B=14.3 When 校准 Then G=1.3、R≈3.03 写入 Custom；Given 校准完成 When 回到计算器 Then 可选用该 Custom 规格
 - [x] T19 常数表核对 + PRD 同步 + 回归构建：`src/constants.ts` 与 PRD 第 10 节逐项比对并更新 PRD，全量测试通过后走 EAS 云构建（依赖 T15/T16/T17/T18）
       验收：Given PRD 第 10 节 When 抽查 App 内每个 R/take-up Then 全部一致；Given EAS 构建产物 When 安装 Then 正常启动
+
+## v1.2 标记图解（动态，随计算结果变化）
+
+规格见 `docs/bend-diagrams-spec.md`。新增依赖 react-native-svg（用户已授权确认）。
+
+- [ ] T20 图解组件库：react-native-svg 接入 + `src/calculators/diagrams/` 纯函数几何（输入=引擎输出，输出=坐标）+ `components/BendDiagram.tsx` + 6 种弯法图解（依赖 T19）
+      验收：Given H=6、θ=30° 的 offset When 调用图解几何函数 Then M1/M2 坐标间距与 12" 等比对应；Given 渲染空/极端输入 When 显示 Then 不 crash
+- [ ] T21 计算器接入图解：6 个计算器结果区嵌入对应图解，输入变化实时更新，深色模式颜色跟随 theme（依赖 T20）
+      验收：Given 修改 offset 高度 When 查看结果区 Then 图解标注数字与计算结果一致；Given 切换深色模式 When 查看图解 Then 线条颜色跟随、mark 红色不变
+- [ ] T22 回归与构建：全量测试 + typecheck + DESIGN 配色检查通过后，经 Jim 验收再 push，push 后走 EAS 云构建（依赖 T21）
+      验收：Given 现有 89 测试 When 运行 Then 全过；Given push main When CI workflow Then 成功并提交 EAS 构建
