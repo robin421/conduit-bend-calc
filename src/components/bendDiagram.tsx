@@ -3,7 +3,12 @@ import { View, useWindowDimensions } from 'react-native';
 import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
 
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
-import { buildBendDiagram } from '../calculators/diagrams/diagrams.ts';
+import {
+  DIAGRAM_LABEL_GAP,
+  DIAGRAM_TICK_HALF,
+  DIAGRAM_VALUE_GAP,
+  buildBendDiagram,
+} from '../calculators/diagrams/diagrams.ts';
 import { useTheme } from '../theme.ts';
 
 interface BendDiagramProps {
@@ -13,9 +18,10 @@ interface BendDiagramProps {
   height?: number;
 }
 
-const TICK_HALF = 8;
-const LABEL_GAP = 18;
-const VALUE_GAP = 32;
+// 标注布局常量与纯函数保持同一来源（渲染与测试一致）
+const TICK_HALF = DIAGRAM_TICK_HALF;
+const LABEL_GAP = DIAGRAM_LABEL_GAP;
+const VALUE_GAP = DIAGRAM_VALUE_GAP;
 
 /**
  * 标记图解渲染组件：只渲染，不做数学。

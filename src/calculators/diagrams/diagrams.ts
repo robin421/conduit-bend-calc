@@ -11,6 +11,15 @@
  */
 import { formatImperial } from '../../lib/imperial.ts';
 
+/**
+ * 标注布局常量（SVG px）：组件层直接引用，不自建副本，
+ * 保证渲染与测试用同一数值。VALUE_GAP 取 52，保证
+ * mark 名（如 M1）与数值（如 7"）在同一 tick 方向上不粘连。
+ */
+export const DIAGRAM_TICK_HALF = 8;
+export const DIAGRAM_LABEL_GAP = 18;
+export const DIAGRAM_VALUE_GAP = 52;
+
 /** SVG 坐标点（y 向下为正，已完成 inch→SVG 映射） */
 export interface DiagramPoint {
   x: number;
@@ -255,7 +264,7 @@ function buildOffsetInch(
     dimensions: [offsetDim(M1, M2, formatImperial(S), -1)],
     angles: [
       add(M1, { x: -0.6, y: -1.4 }),
-      add(M2, { x: 0.6, y: 1.4 }),
+      add(M2, { x: 1.8, y: 0.6 }),
     ],
     angleTexts: [`${thetaDeg}°`, `${thetaDeg}°`],
     notes: [add(m, { x: 0, y: 1.8 })],
@@ -333,7 +342,7 @@ function buildSaddle3Inch(height: number, sideSpacing: number): InchDiagram | nu
     ],
     angles: [
       add(S1, { x: -0.7, y: -1.4 }),
-      add(C, { x: 0.7, y: 1.2 }),
+      add(C, { x: 1.8, y: 0.9 }),
       add(S2, { x: 0.7, y: -1.4 }),
     ],
     angleTexts: ['22.5°', '45°', '22.5°'],
@@ -394,8 +403,8 @@ function buildSaddle4Inch(
     ],
     angles: [
       add(M1, { x: -0.6, y: -1.4 }),
-      add(M2, { x: -0.6, y: 1.4 }),
-      add(M3, { x: 0.6, y: 1.4 }),
+      add(M2, { x: 1.7, y: 0.6 }),
+      add(M3, { x: 1.7, y: 0.6 }),
       add(M4, { x: 0.6, y: -1.4 }),
     ],
     angleTexts: [`${thetaDeg}°`, `${thetaDeg}°`, `${thetaDeg}°`, `${thetaDeg}°`],
@@ -426,11 +435,13 @@ function buildRollingInch(
     return null;
   }
   const m: InchPt = { x: spacingDisplay / 2, y: trueOffset / 2 };
-  base.notes.push(add(m, { x: 0, y: -3.4 }));
+  // M2 的角度标注挪到弯点右侧，避开 M2 的 mark 名（tick 朝上）
+  base.angles[1] = add({ x: spacingDisplay, y: trueOffset }, { x: 2.2, y: 0.5 });
+  base.notes.push(add(m, { x: 0, y: -4.2 }));
   base.noteTexts.push(
     `rise ${formatImperial(rise)} · roll ${formatImperial(roll)} · 真实偏移 ${formatImperial(trueOffset)}`,
   );
-  base.notes.push(add(m, { x: 0, y: -4.8 }));
+  base.notes.push(add(m, { x: 0, y: -6.8 }));
   base.noteTexts.push(`旋转角 ${rollAngleDeg.toFixed(1)}°`);
   return base;
 }
@@ -467,18 +478,97 @@ function buildKicked90Inch(
   return {
     path,
     marks: [
-      { point: M1, label: 'M1', valueText: null, tickDir: { x: 0, y: 1 } },
+      { point: M1, label: 'M1', valueText: null, tickDir: { x: 1, y: 0 } },
       { point: M2, label: 'M2', valueText: null, tickDir: { x: 1, y: 0 } },
     ],
     dimensions: [offsetDim(M1, M2, formatImperial(L), 1)],
     angles: [
-      add(M1, { x: -1.3, y: 1.1 }),
-      add(M2, { x: 1.1, y: 0.7 }),
+      add(M1, { x: -2.0, y: -1.6 }),
+      add(M2, { x: 0.2, y: 2.4 }),
     ],
     angleTexts: ['90°', `${kickDeg}°`],
-    notes: [add(M2, { x: 1.6, y: -1.6 })],
+    notes: [add(M2, { x: 2.8, y: -0.8 })],
     noteTexts: [`总 gain ${formatImperial(totalGain)}`],
   };
+}
+
+// ---------- 标注避让（SVG 空间松弛） ----------
+
+/**
+ * 估算文字宽度（SVG px）。CJK 按 1em、拉丁按 0.6em 估算，
+ * 略保守（宁可推开一点，不重叠），与组件渲染同字体大小对应。
+ */
+export function estimateTextWidth(text: string, fontSize: number): number {
+  let w = 0;
+  for (const ch of text) {
+    w += /[\u3000-\u9fff\uff00-\uffef]/.test(ch) ? fontSize : fontSize * 0.6;
+  }
+  return w + 2;
+}
+
+interface PlacedLabel {
+  text: string;
+  fontSize: number;
+  /** 锚点 = 文字 baseline 中心（与组件渲染一致） */
+  x: number;
+  y: number;
+  /** mark 名/数值/尺寸标注位置固定，只有角度/注释可挪 */
+  movable: boolean;
+}
+
+function labelBox(l: PlacedLabel): { x0: number; y0: number; x1: number; y1: number } {
+  const w = estimateTextWidth(l.text, l.fontSize);
+  return {
+    x0: l.x - w / 2,
+    y0: l.y - l.fontSize * 0.8,
+    x1: l.x + w / 2,
+    y1: l.y + l.fontSize * 0.2,
+  };
+}
+
+/**
+ * 推开重叠的文字包围盒。固定标签不动，只挪 movable 的；
+ * 沿重叠较小轴推开，保证终止（至多 60 轮）。
+ */
+function resolveLabelOverlaps(labels: PlacedLabel[], viewW: number, viewH: number): void {
+  const clamp = (l: PlacedLabel) => {
+    l.x = Math.max(4, Math.min(viewW - 4, l.x));
+    l.y = Math.max(4, Math.min(viewH - 4, l.y));
+  };
+  for (let iter = 0; iter < 60; iter++) {
+    let moved = false;
+    for (let i = 0; i < labels.length; i++) {
+      for (let j = i + 1; j < labels.length; j++) {
+        const a = labels[i];
+        const b = labels[j];
+        if (!a.movable && !b.movable) continue;
+        const ba = labelBox(a);
+        const bb = labelBox(b);
+        const ox = Math.min(ba.x1, bb.x1) - Math.max(ba.x0, bb.x0);
+        const oy = Math.min(ba.y1, bb.y1) - Math.max(ba.y0, bb.y0);
+        if (ox <= 0.5 || oy <= 0.5) continue;
+        const acx = (ba.x0 + ba.x1) / 2;
+        const bcx = (bb.x0 + bb.x1) / 2;
+        const acy = (ba.y0 + ba.y1) / 2;
+        const bcy = (bb.y0 + bb.y1) / 2;
+        let dx = 0;
+        let dy = 0;
+        if (ox < oy) dx = acx <= bcx ? -(ox + 2) : ox + 2;
+        else dy = acy <= bcy ? -(oy + 2) : oy + 2;
+        if (a.movable && b.movable) {
+          a.x += dx / 2; a.y += dy / 2;
+          b.x -= dx / 2; b.y -= dy / 2;
+          clamp(a); clamp(b);
+        } else if (a.movable) {
+          a.x += dx; a.y += dy; clamp(a);
+        } else {
+          b.x -= dx; b.y -= dy; clamp(b);
+        }
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
 }
 
 // ---------- inch → SVG ----------
@@ -520,9 +610,15 @@ function finalize(
   }
   const padX = viewW * PAD_RATIO;
   const padY = viewH * PAD_RATIO;
+  // inch 方向 → SVG 方向（y 翻转）
+  const toSvgDir = (v: InchPt): DiagramPoint => {
+    const n = norm(v);
+    return { x: n.x, y: -n.y };
+  };
   const spanX = Math.max(maxX - minX, 1e-6);
   const spanY = Math.max(maxY - minY, 1e-6);
-  // 横纵等比锁定（spec §4）
+  // 横纵等比锁定（spec §4）：bounds 只含几何，scale 与 view 严格成比例，
+  // mark 标注外延（18/52px）由 12% padding 覆盖（实测 240/360 宽均无裁剪）
   const scale = Math.min((viewW - 2 * padX) / spanX, (viewH - 2 * padY) / spanY);
   if (!Number.isFinite(scale) || scale <= 0) {
     return null;
@@ -533,11 +629,6 @@ function finalize(
     x: offX + (p.x - minX) * scale,
     y: offY + (maxY - p.y) * scale,
   });
-  // inch 方向 → SVG 方向（y 翻转）
-  const toSvgDir = (v: InchPt): DiagramPoint => {
-    const n = norm(v);
-    return { x: n.x, y: -n.y };
-  };
 
   const d = pts
     .map((p, i) => {
@@ -546,7 +637,7 @@ function finalize(
     })
     .join(' ');
 
-  return {
+  const result: BendDiagram = {
     width: viewW,
     height: viewH,
     conduitPath: d,
@@ -565,6 +656,41 @@ function finalize(
     angles: inch.angles.map((p, i) => ({ point: toSvg(p), text: inch.angleTexts[i] })),
     notes: inch.notes.map((p, i) => ({ point: toSvg(p), text: inch.noteTexts[i] })),
   };
+
+  // 标注避让：mark 名/数值/尺寸固定，只挪角度与注释（spec §4 补充）
+  const labels: PlacedLabel[] = [];
+  for (const m of result.marks) {
+    labels.push({
+      text: m.label, fontSize: 12, movable: false,
+      x: m.point.x + m.tickDir.x * DIAGRAM_LABEL_GAP,
+      y: m.point.y + m.tickDir.y * DIAGRAM_LABEL_GAP + 4,
+    });
+    if (m.valueText) {
+      labels.push({
+        text: m.valueText, fontSize: 11, movable: false,
+        x: m.point.x + m.tickDir.x * DIAGRAM_VALUE_GAP,
+        y: m.point.y + m.tickDir.y * DIAGRAM_VALUE_GAP + 4,
+      });
+    }
+  }
+  for (const dm of result.dimensions) {
+    labels.push({ text: dm.label, fontSize: 11, movable: false, x: dm.labelAt.x, y: dm.labelAt.y });
+  }
+  const angleLabels: PlacedLabel[] = result.angles.map((a) => (
+    { text: a.text, fontSize: 11, movable: true, x: a.point.x, y: a.point.y }
+  ));
+  const noteLabels: PlacedLabel[] = result.notes.map((n) => (
+    { text: n.text, fontSize: 11, movable: true, x: n.point.x, y: n.point.y }
+  ));
+  labels.push(...angleLabels, ...noteLabels);
+  resolveLabelOverlaps(labels, viewW, viewH);
+  angleLabels.forEach((l, i) => {
+    result.angles[i] = { ...result.angles[i], point: { x: l.x, y: l.y } };
+  });
+  noteLabels.forEach((l, i) => {
+    result.notes[i] = { ...result.notes[i], point: { x: l.x, y: l.y } };
+  });
+  return result;
 }
 
 // ---------- 公开 API ----------
