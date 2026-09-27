@@ -12,6 +12,8 @@ import { kicked90Warnings } from '../calculators/warnings/warnings';
 import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import BendDiagram from '../components/bendDiagram';
+import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import WarningBar from '../components/warningBar';
@@ -78,6 +80,18 @@ export default function Kicked90Screen({ route }: Props) {
     }
     return calculateKicked90(kickAngle, lengthInches, spec.centerlineRadius);
   }, [kickAngle, lengthInches, spec]);
+
+  const diagramInput = useMemo<DiagramInput | null>(() => {
+    if (!result) {
+      return null;
+    }
+    return {
+      kind: 'kicked90',
+      kickAngleDeg: result.kickAngleDeg,
+      straightLength: result.straightLength,
+      totalGain: result.totalGain,
+    };
+  }, [result]);
 
   const warnings = useMemo(() => {
     if (kickAngle === null || lengthInches === null) {
@@ -191,6 +205,12 @@ export default function Kicked90Screen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
 
       <WarningBar warnings={warnings} />
 

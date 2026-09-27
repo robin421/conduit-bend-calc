@@ -14,6 +14,8 @@ import {
 import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import BendDiagram from '../components/bendDiagram';
+import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import WarningBar from '../components/warningBar';
@@ -86,6 +88,19 @@ export default function FourPointSaddleScreen({ route }: Props) {
       spec.centerlineRadius,
     );
   }, [angle, heightInches, spec, widthInches]);
+
+  const diagramInput = useMemo<DiagramInput | null>(() => {
+    if (!result || heightInches === null || widthInches === null) {
+      return null;
+    }
+    return {
+      kind: 'saddle4',
+      height: heightInches,
+      thetaDeg: angle,
+      legSpacingDisplay: result.markSpacingInches,
+      flatWidth: widthInches,
+    };
+  }, [result, heightInches, widthInches, angle]);
 
   const warnings = useMemo(() => {
     if (!result || widthInches === null) {
@@ -200,6 +215,12 @@ export default function FourPointSaddleScreen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
 
       <WarningBar warnings={warnings} />
 
