@@ -25,11 +25,17 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "extra": {
       "eas": {
         "projectId": "10e121d6-3df4-4011-a387-5645fd964942"
       }
     },
-    "owner": "robin421"
+    "owner": "robin421",
+    "updates": {
+      "url": "https://u.expo.dev/10e121d6-3df4-4011-a387-5645fd964942"
+    }
   }
 }
