@@ -6,11 +6,15 @@ import { test } from 'node:test';
 import { BENDER_SPECS } from '../../constants.ts';
 import {
   createCustomSpec,
+  defaultBenderSpec,
   displaySpecName,
   findBenderSpec,
+  legacySizeToSpec,
   listPresetBrands,
   listPresetConduits,
   listPresetModels,
+  resolveSpecKey,
+  specKey,
 } from './benderSpecs.ts';
 import {
   calculateKicked90Geometry,
@@ -273,6 +277,32 @@ test('benderSpecs: Custom 规格构造与展示名', () => {
   assert.equal(displaySpecName(preset), 'Ideal 74-026 1/2" EMT');
   assert.equal(createCustomSpec('', 4.7, 5.1), null);
   assert.equal(createCustomSpec('x', -1, 5.1), null);
+});
+
+test('specKey/resolveSpecKey: 预设与 Custom 往返', () => {
+  const preset = findBenderSpec('Klein', '51603', '1/2" EMT');
+  assert.ok(preset);
+  assert.equal(specKey(preset), 'Klein|51603|1/2" EMT');
+  assert.deepEqual(resolveSpecKey(specKey(preset), []), preset);
+  const custom = createCustomSpec('我的 Klein 51603', 4.7, 5.1);
+  assert.ok(custom);
+  assert.equal(specKey(custom), 'custom|我的 Klein 51603');
+  assert.deepEqual(resolveSpecKey(specKey(custom), [custom]), custom);
+  assert.equal(resolveSpecKey('custom|不存在', [custom]), undefined);
+  assert.equal(resolveSpecKey('badkey', []), undefined);
+});
+
+test('defaultBenderSpec: 缺省为 Ideal 74-026（take-up 5，等效老版本 1/2"）', () => {
+  const def = defaultBenderSpec();
+  assert.equal(def.brand, 'Ideal');
+  assert.equal(def.model, '74-026');
+  assert.equal(def.takeUp, 5);
+});
+
+test('legacySizeToSpec: v1.0.x 规格映射 take-up 一致', () => {
+  assert.equal(legacySizeToSpec('1/2').takeUp, 5);
+  assert.equal(legacySizeToSpec('3/4').takeUp, 6);
+  assert.equal(legacySizeToSpec('1').takeUp, 8);
 });
 
 test('degToRad: 非法输入返回 null', () => {

@@ -95,3 +95,60 @@ export function displaySpecName(spec: BenderSpec): string {
   }
   return `${spec.brand} ${spec.model} ${spec.conduit}`;
 }
+
+/**
+ * 规格唯一键：预设为"品牌|型号|管径"，Custom 为"custom|用户命名"。
+ * 用于历史记录回填与跨屏传递。
+ */
+export function specKey(spec: BenderSpec): string {
+  if (spec.brand === 'Custom') {
+    return `custom|${spec.customName ?? spec.conduit}`;
+  }
+  return `${spec.brand}|${spec.model}|${spec.conduit}`;
+}
+
+/**
+ * 按 key 解析规格：先查预设表，再查 Custom 列表。找不到返回 undefined。
+ */
+export function resolveSpecKey(
+  key: string,
+  customSpecs: readonly BenderSpec[],
+): BenderSpec | undefined {
+  if (key.startsWith('custom|')) {
+    const name = key.slice('custom|'.length);
+    return customSpecs.find(
+      (spec) =>
+        spec.brand === 'Custom' &&
+        (spec.customName ?? spec.conduit) === name,
+    );
+  }
+  const [brand, model, conduit] = key.split('|');
+  if (!brand || !model || conduit === undefined) {
+    return undefined;
+  }
+  return findBenderSpec(brand as BenderBrand, model, conduit);
+}
+
+/**
+ * 缺省规格：等效 v1.0.0 常用选择的预设（Ideal 74-026 / 1/2" EMT，
+ * take-up 5"，与老版本 1/2" 选项一致），保证老用户无感。
+ */
+export function defaultBenderSpec(): BenderSpec {
+  return (
+    findBenderSpec('Ideal', '74-026', '1/2" EMT') ?? BENDER_SPECS[0]
+  );
+}
+
+/**
+ * v1.0.x 迁移：老版本 stub 页按 EMT 规格选 take-up（1/2→5、3/4→6、1→8），
+ * 映射到 take-up 相同的等效预设，用于历史记录回填。
+ */
+export function legacySizeToSpec(size: '1/2' | '3/4' | '1'): BenderSpec {
+  if (size === '3/4') {
+    return findBenderSpec('Ideal', '74-027', '3/4" EMT') ?? defaultBenderSpec();
+  }
+  if (size === '1') {
+    return findBenderSpec('Klein', '51605', '1" EMT') ?? defaultBenderSpec();
+  }
+  return defaultBenderSpec();
+}

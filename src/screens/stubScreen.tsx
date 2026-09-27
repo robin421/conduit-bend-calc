@@ -1,19 +1,23 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
+import {
+  createCustomSpec,
+  defaultBenderSpec,
+  displaySpecName,
+  legacySizeToSpec,
+  resolveSpecKey,
+  specKey,
+} from '../calculators/geometry/benderSpecs';
 import { calculateStub } from '../calculators/stub/stub';
+import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
-import { EmtTakeUpSize, TAKE_UP_OPTIONS } from '../constants';
+import type { BenderSpec } from '../constants';
+import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
@@ -26,93 +30,91 @@ function formatInches(value: number): string {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
-function parseTakeUp(text: string): number | null {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return null;
-  }
-  const value = Number(trimmed);
-  if (!Number.isFinite(value) || value <= 0) {
-    return null;
-  }
-  return value;
-}
-
 export default function StubScreen({ route }: Props) {
   const theme = useTheme();
   const [heightText, setHeightText] = useState('');
   const [heightInches, setHeightInches] = useState<number | null>(null);
-  const [takeUpText, setTakeUpText] = useState('');
-  const [selectedSize, setSelectedSize] = useState<EmtTakeUpSize | null>(null);
+  const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
+  const { specs: customSpecs, addSpec } = useCustomSpecs();
+
+  const backfill = route.params?.backfill;
 
   useEffect(() => {
-    const backfill = route.params?.backfill;
     if (!backfill) {
       return;
     }
     if (backfill.heightText !== undefined) {
       setHeightText(backfill.heightText);
     }
-    if (backfill.takeUpText !== undefined) {
-      setTakeUpText(backfill.takeUpText);
+    if (backfill.specKey) {
+      const resolved = resolveSpecKey(backfill.specKey, customSpecs);
+      if (resolved) {
+        setSpec(resolved);
+        return;
+      }
     }
-    setSelectedSize(backfill.selectedSize ?? null);
-  }, [route.params?.backfill]);
+    // 兼容 v1.0.x 历史记录（当时按 EMT 规格 / 手填 take-up 选择）
+    if (backfill.selectedSize) {
+      setSpec(legacySizeToSpec(backfill.selectedSize));
+    } else if (backfill.takeUpText) {
+      const typed = Number(backfill.takeUpText.trim());
+      if (Number.isFinite(typed) && typed > 0) {
+        const custom = createCustomSpec(
+          '手动 take-up',
+          defaultBenderSpec().centerlineRadius,
+          typed,
+        );
+        if (custom) {
+          setSpec(custom);
+        }
+      }
+    }
+  }, [backfill, customSpecs]);
 
-  const takeUp = useMemo(() => parseTakeUp(takeUpText), [takeUpText]);
+  // take-up 取自所选弯管机规格（D2：与 R 配对存储）
+  const takeUp = spec.takeUp;
 
   const result = useMemo(() => {
-    if (heightInches === null || takeUp === null) {
+    if (heightInches === null) {
       return null;
     }
     return calculateStub(heightInches, takeUp);
   }, [heightInches, takeUp]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
-    if (!result || heightInches === null || takeUp === null) {
+    if (!result || heightInches === null) {
       return null;
     }
-    const takeUpLabel = selectedSize
-      ? `${selectedSize}" EMT`
-      : `take-up ${takeUpText.trim()}"`;
     return {
       id: createHistoryId(),
       kind: 'stub',
       title: '90° Stub',
-      inputSummary: `${heightText.trim()} · ${takeUpLabel}`,
+      inputSummary: `${heightText.trim()} · ${displaySpecName(spec)}`,
       resultSummary: `标记点 ${formatInches(result.markPoint)}"`,
       timestamp: Date.now(),
-      params: { heightText, takeUpText, selectedSize },
-      signature: `stub|${heightInches}|${takeUp}`,
+      params: { heightText, specKey: specKey(spec) },
+      signature: `stub|${heightInches}|${specKey(spec)}`,
     };
-  }, [heightInches, heightText, result, selectedSize, takeUp, takeUpText]);
+  }, [heightInches, heightText, result, spec]);
 
   useHistoryAutoSave(historyEntry);
 
-  const handleSelect = useCallback((size: EmtTakeUpSize, value: number) => {
-    setSelectedSize(size);
-    setTakeUpText(String(value));
-  }, []);
-
-  const handleTakeUpChange = useCallback((text: string) => {
-    setTakeUpText(text);
-    setSelectedSize(null);
-  }, []);
+  const handleCreateCustom = useCallback(
+    (created: BenderSpec) => {
+      void addSpec(created).then(() => setSpec(created));
+    },
+    [addSpec],
+  );
 
   const handleClear = useCallback(() => {
     setHeightText('');
     setHeightInches(null);
-    setTakeUpText('');
-    setSelectedSize(null);
+    setSpec(defaultBenderSpec());
   }, []);
-
-  const takeUpInvalid = takeUpText.trim() !== '' && takeUp === null;
 
   let hint: string | undefined;
   if (heightInches === null) {
     hint = '输入参数查看结果';
-  } else if (takeUp === null) {
-    hint = takeUpInvalid ? 'take-up 必须为大于 0 的数字' : '请选择或输入 take-up';
   } else if (!result) {
     hint = '目标高度需大于 take-up';
   }
@@ -127,67 +129,21 @@ export default function StubScreen({ route }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card>
-        <ImperialInput
-          label="目标高度"
-          value={heightText}
-          onChangeText={setHeightText}
-          onParsedChange={setHeightInches}
-          placeholder={`例如 12"`}
+        <BenderPicker
+          spec={spec}
+          customSpecs={customSpecs}
+          onChange={setSpec}
+          onCreateCustom={handleCreateCustom}
         />
-
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-            marginTop: theme.spacing.md,
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          弯管器（take-up）
-        </Text>
-        <View style={styles.optionRow}>
-          {TAKE_UP_OPTIONS.map((option) => (
-            <BigButton
-              key={option.size}
-              title={`${option.label} · ${option.takeUpInches}"`}
-              size="selection"
-              selected={selectedSize === option.size}
-              onPress={() => handleSelect(option.size, option.takeUpInches)}
-              style={styles.optionButton}
-            />
-          ))}
+        <View style={{ marginTop: theme.spacing.md }}>
+          <ImperialInput
+            label="目标高度"
+            value={heightText}
+            onChangeText={setHeightText}
+            onParsedChange={setHeightInches}
+            placeholder={`例如 12"`}
+          />
         </View>
-
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-            marginTop: theme.spacing.md,
-            marginBottom: theme.spacing.xs,
-          }}
-        >
-          take-up（英寸，可手动覆盖）
-        </Text>
-        <TextInput
-          value={takeUpText}
-          onChangeText={handleTakeUpChange}
-          placeholder={`例如 5`}
-          placeholderTextColor={theme.colors.textSecondary}
-          keyboardType="decimal-pad"
-          autoCapitalize="none"
-          autoCorrect={false}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.colors.background,
-              borderColor: takeUpInvalid ? theme.colors.error : theme.colors.border,
-              borderRadius: theme.radius,
-              color: theme.colors.textPrimary,
-              fontSize: theme.fontSize.title,
-              paddingHorizontal: theme.spacing.md,
-            },
-          ]}
-        />
       </Card>
 
       <ResultDisplay
@@ -205,19 +161,5 @@ export default function StubScreen({ route }: Props) {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  optionButton: {
-    flexBasis: '30%',
-    flexGrow: 1,
-  },
-  input: {
-    minHeight: 56,
-    borderWidth: StyleSheet.hairlineWidth,
-    fontVariant: ['tabular-nums'],
   },
 });

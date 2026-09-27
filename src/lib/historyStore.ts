@@ -19,6 +19,8 @@ export interface HistoryParams {
   takeUpText?: string;
   selectedSize?: EmtTakeUpSize | null;
   angle?: OffsetAngle;
+  /** v1.1：所选弯管机规格键（见 benderSpecs.specKey），回填时解析 */
+  specKey?: string;
 }
 
 export interface HistoryEntry {

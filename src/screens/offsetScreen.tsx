@@ -3,10 +3,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../calculators/offset/offset';
+import {
+  defaultBenderSpec,
+  resolveSpecKey,
+  specKey,
+} from '../calculators/geometry/benderSpecs';
+import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
+import type { BenderSpec } from '../constants';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
@@ -26,9 +34,12 @@ export default function OffsetScreen({ route }: Props) {
   const [heightText, setHeightText] = useState('');
   const [heightInches, setHeightInches] = useState<number | null>(null);
   const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
+  const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
+  const { specs: customSpecs, addSpec } = useCustomSpecs();
+
+  const backfill = route.params?.backfill;
 
   useEffect(() => {
-    const backfill = route.params?.backfill;
     if (!backfill) {
       return;
     }
@@ -38,7 +49,13 @@ export default function OffsetScreen({ route }: Props) {
     if (backfill.angle !== undefined) {
       setAngle(backfill.angle);
     }
-  }, [route.params?.backfill]);
+    if (backfill.specKey) {
+      const resolved = resolveSpecKey(backfill.specKey, customSpecs);
+      if (resolved) {
+        setSpec(resolved);
+      }
+    }
+  }, [backfill, customSpecs]);
 
   const result = useMemo(() => {
     if (heightInches === null) {
@@ -58,17 +75,25 @@ export default function OffsetScreen({ route }: Props) {
       inputSummary: `${heightText.trim()} · ${angle}°`,
       resultSummary: `间距 ${formatInches(result.distanceBetweenBends)}" · shrink ${formatInches(result.shrink)}"`,
       timestamp: Date.now(),
-      params: { heightText, angle },
+      params: { heightText, angle, specKey: specKey(spec) },
       signature: `offset|${heightInches}|${angle}`,
     };
-  }, [angle, heightInches, heightText, result]);
+  }, [angle, heightInches, heightText, result, spec]);
 
   useHistoryAutoSave(historyEntry);
+
+  const handleCreateCustom = useCallback(
+    (created: BenderSpec) => {
+      void addSpec(created).then(() => setSpec(created));
+    },
+    [addSpec],
+  );
 
   const handleClear = useCallback(() => {
     setHeightText('');
     setHeightInches(null);
     setAngle(DEFAULT_ANGLE);
+    setSpec(defaultBenderSpec());
   }, []);
 
   const distance = result ? formatInches(result.distanceBetweenBends) : '—';
@@ -84,13 +109,21 @@ export default function OffsetScreen({ route }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card>
-        <ImperialInput
-          label="障碍高度"
-          value={heightText}
-          onChangeText={setHeightText}
-          onParsedChange={setHeightInches}
-          placeholder={`例如 6"`}
+        <BenderPicker
+          spec={spec}
+          customSpecs={customSpecs}
+          onChange={setSpec}
+          onCreateCustom={handleCreateCustom}
         />
+        <View style={{ marginTop: theme.spacing.md }}>
+          <ImperialInput
+            label="障碍高度"
+            value={heightText}
+            onChangeText={setHeightText}
+            onParsedChange={setHeightInches}
+            placeholder={`例如 6"`}
+          />
+        </View>
 
         <Text
           style={{

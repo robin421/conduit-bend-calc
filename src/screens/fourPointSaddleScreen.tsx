@@ -3,11 +3,19 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { calculateFourPointSaddle } from '../calculators/saddle/saddle';
+import {
+  defaultBenderSpec,
+  resolveSpecKey,
+  specKey,
+} from '../calculators/geometry/benderSpecs';
+import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
+import type { BenderSpec } from '../constants';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
@@ -37,9 +45,12 @@ export default function FourPointSaddleScreen({ route }: Props) {
   const [widthText, setWidthText] = useState('');
   const [widthInches, setWidthInches] = useState<number | null>(null);
   const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
+  const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
+  const { specs: customSpecs, addSpec } = useCustomSpecs();
+
+  const backfill = route.params?.backfill;
 
   useEffect(() => {
-    const backfill = route.params?.backfill;
     if (!backfill) {
       return;
     }
@@ -52,7 +63,13 @@ export default function FourPointSaddleScreen({ route }: Props) {
     if (backfill.angle !== undefined) {
       setAngle(backfill.angle);
     }
-  }, [route.params?.backfill]);
+    if (backfill.specKey) {
+      const resolved = resolveSpecKey(backfill.specKey, customSpecs);
+      if (resolved) {
+        setSpec(resolved);
+      }
+    }
+  }, [backfill, customSpecs]);
 
   const result = useMemo(() => {
     if (heightInches === null || widthInches === null) {
@@ -72,12 +89,19 @@ export default function FourPointSaddleScreen({ route }: Props) {
       inputSummary: `${heightText.trim()} · ${widthText.trim()} · ${angle}°`,
       resultSummary: `间距 ${formatInches(result.markSpacingInches)}" · 跨度 ${formatInches(result.spanInches)}"`,
       timestamp: Date.now(),
-      params: { heightText, widthText, angle },
+      params: { heightText, widthText, angle, specKey: specKey(spec) },
       signature: `four-point-saddle|${heightInches}|${widthInches}|${angle}`,
     };
-  }, [angle, heightInches, heightText, result, widthInches, widthText]);
+  }, [angle, heightInches, heightText, result, spec, widthInches, widthText]);
 
   useHistoryAutoSave(historyEntry);
+
+  const handleCreateCustom = useCallback(
+    (created: BenderSpec) => {
+      void addSpec(created).then(() => setSpec(created));
+    },
+    [addSpec],
+  );
 
   const handleClear = useCallback(() => {
     setHeightText('');
@@ -85,6 +109,7 @@ export default function FourPointSaddleScreen({ route }: Props) {
     setWidthText('');
     setWidthInches(null);
     setAngle(DEFAULT_ANGLE);
+    setSpec(defaultBenderSpec());
   }, []);
 
   const hint = result ? undefined : '输入参数查看结果';
@@ -99,22 +124,30 @@ export default function FourPointSaddleScreen({ route }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card>
-        <ImperialInput
-          label="障碍高度"
-          value={heightText}
-          onChangeText={setHeightText}
-          onParsedChange={setHeightInches}
-          placeholder={`例如 6"`}
+        <BenderPicker
+          spec={spec}
+          customSpecs={customSpecs}
+          onChange={setSpec}
+          onCreateCustom={handleCreateCustom}
         />
+        <View style={{ marginTop: theme.spacing.md }}>
+          <ImperialInput
+            label="障碍高度"
+            value={heightText}
+            onChangeText={setHeightText}
+            onParsedChange={setHeightInches}
+            placeholder={`例如 6"`}
+          />
 
-        <ImperialInput
-          label="障碍宽度"
-          value={widthText}
-          onChangeText={setWidthText}
-          onParsedChange={setWidthInches}
-          placeholder={`例如 4"`}
-          style={{ marginTop: theme.spacing.md }}
-        />
+          <ImperialInput
+            label="障碍宽度"
+            value={widthText}
+            onChangeText={setWidthText}
+            onParsedChange={setWidthInches}
+            placeholder={`例如 4"`}
+            style={{ marginTop: theme.spacing.md }}
+          />
+        </View>
 
         <Text
           style={{
