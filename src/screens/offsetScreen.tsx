@@ -173,6 +173,12 @@ export default function OffsetScreen({ route }: Props) {
         </View>
       </Card>
 
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
+
       <View
         style={[
           styles.resultCard,
@@ -272,12 +278,6 @@ export default function OffsetScreen({ route }: Props) {
           </Text>
         )}
       </View>
-
-      {diagramInput ? (
-        <Card>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
 
       <WarningBar warnings={warnings} />
 

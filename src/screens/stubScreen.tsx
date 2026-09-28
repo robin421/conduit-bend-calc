@@ -162,6 +162,12 @@ export default function StubScreen({ route }: Props) {
         </View>
       </Card>
 
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
+
       <ResultDisplay
         label="Mark location"
         value={markPoint !== null ? formatInches(markPoint) : undefined}
@@ -177,11 +183,6 @@ export default function StubScreen({ route }: Props) {
         >
           Mark with the arrow
         </Text>
-      ) : null}
-      {diagramInput ? (
-        <Card>
-          <BendDiagram input={diagramInput} />
-        </Card>
       ) : null}
 
       <WarningBar warnings={warnings} />

@@ -209,18 +209,18 @@ export default function FourPointSaddleScreen({ route }: Props) {
         </View>
       </Card>
 
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
+
       <ResultDisplay
         label="Bend spacing (edge ↔ bend)"
         value={result ? formatInches(result.markSpacingInches) : undefined}
         unit='"'
         hint={hint}
       />
-
-      {diagramInput ? (
-        <Card>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
 
       <WarningBar warnings={warnings} />
 

@@ -186,6 +186,12 @@ export default function ThreePointSaddleScreen({ route }: Props) {
         </View>
       </Card>
 
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
+
       <ResultDisplay
         label="Bend spacing (center ↔ sides)"
         value={result ? formatInches(result.markSpacingInches) : undefined}
@@ -199,12 +205,6 @@ export default function ThreePointSaddleScreen({ route }: Props) {
         unit='"'
         hint={result ? 'Add to the center mark' : undefined}
       />
-
-      {diagramInput ? (
-        <Card>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
 
       <WarningBar warnings={warnings} />
 

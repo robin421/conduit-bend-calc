@@ -199,18 +199,18 @@ export default function Kicked90Screen({ route }: Props) {
         </View>
       </Card>
 
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
+
       <ResultDisplay
         label="Total gain (for conduit length)"
         value={result ? formatInches(result.totalGain) : undefined}
         unit='"'
         hint={hint}
       />
-
-      {diagramInput ? (
-        <Card>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
 
       <WarningBar warnings={warnings} />
 

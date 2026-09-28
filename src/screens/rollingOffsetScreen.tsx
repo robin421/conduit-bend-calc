@@ -202,18 +202,18 @@ export default function RollingOffsetScreen({ route }: Props) {
         </View>
       </Card>
 
+      {diagramInput ? (
+        <Card>
+          <BendDiagram input={diagramInput} />
+        </Card>
+      ) : null}
+
       <ResultDisplay
         label="Mark spacing"
         value={result ? formatInches(result.spacingDisplay) : undefined}
         unit='"'
         hint={hint}
       />
-
-      {diagramInput ? (
-        <Card>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
 
       <WarningBar warnings={warnings} />
 
