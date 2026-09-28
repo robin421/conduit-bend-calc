@@ -18,6 +18,7 @@
     "android": {
       "package": "com.robin421.conduitbendcalc",
       "versionCode": 3,
+      "permissions": ["com.android.vending.BILLING"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F2B46"
