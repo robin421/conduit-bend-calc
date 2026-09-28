@@ -497,7 +497,7 @@ function buildKicked90Inch(
       add(M2, { x: 0.2, y: 2.4 }),
     ],
     angleTexts: ['90°', `${kickDeg}°`],
-    notes: [add(M2, { x: 2.8, y: -0.8 })],
+    notes: [add(M2, { x: 3.6, y: -0.8 })],
     noteTexts: [`Total gain ${formatImperial(totalGain)}`],
   };
 }
