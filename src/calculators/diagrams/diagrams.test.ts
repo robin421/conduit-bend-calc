@@ -190,7 +190,8 @@ test('rolling：复用 offset 并带 rise/roll 注释', () => {
   assert.equal(d.dimensions[0].label, formatImperial(20));
   assert.ok(d.notes.some((n) => n.text.includes(formatImperial(6))));
   assert.ok(d.notes.some((n) => n.text.includes(formatImperial(8))));
-  assert.ok(d.notes.some((n) => n.text.includes(formatImperial(10))));
+  // true offset 已在结果卡与尺寸线展示，注释不再重复（窄屏放不下 35 字符长注释）
+  assert.ok(!d.notes.some((n) => n.text.includes('true offset')));
   assertInside(d);
   assertTickUnit(d);
 });
@@ -275,14 +276,14 @@ test('标注避让：六种弯法 × 两种宽度，文字包围盒无重叠', (
       assert.ok(d, `${name} ${vw} 应有图解`);
       const boxes: Box[] = [];
       d.marks.forEach((m, i) => {
-        boxes.push(box(`${name}@${vw} M${i}名`, m.point.x + m.tickDir.x * DIAGRAM_LABEL_GAP, m.point.y + m.tickDir.y * DIAGRAM_LABEL_GAP + 4, m.label, 12));
+        boxes.push(box(`${name}@${vw} M${i}名`, m.point.x + m.tickDir.x * DIAGRAM_LABEL_GAP, m.point.y + m.tickDir.y * DIAGRAM_LABEL_GAP + 4, m.label, 13));
         if (m.valueText) {
-          boxes.push(box(`${name}@${vw} M${i}值`, m.point.x + m.tickDir.x * DIAGRAM_VALUE_GAP, m.point.y + m.tickDir.y * DIAGRAM_VALUE_GAP + 4, m.valueText, 11));
+          boxes.push(box(`${name}@${vw} M${i}值`, m.point.x + m.tickDir.x * DIAGRAM_VALUE_GAP, m.point.y + m.tickDir.y * DIAGRAM_VALUE_GAP + 4, m.valueText, 12));
         }
       });
-      d.angles.forEach((a, i) => boxes.push(box(`${name}@${vw} 角${i}[${a.text}]`, a.point.x, a.point.y, a.text, 11)));
-      d.notes.forEach((n, i) => boxes.push(box(`${name}@${vw} 注${i}[${n.text}]`, n.point.x, n.point.y, n.text, 11)));
-      d.dimensions.forEach((dm, i) => boxes.push(box(`${name}@${vw} 尺${i}[${dm.label}]`, dm.labelAt.x, dm.labelAt.y, dm.label, 11)));
+      d.angles.forEach((a, i) => boxes.push(box(`${name}@${vw} 角${i}[${a.text}]`, a.point.x, a.point.y, a.text, 12)));
+      d.notes.forEach((n, i) => boxes.push(box(`${name}@${vw} 注${i}[${n.text}]`, n.point.x, n.point.y, n.text, 12)));
+      d.dimensions.forEach((dm, i) => boxes.push(box(`${name}@${vw} 尺${i}[${dm.label}]`, dm.labelAt.x, dm.labelAt.y, dm.label, 12)));
       for (const b of boxes) {
         assert.ok(b.x0 >= -1 && b.x1 <= vw + 1 && b.y0 >= -1 && b.y1 <= H + 1, `${b.id} 出界`);
       }

@@ -449,7 +449,7 @@ function buildRollingInch(
   base.angles[1] = add({ x: spacingDisplay, y: trueOffset }, { x: 2.2, y: 0.5 });
   base.notes.push(add(m, { x: 0, y: -4.2 }));
   base.noteTexts.push(
-    `rise ${formatImperial(rise)} · roll ${formatImperial(roll)} · true offset ${formatImperial(trueOffset)}`,
+    `rise ${formatImperial(rise)} · roll ${formatImperial(roll)}`,
   );
   base.notes.push(add(m, { x: 0, y: -6.8 }));
   base.noteTexts.push(`Rotation ${rollAngleDeg.toFixed(1)}°`);
@@ -671,26 +671,26 @@ function finalize(
   const labels: PlacedLabel[] = [];
   for (const m of result.marks) {
     labels.push({
-      text: m.label, fontSize: 12, movable: false,
+      text: m.label, fontSize: 13, movable: false,
       x: m.point.x + m.tickDir.x * DIAGRAM_LABEL_GAP,
       y: m.point.y + m.tickDir.y * DIAGRAM_LABEL_GAP + 4,
     });
     if (m.valueText) {
       labels.push({
-        text: m.valueText, fontSize: 11, movable: false,
+        text: m.valueText, fontSize: 12, movable: false,
         x: m.point.x + m.tickDir.x * DIAGRAM_VALUE_GAP,
         y: m.point.y + m.tickDir.y * DIAGRAM_VALUE_GAP + 4,
       });
     }
   }
   for (const dm of result.dimensions) {
-    labels.push({ text: dm.label, fontSize: 11, movable: false, x: dm.labelAt.x, y: dm.labelAt.y });
+    labels.push({ text: dm.label, fontSize: 12, movable: false, x: dm.labelAt.x, y: dm.labelAt.y });
   }
   const angleLabels: PlacedLabel[] = result.angles.map((a) => (
-    { text: a.text, fontSize: 11, movable: true, x: a.point.x, y: a.point.y }
+    { text: a.text, fontSize: 12, movable: true, x: a.point.x, y: a.point.y }
   ));
   const noteLabels: PlacedLabel[] = result.notes.map((n) => (
-    { text: n.text, fontSize: 11, movable: true, x: n.point.x, y: n.point.y }
+    { text: n.text, fontSize: 12, movable: true, x: n.point.x, y: n.point.y }
   ));
   labels.push(...angleLabels, ...noteLabels);
   resolveLabelOverlaps(labels, viewW, viewH);
