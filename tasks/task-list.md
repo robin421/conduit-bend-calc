@@ -86,5 +86,5 @@
       验收：Given 打开 offset/3 点鞍弯/stub 页 When 查看标记指令 Then 有对应 datum 英文提示；Given 全量测试 When 运行 Then 全过
 - [x] T30 4 点鞍弯提示优化：内侧标记留约 2" 余量防蹭障碍；从固定点起算时 true center 加 shrink；Mark 编号改动有风险则不动
       验收：Given 打开 4 点鞍弯页 When 查看 Then 有 2" 余量与 shrink 提示文案
-- [ ] T31 回归与构建：版本号 bump 到 1.2.5，全量测试 + typecheck 通过后 commit + push main，CI 通过后走 EAS 云构建（preview, Android APK）
+- [x] T31 回归与构建：版本号 bump 到 1.2.5，全量测试 + typecheck 通过后 commit + push main，CI 通过后走 EAS 云构建（preview, Android APK）
       验收：Given 全量测试 When 运行 Then 全过；Given push main When CI workflow Then 成功；Given EAS 构建 When 完成 Then 状态 FINISHED
