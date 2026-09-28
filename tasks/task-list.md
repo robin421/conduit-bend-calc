@@ -93,3 +93,8 @@
 
 - [x] T32 视觉打磨（纯表现层，不改逻辑/文案/布局顺序/依赖）：Card 加 1px 边框 + 12pt 圆角 + iOS 阴影 & Android elevation；BigButton 新增 `option` 变体（未选=卡片底 + 文字主色 + 发丝边框，选中=金色强调）并应用到 6 个计算屏角度选择器；新增 `ResultGroup`（每屏仅一个海军蓝结果容器，hero 40pt + 次要行 24pt + 发丝分隔线），替换各屏堆叠结果块，教学提示移到卡片外脚注；BendDiagram 管线 3→4.5、标注字号 +1、浅色管线改 primary（深色仍用 textPrimary）；首页计算器卡片加金色竖条；版本号 bump 到 1.4.0
       验收：Given 全量测试 When 运行 Then 全过；Given 6 个计算屏 When 查看 Then 每屏仅一个海军蓝结果容器、角度按钮未选为浅色卡片；Given 深色模式 When 查看 Then 配色跟随主题；Given npx tsc --noEmit When 运行 Then 无错误
+
+## v1.4.1 标注避让修复（2026-09-28）
+
+- [x] T33 修复 v1.4.0 字号+1 后示意图标注重叠：diagrams.ts 避让算法的字号假设（mark 12 / 其余 11）与渲染器真实字号（mark 13 / 其余 12）脱节，导致 kicked90 的 M2 / 15° / Total gain 在屏上重叠而测试仍过；把 builder 与 diagrams.test.ts 的包围盒字号都对齐到真实渲染值；rolling 注释精简 `rise 6" · roll 8" · true offset 10"` → `rise 6" · roll 8"`（true offset 已在结果卡与尺寸线展示，35 字符注释在 240px 最小视口物理放不下）；版本号 bump 到 1.4.1
+      验收：Given 全量测试 When 运行 Then 115/115 通过；Given 6 种弯法 × 2 种宽度 When 构建图解 Then 文字包围盒无重叠（按真实字号校验）；Given npx tsc --noEmit When 运行 Then 无错误
