@@ -12,7 +12,7 @@ import {
 } from '../calculators/geometry/benderSpecs';
 import { calculateStubUpMark } from '../calculators/geometry/geometry';
 import { stubWarnings } from '../calculators/warnings/warnings';
-import BenderPicker from '../components/benderPicker';
+import BenderRow from '../components/benderRow';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -20,9 +20,10 @@ import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import WarningBar from '../components/warningBar';
-import type { BenderSpec } from '../constants';
+import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import { useScreenMemory } from '../lib/screenMemory';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -34,12 +35,18 @@ function formatInches(value: number): string {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
-export default function StubScreen({ route }: Props) {
+export default function StubScreen({ route, navigation }: Props) {
   const theme = useTheme();
-  const [heightText, setHeightText] = useState('');
+  const [memory, setMemory] = useScreenMemory('stub', { heightText: '' });
+  const { heightText } = memory;
   const [heightInches, setHeightInches] = useState<number | null>(null);
-  const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
-  const { specs: customSpecs, addSpec } = useCustomSpecs();
+  const { spec, setSpec } = useBenderSpec();
+  const { specs: customSpecs } = useCustomSpecs();
+
+  const setHeightText = useCallback(
+    (text: string) => setMemory((prev) => ({ ...prev, heightText: text })),
+    [setMemory],
+  );
 
   const backfill = route.params?.backfill;
 
@@ -115,18 +122,10 @@ export default function StubScreen({ route }: Props) {
 
   useHistoryAutoSave(historyEntry);
 
-  const handleCreateCustom = useCallback(
-    (created: BenderSpec) => {
-      void addSpec(created).then(() => setSpec(created));
-    },
-    [addSpec],
-  );
-
   const handleClear = useCallback(() => {
-    setHeightText('');
+    setMemory({ heightText: '' });
     setHeightInches(null);
-    setSpec(defaultBenderSpec());
-  }, []);
+  }, [setMemory]);
 
   let hint: string | undefined;
   if (heightInches === null) {
@@ -145,12 +144,7 @@ export default function StubScreen({ route }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.sm }}>
-        <BenderPicker
-          spec={spec}
-          customSpecs={customSpecs}
-          onChange={setSpec}
-          onCreateCustom={handleCreateCustom}
-        />
+        <BenderRow spec={spec} onPress={() => navigation.navigate('Bender')} />
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Target height"

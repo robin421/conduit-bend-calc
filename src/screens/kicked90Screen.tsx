@@ -2,14 +2,10 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import {
-  defaultBenderSpec,
-  resolveSpecKey,
-  specKey,
-} from '../calculators/geometry/benderSpecs';
+import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
 import { calculateKicked90 } from '../calculators/kicked90/kicked90';
 import { kicked90Warnings } from '../calculators/warnings/warnings';
-import BenderPicker from '../components/benderPicker';
+import BenderRow from '../components/benderRow';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -17,9 +13,10 @@ import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import WarningBar from '../components/warningBar';
-import type { BenderSpec } from '../constants';
+import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import { useScreenMemory } from '../lib/screenMemory';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -44,13 +41,25 @@ function parseKickAngle(text: string): number | null {
   return value;
 }
 
-export default function Kicked90Screen({ route }: Props) {
+export default function Kicked90Screen({ route, navigation }: Props) {
   const theme = useTheme();
-  const [kickText, setKickText] = useState('');
-  const [lengthText, setLengthText] = useState('');
+  const [memory, setMemory] = useScreenMemory('kicked90', {
+    kickText: '',
+    lengthText: '',
+  });
+  const { kickText, lengthText } = memory;
   const [lengthInches, setLengthInches] = useState<number | null>(null);
-  const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
-  const { specs: customSpecs, addSpec } = useCustomSpecs();
+  const { spec, setSpec } = useBenderSpec();
+  const { specs: customSpecs } = useCustomSpecs();
+
+  const setKickText = useCallback(
+    (text: string) => setMemory((prev) => ({ ...prev, kickText: text })),
+    [setMemory],
+  );
+  const setLengthText = useCallback(
+    (text: string) => setMemory((prev) => ({ ...prev, lengthText: text })),
+    [setMemory],
+  );
 
   const backfill = route.params?.backfill;
 
@@ -118,19 +127,10 @@ export default function Kicked90Screen({ route }: Props) {
 
   useHistoryAutoSave(historyEntry);
 
-  const handleCreateCustom = useCallback(
-    (created: BenderSpec) => {
-      void addSpec(created).then(() => setSpec(created));
-    },
-    [addSpec],
-  );
-
   const handleClear = useCallback(() => {
-    setKickText('');
-    setLengthText('');
+    setMemory({ kickText: '', lengthText: '' });
     setLengthInches(null);
-    setSpec(defaultBenderSpec());
-  }, []);
+  }, [setMemory]);
 
   const kickInvalid = kickText.trim() !== '' && kickAngle === null;
 
@@ -149,12 +149,7 @@ export default function Kicked90Screen({ route }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.sm }}>
-        <BenderPicker
-          spec={spec}
-          customSpecs={customSpecs}
-          onChange={setSpec}
-          onCreateCustom={handleCreateCustom}
-        />
+        <BenderRow spec={spec} onPress={() => navigation.navigate('Bender')} />
         <View style={{ marginTop: theme.spacing.sm }}>
           <Text
             style={{

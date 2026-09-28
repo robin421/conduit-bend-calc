@@ -6,12 +6,8 @@ import { calculateFourPointSaddle } from '../calculators/saddle/saddle';
 import {
   fourPointSaddleWarnings,
 } from '../calculators/warnings/warnings';
-import {
-  defaultBenderSpec,
-  resolveSpecKey,
-  specKey,
-} from '../calculators/geometry/benderSpecs';
-import BenderPicker from '../components/benderPicker';
+import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
+import BenderRow from '../components/benderRow';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -19,10 +15,11 @@ import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import WarningBar from '../components/warningBar';
-import type { BenderSpec } from '../constants';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import { useScreenMemory } from '../lib/screenMemory';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -44,15 +41,31 @@ function formatFromCenter(value: number): string {
   return value < 0 ? `Center −${abs}"` : `Center +${abs}"`;
 }
 
-export default function FourPointSaddleScreen({ route }: Props) {
+export default function FourPointSaddleScreen({ route, navigation }: Props) {
   const theme = useTheme();
-  const [heightText, setHeightText] = useState('');
+  const [memory, setMemory] = useScreenMemory('fourPointSaddle', {
+    heightText: '',
+    widthText: '',
+    angle: DEFAULT_ANGLE,
+  });
+  const { heightText, widthText, angle } = memory;
   const [heightInches, setHeightInches] = useState<number | null>(null);
-  const [widthText, setWidthText] = useState('');
   const [widthInches, setWidthInches] = useState<number | null>(null);
-  const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
-  const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
-  const { specs: customSpecs, addSpec } = useCustomSpecs();
+  const { spec, setSpec } = useBenderSpec();
+  const { specs: customSpecs } = useCustomSpecs();
+
+  const setHeightText = useCallback(
+    (text: string) => setMemory((prev) => ({ ...prev, heightText: text })),
+    [setMemory],
+  );
+  const setWidthText = useCallback(
+    (text: string) => setMemory((prev) => ({ ...prev, widthText: text })),
+    [setMemory],
+  );
+  const setAngle = useCallback(
+    (value: OffsetAngle) => setMemory((prev) => ({ ...prev, angle: value })),
+    [setMemory],
+  );
 
   const backfill = route.params?.backfill;
 
@@ -132,21 +145,11 @@ export default function FourPointSaddleScreen({ route }: Props) {
 
   useHistoryAutoSave(historyEntry);
 
-  const handleCreateCustom = useCallback(
-    (created: BenderSpec) => {
-      void addSpec(created).then(() => setSpec(created));
-    },
-    [addSpec],
-  );
-
   const handleClear = useCallback(() => {
-    setHeightText('');
+    setMemory({ heightText: '', widthText: '', angle: DEFAULT_ANGLE });
     setHeightInches(null);
-    setWidthText('');
     setWidthInches(null);
-    setAngle(DEFAULT_ANGLE);
-    setSpec(defaultBenderSpec());
-  }, []);
+  }, [setMemory]);
 
   const hint = result ? undefined : 'Enter values to see results';
 
@@ -160,12 +163,7 @@ export default function FourPointSaddleScreen({ route }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.sm }}>
-        <BenderPicker
-          spec={spec}
-          customSpecs={customSpecs}
-          onChange={setSpec}
-          onCreateCustom={handleCreateCustom}
-        />
+        <BenderRow spec={spec} onPress={() => navigation.navigate('Bender')} />
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Obstacle height"

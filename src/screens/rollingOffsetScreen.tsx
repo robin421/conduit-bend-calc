@@ -2,14 +2,10 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import {
-  defaultBenderSpec,
-  resolveSpecKey,
-  specKey,
-} from '../calculators/geometry/benderSpecs';
+import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
 import { calculateRollingOffset } from '../calculators/rollingOffset/rollingOffset';
 import { offsetWarnings } from '../calculators/warnings/warnings';
-import BenderPicker from '../components/benderPicker';
+import BenderRow from '../components/benderRow';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -17,10 +13,11 @@ import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
 import ResultDisplay from '../components/resultDisplay';
 import WarningBar from '../components/warningBar';
-import type { BenderSpec } from '../constants';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import { useScreenMemory } from '../lib/screenMemory';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -39,15 +36,31 @@ function formatDeg(value: number): string {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
-export default function RollingOffsetScreen({ route }: Props) {
+export default function RollingOffsetScreen({ route, navigation }: Props) {
   const theme = useTheme();
-  const [riseText, setRiseText] = useState('');
+  const [memory, setMemory] = useScreenMemory('rollingOffset', {
+    riseText: '',
+    rollText: '',
+    angle: DEFAULT_ANGLE,
+  });
+  const { riseText, rollText, angle } = memory;
   const [riseInches, setRiseInches] = useState<number | null>(null);
-  const [rollText, setRollText] = useState('');
   const [rollInches, setRollInches] = useState<number | null>(null);
-  const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
-  const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
-  const { specs: customSpecs, addSpec } = useCustomSpecs();
+  const { spec, setSpec } = useBenderSpec();
+  const { specs: customSpecs } = useCustomSpecs();
+
+  const setRiseText = useCallback(
+    (text: string) => setMemory((prev) => ({ ...prev, riseText: text })),
+    [setMemory],
+  );
+  const setRollText = useCallback(
+    (text: string) => setMemory((prev) => ({ ...prev, rollText: text })),
+    [setMemory],
+  );
+  const setAngle = useCallback(
+    (value: OffsetAngle) => setMemory((prev) => ({ ...prev, angle: value })),
+    [setMemory],
+  );
 
   const backfill = route.params?.backfill;
 
@@ -125,21 +138,11 @@ export default function RollingOffsetScreen({ route }: Props) {
 
   useHistoryAutoSave(historyEntry);
 
-  const handleCreateCustom = useCallback(
-    (created: BenderSpec) => {
-      void addSpec(created).then(() => setSpec(created));
-    },
-    [addSpec],
-  );
-
   const handleClear = useCallback(() => {
-    setRiseText('');
+    setMemory({ riseText: '', rollText: '', angle: DEFAULT_ANGLE });
     setRiseInches(null);
-    setRollText('');
     setRollInches(null);
-    setAngle(DEFAULT_ANGLE);
-    setSpec(defaultBenderSpec());
-  }, []);
+  }, [setMemory]);
 
   const hint = result ? undefined : 'Enter values to see results';
 
@@ -153,12 +156,7 @@ export default function RollingOffsetScreen({ route }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.sm }}>
-        <BenderPicker
-          spec={spec}
-          customSpecs={customSpecs}
-          onChange={setSpec}
-          onCreateCustom={handleCreateCustom}
-        />
+        <BenderRow spec={spec} onPress={() => navigation.navigate('Bender')} />
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Rise"

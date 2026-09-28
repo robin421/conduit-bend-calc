@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import type { HistoryParams } from '../lib/historyStore';
+import BenderScreen from '../screens/benderScreen';
 import CalcHomeScreen from '../screens/calcHomeScreen';
 import CalculatorPlaceholderScreen from '../screens/calculatorPlaceholderScreen';
 import CalibrationScreen from '../screens/calibrationScreen';
@@ -21,6 +22,7 @@ export type CalcStackParamList = {
   RollingOffset: { backfill?: HistoryParams } | undefined;
   Kicked90: { backfill?: HistoryParams } | undefined;
   Calibration: undefined;
+  Bender: undefined;
   Placeholder: { title: string };
 };
 
@@ -63,6 +65,11 @@ export default function CalcStack() {
         name="Calibration"
         component={CalibrationScreen}
         options={{ title: 'Calibration' }}
+      />
+      <Stack.Screen
+        name="Bender"
+        component={BenderScreen}
+        options={{ title: 'Bender Setup' }}
       />
       <Stack.Screen
         name="Placeholder"
