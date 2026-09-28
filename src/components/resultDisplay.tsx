@@ -27,7 +27,7 @@ export default function ResultDisplay({
         {
           backgroundColor: theme.colors.resultBackground,
           borderRadius: theme.radius,
-          padding: theme.spacing.lg,
+          padding: theme.spacing.md,
         },
         style,
       ]}
@@ -44,7 +44,7 @@ export default function ResultDisplay({
         <Text
           style={{
             color: theme.colors.resultText,
-            fontSize: theme.fontSize.result,
+            fontSize: 34,
             fontWeight: theme.fontWeight.semibold,
             fontVariant: ['tabular-nums'],
           }}

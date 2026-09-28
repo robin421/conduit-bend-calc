@@ -29,7 +29,7 @@ const VALUE_GAP = DIAGRAM_VALUE_GAP;
  * 颜色：管线用 theme 主文字色（浅色深灰/深色浅灰），mark 红色跟随 theme.error，
  * 尺寸/注释用次要文字色；深色模式自动跟随。
  */
-export default function BendDiagram({ input, height = 180 }: BendDiagramProps) {
+export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
   const theme = useTheme();
   const { width: windowWidth } = useWindowDimensions();
   /**

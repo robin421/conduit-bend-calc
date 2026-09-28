@@ -148,18 +148,18 @@ export default function RollingOffsetScreen({ route }: Props) {
       style={{ backgroundColor: theme.colors.background }}
       contentContainerStyle={[
         styles.content,
-        { padding: theme.spacing.md, gap: theme.spacing.md },
+        { padding: theme.spacing.sm, gap: theme.spacing.sm },
       ]}
       keyboardShouldPersistTaps="handled"
     >
-      <Card>
+      <Card style={{ padding: theme.spacing.sm }}>
         <BenderPicker
           spec={spec}
           customSpecs={customSpecs}
           onChange={setSpec}
           onCreateCustom={handleCreateCustom}
         />
-        <View style={{ marginTop: theme.spacing.md }}>
+        <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Rise"
             value={riseText}
@@ -167,7 +167,7 @@ export default function RollingOffsetScreen({ route }: Props) {
             onParsedChange={setRiseInches}
             placeholder={`e.g. 6"`}
           />
-          <View style={{ marginTop: theme.spacing.md }}>
+          <View style={{ marginTop: theme.spacing.sm }}>
             <ImperialInput
               label="Roll"
               value={rollText}
@@ -182,7 +182,7 @@ export default function RollingOffsetScreen({ route }: Props) {
           style={{
             color: theme.colors.textSecondary,
             fontSize: theme.fontSize.secondary,
-            marginTop: theme.spacing.md,
+            marginTop: theme.spacing.sm,
             marginBottom: theme.spacing.sm,
           }}
         >
@@ -203,7 +203,7 @@ export default function RollingOffsetScreen({ route }: Props) {
       </Card>
 
       {diagramInput ? (
-        <Card>
+        <Card style={{ padding: theme.spacing.sm }}>
           <BendDiagram input={diagramInput} />
         </Card>
       ) : null}
@@ -320,6 +320,8 @@ const styles = StyleSheet.create({
   angleButton: {
     flexBasis: '30%',
     flexGrow: 1,
+    height: 52,
+    minHeight: 52,
   },
   infoRow: {
     flexDirection: 'row',
