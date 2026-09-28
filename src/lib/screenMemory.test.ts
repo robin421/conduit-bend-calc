@@ -3,11 +3,13 @@ import { test } from 'node:test';
 
 import type { HistoryStorage } from './historyStore.ts';
 import {
+  createScreenMemoryRestoreGuard,
   createScreenMemoryStore,
   parseScreenMemory,
   SCREEN_MEMORY_KEY_PREFIX,
   screenMemoryStorageKey,
   serializeScreenMemory,
+  settleRestoredMemory,
 } from './screenMemory.ts';
 
 function createMemoryStorage(): HistoryStorage & { data: Map<string, string> } {
@@ -67,6 +69,58 @@ test('store: load/save/clear 往返', async () => {
   await store.clear('offset');
   assert.deepEqual(await store.load('offset', initial), initial);
   assert.equal(storage.data.has('@cbc:screen:offset'), false);
+});
+
+test('useScreenMemory: 恢复完成前调用 setter，迟到的恢复值不生效（当前状态优先）', () => {
+  const guard = createScreenMemoryRestoreGuard();
+  let state = { ...initial };
+  const setMemory = (next: typeof initial) => {
+    guard.markModified();
+    state = next;
+  };
+
+  // 用户在异步恢复完成前回填/输入
+  setMemory({ heightText: '5"', angle: 45 });
+  // 迟到的恢复结果返回，不得覆盖当前状态
+  settleRestoredMemory(guard, { heightText: '9"', angle: 22.5 }, (value) => {
+    state = value;
+  });
+
+  assert.deepEqual(state, { heightText: '5"', angle: 45 });
+  assert.equal(guard.isLoaded(), true);
+});
+
+test('useScreenMemory: 恢复完成前未调用 setter，恢复值生效', () => {
+  const guard = createScreenMemoryRestoreGuard();
+  let state = { ...initial };
+
+  settleRestoredMemory(guard, { heightText: '9"', angle: 22.5 }, (value) => {
+    state = value;
+  });
+
+  assert.deepEqual(state, { heightText: '9"', angle: 22.5 });
+  assert.equal(guard.isLoaded(), true);
+});
+
+test('useScreenMemory: key 变化重置守卫，恢复值再次生效', () => {
+  const guard = createScreenMemoryRestoreGuard();
+  let state = { ...initial };
+  const setMemory = (next: typeof initial) => {
+    guard.markModified();
+    state = next;
+  };
+
+  setMemory({ heightText: '5"', angle: 45 });
+  settleRestoredMemory(guard, { heightText: '9"', angle: 22.5 }, (value) => {
+    state = value;
+  });
+  assert.deepEqual(state, { heightText: '5"', angle: 45 });
+
+  guard.reset();
+  settleRestoredMemory(guard, { heightText: '12"', angle: 60 }, (value) => {
+    state = value;
+  });
+  assert.deepEqual(state, { heightText: '12"', angle: 60 });
 });
 
 test('store: 屏幕键互相隔离', async () => {

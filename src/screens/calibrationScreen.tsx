@@ -16,6 +16,7 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import type { BenderSpec } from '../constants';
+import { saveBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -132,9 +133,10 @@ export default function CalibrationScreen() {
     setSaving(true);
     void addSpec(built)
       .then(() => {
+        saveBenderSpec(built);
         setSpec(built);
         setSavedMessage(
-          `Saved "${displaySpecName(built)}": R=${formatInches(built.centerlineRadius)}", take-up=${formatInches(built.takeUp)}" — available in every calculator's bender picker.`,
+          `Saved "${displaySpecName(built)}": R=${formatInches(built.centerlineRadius)}", take-up=${formatInches(built.takeUp)}" — now selected as the bender for all calculators and available in every bender picker.`,
         );
       })
       .finally(() => setSaving(false));
