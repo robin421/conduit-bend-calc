@@ -266,6 +266,27 @@ export default function FourPointSaddleScreen({ route }: Props) {
               </Text>
             </View>
           ))}
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+              marginTop: theme.spacing.sm,
+            }}
+          >
+            Leave about 2&quot; past the inner marks so the conduit clears the
+            obstacle.
+          </Text>
+          {result.totalShrinkInches !== undefined ? (
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+              }}
+            >
+              Measuring from a fixed point? Add {formatInches(result.totalShrinkInches)}&quot;
+              shrink to find the true center.
+            </Text>
+          ) : null}
         </Card>
       ) : null}
 

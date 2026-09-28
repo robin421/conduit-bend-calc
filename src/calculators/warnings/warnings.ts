@@ -42,18 +42,21 @@ export function offsetWarnings(
 }
 
 /**
- * 3-point saddle 预警：两侧弯 θ、中心弯 2θ，顶点距为中心↔两侧间距。
+ * 3-point saddle 预警：两侧弯 θ/2、中心弯 θ（T27 修正：原先误写成 θ/2θ/θ，
+ * 与 T24 图解 15°/30°/15° 不一致，会导致直段预警过于激进），
+ * 顶点距为中心↔两侧间距。
  */
 export function threePointSaddleWarnings(
   centerToSideInches: number,
   angle: OffsetAngle,
   spec: BenderSpec,
 ): LayoutWarning[] {
+  const sideAngle = angle / 2;
   return layoutWarnings(
     [
+      { thetaDeg: sideAngle, vertexDistanceToNext: centerToSideInches },
       { thetaDeg: angle, vertexDistanceToNext: centerToSideInches },
-      { thetaDeg: angle * 2, vertexDistanceToNext: centerToSideInches },
-      { thetaDeg: angle },
+      { thetaDeg: sideAngle },
     ],
     spec,
   );

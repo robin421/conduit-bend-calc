@@ -260,7 +260,17 @@ export default function OffsetScreen({ route }: Props) {
           >
             Enter values to see results
           </Text>
-        ) : null}
+        ) : (
+          <Text
+            style={{
+              color: theme.colors.resultLabel,
+              fontSize: theme.fontSize.secondary,
+              marginTop: theme.spacing.md,
+            }}
+          >
+            Mark both points with the arrow
+          </Text>
+        )}
       </View>
 
       {diagramInput ? (

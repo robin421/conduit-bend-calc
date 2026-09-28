@@ -75,3 +75,16 @@
 
 - [x] T26 全 App 用户文案中 → 英：约 150 处用户可见字符串改为行业英文（Obstacle height / Mark spacing / Bender / Calibration / Rise / Roll / True offset 等），含 7 个计算屏、校准页、速查表、历史页、导航标题、BenderPicker、输入校验、图解注释、预警文案、mark 指令；代码注释与测试用例名保留中文
       验收：Given 全仓库扫描 When 过滤注释/测试名 Then 用户可见中文为 0；Given 98 测试 When 运行 Then 全过（含两处预警断言同步为英文）
+
+## v1.2.5 现场验证驱动修正（ElectricianTalk / r/electricians / Ideal-Klein-Elliott 厂商手册证据，2026-09-27）
+
+- [x] T27 修复 3 点鞍弯标记间距公式（真 bug）：`calculateThreePointSaddle` 的标记间距改用半角乘数 `H × multiplier(angle/2)`（45° 中心→两侧 22.5°→显示 2.5H），与自家规格 `docs/geometry-engine-spec.md` §saddle3 一致（精确 2.613H，显示按 D1 取 2.5H）；同步检查 saddle3 半径修正与不可行弯 warning 阈值是否依赖旧间距；更新受影响的测试与图解标注
+      验收：Given 高度 6、45° 中心 When 计算 3 点鞍弯 Then 标记间距显示 15"（2.5×6）；Given 全量测试 When 运行 Then 全过
+- [x] T28 3 点鞍弯加 shrink 显示：中心标记加 shrink（45° 标准为 H×3/16"，其他角度按 H·tan(θ/2) 精确式），纯英文文案，跟随现有分数显示格式
+      验收：Given 高度 6、45° When 查看 3 点鞍弯结果 Then 显示 shrink 1-1/8"（6×3/16）
+- [x] T29 全计算器加基准刻度提示（Ideal/Klein/Elliott 三方一致口径）：offset/stub/鞍弯外侧标记→arrow；3 点鞍弯中心→rim notch；back-to-back 第二弯→star；纯英文短提示，加在 mark 指令附近
+      验收：Given 打开 offset/3 点鞍弯/stub 页 When 查看标记指令 Then 有对应 datum 英文提示；Given 全量测试 When 运行 Then 全过
+- [x] T30 4 点鞍弯提示优化：内侧标记留约 2" 余量防蹭障碍；从固定点起算时 true center 加 shrink；Mark 编号改动有风险则不动
+      验收：Given 打开 4 点鞍弯页 When 查看 Then 有 2" 余量与 shrink 提示文案
+- [ ] T31 回归与构建：版本号 bump 到 1.2.5，全量测试 + typecheck 通过后 commit + push main，CI 通过后走 EAS 云构建（preview, Android APK）
+      验收：Given 全量测试 When 运行 Then 全过；Given push main When CI workflow Then 成功；Given EAS 构建 When 完成 Then 状态 FINISHED

@@ -29,7 +29,7 @@ import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'ThreePointSaddle'>;
 
-const DEFAULT_ANGLE: OffsetAngle = 30;
+const DEFAULT_ANGLE: OffsetAngle = 45;
 
 function formatInches(value: number): string {
   const rounded = Math.round(value * 10) / 10;
@@ -111,7 +111,7 @@ export default function ThreePointSaddleScreen({ route }: Props) {
       kind: 'threePointSaddle',
       title: '3-Point Saddle',
       inputSummary: `${heightText.trim()} · ${angle}°`,
-      resultSummary: `Spacing ${formatInches(result.markSpacingInches)}" · span ${formatInches(result.spanInches)}"`,
+      resultSummary: `Spacing ${formatInches(result.markSpacingInches)}" · shrink ${formatInches(result.shrinkInches ?? 0)}" · span ${formatInches(result.spanInches)}"`,
       timestamp: Date.now(),
       params: { heightText, angle, specKey: specKey(spec) },
       signature: `three-point-saddle|${heightInches}|${angle}`,
@@ -191,6 +191,13 @@ export default function ThreePointSaddleScreen({ route }: Props) {
         value={result ? formatInches(result.markSpacingInches) : undefined}
         unit='"'
         hint={hint}
+      />
+
+      <ResultDisplay
+        label="Center mark shrink"
+        value={result && result.shrinkInches !== undefined ? formatInches(result.shrinkInches) : undefined}
+        unit='"'
+        hint={result ? 'Add to the center mark' : undefined}
       />
 
       {diagramInput ? (

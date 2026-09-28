@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
   createCustomSpec,
@@ -168,6 +168,16 @@ export default function StubScreen({ route }: Props) {
         unit='"'
         hint={hint}
       />
+      {markPoint !== null ? (
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+          }}
+        >
+          Mark with the arrow
+        </Text>
+      ) : null}
       {diagramInput ? (
         <Card>
           <BendDiagram input={diagramInput} />

@@ -139,10 +139,11 @@ export default function LookupScreen() {
 
       <Section title="Saddle notes">
         <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          3-point / 4-point saddles reuse the multipliers above:
+          4-point saddles reuse the multipliers above:
         </Text>
         <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          · 3-point: outer bend spacing = height × multiplier
+          · 3-point: side spacing = height × multiplier of half the center
+          angle (45° center → 2.5)
         </Text>
         <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
           · 4-point: outer marks = half obstacle width + height × multiplier
