@@ -26,7 +26,7 @@ const VALUE_GAP = DIAGRAM_VALUE_GAP;
 /**
  * 标记图解渲染组件：只渲染，不做数学。
  * 几何全部来自 buildBendDiagram 纯函数。
- * 颜色：管线用 theme 主文字色（浅色深灰/深色浅灰），mark 红色跟随 theme.error，
+ * 颜色：管线用主题色（浅色 primary / 深色 textPrimary），mark 红色跟随 theme.error，
  * 尺寸/注释用次要文字色；深色模式自动跟随。
  */
 export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
@@ -47,7 +47,8 @@ export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
     [input, width, height],
   );
 
-  const lineColor = theme.colors.textPrimary;
+  const lineColor =
+    theme.scheme === 'dark' ? theme.colors.textPrimary : theme.colors.primary;
   const markColor = theme.colors.error;
   const dimColor = theme.colors.textSecondary;
 
@@ -73,7 +74,7 @@ export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
         <Path
           d={diagram.conduitPath}
           stroke={lineColor}
-          strokeWidth={3}
+          strokeWidth={4.5}
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -95,7 +96,7 @@ export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
             x={dim.labelAt.x}
             y={dim.labelAt.y}
             fill={dimColor}
-            fontSize={11}
+            fontSize={12}
             textAnchor="middle"
           >
             {dim.label}
@@ -119,7 +120,7 @@ export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
             x={mark.point.x + mark.tickDir.x * LABEL_GAP}
             y={mark.point.y + mark.tickDir.y * LABEL_GAP + 4}
             fill={markColor}
-            fontSize={12}
+            fontSize={13}
             fontWeight="600"
             textAnchor="middle"
           >
@@ -133,7 +134,7 @@ export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
               x={mark.point.x + mark.tickDir.x * VALUE_GAP}
               y={mark.point.y + mark.tickDir.y * VALUE_GAP + 4}
               fill={markColor}
-              fontSize={11}
+              fontSize={12}
               textAnchor="middle"
             >
               {mark.valueText}
@@ -146,7 +147,7 @@ export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
             x={angle.point.x}
             y={angle.point.y}
             fill={dimColor}
-            fontSize={11}
+            fontSize={12}
             textAnchor="middle"
           >
             {angle.text}
@@ -158,7 +159,7 @@ export default function BendDiagram({ input, height = 140 }: BendDiagramProps) {
             x={note.point.x}
             y={note.point.y}
             fill={dimColor}
-            fontSize={11}
+            fontSize={12}
             textAnchor="middle"
           >
             {note.text}

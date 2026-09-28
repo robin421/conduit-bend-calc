@@ -13,7 +13,7 @@ import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
-import ResultDisplay from '../components/resultDisplay';
+import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useBenderSpec } from '../lib/benderSpecStore';
@@ -172,6 +172,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
             <BigButton
               key={value}
               title={`${value}°`}
+              variant="option"
               size="selection"
               selected={angle === value}
               onPress={() => setAngle(value)}
@@ -187,19 +188,35 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
         </Card>
       ) : null}
 
-      <ResultDisplay
-        label="Bend spacing (center ↔ sides)"
-        value={result ? formatInches(result.markSpacingInches) : undefined}
-        unit='"'
+      <ResultGroup
+        hero={{
+          label: 'Bend spacing (center ↔ sides)',
+          value: result ? formatInches(result.markSpacingInches) : undefined,
+          unit: '"',
+        }}
+        rows={[
+          {
+            label: 'Center mark shrink',
+            value:
+              result && result.shrinkInches !== undefined
+                ? formatInches(result.shrinkInches)
+                : undefined,
+            unit: '"',
+          },
+        ]}
         hint={hint}
       />
 
-      <ResultDisplay
-        label="Center mark shrink"
-        value={result && result.shrinkInches !== undefined ? formatInches(result.shrinkInches) : undefined}
-        unit='"'
-        hint={result ? 'Add to the center mark' : undefined}
-      />
+      {result ? (
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+          }}
+        >
+          Add to the center mark
+        </Text>
+      ) : null}
 
       <WarningBar warnings={warnings} />
 

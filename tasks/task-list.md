@@ -88,3 +88,8 @@
       验收：Given 打开 4 点鞍弯页 When 查看 Then 有 2" 余量与 shrink 提示文案
 - [x] T31 回归与构建：版本号 bump 到 1.2.5，全量测试 + typecheck 通过后 commit + push main，CI 通过后走 EAS 云构建（preview, Android APK）
       验收：Given 全量测试 When 运行 Then 全过；Given push main When CI workflow Then 成功；Given EAS 构建 When 完成 Then 状态 FINISHED
+
+## v1.4.0 视觉打磨（设计走查：卡片 / 结果层级 / 图标，2026-09-28）
+
+- [x] T32 视觉打磨（纯表现层，不改逻辑/文案/布局顺序/依赖）：Card 加 1px 边框 + 12pt 圆角 + iOS 阴影 & Android elevation；BigButton 新增 `option` 变体（未选=卡片底 + 文字主色 + 发丝边框，选中=金色强调）并应用到 6 个计算屏角度选择器；新增 `ResultGroup`（每屏仅一个海军蓝结果容器，hero 40pt + 次要行 24pt + 发丝分隔线），替换各屏堆叠结果块，教学提示移到卡片外脚注；BendDiagram 管线 3→4.5、标注字号 +1、浅色管线改 primary（深色仍用 textPrimary）；首页计算器卡片加金色竖条；版本号 bump 到 1.4.0
+      验收：Given 全量测试 When 运行 Then 全过；Given 6 个计算屏 When 查看 Then 每屏仅一个海军蓝结果容器、角度按钮未选为浅色卡片；Given 深色模式 When 查看 Then 配色跟随主题；Given npx tsc --noEmit When 运行 Then 无错误

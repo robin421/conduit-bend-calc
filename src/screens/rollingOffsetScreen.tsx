@@ -11,7 +11,7 @@ import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
-import ResultDisplay from '../components/resultDisplay';
+import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useBenderSpec } from '../lib/benderSpecStore';
@@ -191,6 +191,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
             <BigButton
               key={value}
               title={`${value}°`}
+              variant="option"
               size="selection"
               selected={angle === value}
               onPress={() => setAngle(value)}
@@ -206,10 +207,33 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
         </Card>
       ) : null}
 
-      <ResultDisplay
-        label="Mark spacing"
-        value={result ? formatInches(result.spacingDisplay) : undefined}
-        unit='"'
+      <ResultGroup
+        hero={{
+          label: 'Mark spacing',
+          value: result ? formatInches(result.spacingDisplay) : undefined,
+          unit: '"',
+        }}
+        rows={
+          result
+            ? [
+                {
+                  label: 'True offset',
+                  value: formatInches(result.trueOffset),
+                  unit: '"',
+                },
+                {
+                  label: 'Bender rotation',
+                  value: formatDeg(result.rollAngleDeg),
+                  unit: '°',
+                },
+                {
+                  label: 'Shrink',
+                  value: formatInches(result.shrinkDisplay),
+                  unit: '"',
+                },
+              ]
+            : []
+        }
         hint={hint}
       />
 
@@ -217,45 +241,6 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
 
       {result ? (
         <Card style={{ gap: theme.spacing.md }}>
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-              True offset
-            </Text>
-            <Text
-              style={[
-                styles.infoValue,
-                { color: theme.colors.textPrimary, fontVariant: ['tabular-nums'] },
-              ]}
-            >
-              {formatInches(result.trueOffset)}&quot;
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-              Bender rotation
-            </Text>
-            <Text
-              style={[
-                styles.infoValue,
-                { color: theme.colors.textPrimary, fontVariant: ['tabular-nums'] },
-              ]}
-            >
-              {formatDeg(result.rollAngleDeg)}°
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-              Shrink
-            </Text>
-            <Text
-              style={[
-                styles.infoValue,
-                { color: theme.colors.textPrimary, fontVariant: ['tabular-nums'] },
-              ]}
-            >
-              {formatInches(result.shrinkDisplay)}&quot;
-            </Text>
-          </View>
           <Text
             style={{
               color: theme.colors.textSecondary,
@@ -320,18 +305,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     height: 52,
     minHeight: 52,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  infoLabel: {
-    fontSize: 15,
-  },
-  infoValue: {
-    fontSize: 17,
-    fontWeight: '600',
   },
   markRow: {
     flexDirection: 'row',

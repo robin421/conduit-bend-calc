@@ -13,7 +13,7 @@ import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
-import ResultDisplay from '../components/resultDisplay';
+import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useBenderSpec } from '../lib/benderSpecStore';
@@ -198,6 +198,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
             <BigButton
               key={value}
               title={`${value}°`}
+              variant="option"
               size="selection"
               selected={angle === value}
               onPress={() => setAngle(value)}
@@ -213,10 +214,12 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         </Card>
       ) : null}
 
-      <ResultDisplay
-        label="Bend spacing (edge ↔ bend)"
-        value={result ? formatInches(result.markSpacingInches) : undefined}
-        unit='"'
+      <ResultGroup
+        hero={{
+          label: 'Bend spacing (edge ↔ bend)',
+          value: result ? formatInches(result.markSpacingInches) : undefined,
+          unit: '"',
+        }}
         hint={hint}
       />
 

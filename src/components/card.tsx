@@ -16,8 +16,14 @@ export default function Card({ children, style }: CardProps) {
         styles.card,
         {
           backgroundColor: theme.colors.card,
-          borderRadius: theme.radius,
+          borderRadius: 12,
+          borderColor: theme.colors.border,
           padding: theme.spacing.md,
+          shadowColor: '#000',
+          shadowOpacity: 0.06,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
         },
         style,
       ]}
@@ -29,8 +35,6 @@ export default function Card({ children, style }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    // 无阴影、无渐变
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'transparent',
+    borderWidth: 1,
   },
 });

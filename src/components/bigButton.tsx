@@ -2,7 +2,7 @@ import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native'
 
 import { useTheme } from '../theme';
 
-export type BigButtonVariant = 'primary' | 'accent' | 'secondary';
+export type BigButtonVariant = 'primary' | 'accent' | 'secondary' | 'option';
 export type BigButtonSize = 'default' | 'selection';
 
 interface BigButtonProps {
@@ -39,7 +39,12 @@ export default function BigButton({
       ? theme.colors.onPrimary
       : resolvedVariant === 'accent'
         ? theme.colors.onAccent
-        : theme.colors.primary;
+        : resolvedVariant === 'option'
+          ? theme.colors.textPrimary
+          : theme.colors.primary;
+
+  const showHairline =
+    resolvedVariant === 'secondary' || resolvedVariant === 'option';
 
   const height =
     size === 'selection' ? theme.size.selectionButtonHeight : theme.size.buttonMinHeight;
@@ -56,7 +61,7 @@ export default function BigButton({
           backgroundColor,
           borderRadius: theme.radius,
           minHeight: height,
-          borderWidth: resolvedVariant === 'secondary' ? StyleSheet.hairlineWidth : 0,
+          borderWidth: showHairline ? StyleSheet.hairlineWidth : 0,
           borderColor: theme.colors.border,
           opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
         },

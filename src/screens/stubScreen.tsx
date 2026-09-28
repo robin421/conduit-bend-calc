@@ -18,7 +18,7 @@ import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
-import ResultDisplay from '../components/resultDisplay';
+import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
@@ -162,10 +162,12 @@ export default function StubScreen({ route, navigation }: Props) {
         </Card>
       ) : null}
 
-      <ResultDisplay
-        label="Mark location"
-        value={markPoint !== null ? formatInches(markPoint) : undefined}
-        unit='"'
+      <ResultGroup
+        hero={{
+          label: 'Mark location',
+          value: markPoint !== null ? formatInches(markPoint) : undefined,
+          unit: '"',
+        }}
         hint={hint}
       />
       {markPoint !== null ? (

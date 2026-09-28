@@ -11,6 +11,7 @@ import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ImperialInput from '../components/imperialInput';
+import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useBenderSpec } from '../lib/benderSpecStore';
@@ -120,8 +121,8 @@ export default function OffsetScreen({ route, navigation }: Props) {
     setHeightInches(null);
   }, [setMemory]);
 
-  const distance = result ? formatInches(result.distanceBetweenBends) : '—';
-  const shrink = result ? formatInches(result.shrink) : '—';
+  const distance = result ? formatInches(result.distanceBetweenBends) : undefined;
+  const shrink = result ? formatInches(result.shrink) : undefined;
 
   return (
     <ScrollView
@@ -159,6 +160,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
             <BigButton
               key={value}
               title={`${value}°`}
+              variant="option"
               size="selection"
               selected={angle === value}
               onPress={() => setAngle(value)}
@@ -174,105 +176,22 @@ export default function OffsetScreen({ route, navigation }: Props) {
         </Card>
       ) : null}
 
-      <View
-        style={[
-          styles.resultCard,
-          {
-            backgroundColor: theme.colors.resultBackground,
-            borderRadius: theme.radius,
-            padding: theme.spacing.md,
-          },
-        ]}
-      >
+      <ResultGroup
+        hero={{ label: 'Mark spacing', value: distance, unit: '"' }}
+        rows={[{ label: 'Shrink', value: shrink, unit: '"' }]}
+        hint={!result ? 'Enter values to see results' : undefined}
+      />
+
+      {result ? (
         <Text
           style={{
-            color: theme.colors.resultLabel,
+            color: theme.colors.textSecondary,
             fontSize: theme.fontSize.secondary,
           }}
         >
-          Mark spacing
+          Mark both points with the arrow
         </Text>
-        <View style={styles.valueRow}>
-          <Text
-            style={{
-              color: theme.colors.resultText,
-              fontSize: 34,
-              fontWeight: theme.fontWeight.semibold,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
-            {distance}
-          </Text>
-          {result ? (
-            <Text
-              style={{
-                color: theme.colors.accent,
-                fontSize: theme.fontSize.body,
-                fontWeight: theme.fontWeight.semibold,
-                marginLeft: theme.spacing.xs,
-              }}
-            >
-              &quot;
-            </Text>
-          ) : null}
-        </View>
-
-        <Text
-          style={{
-            color: theme.colors.resultLabel,
-            fontSize: theme.fontSize.secondary,
-            marginTop: theme.spacing.md,
-          }}
-        >
-          Shrink
-        </Text>
-        <View style={styles.valueRow}>
-          <Text
-            style={{
-              color: theme.colors.resultText,
-              fontSize: theme.fontSize.title,
-              fontWeight: theme.fontWeight.semibold,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
-            {shrink}
-          </Text>
-          {result ? (
-            <Text
-              style={{
-                color: theme.colors.accent,
-                fontSize: theme.fontSize.body,
-                fontWeight: theme.fontWeight.semibold,
-                marginLeft: theme.spacing.xs,
-              }}
-            >
-              &quot;
-            </Text>
-          ) : null}
-        </View>
-
-        {!result ? (
-          <Text
-            style={{
-              color: theme.colors.resultLabel,
-              fontSize: theme.fontSize.secondary,
-              marginTop: theme.spacing.sm,
-            }}
-          >
-            Enter values to see results
-          </Text>
-        ) : (
-          <Text
-            style={{
-              color: theme.colors.resultLabel,
-              fontSize: theme.fontSize.secondary,
-              marginTop: theme.spacing.md,
-            }}
-          >
-            Mark both points with the arrow
-          </Text>
-        )}
-      </View>
+      ) : null}
 
       <WarningBar warnings={warnings} />
 
@@ -298,13 +217,5 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     height: 52,
     minHeight: 52,
-  },
-  resultCard: {
-    width: '100%',
-  },
-  valueRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginTop: 4,
   },
 });

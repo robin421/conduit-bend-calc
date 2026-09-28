@@ -63,6 +63,16 @@ export default function CalcHomeScreen({ navigation }: Props) {
           android_ripple={{ color: theme.colors.border }}
         >
           <Card style={styles.card}>
+            <View
+              style={[
+                styles.accentBar,
+                {
+                  backgroundColor: theme.colors.accent,
+                  marginRight: theme.spacing.sm,
+                  borderRadius: 2,
+                },
+              ]}
+            />
             <Text
               numberOfLines={1}
               style={[styles.icon, { color: theme.colors.primary }]}
@@ -108,6 +118,11 @@ const styles = StyleSheet.create({
     minHeight: 72,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  accentBar: {
+    width: 4,
+    height: 40,
+    flexShrink: 0,
   },
   icon: {
     fontSize: 28,
