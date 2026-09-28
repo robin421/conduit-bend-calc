@@ -8,6 +8,7 @@ import CalibrationScreen from '../screens/calibrationScreen';
 import FourPointSaddleScreen from '../screens/fourPointSaddleScreen';
 import Kicked90Screen from '../screens/kicked90Screen';
 import OffsetScreen from '../screens/offsetScreen';
+import PaywallScreen from '../screens/paywallScreen';
 import RollingOffsetScreen from '../screens/rollingOffsetScreen';
 import StubScreen from '../screens/stubScreen';
 import ThreePointSaddleScreen from '../screens/threePointSaddleScreen';
@@ -23,6 +24,7 @@ export type CalcStackParamList = {
   Kicked90: { backfill?: HistoryParams } | undefined;
   Calibration: undefined;
   Bender: undefined;
+  Paywall: undefined;
   Placeholder: { title: string };
 };
 
@@ -70,6 +72,11 @@ export default function CalcStack() {
         name="Bender"
         component={BenderScreen}
         options={{ title: 'Bender Setup' }}
+      />
+      <Stack.Screen
+        name="Paywall"
+        component={PaywallScreen}
+        options={{ title: 'Conduit Bend Calc Pro', presentation: 'modal' }}
       />
       <Stack.Screen
         name="Placeholder"

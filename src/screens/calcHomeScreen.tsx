@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import Card from '../components/card';
+import { useProAccess } from '../lib/proStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 
@@ -12,22 +13,29 @@ interface CalculatorEntry {
   icon: string;
   name: string;
   description: string;
+  /** Pro 功能：未购买时锁定，点击进入付费墙。 */
+  pro?: boolean;
 }
 
 const ENTRIES: CalculatorEntry[] = [
   { key: 'Offset', icon: '⌐', name: 'Offset Bend', description: 'Offset: mark spacing & shrink' },
   { key: 'Stub', icon: '∟', name: '90° Stub', description: 'Stub-up: mark location' },
-  { key: 'ThreePointSaddle', icon: '⋀', name: '3-Point Saddle', description: '3-point saddle' },
-  { key: 'FourPointSaddle', icon: '⋀⋀', name: '4-Point Saddle', description: '4-point saddle' },
-  { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
-  { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
+  { key: 'ThreePointSaddle', icon: '⋀', name: '3-Point Saddle', description: '3-point saddle', pro: true },
+  { key: 'FourPointSaddle', icon: '⋀⋀', name: '4-Point Saddle', description: '4-point saddle', pro: true },
+  { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll', pro: true },
+  { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo', pro: true },
   { key: 'Calibration', icon: '◎', name: 'Calibration', description: 'One test bend: calibrate R / take-up' },
 ];
 
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
+  const { access } = useProAccess();
 
   const handlePress = (entry: CalculatorEntry) => {
+    if (entry.pro && access === 'locked') {
+      navigation.navigate('Paywall');
+      return;
+    }
     if (entry.key === 'Offset') {
       navigation.navigate('Offset');
     } else if (entry.key === 'Stub') {
@@ -80,15 +88,29 @@ export default function CalcHomeScreen({ navigation }: Props) {
               {entry.icon}
             </Text>
             <View style={styles.textBlock}>
-              <Text
-                style={{
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.fontSize.body,
-                  fontWeight: theme.fontWeight.semibold,
-                }}
-              >
-                {entry.name}
-              </Text>
+              <View style={styles.nameRow}>
+                <Text
+                  style={{
+                    color: theme.colors.textPrimary,
+                    fontSize: theme.fontSize.body,
+                    fontWeight: theme.fontWeight.semibold,
+                  }}
+                >
+                  {entry.name}
+                </Text>
+                {entry.pro && access === 'locked' ? (
+                  <Text
+                    style={{
+                      color: theme.colors.accent,
+                      fontSize: theme.fontSize.secondary,
+                      fontWeight: theme.fontWeight.semibold,
+                      marginLeft: theme.spacing.xs,
+                    }}
+                  >
+                    PRO
+                  </Text>
+                ) : null}
+              </View>
               <Text
                 style={{
                   color: theme.colors.textSecondary,
@@ -131,6 +153,10 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   chevron: {
     fontSize: 28,
