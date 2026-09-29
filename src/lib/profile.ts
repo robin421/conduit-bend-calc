@@ -18,6 +18,58 @@ import { specKey } from '../calculators/geometry/benderSpecs.ts';
 
 export type ProfileSource = 'standard' | 'custom' | 'calibrated';
 
+/**
+ * 数据模型（计划第 10 节，为未来 Run Planner 预留）：
+ *
+ *   Run
+ *    ├── Conduit（type/size/length）
+ *    ├── BenderProfile（引用，本文件）
+ *    └── Bends[]
+ *         ├── type / angle / position / rotation / result
+ *
+ * 本期 UI 不暴露多弯，但每个计算对应一个 Bend，可挂到未来的 Run.Conduit 上；
+ * BenderProfile 以引用方式复用，禁止 `Calculation -> Single Bend` 的一次性结构。
+ */
+
+/** 导体（Run 的 Conduit 节点）。 */
+export interface Conduit {
+  conduitType: string;
+  conduitSize: string;
+  /** 料长（英寸）；未知为 null。 */
+  lengthInches: number | null;
+}
+
+/** 单个弯（Run 的 Bends[] 元素）。 */
+export interface Bend {
+  /** 弯法类型。 */
+  type: BendType;
+  /** 弯曲角度（度）。 */
+  angleDeg: number;
+  /** 沿管位置（英寸）。 */
+  positionInches: number | null;
+  /** 旋转角（度，rolling offset 用）。 */
+  rotationDeg: number | null;
+  /** 计算结果（英寸量纲的关键值，由各 calculator 提供）。 */
+  result: Record<string, number> | null;
+}
+
+export type BendType =
+  | 'offset'
+  | 'stub'
+  | 'kicked90'
+  | 'rollingOffset'
+  | 'threePointSaddle'
+  | 'fourPointSaddle';
+
+/** 一次弯管作业（未来 multi-bend Run）。 */
+export interface Run {
+  id: string;
+  conduit: Conduit;
+  /** 引用的 BenderProfile id。 */
+  benderProfileId: string;
+  bends: Bend[];
+}
+
 export interface BenderProfile {
   /** 唯一 ID。standard 为 `standard|<specKey>`，用户档案为 `custom|<name>`。 */
   id: string;
