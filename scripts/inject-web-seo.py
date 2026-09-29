@@ -105,6 +105,13 @@ SEO_PATHS = [
     "stub-up-calculator/",
     "3-point-saddle-calculator/",
     "4-point-saddle-calculator/",
+    # Batch 2 (2026-09-29). Keep in sync with scripts/gen-seo-pages.py page list.
+    "kick-90-calculator/",
+    "90-degree-bend-calculator/",
+    "conduit-bending-chart/",
+    "conduit-shrink-calculator/",
+    "parallel-offset-calculator/",
+    "how-to-bend-emt-conduit/",
 ]
 
 with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:

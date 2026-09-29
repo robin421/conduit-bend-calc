@@ -414,6 +414,363 @@ shrink of two tall offsets surprises a lot of people on their first 4-point sadd
 ]
 
 
+# ---------------------------------------------------------------------------
+# Batch 2 (2026-09-29): kick-90, 90-degree bend, bending chart, shrink,
+# parallel offset (honest guide — no standalone calculator in the app),
+# beginner EMT guide.
+# ---------------------------------------------------------------------------
+PAGES += [
+    dict(
+        slug="kick-90-calculator",
+        title="Kicked 90\u00b0 Calculator \u2014 Layout & Mark Spacing",
+        desc="Free kicked 90\u00b0 calculator: mark spacing from the 90\u00b0 tangent start, "
+             "kick angle, straight section and total gain for clean panel entries.",
+        h1="Kicked 90\u00b0 Calculator",
+        cta_label="Open the free kicked 90\u00b0 calculator",
+        body="""
+<p>A kicked 90\u00b0 is a 90\u00b0 bend with a short angled <em>kick</em> at one end &mdash;
+the bend you reach for when a stub has to enter a panel or box whose knockout is not
+directly above the run. It is one compound bend: a full 90\u00b0 plus a second bend at a
+small kick angle &kappa;, with a short straight section between them.</p>
+
+<h2>How the layout works</h2>
+<p>The calculator lays out two marks, measured as <em>developed length</em> along the
+conduit &mdash; the distance the tape actually travels, following the metal:</p>
+<ul>
+<li><strong>Mark 1</strong> &mdash; the tangent start of the 90\u00b0 bend. This is your
+reference point: everything is measured from here.</li>
+<li><strong>Mark 2</strong> &mdash; the tangent start of the kick bend, located at
+<strong>Mark 1 + the 90\u00b0 arc length + the straight section</strong> between the
+bends.</li>
+</ul>
+<p>The 90\u00b0 arc length is &pi;/2 &times; the bender's centerline radius R. For a
+standard 1/2&quot; EMT hand bender (R &asymp; 4.31&quot;), the arc is about 6.77&quot;.</p>
+
+<h2>Worked example</h2>
+<p>Kick angle &kappa; = 15\u00b0, straight section 6&quot;, 1/2&quot; EMT on a standard
+hand bender: Mark 2 sits at 6.77&quot; + 6&quot; = <strong>12.77&quot;</strong> (about
+12-3/4&quot;) of developed length from Mark 1. The bend also <em>gains</em> conduit &mdash;
+the two bends together consume about <strong>1-7/8&quot;</strong> of developed length
+(total gain = G(90\u00b0) + G(&kappa;)), so add that to your stick length before
+cutting.</p>
+
+<h2>Bending order</h2>
+<ol>
+<li>Mark both points on the straight conduit first, measuring developed length.</li>
+<li>Bend the 90\u00b0 at Mark 1, using the bender's degree scale &mdash; not feel.</li>
+<li>Bend the kick at Mark 2 to angle &kappa;, in the <em>same plane</em> as the 90\u00b0.</li>
+<li>Test-fit against the panel before cutting the run to final length.</li>
+</ol>
+
+<h2>Mistakes to avoid</h2>
+<ul>
+<li><strong>Kicking out of plane.</strong> If the kick leaves the plane of the 90\u00b0,
+the run doglegs and the knockout will not line up. Sight down the conduit after the
+first bend.</li>
+<li><strong>Forgetting gain.</strong> A kicked 90\u00b0 eats nearly 2&quot; of developed
+length on 1/2&quot; EMT. The calculator reports total gain &mdash; use it.</li>
+<li><strong>Measuring Mark 2 as straight-line distance.</strong> Marks are developed
+length along the conduit, which follows the 90\u00b0 arc. A tape laid straight across
+the bend will read short.</li>
+<li>Picking a kick angle too steep for the knockout offset &mdash; 10\u00b0 to 30\u00b0
+covers almost every panel entry.</li>
+</ul>
+""",
+    ),
+    dict(
+        slug="90-degree-bend-calculator",
+        title="90\u00b0 Bend Calculator \u2014 Stub-Ups & Back-to-Back",
+        desc="Free 90\u00b0 bend calculator: stub-up layout with take-up, back-to-back 90s "
+             "mark spacing, and gain explained for EMT and rigid conduit.",
+        h1="90\u00b0 Bend Calculator",
+        cta_label="Open the free 90\u00b0 bend calculator",
+        body="""
+<p>The 90\u00b0 bend is the foundation everything else is built on: stub-ups, kicked 90s,
+offsets that turn corners, back-to-back U-bends. Understand what a 90\u00b0 does to a
+stick of conduit and every other bend gets easier.</p>
+
+<h2>Anatomy of a 90\u00b0 bend</h2>
+<p>A 90\u00b0 has two <em>tangent points</em> &mdash; where the straight conduit meets the
+curve &mdash; an <em>arc</em> between them (arc length = &pi;/2 &times; centerline
+radius R), and the <em>back of the bend</em>, the outside corner your measurements
+reference. For a stub-up, you mark at <strong>target height &minus; take-up</strong>
+(5&quot; for 1/2&quot; EMT on a standard hand bender), put the arrow on the mark, and
+bend: the back of the bend lands exactly at target height.</p>
+
+<h2>Gain: the hidden number</h2>
+<p>Bending 90\u00b0 does not just redirect the conduit &mdash; it <em>uses up</em> some of
+it. The arc is shorter than the two straight legs it replaces, by an amount called
+<em>gain</em>: roughly <strong>0.43 &times; R</strong> for a 90\u00b0. On 1/2&quot; EMT
+(R &asymp; 4.31&quot;) that is about 1-7/8&quot; per bend. Gain matters whenever you cut
+a stick to an exact developed length with 90s in it &mdash; ignore it and the run comes
+up short.</p>
+
+<h2>Back-to-back 90s</h2>
+<p>Two 90s facing each other make a U that jumps between two parallel runs &mdash; up
+and over a doorway header, for example. Layout is simple: mark the first 90 at
+(H1 &minus; take-up) from the end, then mark the second 90 exactly <strong>W</strong>
+farther along, where W is the desired distance between the backs of the bends. With
+H1 = 18&quot;, H2 = 24&quot;, W = 36&quot; and 3/4&quot; EMT (take-up 6&quot;): Mark 1 at
+12&quot; from the end, Mark 2 at <strong>48&quot;</strong> from the end. Both bends keep
+the same take-up, so the marks land W apart and the backs land W apart.</p>
+
+<h2>Checking your 90\u00b0</h2>
+<ul>
+<li>Hold a square against the inside of the bend &mdash; both legs should touch.</li>
+<li>Measure the stub height to the <em>back</em> of the bend, not the inside corner.</li>
+<li>If the angle is under 90\u00b0, the stub comes out tall; over 90\u00b0, it comes out
+short. Small errors here become big ones at the box.</li>
+<li>A kinked 90\u00b0 is scrap. If the conduit starts to flatten, stop &mdash; you are
+past what that bender and size can do.</li>
+</ul>
+
+<h2>When 90s stack up</h2>
+<p>Runs with several 90s accumulate both gain and small angle errors. Add up the gain
+for <em>every</em> bend before cutting, bend the 90s before any offsets in the same
+stick when you can, and verify each bend with the square before moving to the next.
+The calculator's feasibility check warns you before a bend is too tight to make.</p>
+""",
+    ),
+    dict(
+        slug="conduit-bending-chart",
+        title="Conduit Bending Chart \u2014 Multipliers & Shrink",
+        desc="Master conduit bending chart: multipliers and shrink per inch for 10\u00b0\u201360\u00b0, "
+             "take-up reference, and how to pick the right bend angle.",
+        h1="Conduit Bending Chart",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>This is the chart electricians tape inside their gang box lid: every multiplier and
+shrink factor for the bend angles you will actually use, on one page. Bookmark it.</p>
+
+<h2>Multiplier &amp; shrink chart</h2>
+<p><strong>Mark spacing = obstacle height &times; multiplier.</strong>
+<strong>Total shrink = height &times; shrink per inch.</strong></p>
+<table>
+<tr><th>Bend angle</th><th>Multiplier</th><th>Shrink per inch of height</th><th>Best for</th></tr>
+<tr><td>10\u00b0</td><td>6.0</td><td>1/16&quot;</td><td>Long runs, minimal shrink</td></tr>
+<tr><td>15\u00b0</td><td>3.9</td><td>1/8&quot;</td><td>Shallow, low-profile offsets</td></tr>
+<tr><td>22.5\u00b0</td><td>2.6</td><td>3/16&quot;</td><td>Tight quarters</td></tr>
+<tr><td>30\u00b0</td><td>2.0</td><td>1/4&quot;</td><td>Everyday offsets</td></tr>
+<tr><td>45\u00b0</td><td>1.4</td><td>3/8&quot;</td><td>Tall obstacles, short distance</td></tr>
+<tr><td>60\u00b0</td><td>1.2</td><td>1/2&quot;</td><td>Maximum rise, minimum run</td></tr>
+</table>
+
+<h2>Why the multiplier works</h2>
+<p>The multiplier is the cosecant of the bend angle &mdash; 1/sin&nbsp;&theta;. At
+30\u00b0, sin&nbsp;30\u00b0 = 0.5, so the multiplier is exactly 2.0: a 6&quot; obstacle
+needs 12&quot; between marks, no calculator required. The numbers above are rounded to
+what fits on a tape measure; the calculator on this site uses the full-precision values.</p>
+
+<h2>How to pick the angle</h2>
+<ul>
+<li><strong>Default to 30\u00b0.</strong> The math is trivial (&times;2) and shrink stays
+moderate. Most journeymen bend 30\u00b0 unless there is a reason not to.</li>
+<li><strong>Go shallow (22.5\u00b0, 15\u00b0, 10\u00b0)</strong> when shrink is the enemy
+&mdash; long runs with multiple bends, or couplings that must land exactly.</li>
+<li><strong>Go steep (45\u00b0, 60\u00b0)</strong> when you must clear a tall obstacle in
+a short horizontal distance. Accept the extra shrink and add it to your cut length.</li>
+</ul>
+
+<h2>Take-up reference (hand benders, EMT)</h2>
+<table>
+<tr><th>Conduit size</th><th>Take-up (deduct)</th></tr>
+<tr><td>1/2&quot; EMT</td><td>5&quot;</td></tr>
+<tr><td>3/4&quot; EMT</td><td>6&quot;</td></tr>
+<tr><td>1&quot; EMT</td><td>8&quot;</td></tr>
+</table>
+<p>Take-up is a property of the bender head, not a formula &mdash; always confirm against
+the markings on the bender in your hands.</p>
+
+<h2>Chart vs. calculator</h2>
+<p>The chart gives you spacing and shrink in seconds. The calculator adds what the chart
+cannot: exact mark locations from your bender's actual radius, remaining straight
+lengths, minimum stick length, and a warning before a bend is physically impossible.
+Use the chart for quick layout, the calculator before you cut.</p>
+""",
+    ),
+    dict(
+        slug="conduit-shrink-calculator",
+        title="Conduit Shrink Calculator \u2014 What Bends Eat",
+        desc="Free conduit shrink guide: shrink per inch chart, worked examples for offsets "
+             "and saddles, and why forgetting shrink ruins conduit runs.",
+        h1="Conduit Shrink Calculator",
+        cta_label="Open the free offset bend calculator",
+        body="""
+<p><em>Shrink</em> is the length a bend &ldquo;eats&rdquo; from your conduit run. Bend an
+offset and the finished run comes up shorter than the straight stick you started with
+&mdash; by a predictable amount. Every coupling that lands in the wrong place on a
+rough-in can usually be traced back to shrink nobody accounted for.</p>
+
+<h2>What shrink actually is</h2>
+<p>The bent path between two marks is longer than the straight-line distance the bend
+covers. The difference is shrink. It is <strong>not</strong> the same as take-up
+(where the bend starts relative to your mark) or gain (developed-length consumed by
+the arc) &mdash; though all three shorten the <em>finished run</em> compared to the raw
+stick, which is why beginners mix them up.</p>
+
+<h2>Shrink per inch of offset height</h2>
+<table>
+<tr><th>Bend angle</th><th>Shrink per inch</th></tr>
+<tr><td>10\u00b0</td><td>1/16&quot;</td></tr>
+<tr><td>15\u00b0</td><td>1/8&quot;</td></tr>
+<tr><td>22.5\u00b0</td><td>3/16&quot;</td></tr>
+<tr><td>30\u00b0</td><td>1/4&quot;</td></tr>
+<tr><td>45\u00b0</td><td>3/8&quot;</td></tr>
+<tr><td>60\u00b0</td><td>1/2&quot;</td></tr>
+</table>
+<p>Multiply by your offset height for total shrink.</p>
+
+<h2>Worked examples</h2>
+<p><strong>Example 1 &mdash; simple offset.</strong> 6&quot; offset at 30\u00b0:
+6 &times; 1/4&quot; = <strong>1.5&quot;</strong> of shrink. Cut the stick 1.5&quot; long
+or the far coupling lands 1.5&quot; off the box.</p>
+<p><strong>Example 2 &mdash; 4-point saddle.</strong> Two 4&quot; offsets at 30\u00b0
+around a duct: shrink applies <em>twice</em>, once per offset &mdash;
+2 &times; (4 &times; 1/4&quot;) = <strong>2&quot;</strong> total. Saddles surprise people
+because the doubling is easy to forget.</p>
+<p><strong>Example 3 &mdash; rolling offset.</strong> 6&quot; rise, 8&quot; roll at
+30\u00b0: shrink applies to the <em>true</em> offset (&radic;(36+64) = 10&quot;), so
+10 &times; 1/4&quot; = <strong>2.5&quot;</strong> &mdash; not the 1.5&quot; you would get
+from the rise alone.</p>
+
+<h2>The golden rule</h2>
+<p><strong>Add up the shrink for every bend in the stick before you cut.</strong> One
+offset's 1.5&quot; is a nuisance; three bends' worth across a long run is a miscut.
+The calculator totals shrink for you &mdash; including the doubled shrink on saddles
+and the true-offset shrink on rolling offsets &mdash; so the number you cut to is the
+number that lands.</p>
+
+<h2>Signs you forgot shrink</h2>
+<ul>
+<li>Couplings consistently land short of boxes by a similar amount on every run.</li>
+<li>A run with two offsets is off by roughly double the single-offset error.</li>
+<li>The math &ldquo;worked on paper&rdquo; but the stick is short &mdash; the paper math
+probably never included shrink.</li>
+</ul>
+""",
+    ),
+    dict(
+        slug="parallel-offset-calculator",
+        title="Parallel Offsets \u2014 Keep Runs Even & Aligned",
+        desc="How to bend parallel offsets that stay evenly spaced: same angle, same "
+             "reference, identical shrink. Step-by-step method with the offset calculator.",
+        h1="Parallel Offsets: Keeping Runs Even",
+        cta_label="Open the free offset calculator",
+        body="""
+<p>An honest note first: there is no separate &ldquo;parallel offset&rdquo; button in
+the app, because there does not need to be one. Parallel offsets are just two (or more)
+<em>identical</em> offsets bent in matching sticks of conduit. Run the offset calculator
+once per conduit, follow the discipline below, and the runs come out parallel and
+evenly spaced.</p>
+
+<h2>The method: same angle, same reference</h2>
+<ol>
+<li><strong>Pick one angle for every conduit</strong> &mdash; 30\u00b0 is the standard.
+Different angles on the two sticks means different shrink, and the runs will converge
+or diverge down the wall.</li>
+<li><strong>Measure both sticks from the same reference point</strong> &mdash; the same
+box, the same slab edge. If stick A is measured from the panel and stick B from a
+column three feet away, the bends will not line up.</li>
+<li><strong>Keep the center-to-center spacing constant</strong> through the whole offset.
+If the runs are 6&quot; apart on center before the obstacle, they must be 6&quot; apart
+on center after it.</li>
+<li><strong>Cut both sticks to the same length.</strong> Identical offsets have identical
+shrink, so identical sticks stay aligned end to end.</li>
+</ol>
+
+<h2>Worked example</h2>
+<p>Two 3/4&quot; EMT runs, 6&quot; apart on center, both need a 4&quot; offset at
+30\u00b0 to clear the same beam. Each offset: mark spacing = 4 &times; 2.0 =
+<strong>8&quot;</strong>, shrink = 4 &times; 1/4&quot; = <strong>1&quot;</strong>. Bend
+both sticks with marks measured from the same end and the same reference, and both
+offsets land in the same place &mdash; runs still 6&quot; apart, couplings aligned.</p>
+
+<h2>Why parallel offsets go wrong</h2>
+<ul>
+<li><strong>Mixed angles.</strong> One stick at 30\u00b0 and the other at 45\u00b0 gives
+different spacing <em>and</em> different shrink. The runs will never look right.</li>
+<li><strong>Different references.</strong> Even a 1&quot; difference in where you start
+measuring shows up as staggered bends.</li>
+<li><strong>Bending one stick, then &ldquo;eyeballing&rdquo; the second.</strong> Mark
+the second stick with the tape, from the numbers &mdash; not by holding it next to the
+first.</li>
+<li><strong>Forgetting that shrink is identical.</strong> That is actually the good news:
+because both offsets shrink the same amount, you cut both sticks the same and move on.</li>
+</ul>
+
+<h2>Three or more runs</h2>
+<p>The same discipline scales: one angle, one reference, constant spacing, identical
+cuts. For racks of three-plus conduits, mark all the sticks before bending any of them
+&mdash; it is the only reliable way to keep a whole rack honest.</p>
+""",
+    ),
+    dict(
+        slug="how-to-bend-emt-conduit",
+        title="How to Bend EMT Conduit \u2014 Beginner's Guide",
+        desc="Learn to bend EMT conduit: tools, reading bender marks, your first 90\u00b0 "
+             "stub-up, and the safety habits that prevent kinks and miscuts.",
+        h1="How to Bend EMT Conduit: A Beginner's Guide",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>Bending EMT is the first hands-on skill most electrical apprentices learn, and it is
+almost entirely about <em>marking correctly</em>. The bender does the bending; your
+job is the tape measure. Get the marks right and the bend takes care of itself.</p>
+
+<h2>What you need</h2>
+<ul>
+<li><strong>A hand bender matched to your conduit size.</strong> A 1/2&quot; bender for
+1/2&quot; EMT &mdash; the size is stamped on the bender head. The wrong size kinks the
+conduit.</li>
+<li>Tape measure, permanent marker, and a level.</li>
+<li>A way to cut: hacksaw or tubing cutter &mdash; plus a reamer or file to deburr the
+cut end. A sharp inside edge will slice wire insulation during the pull.</li>
+<li>Gloves and eye protection for cutting.</li>
+</ul>
+
+<h2>Reading your bender</h2>
+<p>Every hand bender head carries the same vocabulary: the <strong>arrow</strong> (where
+you line up offset and stub marks), the <strong>degree scale</strong> (bend to the
+number, not to feel), and the <strong>take-up</strong> stamped on the head &mdash; how
+far the bend starts before your mark. For 1/2&quot; EMT the standard take-up is 5&quot;,
+3/4&quot; is 6&quot;, 1&quot; is 8&quot;. Always confirm against your own bender.</p>
+
+<h2>Your first bend: a 90\u00b0 stub-up</h2>
+<ol>
+<li>Decide the stub height &mdash; say 12&quot; with 1/2&quot; EMT.</li>
+<li>Mark at <strong>12&quot; &minus; 5&quot; (take-up) = 7&quot;</strong> from the end of
+the conduit.</li>
+<li>Line the bender's arrow up with the mark. Keep firm, steady foot pressure so the
+conduit cannot walk.</li>
+<li>Bend with smooth strokes to 90\u00b0 on the degree scale.</li>
+<li>Check with a square: the back of the bend should sit at exactly 12&quot;.</li>
+</ol>
+<p>That is the whole skill in miniature &mdash; every fancier bend is this same idea
+with more marks.</p>
+
+<h2>Safety habits that save conduit (and fingers)</h2>
+<ul>
+<li><strong>Practice on scrap first.</strong> Every bender bends a little differently;
+one test bend on waste conduit is cheaper than one miscut stick.</li>
+<li><strong>Never force a bend.</strong> If the conduit starts to flatten or kink, stop.
+A kinked stick is scrap &mdash; and kinked conduit has to come back out of the wall.</li>
+<li><strong>Keep your footing.</strong> Bending is a whole-body motion; a slipping foot
+means a slipping mark.</li>
+<li><strong>Ream every cut.</strong> It takes ten seconds and protects every wire you
+will ever pull through that conduit.</li>
+<li><strong>Bend before you cut to final length</strong> when a stick has multiple bends
+&mdash; shrink and gain are easier to account for on a long stick than a short one.</li>
+</ul>
+
+<h2>What to learn next</h2>
+<p>Once the 90\u00b0 feels natural: offsets (the everyday bend), then 3-point saddles,
+then stub-ups to exact heights on the first try. Each has a dedicated calculator and
+guide on this site &mdash; start with the offset, since it teaches multipliers and
+shrink, the two ideas behind everything else.</p>
+""",
+    ),
+]
+
+
 def word_count(html_body: str) -> int:
     text = re.sub(r"<[^>]+>", " ", html_body)
     text = html.unescape(text)
