@@ -13,12 +13,15 @@ import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
+import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { threePointSaddleFeasibility } from '../calculators/feasibility/feasibility';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
+import { useProAccess } from '../lib/proStore';
 import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
@@ -58,6 +61,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
   const { spec, setSpec } = useBenderSpec();
   const { specs: customSpecs } = useCustomSpecs();
   const { activeProfile } = useBenderProfiles();
+  const { access } = useProAccess();
 
   const setHeightText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, heightText: text })),
@@ -116,6 +120,13 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
       return [];
     }
     return threePointSaddleWarnings(result.markSpacingInches, angle, spec);
+  }, [angle, result, spec]);
+
+  const feasibility = useMemo(() => {
+    if (!result) {
+      return null;
+    }
+    return threePointSaddleFeasibility(result.markSpacingInches, angle, spec);
   }, [angle, result, spec]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
@@ -226,6 +237,13 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
         expectedInches={calibratedSpacing}
         label="Bend spacing"
         unit={unit}
+      />
+
+      <FeasibilityPanel
+        result={feasibility}
+        isPro={access === 'unlocked'}
+        unit={unit}
+        onCheckFeasibility={() => navigation.navigate('Paywall')}
       />
 
       {result ? (
