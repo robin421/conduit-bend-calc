@@ -120,12 +120,13 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
     }
     return {
       kind: 'saddle4',
+      unit,
       height: heightInches,
       thetaDeg: angle,
       legSpacingDisplay: result.markSpacingInches,
       flatWidth: widthInches,
     };
-  }, [result, heightInches, widthInches, angle]);
+  }, [result, heightInches, widthInches, angle, unit]);
 
   const warnings = useMemo(() => {
     if (!result || widthInches === null) {

@@ -50,6 +50,7 @@ function assertTickUnit(d: BendDiagram): void {
 
 test('offset：H=6、θ=30°，M1/M2 间距与 12" 等比对应', () => {
   const input: DiagramInput = {
+    unit: 'imperial',
     kind: 'offset',
     height: 6,
     thetaDeg: 30,
@@ -86,7 +87,11 @@ test('offset：H=6、θ=30°，M1/M2 间距与 12" 等比对应', () => {
 });
 
 test('stub：mark 位置与值标注正确', () => {
-  const d = buildBendDiagram({ kind: 'stub', stubHeight: 12, markPoint: 7 }, W, H);
+  const d = buildBendDiagram(
+    { unit: 'imperial', kind: 'stub', stubHeight: 12, markPoint: 7 },
+    W,
+    H,
+  );
   assert.ok(d);
   assert.equal(d.marks.length, 1);
   assert.equal(d.marks[0].label, 'M1');
@@ -101,7 +106,7 @@ test('stub：mark 位置与值标注正确', () => {
 
 test('saddle3：三处 mark 与角度标注', () => {
   const d = buildBendDiagram(
-    { kind: 'saddle3', height: 4, sideSpacingDisplay: 10, thetaDeg: 45 },
+    { unit: 'imperial', kind: 'saddle3', height: 4, sideSpacingDisplay: 10, thetaDeg: 45 },
     W,
     H,
   );
@@ -128,7 +133,7 @@ test('saddle3：三处 mark 与角度标注', () => {
 
 test('saddle3：角度标注随所选角度变化（中心=所选，两侧=一半）', () => {
   const d = buildBendDiagram(
-    { kind: 'saddle3', height: 6, sideSpacingDisplay: 12, thetaDeg: 30 },
+    { unit: 'imperial', kind: 'saddle3', height: 6, sideSpacingDisplay: 12, thetaDeg: 30 },
     W,
     H,
   );
@@ -143,6 +148,7 @@ test('saddle3：角度标注随所选角度变化（中心=所选，两侧=一�
 test('saddle4：四处 mark、三段尺寸', () => {
   const d = buildBendDiagram(
     {
+      unit: 'imperial',
       kind: 'saddle4',
       height: 6,
       thetaDeg: 30,
@@ -173,6 +179,7 @@ test('saddle4：四处 mark、三段尺寸', () => {
 test('rolling：复用 offset 并带 rise/roll 注释', () => {
   const d = buildBendDiagram(
     {
+      unit: 'imperial',
       kind: 'rolling',
       rise: 6,
       roll: 8,
@@ -198,7 +205,7 @@ test('rolling：复用 offset 并带 rise/roll 注释', () => {
 
 test('kicked90：两处 mark、直段与总 gain 标注', () => {
   const d = buildBendDiagram(
-    { kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: 2.5 },
+    { unit: 'imperial', kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: 2.5 },
     W,
     H,
   );
@@ -217,16 +224,67 @@ test('kicked90：两处 mark、直段与总 gain 标注', () => {
   assertTickUnit(d);
 });
 
+test('metric：所有长度标注输出 mm，不含英寸符号', () => {
+  const d = buildBendDiagram(
+    {
+      unit: 'metric',
+      kind: 'offset',
+      height: 6,
+      thetaDeg: 30,
+      spacingDisplay: 12,
+      shrinkDisplay: 1.5,
+    },
+    W,
+    H,
+  );
+  assert.ok(d);
+  // 尺寸标注含 mm，且不含英寸符号
+  assert.match(d.dimensions[0].label, /mm$/);
+  assert.ok(!d.dimensions[0].label.includes('"'));
+  // 注释（shrink）含 mm
+  const shrinkNote = d.notes.find((n) => n.text.includes('shrink'));
+  assert.ok(shrinkNote);
+  assert.ok(shrinkNote.text.includes('mm'));
+  assert.ok(!shrinkNote.text.includes('"'));
+});
+
+test('metric：stub 值标注与尺寸线均为 mm', () => {
+  const d = buildBendDiagram(
+    { unit: 'metric', kind: 'stub', stubHeight: 12, markPoint: 7 },
+    W,
+    H,
+  );
+  assert.ok(d);
+  assert.ok(d.marks[0].valueText?.includes('mm'));
+  assert.ok(!d.marks[0].valueText?.includes('"'));
+  assert.ok(d.dimensions[0].label.includes('mm'));
+  assert.ok(!d.dimensions[0].label.includes('"'));
+});
+
+test('metric：kicked90 注释（Total gain）为 mm', () => {
+  const d = buildBendDiagram(
+    { unit: 'metric', kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: 2.5 },
+    W,
+    H,
+  );
+  assert.ok(d);
+  const note = d.notes.find((n) => n.text.includes('Total gain'));
+  assert.ok(note);
+  assert.ok(note.text.includes('mm'));
+  assert.ok(!note.text.includes('"'));
+});
+
 test('非法输入返回 null，不抛异常', () => {
   const bad: DiagramInput[] = [
-    { kind: 'offset', height: 0, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1 },
-    { kind: 'offset', height: 6, thetaDeg: 0, spacingDisplay: 12, shrinkDisplay: 1 },
-    { kind: 'offset', height: NaN, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1 },
-    { kind: 'stub', stubHeight: 12, markPoint: 12 },
-    { kind: 'stub', stubHeight: -5, markPoint: 2 },
-    { kind: 'saddle3', height: 4, sideSpacingDisplay: -1, thetaDeg: 30 },
-    { kind: 'saddle4', height: 6, thetaDeg: 30, legSpacingDisplay: 12, flatWidth: 0 },
+    { unit: 'imperial', kind: 'offset', height: 0, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1 },
+    { unit: 'imperial', kind: 'offset', height: 6, thetaDeg: 0, spacingDisplay: 12, shrinkDisplay: 1 },
+    { unit: 'imperial', kind: 'offset', height: NaN, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1 },
+    { unit: 'imperial', kind: 'stub', stubHeight: 12, markPoint: 12 },
+    { unit: 'imperial', kind: 'stub', stubHeight: -5, markPoint: 2 },
+    { unit: 'imperial', kind: 'saddle3', height: 4, sideSpacingDisplay: -1, thetaDeg: 30 },
+    { unit: 'imperial', kind: 'saddle4', height: 6, thetaDeg: 30, legSpacingDisplay: 12, flatWidth: 0 },
     {
+      unit: 'imperial',
       kind: 'rolling',
       rise: 6,
       roll: 0,
@@ -236,14 +294,15 @@ test('非法输入返回 null，不抛异常', () => {
       spacingDisplay: 12,
       shrinkDisplay: 1,
     },
-    { kind: 'kicked90', kickAngleDeg: 95, straightLength: 10, totalGain: 2 },
-    { kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: -1 },
+    { unit: 'imperial', kind: 'kicked90', kickAngleDeg: 95, straightLength: 10, totalGain: 2 },
+    { unit: 'imperial', kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: -1 },
   ];
   for (const input of bad) {
     assert.equal(buildBendDiagram(input, W, H), null, JSON.stringify(input));
   }
   // view 尺寸非法
   const good: DiagramInput = {
+    unit: 'imperial',
     kind: 'offset',
     height: 6,
     thetaDeg: 30,
@@ -258,12 +317,12 @@ test('非法输入返回 null，不抛异常', () => {
 /** 回归：六种弯法在手机宽度（360/240）下文字标注互不重叠、不出界 */
 test('标注避让：六种弯法 × 两种宽度，文字包围盒无重叠', () => {
   const inputs: [string, DiagramInput][] = [
-    ['offset', { kind: 'offset', height: 6, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1.5 }],
-    ['stub', { kind: 'stub', stubHeight: 12, markPoint: 7 }],
-    ['saddle3', { kind: 'saddle3', height: 4, sideSpacingDisplay: 10, thetaDeg: 30 }],
-    ['saddle4', { kind: 'saddle4', height: 6, thetaDeg: 30, legSpacingDisplay: 12, flatWidth: 8 }],
-    ['rolling', { kind: 'rolling', rise: 6, roll: 8, trueOffset: 10, rollAngleDeg: 53.13, thetaDeg: 30, spacingDisplay: 20, shrinkDisplay: 2.5 }],
-    ['kicked90', { kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: 2.5 }],
+    ['offset', { unit: 'imperial', kind: 'offset', height: 6, thetaDeg: 30, spacingDisplay: 12, shrinkDisplay: 1.5 }],
+    ['stub', { unit: 'imperial', kind: 'stub', stubHeight: 12, markPoint: 7 }],
+    ['saddle3', { unit: 'imperial', kind: 'saddle3', height: 4, sideSpacingDisplay: 10, thetaDeg: 30 }],
+    ['saddle4', { unit: 'imperial', kind: 'saddle4', height: 6, thetaDeg: 30, legSpacingDisplay: 12, flatWidth: 8 }],
+    ['rolling', { unit: 'imperial', kind: 'rolling', rise: 6, roll: 8, trueOffset: 10, rollAngleDeg: 53.13, thetaDeg: 30, spacingDisplay: 20, shrinkDisplay: 2.5 }],
+    ['kicked90', { unit: 'imperial', kind: 'kicked90', kickAngleDeg: 15, straightLength: 10, totalGain: 2.5 }],
   ];
   interface Box { id: string; x0: number; y0: number; x1: number; y1: number }
   const box = (id: string, cx: number, baselineY: number, text: string, fs: number): Box => {

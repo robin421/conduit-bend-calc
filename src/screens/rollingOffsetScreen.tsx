@@ -115,6 +115,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
     }
     return {
       kind: 'rolling',
+      unit,
       rise: riseInches,
       roll: rollInches,
       trueOffset: result.trueOffset,
@@ -123,7 +124,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
       spacingDisplay: result.spacingDisplay,
       shrinkDisplay: result.shrinkDisplay,
     };
-  }, [result, riseInches, rollInches, angle]);
+  }, [result, riseInches, rollInches, angle, unit]);
 
   const warnings = useMemo(() => {
     if (!result) {

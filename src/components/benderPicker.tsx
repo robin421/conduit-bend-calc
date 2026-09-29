@@ -11,8 +11,10 @@ import {
   listPresetModels,
 } from '../calculators/geometry/benderSpecs';
 import type { BenderBrand, BenderSpec } from '../constants';
+import { useProAccess } from '../lib/proStore';
 import { useTheme } from '../theme';
 import BigButton from './bigButton';
+import { resolveCustomCreateMode } from './benderPickerGating';
 
 interface BenderPickerProps {
   /** 当前选中的规格 */
@@ -25,6 +27,8 @@ interface BenderPickerProps {
   onCreateCustom: (spec: BenderSpec) => void;
   /** 是否允许 Custom / 手动新建；Guided Calibration 只需 Standard 预设。 */
   allowCustom?: boolean;
+  /** 锁定态点击 "Unlock Pro" 时回调（通常导航到 Paywall）。 */
+  onUnlockPro?: () => void;
 }
 
 function formatNum(value: number): string {
@@ -53,8 +57,11 @@ export default function BenderPicker({
   onChange,
   onCreateCustom,
   allowCustom = true,
+  onUnlockPro,
 }: BenderPickerProps) {
   const theme = useTheme();
+  const { access } = useProAccess();
+  const createMode = resolveCustomCreateMode(access, onUnlockPro !== undefined);
   const [activeBrand, setActiveBrand] = useState<BenderBrand>(spec.brand);
   /** 默认折叠为摘要行：选择器纵向太占空间，输入框应首屏可见 */
   const [expanded, setExpanded] = useState(false);
@@ -109,6 +116,10 @@ export default function BenderPicker({
   };
 
   const handleSaveCustom = () => {
+    // 防御性检查：锁定态不允许创建（UI 已 gate，这里兜底）。
+    if (access !== 'unlocked') {
+      return;
+    }
     const created = createCustomSpec(
       customName,
       Number(customR),
@@ -243,6 +254,8 @@ export default function BenderPicker({
               </View>
             </View>
           ) : null}
+          {createMode === 'form' ? (
+            <View>
           <SectionLabel>Create manually (R / take-up)</SectionLabel>
           <TextInput
             value={customName}
@@ -325,6 +338,23 @@ export default function BenderPicker({
               onPress={handleSaveCustom}
             />
           </View>
+            </View>
+          ) : createMode === 'locked' ? (
+            <View>
+              <SectionLabel>Create manually (R / take-up)</SectionLabel>
+              <Text
+                style={{
+                  color: theme.colors.textSecondary,
+                  fontSize: theme.fontSize.secondary,
+                }}
+              >
+                Custom benders are a Pro feature.
+              </Text>
+              <View style={{ marginTop: theme.spacing.sm }}>
+                <BigButton title="Unlock Pro" onPress={() => onUnlockPro?.()} />
+              </View>
+            </View>
+          ) : null}
         </View>
       )}
 

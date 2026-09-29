@@ -27,7 +27,7 @@ const ENTRIES: CalculatorEntry[] = [
   { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
   { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
   { key: 'GuidedCalibration', icon: '◎', name: 'Calibrate My Bender', description: 'One test bend: match the app to your bender', pro: true },
-  { key: 'Calibration', icon: '⌁', name: 'Advanced Calibration', description: 'Manual gain / take-up calibration' },
+  { key: 'Calibration', icon: '⌁', name: 'Advanced Calibration', description: 'Manual gain / take-up calibration', pro: true },
 ];
 
 export default function CalcHomeScreen({ navigation }: Props) {

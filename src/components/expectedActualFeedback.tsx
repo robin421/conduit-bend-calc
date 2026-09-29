@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { applyExpectedActualCorrection } from '../calculators/calibration/calibration';
 import type { BenderProfile } from '../lib/profile';
 import { setProfileCalibrationOffset } from '../lib/benderProfileStore';
+import { useProAccess } from '../lib/proStore';
 import { useTheme } from '../theme';
 import { formatMeasurement } from '../lib/units';
 import type { UnitSystem } from '../lib/units';
@@ -31,6 +32,7 @@ export default function ExpectedActualFeedback({
   unit,
 }: ExpectedActualFeedbackProps) {
   const theme = useTheme();
+  const { access } = useProAccess();
   const [actualText, setActualText] = useState('');
   const [actualInches, setActualInches] = useState<number | null>(null);
   const [lastUpdate, setLastUpdate] = useState<{
@@ -84,6 +86,11 @@ export default function ExpectedActualFeedback({
     setProfileCalibrationOffset(profile.id, 0, Date.now());
     setLastUpdate(null);
   }, [profile]);
+
+  // "Did it match?" 校准闭环属于 Pro（My Tool）价值，锁定态整块隐藏。
+  if (access !== 'unlocked') {
+    return null;
+  }
 
   if (!profile || !isUserProfile || expectedInches === null) {
     return null;

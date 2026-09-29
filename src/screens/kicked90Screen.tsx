@@ -108,11 +108,12 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     }
     return {
       kind: 'kicked90',
+      unit,
       kickAngleDeg: result.kickAngleDeg,
       straightLength: result.straightLength,
       totalGain: result.totalGain,
     };
-  }, [result]);
+  }, [result, unit]);
 
   const warnings = useMemo(() => {
     if (kickAngle === null || lengthInches === null) {

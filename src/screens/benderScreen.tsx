@@ -50,6 +50,7 @@ export default function BenderScreen({ navigation }: Props) {
           customSpecs={customSpecs}
           onChange={handleChange}
           onCreateCustom={handleCreateCustom}
+          onUnlockPro={() => navigation.navigate('Paywall')}
         />
       </Card>
     </ScrollView>

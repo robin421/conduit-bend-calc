@@ -106,8 +106,8 @@ export default function StubScreen({ route, navigation }: Props) {
     if (markPoint === null || heightInches === null) {
       return null;
     }
-    return { kind: 'stub', stubHeight: heightInches, markPoint };
-  }, [markPoint, heightInches]);
+    return { kind: 'stub', unit, stubHeight: heightInches, markPoint };
+  }, [markPoint, heightInches, unit]);
 
   const warnings = useMemo(() => {
     if (heightInches === null) {

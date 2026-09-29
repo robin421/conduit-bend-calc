@@ -96,12 +96,13 @@ export default function OffsetScreen({ route, navigation }: Props) {
     }
     return {
       kind: 'offset',
+      unit,
       height: heightInches,
       thetaDeg: angle,
       spacingDisplay: result.distanceBetweenBends,
       shrinkDisplay: result.shrink,
     };
-  }, [result, heightInches, angle]);
+  }, [result, heightInches, angle, unit]);
 
   const warnings = useMemo(() => {
     if (!result) {

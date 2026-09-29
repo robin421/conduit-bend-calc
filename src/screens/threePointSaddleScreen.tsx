@@ -110,11 +110,12 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
     }
     return {
       kind: 'saddle3',
+      unit,
       height: heightInches,
       sideSpacingDisplay: result.markSpacingInches,
       thetaDeg: angle,
     };
-  }, [result, heightInches, angle]);
+  }, [result, heightInches, angle, unit]);
 
   const warnings = useMemo(() => {
     if (!result) {

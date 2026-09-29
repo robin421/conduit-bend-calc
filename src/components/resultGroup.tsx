@@ -1,6 +1,7 @@
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme';
+import { formatResultUnit } from './resultGroupFormat';
 
 export interface ResultItem {
   label: string;
@@ -115,7 +116,9 @@ export default function ResultGroup({ hero, rows = [], hint, style }: ResultGrou
             >
               {rowEmpty ? '—' : row.value}
               {!rowEmpty && row.unit ? (
-                <Text style={{ color: theme.colors.accent }}>{row.unit}</Text>
+                <Text style={{ color: theme.colors.accent }}>
+                  {formatResultUnit(row.unit)}
+                </Text>
               ) : null}
             </Text>
           </View>

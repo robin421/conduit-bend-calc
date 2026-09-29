@@ -9,7 +9,8 @@
  *   避免小 R 时弧看不见；标注文字只写计算值（spec §4）。
  * - 未验证公式沿用 geometry.ts 的 ⚠️ 注释规范。
  */
-import { formatImperial } from '../../lib/imperial.ts';
+import { formatLength } from '../../lib/units.ts';
+import type { UnitSystem } from '../../lib/units.ts';
 
 /**
  * 标注布局常量（SVG px）：组件层直接引用，不自建副本，
@@ -37,7 +38,7 @@ export interface DiagramMark {
   point: DiagramPoint;
   /** 标记名，如 "M1" */
   label: string;
-  /** 值标注（已 formatImperial），无则为 null */
+  /** 值标注（已按单位系统格式化），无则为 null */
   valueText: string | null;
   /** tick 方向（SVG 坐标系下的单位向量） */
   tickDir: DiagramPoint;
@@ -47,7 +48,7 @@ export interface DiagramDimension {
   /** 尺寸线两端（SVG 坐标，已做偏移、不压管线） */
   from: DiagramPoint;
   to: DiagramPoint;
-  /** 标注文字（已 formatImperial） */
+  /** 标注文字（已按单位系统格式化） */
   label: string;
   /** 标注文字位置（SVG 坐标） */
   labelAt: DiagramPoint;
@@ -69,7 +70,10 @@ export interface BendDiagram {
   notes: DiagramText[];
 }
 
-export type DiagramInput =
+export type DiagramInput = {
+  /** 单位系统：只影响标注文字（imperial 分数 / metric mm），几何仍走英寸。 */
+  unit: UnitSystem;
+} & (
   | {
       kind: 'offset';
       height: number;
@@ -101,7 +105,8 @@ export type DiagramInput =
       kickAngleDeg: number;
       straightLength: number;
       totalGain: number;
-    };
+    }
+);
 
 // ---------- 英寸空间（y 轴向上） ----------
 
@@ -233,6 +238,7 @@ function buildOffsetInch(
   thetaDeg: number,
   spacingDisplay: number,
   shrinkDisplay: number,
+  unit: UnitSystem,
 ): InchDiagram | null {
   if (!isPositiveFinite(height) || !isPositiveFinite(spacingDisplay)) {
     return null;
@@ -267,18 +273,22 @@ function buildOffsetInch(
       { point: M1, label: 'M1', valueText: null, tickDir: up },
       { point: M2, label: 'M2', valueText: null, tickDir: up },
     ],
-    dimensions: [offsetDim(M1, M2, formatImperial(S), -1)],
+    dimensions: [offsetDim(M1, M2, formatLength(S, unit), -1)],
     angles: [
       add(M1, { x: -0.6, y: -1.4 }),
       add(M2, { x: 1.8, y: 0.6 }),
     ],
     angleTexts: [`${thetaDeg}°`, `${thetaDeg}°`],
     notes: [add(m, { x: 0, y: 1.8 })],
-    noteTexts: [`shrink ${formatImperial(shrinkDisplay)}`],
+    noteTexts: [`shrink ${formatLength(shrinkDisplay, unit)}`],
   };
 }
 
-function buildStubInch(stubHeight: number, markPoint: number): InchDiagram | null {
+function buildStubInch(
+  stubHeight: number,
+  markPoint: number,
+  unit: UnitSystem,
+): InchDiagram | null {
   if (!isPositiveFinite(stubHeight) || !isPositiveFinite(markPoint)) {
     return null;
   }
@@ -297,12 +307,12 @@ function buildStubInch(stubHeight: number, markPoint: number): InchDiagram | nul
       {
         point: mark,
         label: 'M1',
-        valueText: formatImperial(markPoint),
+        valueText: formatLength(markPoint, unit),
         tickDir: { x: 1, y: 0 },
       },
     ],
     dimensions: [
-      offsetDim({ x: 0, y: 0 }, { x: 0, y: stubHeight }, formatImperial(stubHeight), 1),
+      offsetDim({ x: 0, y: 0 }, { x: 0, y: stubHeight }, formatLength(stubHeight, unit), 1),
     ],
     angles: [],
     angleTexts: [],
@@ -311,7 +321,12 @@ function buildStubInch(stubHeight: number, markPoint: number): InchDiagram | nul
   };
 }
 
-function buildSaddle3Inch(height: number, sideSpacing: number, thetaDeg: number): InchDiagram | null {
+function buildSaddle3Inch(
+  height: number,
+  sideSpacing: number,
+  thetaDeg: number,
+  unit: UnitSystem,
+): InchDiagram | null {
   if (!isPositiveFinite(height) || !isPositiveFinite(sideSpacing)) {
     return null;
   }
@@ -347,8 +362,8 @@ function buildSaddle3Inch(height: number, sideSpacing: number, thetaDeg: number)
       { point: S2, label: 'M3', valueText: null, tickDir: v },
     ],
     dimensions: [
-      offsetDim(S1, C, formatImperial(side), -1),
-      offsetDim(C, S2, formatImperial(side), -1),
+      offsetDim(S1, C, formatLength(side, unit), -1),
+      offsetDim(C, S2, formatLength(side, unit), -1),
     ],
     angles: [
       add(S1, { x: -0.7, y: -1.4 }),
@@ -366,6 +381,7 @@ function buildSaddle4Inch(
   thetaDeg: number,
   legSpacing: number,
   flatWidth: number,
+  unit: UnitSystem,
 ): InchDiagram | null {
   if (!isPositiveFinite(height) || !isPositiveFinite(legSpacing) || !isPositiveFinite(flatWidth)) {
     return null;
@@ -407,9 +423,9 @@ function buildSaddle4Inch(
       { point: M4, label: 'M4', valueText: null, tickDir: v },
     ],
     dimensions: [
-      offsetDim(M1, M2, formatImperial(S), -1),
-      offsetDim(M2, M3, formatImperial(W), 1),
-      offsetDim(M3, M4, formatImperial(S), -1),
+      offsetDim(M1, M2, formatLength(S, unit), -1),
+      offsetDim(M2, M3, formatLength(W, unit), 1),
+      offsetDim(M3, M4, formatLength(S, unit), -1),
     ],
     angles: [
       add(M1, { x: -0.6, y: -1.4 }),
@@ -431,6 +447,7 @@ function buildRollingInch(
   thetaDeg: number,
   spacingDisplay: number,
   shrinkDisplay: number,
+  unit: UnitSystem,
 ): InchDiagram | null {
   if (
     !isPositiveFinite(rise) ||
@@ -440,7 +457,7 @@ function buildRollingInch(
   ) {
     return null;
   }
-  const base = buildOffsetInch(trueOffset, thetaDeg, spacingDisplay, shrinkDisplay);
+  const base = buildOffsetInch(trueOffset, thetaDeg, spacingDisplay, shrinkDisplay, unit);
   if (!base) {
     return null;
   }
@@ -449,7 +466,7 @@ function buildRollingInch(
   base.angles[1] = add({ x: spacingDisplay, y: trueOffset }, { x: 2.2, y: 0.5 });
   base.notes.push(add(m, { x: 0, y: -4.2 }));
   base.noteTexts.push(
-    `rise ${formatImperial(rise)} · roll ${formatImperial(roll)}`,
+    `rise ${formatLength(rise, unit)} · roll ${formatLength(roll, unit)}`,
   );
   base.notes.push(add(m, { x: 0, y: -6.8 }));
   base.noteTexts.push(`Rotation ${rollAngleDeg.toFixed(1)}°`);
@@ -460,6 +477,7 @@ function buildKicked90Inch(
   kickDeg: number,
   straightLength: number,
   totalGain: number,
+  unit: UnitSystem,
 ): InchDiagram | null {
   if (!Number.isFinite(kickDeg) || kickDeg <= 0 || kickDeg >= 90) {
     return null;
@@ -491,14 +509,14 @@ function buildKicked90Inch(
       { point: M1, label: 'M1', valueText: null, tickDir: { x: 1, y: 0 } },
       { point: M2, label: 'M2', valueText: null, tickDir: { x: 1, y: 0 } },
     ],
-    dimensions: [offsetDim(M1, M2, formatImperial(L), 1)],
+    dimensions: [offsetDim(M1, M2, formatLength(L, unit), 1)],
     angles: [
       add(M1, { x: -2.0, y: -1.6 }),
       add(M2, { x: 0.2, y: 2.4 }),
     ],
     angleTexts: ['90°', `${kickDeg}°`],
     notes: [add(M2, { x: 3.6, y: -0.8 })],
-    noteTexts: [`Total gain ${formatImperial(totalGain)}`],
+    noteTexts: [`Total gain ${formatLength(totalGain, unit)}`],
   };
 }
 
@@ -723,13 +741,13 @@ export function buildBendDiagram(
   let inch: InchDiagram | null = null;
   switch (input.kind) {
     case 'offset':
-      inch = buildOffsetInch(input.height, input.thetaDeg, input.spacingDisplay, input.shrinkDisplay);
+      inch = buildOffsetInch(input.height, input.thetaDeg, input.spacingDisplay, input.shrinkDisplay, input.unit);
       break;
     case 'stub':
-      inch = buildStubInch(input.stubHeight, input.markPoint);
+      inch = buildStubInch(input.stubHeight, input.markPoint, input.unit);
       break;
     case 'saddle3':
-      inch = buildSaddle3Inch(input.height, input.sideSpacingDisplay, input.thetaDeg);
+      inch = buildSaddle3Inch(input.height, input.sideSpacingDisplay, input.thetaDeg, input.unit);
       break;
     case 'saddle4':
       inch = buildSaddle4Inch(
@@ -737,6 +755,7 @@ export function buildBendDiagram(
         input.thetaDeg,
         input.legSpacingDisplay,
         input.flatWidth,
+        input.unit,
       );
       break;
     case 'rolling':
@@ -748,10 +767,11 @@ export function buildBendDiagram(
         input.thetaDeg,
         input.spacingDisplay,
         input.shrinkDisplay,
+        input.unit,
       );
       break;
     case 'kicked90':
-      inch = buildKicked90Inch(input.kickAngleDeg, input.straightLength, input.totalGain);
+      inch = buildKicked90Inch(input.kickAngleDeg, input.straightLength, input.totalGain, input.unit);
       break;
     default:
       return null;
