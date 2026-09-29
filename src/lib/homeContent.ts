@@ -12,15 +12,9 @@
 export const THREE_POINT_SADDLE_ICON = '∧';
 export const FOUR_POINT_SADDLE_ICON = '∧∧';
 
-/** Google Play 导流卡（Web 专属）。 */
+/** Google Play 应用页链接：Web 下载引导浮层的 CTA 目标。 */
 export const GOOGLE_PLAY_URL =
   'https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc';
 
 /** 646x250 徽章图的宽高比。 */
 export const GOOGLE_PLAY_BADGE_ASPECT_RATIO = 646 / 250;
-
-/**
- * 徽章图 100pt 高；上下各留 8pt 呼吸感，卡片总高约 116pt，
- * 避免 Web 上 Card 默认 padding 撑出大片空白。
- */
-export const GOOGLE_PLAY_CARD_PADDING_VERTICAL = 8;

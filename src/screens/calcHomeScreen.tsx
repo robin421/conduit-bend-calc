@@ -1,8 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Fragment } from 'react';
+import { useState } from 'react';
 import {
-  Image,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -13,12 +11,12 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import ProDownloadSheet from '../components/proDownloadSheet';
 import {
   FOUR_POINT_SADDLE_ICON,
-  GOOGLE_PLAY_CARD_PADDING_VERTICAL,
-  GOOGLE_PLAY_URL,
   THREE_POINT_SADDLE_ICON,
 } from '../lib/homeContent';
+import type { ProDownloadEntryKey } from '../lib/proDownloadCopy';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 import { useProAccess } from '../lib/proStore';
@@ -46,36 +44,18 @@ const ENTRIES: CalculatorEntry[] = [
   { key: 'Calibration', icon: '⌁', name: 'Advanced Calibration', description: 'Manual gain / take-up calibration', pro: true },
 ];
 
-/** Web 专属：在计算器卡片与校准卡片之间插入 Google Play 导流卡。 */
-const PLAY_CARD_INDEX = ENTRIES.findIndex((entry) => entry.pro);
-
-function GooglePlayCard() {
-  const theme = useTheme();
-  return (
-    <Card style={styles.playCard}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Get it on Google Play"
-        onPress={() => {
-          void Linking.openURL(GOOGLE_PLAY_URL).catch(() => undefined);
-        }}
-      >
-        <Image
-          source={require('../../assets/images/google-play-badge.png')}
-          resizeMode="contain"
-          style={[styles.playBadge, { borderRadius: theme.radius }]}
-        />
-      </Pressable>
-    </Card>
-  );
-}
-
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
   const { unit, setUnit } = useUnitSystem();
   const { access } = useProAccess();
+  const [sheetEntryKey, setSheetEntryKey] = useState<ProDownloadEntryKey | null>(null);
 
   const handlePress = (entry: CalculatorEntry) => {
+    // Web 没有 IAP：Pro 入口点击弹出下载引导，导流到 Google Play。
+    if (entry.pro && Platform.OS === 'web') {
+      setSheetEntryKey(entry.key as ProDownloadEntryKey);
+      return;
+    }
     if (entry.pro && access === 'locked') {
       navigation.navigate('Paywall');
       return;
@@ -102,13 +82,14 @@ export default function CalcHomeScreen({ navigation }: Props) {
   };
 
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.md, gap: theme.spacing.md },
-      ]}
-    >
+    <>
+      <ScrollView
+        style={{ backgroundColor: theme.colors.background }}
+        contentContainerStyle={[
+          styles.content,
+          { padding: theme.spacing.md, gap: theme.spacing.md },
+        ]}
+      >
       <View style={styles.unitRow}>
         <Text
           style={{
@@ -136,71 +117,76 @@ export default function CalcHomeScreen({ navigation }: Props) {
         </View>
       </View>
 
-      {ENTRIES.map((entry, index) => (
-        <Fragment key={`${entry.name}-${index}`}>
-          {Platform.OS === 'web' && index === PLAY_CARD_INDEX ? <GooglePlayCard /> : null}
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => handlePress(entry)}
-            android_ripple={{ color: theme.colors.border }}
-          >
-            <Card style={styles.card}>
-              <View
-                style={[
-                  styles.accentBar,
-                  {
-                    backgroundColor: theme.colors.accent,
-                    marginRight: theme.spacing.sm,
-                    borderRadius: 2,
-                  },
-                ]}
-              />
-              <Text
-                numberOfLines={1}
-                style={[styles.icon, { color: theme.colors.primary }]}
-              >
-                {entry.icon}
-              </Text>
-              <View style={styles.textBlock}>
-                <View style={styles.nameRow}>
-                  <Text
-                    style={{
-                      color: theme.colors.textPrimary,
-                      fontSize: theme.fontSize.body,
-                      fontWeight: theme.fontWeight.semibold,
-                    }}
-                  >
-                    {entry.name}
-                  </Text>
-                  {entry.pro && access === 'locked' ? (
-                    <Text
-                      style={{
-                        color: theme.colors.accent,
-                        fontSize: theme.fontSize.secondary,
-                        fontWeight: theme.fontWeight.semibold,
-                        marginLeft: theme.spacing.xs,
-                      }}
-                    >
-                      PRO
-                    </Text>
-                  ) : null}
-                </View>
+      {ENTRIES.map((entry) => (
+        <Pressable
+          key={entry.key}
+          accessibilityRole="button"
+          onPress={() => handlePress(entry)}
+          android_ripple={{ color: theme.colors.border }}
+        >
+          <Card style={styles.card}>
+            <View
+              style={[
+                styles.accentBar,
+                {
+                  backgroundColor: theme.colors.accent,
+                  marginRight: theme.spacing.sm,
+                  borderRadius: 2,
+                },
+              ]}
+            />
+            <Text
+              numberOfLines={1}
+              style={[styles.icon, { color: theme.colors.primary }]}
+            >
+              {entry.icon}
+            </Text>
+            <View style={styles.textBlock}>
+              <View style={styles.nameRow}>
                 <Text
                   style={{
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.fontSize.secondary,
-                    marginTop: theme.spacing.xs,
+                    color: theme.colors.textPrimary,
+                    fontSize: theme.fontSize.body,
+                    fontWeight: theme.fontWeight.semibold,
                   }}
                 >
-                  {entry.description}
+                  {entry.name}
                 </Text>
+                {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
+                  <Text
+                    style={[
+                      styles.proPill,
+                      {
+                        backgroundColor: theme.colors.accent,
+                        color: theme.colors.onAccent,
+                        marginLeft: theme.spacing.xs,
+                      },
+                    ]}
+                  >
+                    PRO
+                  </Text>
+                ) : null}
               </View>
-              <Text style={[styles.chevron, { color: theme.colors.textSecondary }]}>›</Text>
-            </Card>
-          </Pressable>
-        </Fragment>
+              <Text
+                style={{
+                  color: theme.colors.textSecondary,
+                  fontSize: theme.fontSize.secondary,
+                  marginTop: theme.spacing.xs,
+                }}
+              >
+                {entry.description}
+              </Text>
+            </View>
+            <Text style={[styles.chevron, { color: theme.colors.textSecondary }]}>›</Text>
+          </Card>
+        </Pressable>
       ))}
-    </ScrollView>
+      </ScrollView>
+      <ProDownloadSheet
+        entryKey={sheetEntryKey}
+        onClose={() => setSheetEntryKey(null)}
+      />
+    </>
   );
 }
 
@@ -216,14 +202,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  playCard: {
-    alignItems: 'center',
-    padding: 0,
-    paddingVertical: GOOGLE_PLAY_CARD_PADDING_VERTICAL,
-  },
-  playBadge: {
-    width: 258,
-    height: 100,
+  proPill: {
+    fontSize: 12,
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    overflow: 'hidden',
   },
   accentBar: {
     width: 4,
