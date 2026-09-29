@@ -23,6 +23,8 @@ interface BenderPickerProps {
   onChange: (spec: BenderSpec) => void;
   /** 手动创建 Custom 规格时回调（父组件负责持久化并选中） */
   onCreateCustom: (spec: BenderSpec) => void;
+  /** 是否允许 Custom / 手动新建；Guided Calibration 只需 Standard 预设。 */
+  allowCustom?: boolean;
 }
 
 function formatNum(value: number): string {
@@ -50,6 +52,7 @@ export default function BenderPicker({
   customSpecs,
   onChange,
   onCreateCustom,
+  allowCustom = true,
 }: BenderPickerProps) {
   const theme = useTheme();
   const [activeBrand, setActiveBrand] = useState<BenderBrand>(spec.brand);
@@ -66,7 +69,9 @@ export default function BenderPicker({
   }, [spec.brand]);
 
   const brand: BenderBrand = activeBrand;
-  const brands: BenderBrand[] = [...listPresetBrands(), 'Custom'];
+  const brands: BenderBrand[] = allowCustom
+    ? [...listPresetBrands(), 'Custom']
+    : [...listPresetBrands()];
 
   const handleBrandPress = (next: BenderBrand) => {
     setActiveBrand(next);

@@ -329,4 +329,4 @@ export function selectSpecByValue(spec: BenderSpec): void {
 }
 
 export { isCalibratedProfile };
-export { profileToSpec, specToProfile } from './profile.ts';
+export { profileToSpec, specToProfile, standardProfiles } from './profile.ts';

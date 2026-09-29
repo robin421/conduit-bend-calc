@@ -4,8 +4,11 @@ import { test } from 'node:test';
 import { defaultBenderSpec } from '../geometry/benderSpecs.ts';
 import {
   buildCalibratedSpec,
+  calibrateDeductFromStub,
+  calibrateFromTestBend,
   calibrateGain,
   calibrateStubTakeUp,
+  estimateRadiusFromDeduct,
 } from './calibration.ts';
 
 test('calibrateGain: L₀=30、A=17、B=14.3 → G=1.3、R≈3.03', () => {
@@ -36,4 +39,32 @@ test('buildCalibratedSpec: 校准值优先，未校准沿用基准', () => {
   assert.ok(partial);
   assert.equal(partial.takeUp, base.takeUp);
   assert.equal(buildCalibratedSpec('  ', base, 3.03, 5.4), null);
+});
+
+test('calibrateDeductFromStub: 12" 标记 + S=17 3/8" → 5 3/8"', () => {
+  assert.equal(calibrateDeductFromStub(12, 17.375), 5.375);
+  assert.equal(calibrateDeductFromStub(12, 12), null);
+  assert.equal(calibrateDeductFromStub(12, 11), null);
+  assert.equal(calibrateDeductFromStub(0, 17), null);
+  assert.equal(calibrateDeductFromStub(12, Number.NaN), null);
+});
+
+test('estimateRadiusFromDeduct: 按 deduct 比例估计半径', () => {
+  assert.equal(estimateRadiusFromDeduct(4, 5, 5.375), 4.3);
+  assert.equal(estimateRadiusFromDeduct(4, 5, 10), 8);
+  assert.equal(estimateRadiusFromDeduct(4, 0, 5), null);
+  assert.equal(estimateRadiusFromDeduct(4, 5, -1), null);
+});
+
+test('calibrateFromTestBend: 反推 deduct + 估计 radius', () => {
+  const result = calibrateFromTestBend(12, 17.375, 4, 5);
+  assert.ok(result);
+  assert.equal(result.actualDeduct, 5.375);
+  assert.equal(result.estimatedRadius, 4.3);
+  assert.equal(result.markDistanceInches, 12);
+});
+
+test('calibrateFromTestBend: 非法输入返回 null', () => {
+  assert.equal(calibrateFromTestBend(12, 11, 4, 5), null);
+  assert.equal(calibrateFromTestBend(12, 17.375, 4, 0), null);
 });

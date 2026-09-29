@@ -5,6 +5,7 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
+import { useProAccess } from '../lib/proStore';
 import { useUnitSystem } from '../lib/unitStore';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'CalcHome'>;
@@ -14,6 +15,8 @@ interface CalculatorEntry {
   icon: string;
   name: string;
   description: string;
+  /** Pro 功能：未购买时点击进付费墙（仅校准类，计算器不再 gate）。 */
+  pro?: boolean;
 }
 
 const ENTRIES: CalculatorEntry[] = [
@@ -23,13 +26,20 @@ const ENTRIES: CalculatorEntry[] = [
   { key: 'FourPointSaddle', icon: '⋀⋀', name: '4-Point Saddle', description: '4-point saddle' },
   { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
   { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
+  { key: 'GuidedCalibration', icon: '◎', name: 'Calibrate My Bender', description: 'One test bend: match the app to your bender', pro: true },
+  { key: 'Calibration', icon: '⌁', name: 'Advanced Calibration', description: 'Manual gain / take-up calibration' },
 ];
 
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
   const { unit, setUnit } = useUnitSystem();
+  const { access } = useProAccess();
 
   const handlePress = (entry: CalculatorEntry) => {
+    if (entry.pro && access === 'locked') {
+      navigation.navigate('Paywall');
+      return;
+    }
     if (entry.key === 'Offset') {
       navigation.navigate('Offset');
     } else if (entry.key === 'Stub') {
@@ -42,6 +52,10 @@ export default function CalcHomeScreen({ navigation }: Props) {
       navigation.navigate('RollingOffset');
     } else if (entry.key === 'Kicked90') {
       navigation.navigate('Kicked90');
+    } else if (entry.key === 'GuidedCalibration') {
+      navigation.navigate('GuidedCalibration');
+    } else if (entry.key === 'Calibration') {
+      navigation.navigate('Calibration');
     } else {
       navigation.navigate('Placeholder', { title: entry.name });
     }
@@ -117,6 +131,18 @@ export default function CalcHomeScreen({ navigation }: Props) {
                 >
                   {entry.name}
                 </Text>
+                {entry.pro && access === 'locked' ? (
+                  <Text
+                    style={{
+                      color: theme.colors.accent,
+                      fontSize: theme.fontSize.secondary,
+                      fontWeight: theme.fontWeight.semibold,
+                      marginLeft: theme.spacing.xs,
+                    }}
+                  >
+                    PRO
+                  </Text>
+                ) : null}
               </View>
               <Text
                 style={{

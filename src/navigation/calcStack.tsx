@@ -6,6 +6,7 @@ import CalcHomeScreen from '../screens/calcHomeScreen';
 import CalculatorPlaceholderScreen from '../screens/calculatorPlaceholderScreen';
 import CalibrationScreen from '../screens/calibrationScreen';
 import FourPointSaddleScreen from '../screens/fourPointSaddleScreen';
+import GuidedCalibrationScreen from '../screens/guidedCalibrationScreen';
 import Kicked90Screen from '../screens/kicked90Screen';
 import OffsetScreen from '../screens/offsetScreen';
 import PaywallScreen from '../screens/paywallScreen';
@@ -22,6 +23,7 @@ export type CalcStackParamList = {
   FourPointSaddle: { backfill?: HistoryParams } | undefined;
   RollingOffset: { backfill?: HistoryParams } | undefined;
   Kicked90: { backfill?: HistoryParams } | undefined;
+  GuidedCalibration: undefined;
   Calibration: undefined;
   Bender: undefined;
   Paywall: undefined;
@@ -64,9 +66,14 @@ export default function CalcStack() {
         options={{ title: 'Kicked 90°' }}
       />
       <Stack.Screen
+        name="GuidedCalibration"
+        component={GuidedCalibrationScreen}
+        options={{ title: 'Calibrate My Bender' }}
+      />
+      <Stack.Screen
         name="Calibration"
         component={CalibrationScreen}
-        options={{ title: 'Calibration' }}
+        options={{ title: 'Advanced Calibration' }}
       />
       <Stack.Screen
         name="Bender"

@@ -65,3 +65,87 @@ export function buildCalibratedSpec(
     takeUp ?? base.takeUp,
   );
 }
+
+function isPositiveFinite(value: number): boolean {
+  return Number.isFinite(value) && value > 0;
+}
+
+/**
+ * Guided Calibration 第一步：由一次 90° 试弯反推 Actual Deduct。
+ * 管端在 `markDistanceInches` 处做标记、箭头对准标记弯 90°，实测 stub 高度 S
+ * （管端到弯背）→ Actual Deduct = S − markDistance。
+ * 产品决策 2：12" 标记时 S=17 3/8" → 5 3/8"，自洽。
+ * 非法输入或结果非正返回 null，不抛异常。
+ */
+export function calibrateDeductFromStub(
+  markDistanceInches: number,
+  measuredStubInches: number,
+): number | null {
+  if (!isPositiveFinite(markDistanceInches) || !isPositiveFinite(measuredStubInches)) {
+    return null;
+  }
+  const deduct = measuredStubInches - markDistanceInches;
+  return deduct > 0 ? deduct : null;
+}
+
+/**
+ * Guided Calibration 第二步：用 deduct 比例估计 Actual Radius。
+ * Actual Radius = nominal R × (actualDeduct / nominalDeduct)，为初值估计
+ * （明确标注为估计值），后续由 Expected→Actual 闭环持续修正。
+ * 三个输入都须为正有限数，否则返回 null。
+ */
+export function estimateRadiusFromDeduct(
+  nominalRadius: number,
+  nominalDeduct: number,
+  actualDeduct: number,
+): number | null {
+  if (
+    !isPositiveFinite(nominalRadius) ||
+    !isPositiveFinite(nominalDeduct) ||
+    !isPositiveFinite(actualDeduct)
+  ) {
+    return null;
+  }
+  return nominalRadius * (actualDeduct / nominalDeduct);
+}
+
+export interface GuidedCalibrationResult {
+  /** 实测 stub 高度（英寸，原样） */
+  measuredStubInches: number;
+  /** 标记距离（英寸，原样，试弯固定 12） */
+  markDistanceInches: number;
+  /** Actual Deduct = S − 标记距离 */
+  actualDeduct: number;
+  /** 估计 Actual Radius */
+  estimatedRadius: number;
+}
+
+/**
+ * Guided Calibration 纯计算：一次 90° 试弯 → Actual Deduct + 估计 Actual Radius。
+ * 非法输入返回 null，不抛异常。
+ */
+export function calibrateFromTestBend(
+  markDistanceInches: number,
+  measuredStubInches: number,
+  nominalRadius: number,
+  nominalDeduct: number,
+): GuidedCalibrationResult | null {
+  const actualDeduct = calibrateDeductFromStub(markDistanceInches, measuredStubInches);
+  if (actualDeduct === null) {
+    return null;
+  }
+  const estimatedRadius = estimateRadiusFromDeduct(
+    nominalRadius,
+    nominalDeduct,
+    actualDeduct,
+  );
+  if (estimatedRadius === null) {
+    return null;
+  }
+  return {
+    measuredStubInches,
+    markDistanceInches,
+    actualDeduct,
+    estimatedRadius,
+  };
+}
