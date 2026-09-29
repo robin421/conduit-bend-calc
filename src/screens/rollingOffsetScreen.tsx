@@ -18,6 +18,8 @@ import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useUnitSystem } from '../lib/unitStore';
+import { formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -38,6 +40,7 @@ function formatDeg(value: number): string {
 
 export default function RollingOffsetScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('rollingOffset', {
     riseText: '',
     rollText: '',
@@ -146,6 +149,10 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
 
   const hint = result ? undefined : 'Enter values to see results';
 
+  const spacingMeasurement = result ? formatMeasurement(result.spacingDisplay, unit) : undefined;
+  const trueOffsetMeasurement = result ? formatMeasurement(result.trueOffset, unit) : undefined;
+  const shrinkMeasurement = result ? formatMeasurement(result.shrinkDisplay, unit) : undefined;
+
   return (
     <ScrollView
       style={{ backgroundColor: theme.colors.background }}
@@ -163,7 +170,8 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
             value={riseText}
             onChangeText={setRiseText}
             onParsedChange={setRiseInches}
-            placeholder={`e.g. 6"`}
+            unit={unit}
+            placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
           />
           <View style={{ marginTop: theme.spacing.sm }}>
             <ImperialInput
@@ -171,7 +179,8 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
               value={rollText}
               onChangeText={setRollText}
               onParsedChange={setRollInches}
-              placeholder={`e.g. 8"`}
+              unit={unit}
+              placeholder={unit === 'metric' ? 'e.g. 200 mm' : 'e.g. 8"'}
             />
           </View>
         </View>
@@ -210,16 +219,16 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
       <ResultGroup
         hero={{
           label: 'Mark spacing',
-          value: result ? formatInches(result.spacingDisplay) : undefined,
-          unit: '"',
+          value: spacingMeasurement?.value,
+          unit: spacingMeasurement?.unit,
         }}
         rows={
           result
             ? [
                 {
                   label: 'True offset',
-                  value: formatInches(result.trueOffset),
-                  unit: '"',
+                  value: trueOffsetMeasurement?.value,
+                  unit: trueOffsetMeasurement?.unit,
                 },
                 {
                   label: 'Bender rotation',
@@ -228,8 +237,8 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
                 },
                 {
                   label: 'Shrink',
-                  value: formatInches(result.shrinkDisplay),
-                  unit: '"',
+                  value: shrinkMeasurement?.value,
+                  unit: shrinkMeasurement?.unit,
                 },
               ]
             : []

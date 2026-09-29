@@ -17,6 +17,8 @@ import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useUnitSystem } from '../lib/unitStore';
+import { formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -43,6 +45,7 @@ function parseKickAngle(text: string): number | null {
 
 export default function Kicked90Screen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('kicked90', {
     kickText: '',
     lengthText: '',
@@ -139,6 +142,8 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     hint = kickInvalid ? 'Kick angle must be a number between 0–90' : 'Enter values to see results';
   }
 
+  const gainMeasurement = result ? formatMeasurement(result.totalGain, unit) : undefined;
+
   return (
     <ScrollView
       style={{ backgroundColor: theme.colors.background }}
@@ -188,7 +193,8 @@ export default function Kicked90Screen({ route, navigation }: Props) {
               value={lengthText}
               onChangeText={setLengthText}
               onParsedChange={setLengthInches}
-              placeholder={`e.g. 10"`}
+              unit={unit}
+              placeholder={unit === 'metric' ? 'e.g. 250 mm' : 'e.g. 10"'}
             />
           </View>
         </View>
@@ -203,8 +209,8 @@ export default function Kicked90Screen({ route, navigation }: Props) {
       <ResultGroup
         hero={{
           label: 'Total gain (for conduit length)',
-          value: result ? formatInches(result.totalGain) : undefined,
-          unit: '"',
+          value: gainMeasurement?.value,
+          unit: gainMeasurement?.unit,
         }}
         hint={hint}
       />

@@ -8,8 +8,9 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import { formatImperial, parseImperial } from '../lib/imperial';
+import { formatImperial } from '../lib/imperial';
 import { useTheme } from '../theme';
+import { formatMetric, parseLength, type UnitSystem } from '../lib/units';
 
 interface ImperialInputProps {
   label: string;
@@ -17,6 +18,8 @@ interface ImperialInputProps {
   onChangeText: (text: string) => void;
   onParsedChange?: (inches: number | null) => void;
   placeholder?: string;
+  /** 单位系统；缺省 imperial（老行为）。 */
+  unit?: UnitSystem;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -25,18 +28,20 @@ export default function ImperialInput({
   value,
   onChangeText,
   onParsedChange,
-  placeholder = `e.g. 2' 3-1/2"`,
+  placeholder,
+  unit = 'imperial',
   style,
 }: ImperialInputProps) {
   const theme = useTheme();
+  const metric = unit === 'metric';
 
-  const parsed = useMemo(() => parseImperial(value), [value]);
+  const parsed = useMemo(() => parseLength(value, unit), [unit, value]);
   const isBlank = value.trim() === '';
 
   let error: string | null = null;
   if (!isBlank) {
     if (parsed === null) {
-      error = 'Invalid format, e.g. 2\' 3-1/2"';
+      error = metric ? 'Invalid format, e.g. 150 mm' : 'Invalid format, e.g. 2\' 3-1/2"';
     } else if (parsed <= 0) {
       error = 'Must be greater than 0';
     }
@@ -50,12 +55,14 @@ export default function ImperialInput({
 
   const handleBlur = () => {
     if (parsed !== null && !error) {
-      const formatted = formatImperial(parsed);
+      const formatted = metric ? formatMetric(parsed) : formatImperial(parsed);
       if (formatted !== value) {
         onChangeText(formatted);
       }
     }
   };
+
+  const resolvedPlaceholder = placeholder ?? (metric ? 'e.g. 150 mm' : `e.g. 2' 3-1/2"`);
 
   return (
     <View style={style}>
@@ -72,7 +79,7 @@ export default function ImperialInput({
         value={value}
         onChangeText={onChangeText}
         onBlur={handleBlur}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         placeholderTextColor={theme.colors.textSecondary}
         autoCapitalize="none"
         autoCorrect={false}

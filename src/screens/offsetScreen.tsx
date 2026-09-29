@@ -16,8 +16,10 @@ import WarningBar from '../components/warningBar';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
-import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import { useHistoryAutoSave, createHistoryId } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useUnitSystem } from '../lib/unitStore';
+import { formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -33,6 +35,7 @@ function formatInches(value: number): string {
 
 export default function OffsetScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('offset', {
     heightText: '',
     angle: DEFAULT_ANGLE,
@@ -121,8 +124,8 @@ export default function OffsetScreen({ route, navigation }: Props) {
     setHeightInches(null);
   }, [setMemory]);
 
-  const distance = result ? formatInches(result.distanceBetweenBends) : undefined;
-  const shrink = result ? formatInches(result.shrink) : undefined;
+  const distance = result ? formatMeasurement(result.distanceBetweenBends, unit) : undefined;
+  const shrink = result ? formatMeasurement(result.shrink, unit) : undefined;
 
   return (
     <ScrollView
@@ -141,7 +144,8 @@ export default function OffsetScreen({ route, navigation }: Props) {
             value={heightText}
             onChangeText={setHeightText}
             onParsedChange={setHeightInches}
-            placeholder={`e.g. 6"`}
+            unit={unit}
+            placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
           />
         </View>
 
@@ -177,8 +181,8 @@ export default function OffsetScreen({ route, navigation }: Props) {
       ) : null}
 
       <ResultGroup
-        hero={{ label: 'Mark spacing', value: distance, unit: '"' }}
-        rows={[{ label: 'Shrink', value: shrink, unit: '"' }]}
+        hero={{ label: 'Mark spacing', value: distance?.value, unit: distance?.unit }}
+        rows={[{ label: 'Shrink', value: shrink?.value, unit: shrink?.unit }]}
         hint={!result ? 'Enter values to see results' : undefined}
       />
 

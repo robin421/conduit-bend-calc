@@ -24,6 +24,8 @@ import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useUnitSystem } from '../lib/unitStore';
+import { formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -37,6 +39,7 @@ function formatInches(value: number): string {
 
 export default function StubScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('stub', { heightText: '' });
   const { heightText } = memory;
   const [heightInches, setHeightInches] = useState<number | null>(null);
@@ -134,6 +137,9 @@ export default function StubScreen({ route, navigation }: Props) {
     hint = 'Target height must exceed take-up';
   }
 
+  const markMeasurement =
+    markPoint !== null ? formatMeasurement(markPoint, unit) : undefined;
+
   return (
     <ScrollView
       style={{ backgroundColor: theme.colors.background }}
@@ -151,7 +157,8 @@ export default function StubScreen({ route, navigation }: Props) {
             value={heightText}
             onChangeText={setHeightText}
             onParsedChange={setHeightInches}
-            placeholder={`e.g. 12"`}
+            unit={unit}
+            placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
           />
         </View>
       </Card>
@@ -165,8 +172,8 @@ export default function StubScreen({ route, navigation }: Props) {
       <ResultGroup
         hero={{
           label: 'Mark location',
-          value: markPoint !== null ? formatInches(markPoint) : undefined,
-          unit: '"',
+          value: markMeasurement?.value,
+          unit: markMeasurement?.unit,
         }}
         hint={hint}
       />

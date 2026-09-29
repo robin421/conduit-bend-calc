@@ -20,6 +20,8 @@ import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useUnitSystem } from '../lib/unitStore';
+import { formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -43,6 +45,7 @@ function formatFromCenter(value: number): string {
 
 export default function ThreePointSaddleScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('threePointSaddle', {
     heightText: '',
     angle: DEFAULT_ANGLE,
@@ -136,6 +139,14 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
 
   const hint = result ? undefined : 'Enter values to see results';
 
+  const spacingMeasurement = result
+    ? formatMeasurement(result.markSpacingInches, unit)
+    : undefined;
+  const shrinkMeasurement =
+    result && result.shrinkInches !== undefined
+      ? formatMeasurement(result.shrinkInches, unit)
+      : undefined;
+
   return (
     <ScrollView
       style={{ backgroundColor: theme.colors.background }}
@@ -153,7 +164,8 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
             value={heightText}
             onChangeText={setHeightText}
             onParsedChange={setHeightInches}
-            placeholder={`e.g. 6"`}
+            unit={unit}
+            placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
             />
         </View>
 
@@ -191,17 +203,14 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
       <ResultGroup
         hero={{
           label: 'Bend spacing (center ↔ sides)',
-          value: result ? formatInches(result.markSpacingInches) : undefined,
-          unit: '"',
+          value: spacingMeasurement?.value,
+          unit: spacingMeasurement?.unit,
         }}
         rows={[
           {
             label: 'Center mark shrink',
-            value:
-              result && result.shrinkInches !== undefined
-                ? formatInches(result.shrinkInches)
-                : undefined,
-            unit: '"',
+            value: shrinkMeasurement?.value,
+            unit: shrinkMeasurement?.unit,
           },
         ]}
         hint={hint}
