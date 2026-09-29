@@ -112,6 +112,13 @@ SEO_PATHS = [
     "conduit-shrink-calculator/",
     "parallel-offset-calculator/",
     "how-to-bend-emt-conduit/",
+    # Batch 3 (2026-09-29). Keep in sync with scripts/gen-seo-pages.py page list.
+    "conduit-bending-formula/",
+    "hand-bender-markings/",
+    "emt-sizes-chart/",
+    "box-offset-bend/",
+    "how-to-bend-3-4-emt/",
+    "emt-vs-rigid-bending/",
 ]
 
 with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:

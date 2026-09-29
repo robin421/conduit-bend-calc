@@ -108,3 +108,13 @@
 - [ ] T51 parallel-offset-calculator 页：诚实指南页写法（App 无独立 parallel offset 计算器），讲"同角度+同基准+同shrink"做法
 - [ ] T52 how-to-bend-emt-conduit 页：新手指南（工具、读弯管器刻度、第一个 90°、安全习惯）
       验收：Given 12 页 When 跑 gen-seo-pages.py 自带 assert Then title≤60/desc≤160/正文250–650词全过；Given 生产部署 When 查 6 新 URL Then 全部 200；Given sitemap.xml Then 含 12 页 URL；Given Search Console Then 6 页逐个 Request Indexing 被接受
+
+## 第三批 SEO 页面（T53–T58，2026-09-29 新增）
+
+- [ ] T53 conduit-bending-formula 页：multiplier/shrink/gain 公式总汇 + 字段表 + worked example，定位公式速查长尾
+- [ ] T54 hand-bender-markings 页：arrow/star/rim notch/degree scale 四标记详解 + back-to-back 90s 示例
+- [ ] T55 emt-sizes-chart 页：1/2"–2" trade size vs OD/ID 表 + bender 选型 + 注明本站无 fill 计算器
+- [ ] T56 box-offset-bend 页：10° mini offset 做法（spacing=depth×6）+ 同平面检查 + shrink 提醒
+- [ ] T57 how-to-bend-3-4-emt 页：3/4" 专属数字（take-up 6"、min radius 4-1/2"）+ stub/offset/back-to-back 示例
+- [ ] T58 emt-vs-rigid-bending 页：从 bending 角度切入（take-up 差异、工具、force、springback），不与安装对比文重复
+      验收：Given 18 页 When 跑 gen-seo-pages.py 自带 assert Then title≤60/desc≤160/正文250–650词全过；Given 生产部署 When 查 6 新 URL Then 全部 200；Given sitemap.xml Then 含 18 页 URL；Given Search Console Then 6 页逐个 Request Indexing 被接受

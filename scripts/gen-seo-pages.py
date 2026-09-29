@@ -768,6 +768,346 @@ guide on this site &mdash; start with the offset, since it teaches multipliers a
 shrink, the two ideas behind everything else.</p>
 """,
     ),
+    # Batch 3 (2026-09-29): long-tail formula / markings / sizing / technique pages.
+    dict(
+        slug="conduit-bending-formula",
+        title="Conduit Bending Formula: Multipliers, Shrink & Spacing",
+        desc="Every conduit bending formula in one place: multiplier, offset spacing, "
+             "shrink, and 90\u00b0 gain \u2014 with tables and a worked field example.",
+        h1="Conduit Bending Formulas, Explained",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>Conduit bending is field trigonometry, but you do not need to solve triangles on a
+roof at 6 a.m. Four formulas cover nearly every bend you will ever make: multiplier,
+offset spacing, shrink, and the gain of a 90\u00b0. Learn what each one means and
+when to trust it, and the bender starts doing exactly what you told it to.</p>
+
+<h2>The multiplier: 1 \u00f7 sin(angle)</h2>
+<p>The multiplier tells you how far apart to put your marks for an offset. It is the
+cosecant of the bend angle \u2014 1 divided by the sine \u2014 and it is why
+<em>spacing = offset height \u00d7 multiplier</em> works:</p>
+<table>
+<tr><th>Bend angle</th><th>Multiplier</th><th>Shrink per inch of offset</th></tr>
+<tr><td>10\u00b0</td><td>6.0</td><td>1/16&quot;</td></tr>
+<tr><td>22.5\u00b0</td><td>2.6</td><td>3/16&quot;</td></tr>
+<tr><td>30\u00b0</td><td>2.0</td><td>1/4&quot;</td></tr>
+<tr><td>45\u00b0</td><td>1.4</td><td>3/8&quot;</td></tr>
+<tr><td>60\u00b0</td><td>1.2</td><td>1/2&quot;</td></tr>
+</table>
+<p>Electricians memorize the left two columns and stamp the table inside their hard hat.
+The third column \u2014 shrink \u2014 is where most layout mistakes come from.</p>
+
+<h2>Shrink: height \u00d7 tan(angle \u00f7 2)</h2>
+<p>An offset does not just move the conduit sideways; it also shortens the run. The
+geometric formula is <em>shrink = offset height \u00d7 tan(angle/2)</em>. At 30\u00b0
+that works out to exactly 1/4&quot; of shrink per inch of offset \u2014 which is why
+the trade rule &quot;subtract a quarter inch per inch of offset&quot; exists. The table
+above rounds the other angles to the nearest shop-friendly fraction.</p>
+
+<h2>The 90\u00b0 gain: 0.43 \u00d7 radius</h2>
+<p>A 90\u00b0 bend uses less conduit than the two straight legs it replaces. The gain
+is <em>G = 2R \u00d7 tan(45\u00b0) \u2212 R \u00d7 \u03c0/2</em>, which simplifies to
+about <strong>0.43 \u00d7 the bend's centerline radius</strong>. You need it when a
+run has a tight overall length budget; for most field work the bender's take-up
+marking absorbs it for you.</p>
+
+<h2>Worked example</h2>
+<p>You need a 3&quot; offset at 30\u00b0. Mark spacing: 3&quot; \u00d7 2.0 = <strong>6&quot;</strong>
+between marks. Shrink: 3&quot; \u00d7 1/4&quot; = <strong>3/4&quot;</strong> \u2014 subtract
+that from your measured run length before you mark. Two marks, two opposite 30\u00b0
+bends, and the conduit steps over 3&quot; while losing 3/4&quot; of length.</p>
+
+<h2>What formulas cannot tell you</h2>
+<p><strong>Take-up is not a formula.</strong> It is a per-bender number stamped on the
+head (5&quot; for 1/2&quot; EMT, 6&quot; for 3/4&quot;, 8&quot; for 1&quot;) that describes
+where that particular bender starts its 90\u00b0. Always measure and verify on your
+own bender \u2014 the app's calibration tool exists for exactly this.</p>
+""",
+    ),
+    dict(
+        slug="hand-bender-markings",
+        title="Conduit Bender Marks: Arrow, Star & Rim Notch Guide",
+        desc="What the arrow, star, rim notch, and degree scale on your conduit bender "
+             "mean \u2014 and how to read each mark for stub-ups, offsets, and saddles.",
+        h1="Reading Your Conduit Bender: Every Mark Explained",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>A hand bender head is covered in marks that look like decoration until someone tells
+you the system. There are four: the arrow, the star, the rim notch, and the degree
+scale. Each one answers a different question, and mixing them up is the most common
+reason a bend lands in the wrong place.</p>
+
+<h2>The arrow: offsets and stub-ups</h2>
+<p>The arrow \u2014 usually cast right at the tip of the hook \u2014 is your default
+reference. Line your conduit mark up with the arrow for <strong>stub-ups</strong>
+(mark = stub height minus take-up) and for <strong>offset marks</strong>. If you only
+remember one mark, remember this one: most bends in a normal day start at the arrow.</p>
+
+<h2>The star: back of 90 and back-to-back bends</h2>
+<p>The star marks the <strong>back of a 90\u00b0 bend</strong> \u2014 where the bend
+<em>ends</em>, not where it starts. It is the tool for back-to-back 90s: bend your
+first 90 at the arrow, measure the distance between the two bends <em>from the back
+of the first bend</em>, mark that point, then line the star up with the mark and
+reverse the bender. Your second 90 now starts exactly the right distance away.</p>
+
+<h2>The rim notch: 3-point saddle center</h2>
+<p>The rim notch sits at the center of the bender's curvature. For a <strong>3-point
+saddle</strong>, you center the saddle's middle mark on the rim notch and bend to
+45\u00b0, then flip the conduit and place the arrow (or the specified outer mark) at
+the two outer marks for the 22.5\u00b0 return bends. Saddles are the one bend where
+the center mark matters \u2014 and the notch is how you find it.</p>
+
+<h2>The degree scale: bend to the number, not the feel</h2>
+<p>The curved scale on the head shows common angles \u2014 usually 10, 22.5, 30, 45,
+and 60 degrees. Watch the scale, not your arms: stop when the conduit reaches the
+number. This is also the cheapest way to diagnose a wandering multiplier \u2014 if
+your offsets keep coming out wrong, check whether you are actually hitting the angle
+you think you are.</p>
+
+<h2>Worked example: back-to-back 90s</h2>
+<p>With 1/2&quot; EMT you need two parallel stubs 24&quot; apart. Bend the first 90 at the
+arrow. Measure 24&quot; from the <strong>back of that bend</strong>, mark, line the
+<strong>star</strong> up with the mark, flip the bender, and bend the second 90. The
+stubs come out 24&quot; apart on center. Do the same job at the arrow and you will be
+short by the take-up \u2014 5&quot; on a 1/2&quot; bender \u2014 every time.</p>
+
+<h2>Field tips</h2>
+<ul>
+<li>Marks are cast, not printed \u2014 fill them with a paint pen once; you will read
+them three times faster in dim basements.</li>
+<li>The star and rim notch sit close together on some heads. Double-check you are on
+the right one before a saddle.</li>
+<li>Every bender's marks are its own \u2014 a borrowed bender means a fresh round of
+take-up and radius checks. The app's calibration screen walks you through it.</li>
+</ul>
+""",
+    ),
+    dict(
+        slug="emt-sizes-chart",
+        title="EMT Conduit Sizes Chart: Trade Size, OD & ID",
+        desc="EMT conduit sizes chart: trade size vs. actual outside and inside diameter "
+             "for 1/2 to 2 inch, plus why trade size is not the real OD.",
+        h1="EMT Conduit Sizes Chart",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>The first surprise of EMT sizing: <strong>trade size is not the actual diameter.</strong>
+&quot;1/2-inch EMT&quot; is neither 1/2&quot; outside nor 1/2&quot; inside \u2014 it is a
+nominal name, and the real dimensions are bigger. Keep this chart on the truck and
+stop guessing which bender fits which stick.</p>
+
+<h2>EMT dimensions, 1/2&quot; through 2&quot;</h2>
+<table>
+<tr><th>Trade size</th><th>Outside diameter</th><th>Inside diameter</th><th>Wall thickness</th></tr>
+<tr><td>1/2&quot;</td><td>0.706&quot;</td><td>0.622&quot;</td><td>0.042&quot;</td></tr>
+<tr><td>3/4&quot;</td><td>0.922&quot;</td><td>0.824&quot;</td><td>0.049&quot;</td></tr>
+<tr><td>1&quot;</td><td>1.163&quot;</td><td>1.049&quot;</td><td>0.057&quot;</td></tr>
+<tr><td>1-1/4&quot;</td><td>1.510&quot;</td><td>1.380&quot;</td><td>0.065&quot;</td></tr>
+<tr><td>1-1/2&quot;</td><td>1.740&quot;</td><td>1.610&quot;</td><td>0.065&quot;</td></tr>
+<tr><td>2&quot;</td><td>2.197&quot;</td><td>2.067&quot;</td><td>0.065&quot;</td></tr>
+</table>
+<p>EMT is also made in 2-1/2&quot; through 4&quot; trade sizes; confirm exact diameters
+against the manufacturer's spec sheet before laying out large runs, since tolerances
+and coatings vary.</p>
+
+<h2>Why it matters for bending</h2>
+<ul>
+<li><strong>Bender size must match the trade size.</strong> A 3/4&quot; stick in a
+1/2&quot; bender kinks; a 1/2&quot; stick in a 3/4&quot; bender bends a sloppy, wide
+radius. The size is stamped on every bender head.</li>
+<li><strong>Take-up grows with size:</strong> 5&quot; for 1/2&quot; EMT, 6&quot; for 3/4&quot;,
+8&quot; for 1&quot; \u2014 always confirm against your own bender.</li>
+<li><strong>Hand benders top out at 1&quot; EMT</strong> (and 3/4&quot; rigid). Larger
+conduit needs a hydraulic or electric bender \u2014 or factory elbows.</li>
+</ul>
+
+<h2>Worked example: picking the right bender</h2>
+<p>You pull a stick marked &quot;3/4&quot; off the rack and measure 0.922&quot; across it
+with calipers \u2014 that confirms the chart: trade size is nominal. Grab the bender
+head stamped 3/4&quot;, check its 6&quot; take-up stamp, and your stub-up math becomes
+<em>mark = desired height \u2212 6&quot;</em>. Want an 18&quot; stub? Mark at 12&quot;
+from the end, arrow on the mark, bend to 90\u00b0.</p>
+
+<h2>A note on conduit fill</h2>
+<p>Sizing conduit for how many wires it can legally carry (conduit fill, NEC Chapter 9
+tables) is a separate calculation from bending. This site and the companion app
+focus on <strong>bend geometry</strong> \u2014 marks, multipliers, shrink, and
+calibration \u2014 and do not include a conduit fill calculator.</p>
+""",
+    ),
+    dict(
+        slug="box-offset-bend",
+        title="Box Offset Bend: How to Make a 10\u00b0 Mini Offset",
+        desc="Box offset bend explained: two 10\u00b0 bends that seat conduit flush in a "
+             "box knockout. Marks, spacing math, and field tips.",
+        h1="Box Offset Bend: The 10\u00b0 Mini Offset",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>A box offset is a tiny, two-bend offset \u2014 usually just two 10\u00b0 bends \u2014
+that kicks the conduit sideways by the depth of a box knockout or surface-mounted
+raceway so the run sits flush. It is the most common bend nobody practices, and the
+easiest one to overthink.</p>
+
+<h2>The geometry in one line</h2>
+<p>A box offset is a standard offset with a 10\u00b0 angle, so the 10\u00b0 multiplier
+(6.0) applies: <strong>mark spacing = offset depth \u00d7 6</strong>. For a typical
+1/2&quot;-deep seating, the marks land about 3&quot; apart. Shrink at 10\u00b0 is
+about 1/16&quot; per inch of offset \u2014 small enough to ignore on a short stub,
+but real on long runs.</p>
+
+<h2>How to bend one</h2>
+<ol>
+<li>Measure how deep the conduit must step \u2014 the knockout depth, say 1/2&quot;.</li>
+<li>Compute spacing: 1/2&quot; \u00d7 6 = <strong>3&quot;</strong> between marks.</li>
+<li>Make the first mark near the conduit end (a couple of inches in gives the bender
+room to grip), the second mark 3&quot; farther along.</li>
+<li>Arrow on the first mark, bend to 10\u00b0. Flip the conduit, arrow on the second
+mark, bend 10\u00b0 the opposite way.</li>
+<li>Sight down the conduit: both straight sections should be parallel, in the same
+plane, with no twist \u2014 a twisted box offset will not sit flat against the box.</li>
+</ol>
+
+<h2>Why 10\u00b0?</h2>
+<p>Ten degrees is the sweet spot: shallow enough that the offset is compact and the
+conduit still pulls wire easily, steep enough that the marks stay a workable distance
+apart. Steeper angles make the box offset taller and harder to keep planar; shallower
+angles push the marks so far apart the &quot;mini&quot; offset stops being mini.</p>
+
+<h2>Field tips</h2>
+<ul>
+<li><strong>Bend both bends in the same plane.</strong> Roll the conduit between bends
+and you get a dogleg that rocks against the box \u2014 the classic box-offset
+failure.</li>
+<li><strong>Check with a level</strong> before you cut: lay the offset against a flat
+surface and confirm both straight sections touch.</li>
+<li><strong>Bend slightly past 10\u00b0</strong> and let springback settle it; checking
+the degree scale beats guessing.</li>
+<li>On long conduit, subtract the shrink (about 1/16&quot; per inch of offset depth) from
+your measured run before marking.</li>
+</ul>
+
+<h2>What the app does for you</h2>
+<p>The offset calculator in Conduit Bend Calc runs this same math \u2014 enter the depth
+and 10\u00b0, and it returns the mark spacing and shrink so you can skip the mental
+arithmetic. Box offsets, full-size offsets, and kicks all use the same engine.</p>
+""",
+    ),
+    dict(
+        slug="how-to-bend-3-4-emt",
+        title="How to Bend 3/4 EMT Conduit: Take-Up & Bend Guide",
+        desc="How to bend 3/4 EMT conduit: the 6-inch take-up, minimum bend radius, "
+             "stub-ups and offsets \u2014 with worked examples for the most common size.",
+        h1="How to Bend 3/4\u2033 EMT Conduit",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>Three-quarter-inch EMT is the workhorse size on most commercial jobs \u2014 big
+enough for real branch circuits, small enough to bend by hand all day. Everything
+here is the same bending you already know, with the numbers that belong to 3/4&quot;:
+take-up 6&quot;, minimum bend radius about 4-1/2&quot;, and a bender head stamped
+3/4&quot;.</p>
+
+<h2>The three numbers that matter</h2>
+<ul>
+<li><strong>Take-up: 6&quot;.</strong> Every 90\u00b0 stub-up mark goes at <em>desired
+height \u2212 6&quot;</em>. It is stamped on the bender head \u2014 verify it, because
+a worn or borrowed bender can differ.</li>
+<li><strong>Minimum bend radius: ~4-1/2&quot;.</strong> Hand benders are built to meet
+it; a tighter bend kinks the conduit and fails inspection.</li>
+<li><strong>Matching bender required.</strong> 3/4&quot; EMT (0.922&quot; actual OD) in a
+1/2&quot; bender kinks; in a 1&quot; bender it bends a loose, oversized radius.</li>
+</ul>
+
+<h2>Worked example 1: 18&quot; stub-up</h2>
+<p>Mark at 18&quot; \u2212 6&quot; = <strong>12&quot;</strong> from the end of the conduit.
+Arrow on the mark, firm foot pressure, bend to 90\u00b0 on the degree scale \u2014
+bend a hair past and let springback settle it. Check: the back of the bend should sit
+at 18&quot;. If it lands at 17-3/4&quot;, your bender's real take-up is 6-1/4&quot; \u2014
+note it and move on.</p>
+
+<h2>Worked example 2: 2&quot; offset at 30\u00b0</h2>
+<p>Mark spacing: 2&quot; \u00d7 2.0 (30\u00b0 multiplier) = <strong>4&quot;</strong> between
+marks. Shrink: 2&quot; \u00d7 1/4&quot; = <strong>1/2&quot;</strong> \u2014 subtract it
+from the measured run length first. Arrow on the first mark, 30\u00b0; flip, arrow on
+the second mark, 30\u00b0 the other way. The conduit steps over 2&quot;.</p>
+
+<h2>Back-to-back 90s with the star</h2>
+<p>For parallel stubs: bend the first 90 at the arrow, measure the stub spacing from the
+<strong>back of the first bend</strong>, mark, line the <strong>star</strong> up with
+the mark, and reverse the bender for the second 90. Measuring from the arrow instead
+of the star is the classic 6&quot; error on 3/4&quot; conduit.</p>
+
+<h2>Field tips for 3/4&quot;</h2>
+<ul>
+<li>3/4&quot; takes noticeably more force than 1/2&quot; \u2014 keep the conduit flat on
+the ground and your weight over the bender foot, or the stick will walk and take
+your mark with it.</li>
+<li>Cut and ream before bending when you can; a sharp inside edge will shave wire
+insulation on the pull.</li>
+<li>When a stick carries several bends, bend first and cut to final length last \u2014
+shrink accounting is easier on a long stick.</li>
+<li>If your offsets keep landing shallow, you are probably under-bending: watch the
+degree scale, not your arms.</li>
+</ul>
+""",
+    ),
+    dict(
+        slug="emt-vs-rigid-bending",
+        title="EMT vs Rigid Conduit Bending: Key Differences",
+        desc="EMT vs rigid conduit bending: what changes at the bender \u2014 take-up, "
+             "tools, force, and springback \u2014 and when to choose each.",
+        h1="EMT vs Rigid Conduit Bending",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>EMT and rigid conduit both bend by the same geometry \u2014 offsets are still
+<em>height \u00d7 multiplier</em> \u2014 but everything around the geometry changes:
+the tool, the force, the take-up number, and how much the material forgives you.
+Here is what actually differs at the bender.</p>
+
+<h2>Wall thickness is the whole story</h2>
+<p>EMT (&quot;thin-wall&quot;) bends easily because there is less steel to move. Rigid
+metal conduit has walls roughly twice as thick, so the same bend needs far more
+force \u2014 and gives you almost no second chances. A miscut EMT stick is scrap;
+a miscut rigid stick is <em>expensive</em> scrap.</p>
+
+<h2>Tools: hand bender vs. power</h2>
+<ul>
+<li><strong>EMT up to 1&quot;</strong> bends on an ordinary hand bender, one size per
+head.</li>
+<li><strong>Rigid 1/2&quot; and 3/4&quot;</strong> can be hand-bent with a rigid-rated
+bender, but it is heavy work \u2014 many electricians reach for a hickey or a
+mechanical bender instead.</li>
+<li><strong>Anything larger</strong> \u2014 rigid over 3/4&quot;, EMT over 1&quot; \u2014
+belongs on a hydraulic or electric bender, or gets replaced by factory elbows.</li>
+</ul>
+
+<h2>Take-up is not interchangeable</h2>
+<p>Take-up is a per-bender, per-material number. The common field values differ: about
+5&quot; for 1/2&quot; EMT vs. 6&quot; for 1/2&quot; rigid, and 6&quot; for 3/4&quot; EMT
+vs. 8&quot; for 3/4&quot; rigid. Never carry a take-up number across materials \u2014
+measure and verify on the bender in your hands, ideally with the app's calibration
+tool.</p>
+
+<h2>Springback and forgiveness</h2>
+<p>Rigid springs back more than EMT, so you bend a touch further past the target angle
+and let it settle. EMT is the forgiving student: small corrections with the bender
+handle are usually fine. Rigid punishes re-bending \u2014 work a rigid bend back
+and forth and it flattens or cracks instead of improving.</p>
+
+<h2>When to choose which</h2>
+<table>
+<tr><th></th><th>EMT</th><th>Rigid (RMC)</th></tr>
+<tr><td>Bending effort</td><td>Hand bender to 1&quot;</td><td>Hand bender to 3/4&quot; with effort; power beyond</td></tr>
+<tr><td>Fittings</td><td>Set-screw / compression</td><td>Threaded</td></tr>
+<tr><td>Where used</td><td>Dry, protected indoor runs</td><td>Exposed, wet, hazardous, or damage-prone locations</td></tr>
+<tr><td>Cost &amp; speed</td><td>Cheaper, faster to install</td><td>Slower, labor-intensive</td></tr>
+</table>
+
+<h2>What stays the same</h2>
+<p>The math does not care about the material: multipliers, shrink, saddle spacing, and
+kick geometry are identical for EMT and rigid. That is why one calculator app covers
+both \u2014 you only re-measure the two numbers that <em>do</em> change: take-up and
+the bender's actual bend radius.</p>
+""",
+    ),
 ]
 
 
