@@ -15,6 +15,7 @@ import {
   NO_PREVIOUS_PURCHASE_MESSAGE,
   PRO_ENTITLEMENT_STORAGE_KEY,
   PRO_SKU,
+  SKU_UNAVAILABLE_MESSAGE,
   extractPurchaseErrorCode,
   parseProEntitlement,
   purchaseErrorMessage,
@@ -187,7 +188,11 @@ export function createProStore(
   /**
    * 启动时初始化：读本地 entitlement → 连接商店 → fetchProduct 定 SKU
    * 可用性 → getAvailablePurchases 刷新 entitlement。全程 try/catch，
-   * 任何异常都 fail-open（保持上次已知状态；从未知则解锁）。
+   * 任何异常都 fail-closed：skuAvailability 保持 'unknown'，
+   * 未验证购买一律 locked（见 resolveProAccess）。
+   *
+   * 本地 entitlement=true（此前已验证的购买）+ 本次离线 → 保持 unlocked：
+   * 这是"信任上次已验证状态"，不是 fail-open；从未验证过的一律 locked。
    */
   async function init(): Promise<void> {
     if (initStarted) {
@@ -212,9 +217,9 @@ export function createProStore(
         fetched = false;
       }
       if (!fetched) {
-        // 查询失败（离线/异常）：fail-open，保持 'unknown'。
+        // 查询失败（离线/异常/超时）：fail-closed，保持 'unknown' → locked。
       } else if (!product) {
-        // 商店解析不到 SKU：视为"未配置内购"，全解锁且不显示购买入口。
+        // 商店解析不到 SKU（商品未建/已下架）：购买入口不可用，保持 locked。
         setPatch({ skuAvailability: 'unavailable' });
       } else {
         setPatch({ skuAvailability: 'available', productPrice: product.localizedPrice });
@@ -225,11 +230,12 @@ export function createProStore(
             await persistEntitlement(true);
           }
         } catch {
-          // 刷新失败：fail-open，保留本地 entitlement。
+          // 刷新失败：fail-closed，保留本地 entitlement（已验证过的购买仍有效，
+          // 从未验证过的不解锁）。
         }
       }
     } catch {
-      // 连接商店失败：fail-open。
+      // 连接商店失败：fail-closed（skuAvailability 保持 'unknown' → locked）。
     } finally {
       setPatch({ initialized: true });
     }
@@ -244,6 +250,11 @@ export function createProStore(
   async function buy(): Promise<BuyResult> {
     await init();
     setPatch({ lastError: null });
+    // SKU 不可购买（离线/商品未解析）时直接拒绝，不调 requestPurchase。
+    if (state.skuAvailability !== 'available') {
+      setPatch({ lastError: SKU_UNAVAILABLE_MESSAGE });
+      return { ok: false, message: SKU_UNAVAILABLE_MESSAGE };
+    }
     let gw: IapGateway;
     try {
       gw = await gatewayProvider();

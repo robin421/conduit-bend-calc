@@ -5,6 +5,7 @@ import {
   NO_PREVIOUS_PURCHASE_MESSAGE,
   PRO_ENTITLEMENT_STORAGE_KEY,
   PRO_SKU,
+  SKU_UNAVAILABLE_MESSAGE,
   extractPurchaseErrorCode,
   parseProEntitlement,
   purchaseErrorMessage,
@@ -27,12 +28,12 @@ test('resolveProAccess: 已购买 → 无论 SKU 状态都 unlocked', () => {
   assert.equal(resolveProAccess('unknown', true), 'unlocked');
 });
 
-test('resolveProAccess: SKU 不可用（商品未建）→ 全解锁', () => {
-  assert.equal(resolveProAccess('unavailable', false), 'unlocked');
+test('resolveProAccess: SKU 不可用（商品未建/已下架）→ 保持 locked', () => {
+  assert.equal(resolveProAccess('unavailable', false), 'locked');
 });
 
-test('resolveProAccess: SKU 未知（离线/异常）→ fail-open 全解锁', () => {
-  assert.equal(resolveProAccess('unknown', false), 'unlocked');
+test('resolveProAccess: SKU 未知（离线/异常/超时）→ fail-closed 保持 locked', () => {
+  assert.equal(resolveProAccess('unknown', false), 'locked');
 });
 
 test('parseProEntitlement: 空值/损坏数据安全回退 purchased=false', () => {
@@ -93,6 +94,13 @@ test('purchaseErrorMessage: 其它/未知错误 → 通用失败文案', () => {
 
 test('NO_PREVIOUS_PURCHASE_MESSAGE 文案', () => {
   assert.equal(NO_PREVIOUS_PURCHASE_MESSAGE, 'No previous purchase found.');
+});
+
+test('SKU_UNAVAILABLE_MESSAGE 文案', () => {
+  assert.equal(
+    SKU_UNAVAILABLE_MESSAGE,
+    'Purchase temporarily unavailable. Please check your connection and try again.',
+  );
 });
 
 test('extractPurchaseErrorCode: 从未知错误中提取 code', () => {

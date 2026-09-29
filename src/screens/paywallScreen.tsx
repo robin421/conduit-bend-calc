@@ -11,6 +11,7 @@ import {
   restorePro,
   useProAccess,
 } from '../lib/proStore';
+import { SKU_UNAVAILABLE_MESSAGE } from '../lib/iap';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 
@@ -31,7 +32,7 @@ const PRO_BENEFITS = [
 export default function PaywallScreen({ navigation }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { access, productPrice, initialized, lastError, pendingPurchase } =
+  const { access, productPrice, initialized, lastError, pendingPurchase, skuAvailability } =
     useProAccess();
   const [buying, setBuying] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -195,16 +196,27 @@ export default function PaywallScreen({ navigation }: Props) {
           </Text>
         ) : null}
 
-        <BigButton
-          title={
-            buying ? 'Processing…' : productPrice ? `Unlock Pro Lifetime — ${productPrice}` : 'Unlock Pro Lifetime'
-          }
-          variant="primary"
-          disabled={busy}
-          onPress={() => {
-            void handleBuy();
-          }}
-        />
+        {skuAvailability !== 'available' ? (
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+            }}
+          >
+            {SKU_UNAVAILABLE_MESSAGE}
+          </Text>
+        ) : (
+          <BigButton
+            title={
+              buying ? 'Processing…' : productPrice ? `Unlock Pro Lifetime — ${productPrice}` : 'Unlock Pro Lifetime'
+            }
+            variant="primary"
+            disabled={busy}
+            onPress={() => {
+              void handleBuy();
+            }}
+          />
+        )}
         <BigButton
           title={restoring ? 'Restoring…' : 'Restore Purchase'}
           variant="secondary"

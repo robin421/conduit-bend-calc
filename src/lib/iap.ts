@@ -15,8 +15,11 @@ export const PRO_ENTITLEMENT_STORAGE_KEY = '@cbc:pro-entitlement-v1';
 /**
  * SKU 可用性三态：
  * - 'available'：商店可解析到该 SKU，走正常购买流程；
- * - 'unavailable'：商店解析不到该 SKU（控制台商品未建），视为"未配置内购"；
- * - 'unknown'：尚未查询成功（离线/异常），fail-open。
+ * - 'unavailable'：商店解析不到该 SKU（商品未建/已下架/查询失败但明确无此商品）；
+ * - 'unknown'：尚未查询成功（离线/异常/超时）。
+ *
+ * 安全语义（fail-closed）：'unavailable' / 'unknown' 只影响购买入口的展示，
+ * 绝不作为解锁依据。解锁的唯一凭证是已验证的购买（purchased=true）。
  */
 export type SkuAvailability = 'available' | 'unavailable' | 'unknown';
 
@@ -24,21 +27,24 @@ export type SkuAvailability = 'available' | 'unavailable' | 'unknown';
 export type ProAccess = 'unlocked' | 'locked';
 
 /**
- * 三态访问判定（fail-open）：
- * - 已购买 → unlocked
- * - SKU 不可解析（商品未建）→ unlocked，不显示任何购买入口
- * - SKU 未知（离线/异常）→ unlocked，不锁死用户
- * - SKU 可用且未购买 → locked
+ * 访问判定（fail-closed）：
+ * 解锁的唯一凭证是已验证的购买（purchased=true），来源只有三处：
+ *  1. 商店 getPurchasedSkus/getAvailablePurchases 返回该 SKU；
+ *  2. purchaseUpdatedListener 送达该 SKU 的非 pending 购买；
+ *  3. 本地 entitlement 缓存（仅由 1/2 写入，用于已购用户离线启动）。
+ * SKU 查不到 / 查询失败 / 离线 / 超时 → 一律 locked，绝不自动解锁。
+ * sku 参数仅用于购买入口的 UI 展示分支，不参与解锁判定。
  */
 export function resolveProAccess(sku: SkuAvailability, purchased: boolean): ProAccess {
   if (purchased) {
     return 'unlocked';
   }
-  if (sku === 'available') {
-    return 'locked';
-  }
-  return 'unlocked';
+  return 'locked';
 }
+
+/** SKU 不可购买时（unknown/unavailable）付费墙的英文提示。 */
+export const SKU_UNAVAILABLE_MESSAGE =
+  'Purchase temporarily unavailable. Please check your connection and try again.';
 
 /** 本地 entitlement：是否已购买 Pro。 */
 export interface ProEntitlement {

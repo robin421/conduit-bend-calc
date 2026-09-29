@@ -120,16 +120,20 @@ function createStore(
 
 const tick = () => new Promise((resolve) => setImmediate(resolve));
 
-test('SKU 不可用（商品未建）→ 全解锁，不显示购买入口', async () => {
+test('SKU 不可用（商品未建/已下架）→ 保持 locked，购买入口不可用', async () => {
   const gateway = new FakeGateway({ product: null });
   const { store } = createStore(gateway);
   await store.init();
-  assert.equal(store.getAccess(), 'unlocked');
+  assert.equal(store.getAccess(), 'locked');
   const snap = store.snapshot();
   assert.equal(snap.skuAvailability, 'unavailable');
   assert.equal(snap.initialized, true);
-  // 未购买、未请求购买：没有任何购买入口被触发
+  // buy() 直接拒绝，不调 requestPurchase
+  const result = await store.buy();
+  assert.equal(result.ok, false);
+  assert.equal(result.message, 'Purchase temporarily unavailable. Please check your connection and try again.');
   assert.deepEqual(gateway.requestedSkus, []);
+  assert.equal(store.getAccess(), 'locked');
 });
 
 test('SKU 可用但未购买 → 锁定，价格来自 localizedPrice', async () => {
@@ -154,21 +158,40 @@ test('商店已有购买记录 → 全解锁并持久化 entitlement', async () 
   );
 });
 
-test('离线/连接异常 → fail-open 全解锁', async () => {
+test('离线/连接异常 → fail-closed 保持 locked', async () => {
   const gateway = new FakeGateway({ initThrows: true });
   const { store } = createStore(gateway);
   await store.init();
-  assert.equal(store.getAccess(), 'unlocked');
+  assert.equal(store.getAccess(), 'locked');
   assert.equal(store.snapshot().skuAvailability, 'unknown');
   assert.equal(store.snapshot().initialized, true);
 });
 
-test('fetchProduct 查询失败 → fail-open 全解锁', async () => {
+test('fetchProduct 查询失败 → fail-closed 保持 locked', async () => {
   const gateway = new FakeGateway({ fetchThrows: true });
   const { store } = createStore(gateway);
   await store.init();
-  assert.equal(store.getAccess(), 'unlocked');
+  assert.equal(store.getAccess(), 'locked');
   assert.equal(store.snapshot().skuAvailability, 'unknown');
+});
+
+test('SKU 未知（离线）时 buy() 直接拒绝，不调 requestPurchase', async () => {
+  const gateway = new FakeGateway({ initThrows: true });
+  const { store } = createStore(gateway);
+  const result = await store.buy();
+  assert.equal(result.ok, false);
+  assert.equal(result.message, 'Purchase temporarily unavailable. Please check your connection and try again.');
+  assert.deepEqual(gateway.requestedSkus, []);
+  assert.equal(store.getAccess(), 'locked');
+  assert.equal(store.snapshot().lastError, 'Purchase temporarily unavailable. Please check your connection and try again.');
+});
+
+test('getPurchasedSkus 返回空列表 → 保持 locked（无购买证据不解锁）', async () => {
+  const gateway = new FakeGateway({ purchasedSkus: [] });
+  const { store } = createStore(gateway);
+  await store.init();
+  assert.equal(store.snapshot().skuAvailability, 'available');
+  assert.equal(store.getAccess(), 'locked');
 });
 
 test('损坏的存储数据 → 安全回退，不崩溃、不误授权', async () => {
@@ -303,7 +326,8 @@ test('setGateway 替换网关后可重新 init', async () => {
   const unavailable = new FakeGateway({ product: null });
   const store = createProStore(storage, () => Promise.resolve(unavailable));
   await store.init();
-  assert.equal(store.getAccess(), 'unlocked');
+  // 商品未建 → fail-closed 保持 locked
+  assert.equal(store.getAccess(), 'locked');
   assert.equal(store.snapshot().skuAvailability, 'unavailable');
 
   const available = new FakeGateway();
@@ -313,10 +337,12 @@ test('setGateway 替换网关后可重新 init', async () => {
   assert.equal(store.getAccess(), 'locked');
 });
 
-test('buy 时网关不可用 → 网络文案且不抛异常', async () => {
+test('buy 时网关不可用 → 不可用文案且不抛异常', async () => {
   const storage = createMemoryStorage();
   const store = createProStore(storage, () => Promise.reject(new Error('no module')));
   const result = await store.buy();
   assert.equal(result.ok, false);
-  assert.equal(result.message, 'Network unavailable. Your previous purchase status is kept.');
+  // fail-fast：sku 未知时直接拒绝，不走到 requestPurchase
+  assert.equal(result.message, 'Purchase temporarily unavailable. Please check your connection and try again.');
+  assert.equal(store.getAccess(), 'locked');
 });
