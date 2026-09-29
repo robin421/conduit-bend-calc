@@ -11,7 +11,6 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
-import DownloadBanner from '../components/downloadBanner';
 import ProDownloadSheet from '../components/proDownloadSheet';
 import {
   FOUR_POINT_SADDLE_ICON,
@@ -84,8 +83,6 @@ export default function CalcHomeScreen({ navigation }: Props) {
 
   return (
     <>
-      {/* Web 固定下载 banner：内部自管理显示/占位，Native 不渲染 */}
-      <DownloadBanner />
       <ScrollView
         style={{ backgroundColor: theme.colors.background }}
         contentContainerStyle={[

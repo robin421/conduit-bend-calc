@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { applyWebDocumentTitle } from './src/lib/documentTitle';
 import { initProIap } from './src/lib/proStore';
+import DownloadBanner from './src/components/downloadBanner';
 import RootTabs from './src/navigation/rootTabs';
 import { getNavigationTheme, useTheme } from './src/theme';
 
@@ -21,6 +22,8 @@ export default function App() {
   }, []);
   return (
     <SafeAreaProvider>
+      {/* Web 固定下载 banner：挂在导航之外才能压过导航头；Native 不渲染 */}
+      <DownloadBanner />
       <NavigationContainer
         theme={getNavigationTheme(theme)}
         documentTitle={{ enabled: false }}

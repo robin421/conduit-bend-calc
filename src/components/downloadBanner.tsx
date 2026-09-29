@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, type ComponentProps, type ComponentType } from 'react';
 import {
   Image,
-  Linking,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
   type ImageStyle,
+  type StyleProp,
+  type TextStyle,
   type ViewStyle,
 } from 'react-native';
 
@@ -21,6 +22,17 @@ import { useTheme } from '../theme';
 
 /** Banner 固定高度；同值用作内容区占位，避免遮挡。 */
 export const DOWNLOAD_BANNER_HEIGHT = 60;
+
+/**
+ * react-native-web 的 Text 支持 href / hrefAttrs（渲染为 <a>），
+ * 但 RN 类型未收录，这里做一次类型扩展断言；Native 端忽略该 prop。
+ */
+const AnchorText = Text as unknown as ComponentType<
+  ComponentProps<typeof Text> & {
+    href?: string;
+    hrefAttrs?: { target?: string; rel?: string };
+  }
+>;
 
 function readDismissedAt(): number | null {
   try {
@@ -60,9 +72,13 @@ function isDismissedWithinWindow(): boolean {
 }
 
 /**
- * Web 首页顶部固定下载 banner：常驻提醒访客下载 App 体验更多功能。
- * 仅在 Web 渲染；Native 端返回 null。显示状态组件内部自管理，
- * 同时渲染等高占位，保证下方内容不被 fixed banner 遮挡。
+ * Web 顶部固定下载 banner：常驻提醒访客下载 App 体验更多功能。
+ * 仅在 Web 渲染；Native 端返回 null。
+ *
+ * 挂载位置说明：必须挂在 App 根节点（NavigationContainer 之外），
+ * 因为 native-stack 的导航头渲染在屏幕容器之外的同级堆叠上下文里，
+ * banner 放在任何屏幕内部都无法用 z-index 压过导航头。
+ * 因此 banner 出现在全部 Web 页面顶部（不只首页），这是有意为之。
  */
 export default function DownloadBanner() {
   const theme = useTheme();
@@ -84,7 +100,7 @@ export default function DownloadBanner() {
       <View
         accessibilityRole="header"
         accessibilityLabel="Download the Conduit Bend Calc app"
-        style={[styles.banner, { backgroundColor: theme.colors.primary }]}
+        style={[styles.banner, { backgroundColor: theme.colors.accent }]}
       >
         <Image
           source={require('../../assets/icon.png')}
@@ -94,36 +110,39 @@ export default function DownloadBanner() {
         <View style={styles.textBlock}>
           <Text
             numberOfLines={1}
-            style={[styles.title, { color: theme.colors.onPrimary }]}
+            style={[styles.title, { color: theme.colors.onAccent }]}
           >
             {DOWNLOAD_BANNER_COPY.title}
           </Text>
           <Text
             numberOfLines={1}
-            style={[styles.subtitle, { color: theme.colors.resultLabel }]}
+            style={[styles.subtitle, { color: theme.colors.onAccent }]}
           >
             {DOWNLOAD_BANNER_COPY.subtitle}
           </Text>
         </View>
-        <Pressable
-          accessibilityRole="button"
+        <AnchorText
+          accessibilityRole="link"
           accessibilityLabel="Get the Conduit Bend Calc app on Google Play"
-          onPress={() => {
-            void Linking.openURL(GOOGLE_PLAY_URL).catch(() => undefined);
-          }}
-          style={styles.getButton}
+          href={GOOGLE_PLAY_URL}
+          hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
+          style={
+            [
+              styles.getButton,
+              styles.getText,
+              { color: theme.colors.onAccent },
+            ] as StyleProp<TextStyle>
+          }
         >
-          <Text style={[styles.getText, { color: theme.colors.primary }]}>
-            {DOWNLOAD_BANNER_COPY.button}
-          </Text>
-        </Pressable>
+          {DOWNLOAD_BANNER_COPY.button}
+        </AnchorText>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Dismiss download banner"
           onPress={handleDismiss}
           style={styles.closeButton}
         >
-          <Text style={[styles.closeText, { color: theme.colors.onPrimary }]}>
+          <Text style={[styles.closeText, { color: theme.colors.onAccent }]}>
             ✕
           </Text>
         </Pressable>
@@ -146,7 +165,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     gap: 10,
-    zIndex: 10,
+    // 必须压过导航头所在的堆叠上下文：组件挂在 App 根节点，
+    // 此处 zIndex 直接参与根堆叠上下文比较。
+    zIndex: 1000,
   },
   appIcon: {
     width: 40,
