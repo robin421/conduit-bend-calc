@@ -1,8 +1,10 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { applyWebDocumentTitle } from './src/lib/documentTitle';
 import { initProIap } from './src/lib/proStore';
 import RootTabs from './src/navigation/rootTabs';
 import { getNavigationTheme, useTheme } from './src/theme';
@@ -12,10 +14,17 @@ export default function App() {
   useEffect(() => {
     // Pro 内购初始化：fire-and-forget，内部已 fail-open，异常直接吞掉。
     initProIap().catch(() => undefined);
+    // Web 端固定 SEO 标题；Native 端不受影响。
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      applyWebDocumentTitle(true, document);
+    }
   }, []);
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={getNavigationTheme(theme)}>
+      <NavigationContainer
+        theme={getNavigationTheme(theme)}
+        documentTitle={{ enabled: false }}
+      >
         <RootTabs />
       </NavigationContainer>
       <StatusBar style="light" />

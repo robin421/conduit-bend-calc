@@ -7,6 +7,7 @@ import LookupScreen from '../screens/lookupScreen';
 import { useTheme } from '../theme';
 import CalcStack from './calcStack';
 import type { CalcStackParamList } from './calcStack';
+import { handleCalcTabPress } from './calcTabReset';
 
 export type RootTabParamList = {
   CalcHome: NavigatorScreenParams<CalcStackParamList>;
@@ -42,6 +43,9 @@ export default function RootTabs() {
         name="CalcHome"
         component={CalcStack}
         options={{ title: 'Calculate', headerShown: false, tabBarIcon: tabIcon('⌐') }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => handleCalcTabPress(navigation, event),
+        })}
       />
       <Tab.Screen
         name="Lookup"

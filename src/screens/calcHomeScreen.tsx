@@ -13,6 +13,13 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import {
+  FOUR_POINT_SADDLE_ICON,
+  GOOGLE_PLAY_BADGE_ASPECT_RATIO,
+  GOOGLE_PLAY_CARD_PADDING_VERTICAL,
+  GOOGLE_PLAY_URL,
+  THREE_POINT_SADDLE_ICON,
+} from '../lib/homeContent';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 import { useProAccess } from '../lib/proStore';
@@ -32,8 +39,8 @@ interface CalculatorEntry {
 const ENTRIES: CalculatorEntry[] = [
   { key: 'Offset', icon: '⌐', name: 'Offset Bend', description: 'Offset: mark spacing & shrink' },
   { key: 'Stub', icon: '∟', name: '90° Stub', description: 'Stub-up: mark location' },
-  { key: 'ThreePointSaddle', icon: '⋀', name: '3-Point Saddle', description: '3-point saddle' },
-  { key: 'FourPointSaddle', icon: '⋀⋀', name: '4-Point Saddle', description: '4-point saddle' },
+  { key: 'ThreePointSaddle', icon: THREE_POINT_SADDLE_ICON, name: '3-Point Saddle', description: '3-point saddle' },
+  { key: 'FourPointSaddle', icon: FOUR_POINT_SADDLE_ICON, name: '4-Point Saddle', description: '4-point saddle' },
   { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
   { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
   { key: 'GuidedCalibration', icon: '◎', name: 'Calibrate My Bender', description: 'One test bend: match the app to your bender', pro: true },
@@ -42,8 +49,6 @@ const ENTRIES: CalculatorEntry[] = [
 
 /** Web 专属：在计算器卡片与校准卡片之间插入 Google Play 导流卡。 */
 const PLAY_CARD_INDEX = ENTRIES.findIndex((entry) => entry.pro);
-const GOOGLE_PLAY_URL =
-  'https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc';
 
 function GooglePlayCard() {
   const theme = useTheme();
@@ -214,11 +219,11 @@ const styles = StyleSheet.create({
   },
   playCard: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: GOOGLE_PLAY_CARD_PADDING_VERTICAL,
   },
   playBadge: {
     width: 258,
-    aspectRatio: 646 / 250,
+    aspectRatio: GOOGLE_PLAY_BADGE_ASPECT_RATIO,
   },
   accentBar: {
     width: 4,
