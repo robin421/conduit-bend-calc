@@ -52,6 +52,36 @@ export function parseLength(input: string, unit: UnitSystem): number | null {
   return unit === 'metric' ? parseMetric(input) : parseImperial(input);
 }
 
+/**
+ * 单位切换时清理输入框残留的旧单位符号。
+ * - 空白输入原样返回（保持未填写状态）。
+ * - 新单位能直接解析的原样返回（纯数字或带新单位符号的都无需处理）。
+ * - 否则剥离所有长度单位符号（`"` `″` `'` `ft` `in` `mm` `cm` `m` 等），
+ *   剥离后能解析则返回剥离后的文本（只留数字部分）；
+ *   仍无法解析则返回空字符串（清空该框，不留报错状态）。
+ * 纯函数，可被 node --test 直接 import。
+ */
+export function sanitizeInputForUnit(value: string, unit: UnitSystem): string {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  if (value.trim() === '') {
+    return value;
+  }
+  if (parseLength(value, unit) !== null) {
+    return value;
+  }
+  const stripped = value
+    .replace(/[‘’‚‛′″“”«»"'`]/g, ' ')
+    .replace(/(feet|foot|ft|inches|inch|in|mm|cm|m)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (stripped === '' || parseLength(stripped, unit) === null) {
+    return '';
+  }
+  return stripped;
+}
+
 /** 将英寸数格式化为公制字符串（mm，保留 1 位小数，整数不带小数）。 */
 export function formatMetric(inches: number, fractionDigits = 1): string {
   if (!Number.isFinite(inches)) {

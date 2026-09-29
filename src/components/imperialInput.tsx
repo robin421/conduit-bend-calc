@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   StyleProp,
   StyleSheet,
@@ -10,7 +10,7 @@ import {
 
 import { formatDecimalInches, formatImperial } from '../lib/imperial';
 import { useTheme } from '../theme';
-import { formatMetric, parseLength, type UnitSystem } from '../lib/units';
+import { formatMetric, parseLength, sanitizeInputForUnit, type UnitSystem } from '../lib/units';
 
 interface ImperialInputProps {
   label: string;
@@ -53,6 +53,19 @@ export default function ImperialInput({
   useEffect(() => {
     onParsedChange?.(error ? null : parsed);
   }, [error, onParsedChange, parsed]);
+
+  // 单位切换时清理残留的旧单位符号（如 6" 切到 metric 后变 6），
+  // 去掉符号仍解析失败则清空该框。所有长度输入框经由此组件集中处理。
+  const prevUnitRef = useRef(unit);
+  useEffect(() => {
+    if (prevUnitRef.current !== unit) {
+      prevUnitRef.current = unit;
+      const sanitized = sanitizeInputForUnit(value, unit);
+      if (sanitized !== value) {
+        onChangeText(sanitized);
+      }
+    }
+  }, [unit, value, onChangeText]);
 
   const borderColor = error ? theme.colors.error : theme.colors.border;
 

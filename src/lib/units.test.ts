@@ -9,6 +9,7 @@ import {
   mmToInches,
   parseLength,
   parseMetric,
+  sanitizeInputForUnit,
   MM_PER_INCH,
 } from './units.ts';
 
@@ -73,4 +74,32 @@ test('formatMeasurement: 三态拆成 value + unit', () => {
   assert.deepEqual(formatMeasurement(1.5, 'decimal'), { value: '1.5', unit: '"' });
   assert.deepEqual(formatMeasurement(2.625, 'decimal'), { value: '2.63', unit: '"' });
   assert.deepEqual(formatMeasurement(1, 'metric'), { value: '25.4', unit: 'mm' });
+});
+
+test('sanitizeInputForUnit: 切换单位时去掉残留符号', () => {
+  // 核心 bug 场景：6" 切 metric → 6
+  assert.equal(sanitizeInputForUnit('6"', 'metric'), '6');
+  assert.equal(sanitizeInputForUnit('6″', 'metric'), '6');
+  assert.equal(sanitizeInputForUnit('150 mm', 'fractional'), '150');
+  assert.equal(sanitizeInputForUnit('150mm', 'fractional'), '150');
+  assert.equal(sanitizeInputForUnit('1.5 m', 'fractional'), '1.5');
+  assert.equal(sanitizeInputForUnit(`2' 3-1/2"`, 'metric'), '');
+  assert.equal(sanitizeInputForUnit(`2' 3-1/2"`, 'fractional'), `2' 3-1/2"`);
+});
+
+test('sanitizeInputForUnit: 无符号/已合法/空白输入原样保留', () => {
+  assert.equal(sanitizeInputForUnit('6', 'metric'), '6');
+  assert.equal(sanitizeInputForUnit('6', 'fractional'), '6');
+  assert.equal(sanitizeInputForUnit('6"', 'fractional'), '6"');
+  assert.equal(sanitizeInputForUnit('6"', 'decimal'), '6"');
+  assert.equal(sanitizeInputForUnit('150 mm', 'metric'), '150 mm');
+  assert.equal(sanitizeInputForUnit('', 'metric'), '');
+  assert.equal(sanitizeInputForUnit('   ', 'fractional'), '   ');
+});
+
+test('sanitizeInputForUnit: 非法残留直接清空', () => {
+  assert.equal(sanitizeInputForUnit('abc', 'metric'), '');
+  assert.equal(sanitizeInputForUnit('2-1/2"', 'metric'), '');
+  assert.equal(sanitizeInputForUnit('1 ft 2-1/2 in', 'metric'), '');
+  assert.equal(sanitizeInputForUnit('1 ft 2-1/2 in', 'fractional'), '1 ft 2-1/2 in');
 });
