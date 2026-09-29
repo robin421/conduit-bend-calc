@@ -8,6 +8,7 @@ import {
 } from '../calculators/warnings/warnings';
 import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
 import BenderRow from '../components/benderRow';
+import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -251,6 +252,17 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
           unit: spacingMeasurement?.unit,
         }}
         hint={hint}
+      />
+
+      <BenderStatusBanner
+        profile={activeProfile}
+        isPro={access === 'unlocked'}
+        showCalibrateCta={result !== null}
+        onCalibrate={() =>
+          navigation.navigate(
+            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
+          )
+        }
       />
 
       <ExpectedActualFeedback

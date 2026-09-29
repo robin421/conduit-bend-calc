@@ -6,6 +6,7 @@ import { calculateOffset } from '../calculators/offset/offset';
 import { offsetWarnings } from '../calculators/warnings/warnings';
 import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
 import BenderRow from '../components/benderRow';
+import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -202,6 +203,17 @@ export default function OffsetScreen({ route, navigation }: Props) {
         hero={{ label: 'Mark spacing', value: distance?.value, unit: distance?.unit }}
         rows={[{ label: 'Shrink', value: shrink?.value, unit: shrink?.unit }]}
         hint={!result ? 'Enter values to see results' : undefined}
+      />
+
+      <BenderStatusBanner
+        profile={activeProfile}
+        isPro={access === 'unlocked'}
+        showCalibrateCta={result !== null}
+        onCalibrate={() =>
+          navigation.navigate(
+            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
+          )
+        }
       />
 
       <ExpectedActualFeedback

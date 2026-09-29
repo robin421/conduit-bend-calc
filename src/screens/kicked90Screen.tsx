@@ -6,6 +6,7 @@ import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
 import { calculateKicked90 } from '../calculators/kicked90/kicked90';
 import { kicked90Warnings } from '../calculators/warnings/warnings';
 import BenderRow from '../components/benderRow';
+import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -231,6 +232,17 @@ export default function Kicked90Screen({ route, navigation }: Props) {
           unit: gainMeasurement?.unit,
         }}
         hint={hint}
+      />
+
+      <BenderStatusBanner
+        profile={activeProfile}
+        isPro={access === 'unlocked'}
+        showCalibrateCta={result !== null}
+        onCalibrate={() =>
+          navigation.navigate(
+            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
+          )
+        }
       />
 
       <ExpectedActualFeedback

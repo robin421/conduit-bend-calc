@@ -15,12 +15,16 @@ import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'Paywall'>;
 
-/** Pro 功能列表：名称 + 描述复用首页文案。 */
-const PRO_FEATURES = [
-  { name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
-  { name: '3-Point Saddle', description: '3-point saddle' },
-  { name: '4-Point Saddle', description: '4-point saddle' },
-  { name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
+/**
+ * Pro 权益：围绕 calibration / accuracy / waste reduction，
+ * 不卖"更多计算器"（P0-6）。
+ */
+const PRO_BENEFITS = [
+  'Calibrate your actual bender',
+  'Personalized bend measurements',
+  'Catch impossible bends',
+  'Reduce scrap and rework',
+  'Save multiple bender profiles',
 ];
 
 export default function PaywallScreen({ navigation }: Props) {
@@ -96,21 +100,23 @@ export default function PaywallScreen({ navigation }: Props) {
           fontWeight: theme.fontWeight.semibold,
         }}
       >
-        Unlock Pro
+        Bend It Right the First Time
       </Text>
       <Text
         style={{
           color: theme.colors.textSecondary,
           fontSize: theme.fontSize.body,
+          lineHeight: 22,
         }}
       >
-        One-time purchase. Yours forever.
+        Calibrate the app to your actual bender and catch risky bends before cutting
+        conduit.
       </Text>
 
       <View style={{ gap: theme.spacing.sm }}>
-        {PRO_FEATURES.map((feature) => (
+        {PRO_BENEFITS.map((benefit) => (
           <View
-            key={feature.name}
+            key={benefit}
             style={[
               styles.featureRow,
               {
@@ -121,27 +127,29 @@ export default function PaywallScreen({ navigation }: Props) {
               },
             ]}
           >
+            <Text style={[styles.check, { color: theme.colors.success }]}>✓</Text>
             <Text
               style={{
                 color: theme.colors.textPrimary,
                 fontSize: theme.fontSize.body,
                 fontWeight: theme.fontWeight.semibold,
+                flex: 1,
               }}
             >
-              {feature.name}
-            </Text>
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-                marginTop: theme.spacing.xs,
-              }}
-            >
-              {feature.description}
+              {benefit}
             </Text>
           </View>
         ))}
       </View>
+
+      <Text
+        style={{
+          color: theme.colors.textSecondary,
+          fontSize: theme.fontSize.secondary,
+        }}
+      >
+        Pro Lifetime — one-time purchase, yours forever.
+      </Text>
 
       {pendingPurchase ? (
         <Text
@@ -167,7 +175,7 @@ export default function PaywallScreen({ navigation }: Props) {
 
       <BigButton
         title={
-          buying ? 'Processing…' : productPrice ? `Unlock Pro — ${productPrice}` : 'Unlock Pro'
+          buying ? 'Processing…' : productPrice ? `Unlock Pro Lifetime — ${productPrice}` : 'Unlock Pro Lifetime'
         }
         variant="primary"
         disabled={busy}
@@ -212,6 +220,13 @@ const styles = StyleSheet.create({
   },
   featureRow: {
     borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  check: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   notNow: {
     alignItems: 'center',

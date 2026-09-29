@@ -13,6 +13,7 @@ import {
 import { calculateStubUpMark } from '../calculators/geometry/geometry';
 import { stubWarnings } from '../calculators/warnings/warnings';
 import BenderRow from '../components/benderRow';
+import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
@@ -193,6 +194,17 @@ export default function StubScreen({ route, navigation }: Props) {
           unit: markMeasurement?.unit,
         }}
         hint={hint}
+      />
+
+      <BenderStatusBanner
+        profile={activeProfile}
+        isPro={access === 'unlocked'}
+        showCalibrateCta={markPoint !== null}
+        onCalibrate={() =>
+          navigation.navigate(
+            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
+          )
+        }
       />
 
       <ExpectedActualFeedback
