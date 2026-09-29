@@ -57,7 +57,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 {body}
 <div class="cta">
 <p><strong>Try it free:</strong> <a href="{base}/">{cta_label}</a> &mdash; all six bend calculators, no sign-up.</p>
-<p><a href="{play_url}">Get Conduit Bend Calc on Google Play</a> for bender calibration and Pro tools.</p>
+<p><a href="{play_url}" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}})">Get Conduit Bend Calc on Google Play</a> for bender calibration and Pro tools.</p>
 </div>
 <nav class="related" aria-label="Related calculators">
 <p><strong>Related:</strong></p>

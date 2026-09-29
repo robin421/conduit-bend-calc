@@ -1,15 +1,46 @@
 #!/usr/bin/env python3
 """Inject SEO tags into expo web export + write robots.txt/sitemap.xml.
 
-Usage: python3 scripts/inject-web-seo.py dist/ https://bendcalc.wattflow.net
+Usage: python3 scripts/inject-web-seo.py dist/ https://bendcalc.wattflow.net [--ga4-id G-XXXX]
+
+The GA4 measurement ID can also come from the GA4_ID env var. When no ID is
+given, no GA4 code is emitted (pages stay analytics-free). The ID is never
+hardcoded; it is injected at build time only.
 Replaces the old /tmp/seo-inject.py (deleted during /tmp cleanup 2026-09-29).
 """
 import html
+import os
 import re
 import sys
 
 EXPORT_DIR = sys.argv[1].rstrip("/")
 BASE_URL = sys.argv[2].rstrip("/")
+
+GA4_TEMPLATE = """<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){{dataLayer.push(arguments);}}
+gtag('js', new Date());
+gtag('config', '{gid}');
+</script>"""
+
+
+def resolve_ga4_id(argv: list) -> str | None:
+    for i, a in enumerate(argv):
+        if a == "--ga4-id" and i + 1 < len(argv):
+            candidate = argv[i + 1].strip()
+            break
+    else:
+        candidate = (os.environ.get("GA4_ID") or "").strip()
+    if candidate and re.fullmatch(r"G-[A-Z0-9]{4,}", candidate):
+        return candidate
+    if candidate:
+        print(f"warning: ignoring malformed GA4 ID {candidate!r}", file=sys.stderr)
+    return None
+
+
+GA4_ID = resolve_ga4_id(sys.argv)
+GA4_SNIPPET = GA4_TEMPLATE.format(gid=html.escape(GA4_ID)) if GA4_ID else ""
 
 TITLE = "Conduit Bend Calc \u2014 Free Conduit Bending Calculator (Offset, Stub, Saddles)"
 DESC = (
@@ -45,9 +76,22 @@ with open(index_path) as f:
 # Remove any existing <title> to avoid duplicates, then inject before </head>.
 content = re.sub(r"<title>.*?</title>", "", content, flags=re.DOTALL)
 content = content.replace("</head>", SEO_BLOCK + "</head>", 1)
+if GA4_SNIPPET:
+    content = content.replace("</head>", GA4_SNIPPET + "</head>", 1)
 
 with open(index_path, "w") as f:
     f.write(content)
+
+# 隐私页（若已拷贝到 dist）：同样注入 GA4 基础代码，保证整站口径一致。
+privacy_path = f"{EXPORT_DIR}/privacy.html"
+if GA4_SNIPPET and os.path.exists(privacy_path):
+    with open(privacy_path) as f:
+        privacy = f.read()
+    if "googletagmanager" not in privacy:
+        privacy = privacy.replace("</head>", GA4_SNIPPET + "</head>", 1)
+        with open(privacy_path, "w") as f:
+            f.write(privacy)
+        print("GA4 injected into privacy.html")
 
 with open(f"{EXPORT_DIR}/robots.txt", "w") as f:
     f.write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n")
@@ -84,3 +128,4 @@ with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:
     f.write("</urlset>\n")
 
 print(f"SEO injected: title={TITLE[:40]}... base={BASE_URL}")
+print(f"GA4: {'on (' + GA4_ID + ')' if GA4_ID else 'off'}")

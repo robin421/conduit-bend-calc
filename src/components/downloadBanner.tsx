@@ -18,6 +18,7 @@ import {
   DOWNLOAD_BANNER_DISMISS_KEY,
 } from '../lib/downloadBannerCopy';
 import { GOOGLE_PLAY_URL } from '../lib/homeContent';
+import { trackEvent } from '../lib/analytics';
 import { useTheme } from '../theme';
 
 /** Banner 固定高度；同值用作内容区占位，避免遮挡。 */
@@ -126,6 +127,10 @@ export default function DownloadBanner() {
           accessibilityLabel="Get the Conduit Bend Calc app on Google Play"
           href={GOOGLE_PLAY_URL}
           hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
+          onPress={() => {
+            // gtag 同步 push 到 dataLayer，不阻塞 <a> 默认跳转。
+            trackEvent('google_play_click', { source: 'banner' });
+          }}
           style={
             [
               styles.getButton,

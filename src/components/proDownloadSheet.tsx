@@ -20,6 +20,7 @@ import {
   type ProDownloadEntryKey,
 } from '../lib/proDownloadCopy';
 import { useTheme } from '../theme';
+import { trackEvent } from '../lib/analytics';
 
 /** 组件内文案映射：key 为首页 Pro 入口的 entry.key。 */
 const SHEET_COPY: Record<ProDownloadEntryKey, { title: string; value: string }> =
@@ -134,6 +135,7 @@ export default function ProDownloadSheet({ entryKey, onClose }: ProDownloadSheet
               accessibilityRole="button"
               accessibilityLabel="Get it on Google Play"
               onPress={() => {
+                trackEvent('google_play_click', { source: 'paysheet' });
                 void Linking.openURL(GOOGLE_PLAY_URL).catch(() => undefined);
               }}
               style={styles.badgePress}

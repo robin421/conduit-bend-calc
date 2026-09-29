@@ -21,6 +21,8 @@ import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 import { useProAccess } from '../lib/proStore';
 import { useUnitSystem } from '../lib/unitStore';
+import { trackEvent } from '../lib/analytics';
+import type { UnitSystem } from '../lib/units';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'CalcHome'>;
 
@@ -50,7 +52,22 @@ export default function CalcHomeScreen({ navigation }: Props) {
   const { access } = useProAccess();
   const [sheetEntryKey, setSheetEntryKey] = useState<ProDownloadEntryKey | null>(null);
 
+  const handleUnitChange = (next: UnitSystem) => {
+    if (next !== unit) {
+      trackEvent('unit_changed', { unit: next });
+    }
+    setUnit(next);
+  };
+
   const handlePress = (entry: CalculatorEntry) => {
+    if (entry.pro) {
+      trackEvent('calibration_cta_click', {
+        source:
+          entry.key === 'GuidedCalibration'
+            ? 'guided_calibration'
+            : 'advanced_calibration',
+      });
+    }
     // Web 没有 IAP：Pro 入口点击弹出下载引导，导流到 Google Play。
     if (entry.pro && Platform.OS === 'web') {
       setSheetEntryKey(entry.key as ProDownloadEntryKey);
@@ -104,21 +121,21 @@ export default function CalcHomeScreen({ navigation }: Props) {
             title="Fraction"
             size="selection"
             selected={unit === 'fractional'}
-            onPress={() => setUnit('fractional')}
+            onPress={() => handleUnitChange('fractional')}
             style={styles.unitButton}
           />
           <BigButton
             title="Decimal"
             size="selection"
             selected={unit === 'decimal'}
-            onPress={() => setUnit('decimal')}
+            onPress={() => handleUnitChange('decimal')}
             style={styles.unitButton}
           />
           <BigButton
             title="Metric"
             size="selection"
             selected={unit === 'metric'}
-            onPress={() => setUnit('metric')}
+            onPress={() => handleUnitChange('metric')}
             style={styles.unitButton}
           />
         </View>

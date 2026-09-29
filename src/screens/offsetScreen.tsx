@@ -24,6 +24,7 @@ import { useProAccess } from '../lib/proStore';
 import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { useHistoryAutoSave, createHistoryId } from '../lib/history';
+import { useCalculatorAnalytics } from '../lib/analytics';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
@@ -131,6 +132,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
   }, [angle, heightInches, heightText, result, spec, unit]);
 
   useHistoryAutoSave(historyEntry);
+  useCalculatorAnalytics('offset', historyEntry?.signature ?? null);
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', angle: DEFAULT_ANGLE });

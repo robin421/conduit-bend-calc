@@ -26,6 +26,7 @@ import { useProAccess } from '../lib/proStore';
 import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import { useCalculatorAnalytics } from '../lib/analytics';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement, type UnitSystem } from '../lib/units';
@@ -166,6 +167,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
   }, [angle, heightInches, heightText, result, spec, unit, widthInches, widthText]);
 
   useHistoryAutoSave(historyEntry);
+  useCalculatorAnalytics('saddle4', historyEntry?.signature ?? null);
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', widthText: '', angle: DEFAULT_ANGLE });
