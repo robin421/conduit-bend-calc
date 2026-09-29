@@ -10,10 +10,13 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
+import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import ImperialInput from '../components/imperialInput';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { useBenderSpec } from '../lib/benderSpecStore';
+import { useBenderProfiles } from '../lib/benderProfileStore';
+import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
@@ -54,6 +57,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
   const [lengthInches, setLengthInches] = useState<number | null>(null);
   const { spec, setSpec } = useBenderSpec();
   const { specs: customSpecs } = useCustomSpecs();
+  const { activeProfile } = useBenderProfiles();
 
   const setKickText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, kickText: text })),
@@ -142,7 +146,10 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     hint = kickInvalid ? 'Kick angle must be a number between 0–90' : 'Enter values to see results';
   }
 
-  const gainMeasurement = result ? formatMeasurement(result.totalGain, unit) : undefined;
+  const calibratedGain =
+    result !== null ? applyCalibrationOffset(result.totalGain, activeProfile) : null;
+  const gainMeasurement =
+    calibratedGain !== null ? formatMeasurement(calibratedGain, unit) : undefined;
 
   return (
     <ScrollView
@@ -213,6 +220,13 @@ export default function Kicked90Screen({ route, navigation }: Props) {
           unit: gainMeasurement?.unit,
         }}
         hint={hint}
+      />
+
+      <ExpectedActualFeedback
+        profile={activeProfile}
+        expectedInches={calibratedGain}
+        label="Total gain"
+        unit={unit}
       />
 
       <WarningBar warnings={warnings} />

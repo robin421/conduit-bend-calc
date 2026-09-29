@@ -17,10 +17,13 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
+import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import ImperialInput from '../components/imperialInput';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { useBenderSpec } from '../lib/benderSpecStore';
+import { useBenderProfiles } from '../lib/benderProfileStore';
+import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
@@ -45,6 +48,7 @@ export default function StubScreen({ route, navigation }: Props) {
   const [heightInches, setHeightInches] = useState<number | null>(null);
   const { spec, setSpec } = useBenderSpec();
   const { specs: customSpecs } = useCustomSpecs();
+  const { activeProfile } = useBenderProfiles();
 
   const setHeightText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, heightText: text })),
@@ -137,8 +141,10 @@ export default function StubScreen({ route, navigation }: Props) {
     hint = 'Target height must exceed take-up';
   }
 
+  const calibratedMark =
+    markPoint !== null ? applyCalibrationOffset(markPoint, activeProfile) : null;
   const markMeasurement =
-    markPoint !== null ? formatMeasurement(markPoint, unit) : undefined;
+    calibratedMark !== null ? formatMeasurement(calibratedMark, unit) : undefined;
 
   return (
     <ScrollView
@@ -176,6 +182,13 @@ export default function StubScreen({ route, navigation }: Props) {
           unit: markMeasurement?.unit,
         }}
         hint={hint}
+      />
+
+      <ExpectedActualFeedback
+        profile={activeProfile}
+        expectedInches={calibratedMark}
+        label="Mark location"
+        unit={unit}
       />
       {markPoint !== null ? (
         <Text

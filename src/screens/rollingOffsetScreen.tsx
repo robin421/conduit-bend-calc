@@ -10,11 +10,14 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
+import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import ImperialInput from '../components/imperialInput';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { useBenderSpec } from '../lib/benderSpecStore';
+import { useBenderProfiles } from '../lib/benderProfileStore';
+import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
@@ -51,6 +54,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
   const [rollInches, setRollInches] = useState<number | null>(null);
   const { spec, setSpec } = useBenderSpec();
   const { specs: customSpecs } = useCustomSpecs();
+  const { activeProfile } = useBenderProfiles();
 
   const setRiseText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, riseText: text })),
@@ -149,7 +153,10 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
 
   const hint = result ? undefined : 'Enter values to see results';
 
-  const spacingMeasurement = result ? formatMeasurement(result.spacingDisplay, unit) : undefined;
+  const calibratedSpacing =
+    result !== null ? applyCalibrationOffset(result.spacingDisplay, activeProfile) : null;
+  const spacingMeasurement =
+    calibratedSpacing !== null ? formatMeasurement(calibratedSpacing, unit) : undefined;
   const trueOffsetMeasurement = result ? formatMeasurement(result.trueOffset, unit) : undefined;
   const shrinkMeasurement = result ? formatMeasurement(result.shrinkDisplay, unit) : undefined;
 
@@ -244,6 +251,13 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
             : []
         }
         hint={hint}
+      />
+
+      <ExpectedActualFeedback
+        profile={activeProfile}
+        expectedInches={calibratedSpacing}
+        label="Mark spacing"
+        unit={unit}
       />
 
       <WarningBar warnings={warnings} />

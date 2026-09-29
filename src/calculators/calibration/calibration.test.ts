@@ -3,12 +3,14 @@ import { test } from 'node:test';
 
 import { defaultBenderSpec } from '../geometry/benderSpecs.ts';
 import {
+  applyExpectedActualCorrection,
   buildCalibratedSpec,
   calibrateDeductFromStub,
   calibrateFromTestBend,
   calibrateGain,
   calibrateStubTakeUp,
   estimateRadiusFromDeduct,
+  expectedActualError,
 } from './calibration.ts';
 
 test('calibrateGain: L₀=30、A=17、B=14.3 → G=1.3、R≈3.03', () => {
@@ -67,4 +69,18 @@ test('calibrateFromTestBend: 反推 deduct + 估计 radius', () => {
 test('calibrateFromTestBend: 非法输入返回 null', () => {
   assert.equal(calibrateFromTestBend(12, 11, 4, 5), null);
   assert.equal(calibrateFromTestBend(12, 17.375, 4, 0), null);
+});
+
+test('expectedActualError: actual − expected', () => {
+  assert.equal(expectedActualError(10, 10.5), 0.5);
+  assert.equal(expectedActualError(10, 9.75), -0.25);
+  assert.equal(expectedActualError(Number.NaN, 10), null);
+});
+
+test('applyExpectedActualCorrection: 误差累加到校正量', () => {
+  const first = applyExpectedActualCorrection(0, 10, 10.5);
+  assert.deepEqual(first, { error: 0.5, offset: 0.5 });
+  const second = applyExpectedActualCorrection(0.5, 12, 11.75);
+  assert.deepEqual(second, { error: -0.25, offset: 0.25 });
+  assert.equal(applyExpectedActualCorrection(Number.NaN, 10, 11), null);
 });

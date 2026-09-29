@@ -149,3 +149,41 @@ export function calibrateFromTestBend(
     estimatedRadius,
   };
 }
+
+/** Expected→Actual 误差（英寸）= actual − expected。非法输入返回 null。 */
+export function expectedActualError(
+  expectedInches: number,
+  actualInches: number,
+): number | null {
+  if (!Number.isFinite(expectedInches) || !Number.isFinite(actualInches)) {
+    return null;
+  }
+  return actualInches - expectedInches;
+}
+
+export interface ExpectedActualUpdate {
+  /** 本次误差 = actual − expected */
+  error: number;
+  /** 更新后的累积校正量 */
+  offset: number;
+}
+
+/**
+ * Expected→Actual 校准闭环：把本次误差累加到累积校正量上。
+ * 下次计算时 result + calibrationOffset 会更接近实际。
+ * 非法输入返回 null，不抛异常。
+ */
+export function applyExpectedActualCorrection(
+  currentOffset: number,
+  expectedInches: number,
+  actualInches: number,
+): ExpectedActualUpdate | null {
+  if (!Number.isFinite(currentOffset)) {
+    return null;
+  }
+  const error = expectedActualError(expectedInches, actualInches);
+  if (error === null) {
+    return null;
+  }
+  return { error, offset: currentOffset + error };
+}
