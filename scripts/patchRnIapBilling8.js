@@ -30,6 +30,7 @@ const path = require('path');
 const RNIAP = path.join(__dirname, '..', 'node_modules', 'react-native-iap');
 
 const GRADLE_PROPERTIES = path.join(RNIAP, 'android', 'gradle.properties');
+const RNIAP_BUILD_GRADLE = path.join(RNIAP, 'android', 'build.gradle');
 const RN_IAP_MODULE = path.join(
   RNIAP,
   'android',
@@ -170,6 +171,31 @@ applyPatch(
             "queryPurchaseHistory was removed in Google Play Billing Library 8.0.0.",
         )
     }`,
+);
+
+// billing-ktx 8.0.0 ships Kotlin 2.1 metadata, but the project's Kotlin 1.9
+// compiler only needs its Java-compatible API surface. Skipping the metadata
+// version check lets this module compile without forcing a global Kotlin 2.x
+// upgrade (which breaks expo-modules-core's compose plugin resolution).
+applyPatch(
+  'skip Kotlin metadata version check for billing-ktx 8.0.0',
+  RNIAP_BUILD_GRADLE,
+  '  compileOptions {\n' +
+    '    sourceCompatibility JavaVersion.VERSION_1_8\n' +
+    '    targetCompatibility JavaVersion.VERSION_1_8\n' +
+    '  }\n',
+  '  compileOptions {\n' +
+    '    sourceCompatibility JavaVersion.VERSION_1_8\n' +
+    '    targetCompatibility JavaVersion.VERSION_1_8\n' +
+    '  }\n' +
+    '\n' +
+    '  // Billing 8.0.0 ktx jar carries Kotlin 2.1 metadata; skip the version\n' +
+    '  // check so the Kotlin 1.9 compiler can resolve its Java-compatible API.\n' +
+    '  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {\n' +
+    '    kotlinOptions {\n' +
+    '      freeCompilerArgs += ["-Xskip-metadata-version-check"]\n' +
+    '    }\n' +
+    '  }\n',
 );
 
 console.log('[patch-rniap-billing8] done.');
