@@ -1,6 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import BigButton from '../components/bigButton';
 import {
@@ -29,6 +30,7 @@ const PRO_BENEFITS = [
 
 export default function PaywallScreen({ navigation }: Props) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { access, productPrice, initialized, lastError, pendingPurchase } =
     useProAccess();
   const [buying, setBuying] = useState(false);
@@ -86,134 +88,167 @@ export default function PaywallScreen({ navigation }: Props) {
   }
 
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.lg, gap: theme.spacing.md },
-      ]}
-    >
-      <Text
-        style={{
-          color: theme.colors.textPrimary,
-          fontSize: theme.fontSize.title,
-          fontWeight: theme.fontWeight.semibold,
-        }}
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingHorizontal: theme.spacing.lg,
+            paddingTop: theme.spacing.lg,
+            paddingBottom: theme.spacing.md,
+            gap: theme.spacing.md,
+          },
+        ]}
       >
-        Bend It Right the First Time
-      </Text>
-      <Text
-        style={{
-          color: theme.colors.textSecondary,
-          fontSize: theme.fontSize.body,
-          lineHeight: 22,
-        }}
-      >
-        Calibrate the app to your actual bender and catch risky bends before cutting
-        conduit.
-      </Text>
-
-      <View style={{ gap: theme.spacing.sm }}>
-        {PRO_BENEFITS.map((benefit) => (
-          <View
-            key={benefit}
-            style={[
-              styles.featureRow,
-              {
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.border,
-                padding: theme.spacing.md,
-                borderRadius: theme.radius,
-              },
-            ]}
-          >
-            <Text style={[styles.check, { color: theme.colors.success }]}>✓</Text>
-            <Text
-              style={{
-                color: theme.colors.textPrimary,
-                fontSize: theme.fontSize.body,
-                fontWeight: theme.fontWeight.semibold,
-                flex: 1,
-              }}
-            >
-              {benefit}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      <Text
-        style={{
-          color: theme.colors.textSecondary,
-          fontSize: theme.fontSize.secondary,
-        }}
-      >
-        Pro Lifetime — one-time purchase, yours forever.
-      </Text>
-
-      {pendingPurchase ? (
         <Text
           style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
+            color: theme.colors.textPrimary,
+            fontSize: theme.fontSize.title,
+            fontWeight: theme.fontWeight.semibold,
           }}
         >
-          Payment pending. Pro will unlock automatically once it completes.
+          Bend It Right the First Time
         </Text>
-      ) : null}
-
-      {lastError ? (
-        <Text
-          style={{
-            color: theme.colors.error,
-            fontSize: theme.fontSize.secondary,
-          }}
-        >
-          {lastError}
-        </Text>
-      ) : null}
-
-      <BigButton
-        title={
-          buying ? 'Processing…' : productPrice ? `Unlock Pro Lifetime — ${productPrice}` : 'Unlock Pro Lifetime'
-        }
-        variant="primary"
-        disabled={busy}
-        onPress={() => {
-          void handleBuy();
-        }}
-      />
-      <BigButton
-        title={restoring ? 'Restoring…' : 'Restore Purchase'}
-        variant="secondary"
-        disabled={busy}
-        onPress={() => {
-          void handleRestore();
-        }}
-      />
-      <Pressable
-        accessibilityRole="button"
-        disabled={busy}
-        onPress={() => navigation.goBack()}
-        style={styles.notNow}
-      >
         <Text
           style={{
             color: theme.colors.textSecondary,
             fontSize: theme.fontSize.body,
-            opacity: busy ? 0.4 : 1,
+            lineHeight: 22,
           }}
         >
-          Not now
+          Calibrate the app to your actual bender and catch risky bends before cutting
+          conduit.
         </Text>
-      </Pressable>
-    </ScrollView>
+
+        <View style={{ gap: theme.spacing.sm }}>
+          {PRO_BENEFITS.map((benefit) => (
+            <View
+              key={benefit}
+              style={[
+                styles.featureRow,
+                {
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.border,
+                  padding: theme.spacing.md,
+                  borderRadius: theme.radius,
+                },
+              ]}
+            >
+              <Text style={[styles.check, { color: theme.colors.success }]}>✓</Text>
+              <Text
+                style={{
+                  color: theme.colors.textPrimary,
+                  fontSize: theme.fontSize.body,
+                  fontWeight: theme.fontWeight.semibold,
+                  flex: 1,
+                }}
+              >
+                {benefit}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+          }}
+        >
+          Pro Lifetime — one-time purchase, yours forever.
+        </Text>
+      </ScrollView>
+
+      <View
+        style={[
+          styles.footer,
+          {
+            borderTopColor: theme.colors.border,
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: theme.spacing.lg,
+            paddingTop: theme.spacing.md,
+            paddingBottom: Math.max(insets.bottom, theme.spacing.md),
+            gap: theme.spacing.sm,
+          },
+        ]}
+      >
+        {pendingPurchase ? (
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+            }}
+          >
+            Payment pending. Pro will unlock automatically once it completes.
+          </Text>
+        ) : null}
+
+        {lastError ? (
+          <Text
+            style={{
+              color: theme.colors.error,
+              fontSize: theme.fontSize.secondary,
+            }}
+          >
+            {lastError}
+          </Text>
+        ) : null}
+
+        <BigButton
+          title={
+            buying ? 'Processing…' : productPrice ? `Unlock Pro Lifetime — ${productPrice}` : 'Unlock Pro Lifetime'
+          }
+          variant="primary"
+          disabled={busy}
+          onPress={() => {
+            void handleBuy();
+          }}
+        />
+        <BigButton
+          title={restoring ? 'Restoring…' : 'Restore Purchase'}
+          variant="secondary"
+          disabled={busy}
+          onPress={() => {
+            void handleRestore();
+          }}
+        />
+        <Pressable
+          accessibilityRole="button"
+          disabled={busy}
+          onPress={() => navigation.goBack()}
+          style={styles.notNow}
+        >
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.body,
+              opacity: busy ? 0.4 : 1,
+            }}
+          >
+            Not now
+          </Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
   content: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+  },
+  footer: {
+    borderTopWidth: StyleSheet.hairlineWidth,
     width: '100%',
     maxWidth: 720,
     alignSelf: 'center',

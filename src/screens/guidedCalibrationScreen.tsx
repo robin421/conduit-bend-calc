@@ -1,21 +1,35 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  BackHandler,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
-import { calibrateFromTestBend } from '../calculators/calibration/calibration';
-import { profileToSpec } from '../lib/profile';
-import type { BenderProfile } from '../lib/profile';
-import type { BenderSpec } from '../constants';
-import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import {
+  FIRST_GUIDED_STEP,
+  TEST_BEND_MARK,
+  buildGuidedProfile,
+  canAdvanceGuidedStep,
+  computeGuidedCalibration,
+  guidedStepProgress,
+  nextGuidedStep,
+  prevGuidedStep,
+  type GuidedStep,
+} from '../lib/guidedCalibrationFlow';
+import {
   setActiveProfile,
-  standardProfiles,
   upsertProfile,
+  useBenderProfiles,
 } from '../lib/benderProfileStore';
-import { withCalibration } from '../lib/profile';
+import { displayProfileName } from '../lib/profile';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatMeasurement, inchesToMm } from '../lib/units';
 import type { CalcStackParamList } from '../navigation/calcStack';
@@ -23,19 +37,22 @@ import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'GuidedCalibration'>;
 
-/** 试弯固定标记距离（英寸）。 */
-const TEST_BEND_MARK = 12;
+const STEP_TITLES: Record<GuidedStep, string> = {
+  1: 'Mark the conduit',
+  2: 'Bend 90°',
+  3: 'Measure the stub',
+  4: 'Save your bender',
+};
 
-const STANDARD_PROFILES = standardProfiles();
-
-function SectionLabel({ children }: { children: string }) {
+function StepHeading({ children }: { children: string }) {
   const theme = useTheme();
   return (
     <Text
       style={{
         color: theme.colors.textPrimary,
-        fontSize: theme.fontSize.body,
+        fontSize: theme.fontSize.title,
         fontWeight: theme.fontWeight.semibold,
+        lineHeight: 30,
       }}
     >
       {children}
@@ -43,14 +60,14 @@ function SectionLabel({ children }: { children: string }) {
   );
 }
 
-function Hint({ children }: { children: string }) {
+function BodyText({ children }: { children: string }) {
   const theme = useTheme();
   return (
     <Text
       style={{
         color: theme.colors.textSecondary,
-        fontSize: theme.fontSize.secondary,
-        lineHeight: 20,
+        fontSize: theme.fontSize.body,
+        lineHeight: 22,
       }}
     >
       {children}
@@ -58,210 +75,276 @@ function Hint({ children }: { children: string }) {
   );
 }
 
-export default function GuidedCalibrationScreen({
-  navigation,
-}: Props) {
+function DiagramBox({ children }: { children: string }) {
   const theme = useTheme();
-  const { unit } = useUnitSystem();
-  const [base, setBase] = useState<BenderProfile>(STANDARD_PROFILES[0]);
-  const [measuredText, setMeasuredText] = useState('');
-  const [measuredInches, setMeasuredInches] = useState<number | null>(null);
-  const [name, setName] = useState('');
-  const [saved, setSaved] = useState<string | null>(null);
-
-  const nominalDeduct = base.nominalDeduct ?? base.takeUp;
-  const computed = useMemo(() => {
-    if (measuredInches === null) {
-      return null;
-    }
-    return calibrateFromTestBend(
-      TEST_BEND_MARK,
-      measuredInches,
-      base.bendRadius,
-      nominalDeduct,
-    );
-  }, [base.bendRadius, measuredInches, nominalDeduct]);
-
-  const canSave = name.trim().length > 0 && computed !== null;
-
-  const handlePickerChange = useCallback((spec: BenderSpec) => {
-    const match = STANDARD_PROFILES.find(
-      (profile) => profile.id === `standard|${spec.brand}|${spec.model}|${spec.conduit}`,
-    );
-    if (match) {
-      setBase(match);
-    }
-    setSaved(null);
-  }, []);
-
-  const handleSave = useCallback(() => {
-    if (!canSave || !computed) {
-      return;
-    }
-    const profile = withCalibration(base, {
-      name: name.trim(),
-      actualDeduct: computed.actualDeduct,
-      bendRadius: computed.estimatedRadius,
-      calibrationDate: Date.now(),
-    });
-    upsertProfile(profile);
-    setActiveProfile(profile.id);
-    setSaved(`Saved "${profile.name}". All calculators now use your calibrated bender.`);
-    setName('');
-    setMeasuredText('');
-    setMeasuredInches(null);
-  }, [base, canSave, computed, name]);
-
-  const deductMeasurement = computed
-    ? formatMeasurement(computed.actualDeduct, unit)
-    : undefined;
-  const radiusMeasurement = computed
-    ? formatMeasurement(computed.estimatedRadius, unit)
-    : undefined;
-
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.sm, gap: theme.spacing.sm },
+    <View
+      style={[
+        styles.diagram,
+        { borderColor: theme.colors.border, borderRadius: theme.radius },
       ]}
-      keyboardShouldPersistTaps="handled"
     >
-      <Card style={{ gap: theme.spacing.sm }}>
-        <SectionLabel>Step 1: Pick the conduit</SectionLabel>
-        <Hint>
-          Choose the bender and conduit size you are about to use. Standard values are a
-          starting point — one test bend makes them exact.
-        </Hint>
-        <BenderPicker
-          spec={profileToSpec(base)}
-          customSpecs={[]}
-          onChange={handlePickerChange}
-          onCreateCustom={() => undefined}
-          allowCustom={false}
-        />
-      </Card>
-
-      <Card style={{ gap: theme.spacing.sm }}>
-        <SectionLabel>Step 2: Make one test bend</SectionLabel>
-        <Hint>
-          Mark the conduit 12 in from the end. Line the bender arrow up with that mark and
-          bend a 90° stub.
-        </Hint>
-        <View
-          style={[
-            styles.diagram,
-            { borderColor: theme.colors.border, borderRadius: theme.radius },
-          ]}
-        >
-          <Text
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.fontSize.secondary,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
-            {`End ─────●───── 12${unit === 'metric' ? ` in (${Math.round(inchesToMm(TEST_BEND_MARK))} mm)` : '"'} mark`}
-          </Text>
-        </View>
-      </Card>
-
-      <Card style={{ gap: theme.spacing.sm }}>
-        <SectionLabel>Step 3: Measure the stub height</SectionLabel>
-        <Hint>
-          Measure from the end of the conduit to the back of the bend (the finished stub
-          height).
-        </Hint>
-        <ImperialInput
-          label="Measured stub height"
-          value={measuredText}
-          onChangeText={setMeasuredText}
-          onParsedChange={setMeasuredInches}
-          unit={unit}
-          placeholder={unit === 'metric' ? 'e.g. 440 mm' : `e.g. 17 3/8"`}
-        />
-        <View style={styles.infoRow}>
-          <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-            Actual deduct
-          </Text>
-          <Text
-            style={{
-              color: theme.colors.textPrimary,
-              fontSize: theme.fontSize.body,
-              fontWeight: theme.fontWeight.semibold,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
-            {deductMeasurement ? `${deductMeasurement.value} ${deductMeasurement.unit}` : '—'}
-          </Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-            Estimated bend radius
-          </Text>
-          <Text
-            style={{
-              color: theme.colors.textPrimary,
-              fontSize: theme.fontSize.body,
-              fontWeight: theme.fontWeight.semibold,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
-            {radiusMeasurement ? `${radiusMeasurement.value} ${radiusMeasurement.unit}` : '—'}
-          </Text>
-        </View>
-        <Hint>
-          The radius is an estimate from this one bend. It keeps improving as you give
-          expected vs actual feedback.
-        </Hint>
-      </Card>
-
-      <Card style={{ gap: theme.spacing.sm }}>
-        <SectionLabel>Step 4: Save your bender</SectionLabel>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder={`Name it, e.g. My Klein 3/4" EMT`}
-          placeholderTextColor={theme.colors.textSecondary}
-          autoCapitalize="none"
-          autoCorrect={false}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.colors.background,
-              borderColor: theme.colors.border,
-              borderRadius: theme.radius,
-              color: theme.colors.textPrimary,
-              fontSize: theme.fontSize.body,
-              paddingHorizontal: theme.spacing.md,
-            },
-          ]}
-        />
-        <BigButton title="Save Bender" onPress={handleSave} disabled={!canSave} />
-        {saved ? (
-          <Text
-            style={{
-              color: theme.colors.success,
-              fontSize: theme.fontSize.secondary,
-              lineHeight: 20,
-            }}
-          >
-            {saved}
-          </Text>
-        ) : null}
-      </Card>
-
-      <BigButton
-        title="Advanced calibration"
-        variant="secondary"
-        onPress={() => navigation.navigate('Calibration')}
-      />
-    </ScrollView>
+      <Text
+        style={{
+          color: theme.colors.textPrimary,
+          fontSize: theme.fontSize.body,
+          fontVariant: ['tabular-nums'],
+        }}
+      >
+        {children}
+      </Text>
+    </View>
   );
 }
 
+function ValueRow({ label, value }: { label: string; value: string | undefined }) {
+  const theme = useTheme();
+  return (
+    <View style={styles.valueRow}>
+      <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: theme.colors.textPrimary,
+          fontSize: theme.fontSize.body,
+          fontWeight: theme.fontWeight.semibold,
+          fontVariant: ['tabular-nums'],
+        }}
+      >
+        {value ?? '—'}
+      </Text>
+    </View>
+  );
+}
+
+export default function GuidedCalibrationScreen({ navigation }: Props) {
+  const theme = useTheme();
+  const { unit } = useUnitSystem();
+  const { activeProfile } = useBenderProfiles();
+  const [step, setStep] = useState<GuidedStep>(FIRST_GUIDED_STEP);
+  const [measuredText, setMeasuredText] = useState('');
+  const [measuredInches, setMeasuredInches] = useState<number | null>(null);
+  const [name, setName] = useState('');
+
+  // 被校准的基准 = 当前选中的 bender（工程参数只进 profile，不上界面）。
+  const base = activeProfile;
+  const result = useMemo(
+    () => computeGuidedCalibration(measuredInches, base),
+    [base, measuredInches],
+  );
+
+  const progress = guidedStepProgress(step);
+  const canAdvance = canAdvanceGuidedStep(step, measuredInches, base);
+  const canSave = name.trim().length > 0 && result !== null;
+
+  const goNext = useCallback(() => setStep((value) => nextGuidedStep(value)), []);
+  const goPrev = useCallback(() => setStep((value) => prevGuidedStep(value)), []);
+
+  // Android 返回键：非首步回到上一步，首步交回导航默认（退出向导）。
+  useEffect(() => {
+    if (Platform.OS !== 'android') {
+      return;
+    }
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (step > FIRST_GUIDED_STEP) {
+        setStep((value) => prevGuidedStep(value));
+        return true;
+      }
+      return false;
+    });
+    return () => subscription.remove();
+  }, [step]);
+
+  const handleSave = useCallback(() => {
+    if (!canSave) {
+      return;
+    }
+    const profile = buildGuidedProfile(base, name, result, Date.now());
+    if (!profile) {
+      return;
+    }
+    upsertProfile(profile);
+    setActiveProfile(profile.id);
+    navigation.goBack();
+  }, [base, canSave, name, navigation, result]);
+
+  const stubMeasurement =
+    measuredInches !== null ? formatMeasurement(measuredInches, unit) : undefined;
+  const deductMeasurement = result ? formatMeasurement(result.actualDeduct, unit) : undefined;
+  const markLabel =
+    unit === 'metric'
+      ? `${TEST_BEND_MARK}" (${Math.round(inchesToMm(TEST_BEND_MARK))} mm)`
+      : `${TEST_BEND_MARK}"`;
+
+  return (
+    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
+      <View style={{ paddingHorizontal: theme.spacing.md, paddingTop: theme.spacing.md }}>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {`Step ${progress.current} of ${progress.total} · ${STEP_TITLES[step]}`}
+        </Text>
+        <Text
+          numberOfLines={1}
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            marginTop: 2,
+          }}
+        >
+          {`Calibrating: ${displayProfileName(base)}`}
+        </Text>
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          { padding: theme.spacing.md, gap: theme.spacing.md },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
+        {step === 1 ? (
+          <Card style={{ gap: theme.spacing.md }}>
+            <StepHeading>{`Mark ${markLabel} from the end`}</StepHeading>
+            <BodyText>
+              Measure from the end of the conduit and make one clear mark. This is the only
+              measurement you need before bending.
+            </BodyText>
+            <DiagramBox>{`End ─────●───── ${markLabel} mark`}</DiagramBox>
+            <BigButton
+              title="Advanced calibration"
+              variant="secondary"
+              onPress={() => navigation.navigate('Calibration')}
+            />
+          </Card>
+        ) : null}
+
+        {step === 2 ? (
+          <Card style={{ gap: theme.spacing.md }}>
+            <StepHeading>Bend a 90° stub</StepHeading>
+            <BodyText>
+              Line the bender arrow up with your mark, then bend a full 90° stub. Keep the
+              conduit seated in the bender.
+            </BodyText>
+            <DiagramBox>{'Arrow ▼\nEnd ─────●───── mark\n           90°'}</DiagramBox>
+          </Card>
+        ) : null}
+
+        {step === 3 ? (
+          <Card style={{ gap: theme.spacing.md }}>
+            <StepHeading>Enter the finished stub height</StepHeading>
+            <BodyText>
+              Measure from the end of the conduit to the back of the bend. Type the finished
+              height S below.
+            </BodyText>
+            <ImperialInput
+              label="Finished stub height (S)"
+              value={measuredText}
+              onChangeText={setMeasuredText}
+              onParsedChange={setMeasuredInches}
+              unit={unit}
+              keyboardType="numeric"
+              placeholder={unit === 'metric' ? 'e.g. 440 mm' : `e.g. 17 3/8"`}
+            />
+            <ValueRow label="Finished height (S)" value={stubMeasurement ? `${stubMeasurement.value} ${stubMeasurement.unit}` : undefined} />
+            <ValueRow
+              label={'Deduct (S − 12")'}
+              value={deductMeasurement ? `${deductMeasurement.value} ${deductMeasurement.unit}` : undefined}
+            />
+          </Card>
+        ) : null}
+
+        {step === 4 ? (
+          <Card style={{ gap: theme.spacing.md }}>
+            <StepHeading>Calibrated ✓</StepHeading>
+            <BodyText>
+              This bender is now matched to your one test bend. Give it a name you will
+              recognize on the job.
+            </BodyText>
+            <ValueRow
+              label="Deduct"
+              value={deductMeasurement ? `${deductMeasurement.value} ${deductMeasurement.unit}` : undefined}
+            />
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder={namePlaceholder(base)}
+              placeholderTextColor={theme.colors.textSecondary}
+              autoCapitalize="words"
+              autoCorrect={false}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.colors.background,
+                  borderColor: theme.colors.border,
+                  borderRadius: theme.radius,
+                  color: theme.colors.textPrimary,
+                  fontSize: theme.fontSize.body,
+                  paddingHorizontal: theme.spacing.md,
+                },
+              ]}
+            />
+          </Card>
+        ) : null}
+      </ScrollView>
+
+      <View
+        style={[
+          styles.footer,
+          {
+            borderTopColor: theme.colors.border,
+            padding: theme.spacing.md,
+            gap: theme.spacing.sm,
+            backgroundColor: theme.colors.background,
+          },
+        ]}
+      >
+        {step === FIRST_GUIDED_STEP ? (
+          <BigButton title="Next" onPress={goNext} />
+        ) : step < 4 ? (
+          <View style={styles.footerRow}>
+            <BigButton title="Back" variant="secondary" onPress={goPrev} style={styles.footerButton} />
+            <BigButton
+              title="Next"
+              onPress={goNext}
+              disabled={!canAdvance}
+              style={styles.footerButton}
+            />
+          </View>
+        ) : (
+          <View style={styles.footerRow}>
+            <BigButton title="Back" variant="secondary" onPress={goPrev} style={styles.footerButton} />
+            <BigButton
+              title="Save"
+              onPress={handleSave}
+              disabled={!canSave}
+              style={styles.footerButton}
+            />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function namePlaceholder(base: { conduitSize: string; conduitType: string }): string {
+  const label = `${base.conduitSize} ${base.conduitType}`.trim();
+  return label ? `e.g. My ${label}` : 'e.g. My bender';
+}
+
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
   content: {
     flexGrow: 1,
     width: '100%',
@@ -270,10 +353,9 @@ const styles = StyleSheet.create({
   },
   diagram: {
     borderWidth: StyleSheet.hairlineWidth,
-    padding: 12,
-    alignItems: 'center',
+    padding: 16,
   },
-  infoRow: {
+  valueRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -281,5 +363,15 @@ const styles = StyleSheet.create({
   input: {
     minHeight: 56,
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  footer: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  footerButton: {
+    flex: 1,
   },
 });

@@ -20,6 +20,8 @@ interface ImperialInputProps {
   placeholder?: string;
   /** 单位系统；缺省 imperial（老行为）。 */
   unit?: UnitSystem;
+  /** 软键盘类型；缺省不指定（系统默认）。 */
+  keyboardType?: 'default' | 'numeric' | 'decimal-pad' | 'numbers-and-punctuation';
   style?: StyleProp<ViewStyle>;
 }
 
@@ -30,6 +32,7 @@ export default function ImperialInput({
   onParsedChange,
   placeholder,
   unit = 'imperial',
+  keyboardType,
   style,
 }: ImperialInputProps) {
   const theme = useTheme();
@@ -81,6 +84,7 @@ export default function ImperialInput({
         onBlur={handleBlur}
         placeholder={resolvedPlaceholder}
         placeholderTextColor={theme.colors.textSecondary}
+        keyboardType={keyboardType}
         autoCapitalize="none"
         autoCorrect={false}
         style={[

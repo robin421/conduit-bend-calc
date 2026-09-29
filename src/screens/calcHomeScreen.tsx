@@ -1,5 +1,15 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Fragment } from 'react';
+import {
+  Image,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
@@ -29,6 +39,32 @@ const ENTRIES: CalculatorEntry[] = [
   { key: 'GuidedCalibration', icon: '◎', name: 'Calibrate My Bender', description: 'One test bend: match the app to your bender', pro: true },
   { key: 'Calibration', icon: '⌁', name: 'Advanced Calibration', description: 'Manual gain / take-up calibration', pro: true },
 ];
+
+/** Web 专属：在计算器卡片与校准卡片之间插入 Google Play 导流卡。 */
+const PLAY_CARD_INDEX = ENTRIES.findIndex((entry) => entry.pro);
+const GOOGLE_PLAY_URL =
+  'https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc';
+
+function GooglePlayCard() {
+  const theme = useTheme();
+  return (
+    <Card style={styles.playCard}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Get it on Google Play"
+        onPress={() => {
+          void Linking.openURL(GOOGLE_PLAY_URL).catch(() => undefined);
+        }}
+      >
+        <Image
+          source={require('../../assets/images/google-play-badge.png')}
+          resizeMode="contain"
+          style={[styles.playBadge, { borderRadius: theme.radius }]}
+        />
+      </Pressable>
+    </Card>
+  );
+}
 
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
@@ -97,66 +133,68 @@ export default function CalcHomeScreen({ navigation }: Props) {
       </View>
 
       {ENTRIES.map((entry, index) => (
-        <Pressable
-          key={`${entry.name}-${index}`}
-          accessibilityRole="button"
-          onPress={() => handlePress(entry)}
-          android_ripple={{ color: theme.colors.border }}
-        >
-          <Card style={styles.card}>
-            <View
-              style={[
-                styles.accentBar,
-                {
-                  backgroundColor: theme.colors.accent,
-                  marginRight: theme.spacing.sm,
-                  borderRadius: 2,
-                },
-              ]}
-            />
-            <Text
-              numberOfLines={1}
-              style={[styles.icon, { color: theme.colors.primary }]}
-            >
-              {entry.icon}
-            </Text>
-            <View style={styles.textBlock}>
-              <View style={styles.nameRow}>
-                <Text
-                  style={{
-                    color: theme.colors.textPrimary,
-                    fontSize: theme.fontSize.body,
-                    fontWeight: theme.fontWeight.semibold,
-                  }}
-                >
-                  {entry.name}
-                </Text>
-                {entry.pro && access === 'locked' ? (
+        <Fragment key={`${entry.name}-${index}`}>
+          {Platform.OS === 'web' && index === PLAY_CARD_INDEX ? <GooglePlayCard /> : null}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => handlePress(entry)}
+            android_ripple={{ color: theme.colors.border }}
+          >
+            <Card style={styles.card}>
+              <View
+                style={[
+                  styles.accentBar,
+                  {
+                    backgroundColor: theme.colors.accent,
+                    marginRight: theme.spacing.sm,
+                    borderRadius: 2,
+                  },
+                ]}
+              />
+              <Text
+                numberOfLines={1}
+                style={[styles.icon, { color: theme.colors.primary }]}
+              >
+                {entry.icon}
+              </Text>
+              <View style={styles.textBlock}>
+                <View style={styles.nameRow}>
                   <Text
                     style={{
-                      color: theme.colors.accent,
-                      fontSize: theme.fontSize.secondary,
+                      color: theme.colors.textPrimary,
+                      fontSize: theme.fontSize.body,
                       fontWeight: theme.fontWeight.semibold,
-                      marginLeft: theme.spacing.xs,
                     }}
                   >
-                    PRO
+                    {entry.name}
                   </Text>
-                ) : null}
+                  {entry.pro && access === 'locked' ? (
+                    <Text
+                      style={{
+                        color: theme.colors.accent,
+                        fontSize: theme.fontSize.secondary,
+                        fontWeight: theme.fontWeight.semibold,
+                        marginLeft: theme.spacing.xs,
+                      }}
+                    >
+                      PRO
+                    </Text>
+                  ) : null}
+                </View>
+                <Text
+                  style={{
+                    color: theme.colors.textSecondary,
+                    fontSize: theme.fontSize.secondary,
+                    marginTop: theme.spacing.xs,
+                  }}
+                >
+                  {entry.description}
+                </Text>
               </View>
-              <Text
-                style={{
-                  color: theme.colors.textSecondary,
-                  fontSize: theme.fontSize.secondary,
-                  marginTop: theme.spacing.xs,
-                }}
-              >
-                {entry.description}
-              </Text>
-            </View>
-            <Text style={[styles.chevron, { color: theme.colors.textSecondary }]}>›</Text>
-          </Card>
-        </Pressable>
+              <Text style={[styles.chevron, { color: theme.colors.textSecondary }]}>›</Text>
+            </Card>
+          </Pressable>
+        </Fragment>
       ))}
     </ScrollView>
   );
@@ -173,6 +211,14 @@ const styles = StyleSheet.create({
     minHeight: 72,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  playCard: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  playBadge: {
+    width: 258,
+    aspectRatio: 646 / 250,
   },
   accentBar: {
     width: 4,
