@@ -14,15 +14,16 @@ test('下载引导文案覆盖两个 Pro 校准入口', () => {
   }
 });
 
-test('Calibrate My Bender 强调一次 90° 试弯匹配真实弯管器', () => {
+test('Dial In My Bender 不 oversell：免费计算本身已是 trade-standard', () => {
   const copy = PRO_DOWNLOAD_COPY.GuidedCalibration;
-  assert.equal(copy.title, 'Calibrate My Bender');
-  assert.match(copy.value, /90° test bend/);
-  assert.match(copy.value, /actual bender/);
+  assert.equal(copy.title, 'Dial In My Bender');
+  assert.match(copy.value, /trade-standard accurate/);
+  assert.match(copy.value, /second-order corrections/);
 });
 
-test('Advanced Calibration 强调手动微调 gain / take-up', () => {
+test('Full Fingerprint 用 gain 法推导真实 R', () => {
   const copy = PRO_DOWNLOAD_COPY.Calibration;
-  assert.equal(copy.title, 'Advanced Calibration');
-  assert.match(copy.value, /gain and take-up/);
+  assert.equal(copy.title, 'Full Fingerprint');
+  assert.match(copy.value, /24/);
+  assert.match(copy.value, /centerline radius/);
 });

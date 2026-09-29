@@ -8,7 +8,7 @@ interface BenderStatusBannerProps {
   profile: BenderProfile | null;
   /** 是否已购 Pro。 */
   isPro: boolean;
-  /** Free 普通计算完成 → 是否显示 [Calibrate My Bender]。 */
+  /** Free 普通计算完成 → 是否显示 [Dial In My Bender]。 */
   showCalibrateCta: boolean;
   onCalibrate: () => void;
 }
@@ -16,7 +16,7 @@ interface BenderStatusBannerProps {
 /**
  * P0-6 结果页 bender 状态条：
  * - calibrated 档案 → `Using My <name>` 明显标识；
- * - Free 普通计算完成 → `Calculated using standard bender values.` + [Calibrate My Bender]。
+ * - Free 普通计算完成 → `Calculated using standard bender values.` + [Dial In My Bender]。
  */
 export default function BenderStatusBanner({
   profile,
@@ -97,7 +97,7 @@ export default function BenderStatusBanner({
         Calculated using standard bender values.
       </Text>
       <BigButton
-        title="Calibrate My Bender"
+        title="Dial In My Bender"
         variant="secondary"
         onPress={onCalibrate}
       />

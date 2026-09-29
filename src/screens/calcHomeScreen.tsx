@@ -42,8 +42,8 @@ const ENTRIES: CalculatorEntry[] = [
   { key: 'FourPointSaddle', icon: FOUR_POINT_SADDLE_ICON, name: '4-Point Saddle', description: '4-point saddle' },
   { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
   { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
-  { key: 'GuidedCalibration', icon: '◎', name: 'Calibrate My Bender', description: 'One test bend: match the app to your bender', pro: true },
-  { key: 'Calibration', icon: '⌁', name: 'Advanced Calibration', description: 'Manual gain / take-up calibration', pro: true },
+  { key: 'GuidedCalibration', icon: '◎', name: 'Dial In My Bender', description: 'Quick check or full fingerprint — match the app to your bender', pro: true },
+  { key: 'Calibration', icon: '⌁', name: 'Full Fingerprint', description: "Gain method: derive your bender's true radius", pro: true },
 ];
 
 export default function CalcHomeScreen({ navigation }: Props) {

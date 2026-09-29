@@ -65,14 +65,17 @@ function SectionHint({ children }: { children: string }) {
   );
 }
 
+/** Full Fingerprint 默认废料长度（英寸），预填、用户可改。 */
+const DEFAULT_SCRAP_LENGTH = 24;
+
 export default function CalibrationScreen() {
   const theme = useTheme();
   const { unit } = useUnitSystem();
   const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
   const { specs: customSpecs, addSpec } = useCustomSpecs();
 
-  const [l0Text, setL0Text] = useState('');
-  const [l0, setL0] = useState<number | null>(null);
+  const [l0Text, setL0Text] = useState(String(DEFAULT_SCRAP_LENGTH));
+  const [l0, setL0] = useState<number | null>(DEFAULT_SCRAP_LENGTH);
   const [legAText, setLegAText] = useState('');
   const [legA, setLegA] = useState<number | null>(null);
   const [legBText, setLegBText] = useState('');
@@ -139,8 +142,8 @@ export default function CalibrationScreen() {
   }, [addSpec, canSave, gainResult, name, saving, spec, takeUpResult, unit]);
 
   const handleClear = useCallback(() => {
-    setL0Text('');
-    setL0(null);
+    setL0Text(String(DEFAULT_SCRAP_LENGTH));
+    setL0(DEFAULT_SCRAP_LENGTH);
     setLegAText('');
     setLegA(null);
     setLegBText('');
@@ -192,14 +195,14 @@ export default function CalibrationScreen() {
           Step 2: Calibrate R with the gain method (optional)
         </Text>
         <SectionHint>
-          Take a scrap of known length L₀, bend a 90° in the middle, and measure legs A and B (from the back of the bend to each end).
+          {`Cut a scrap of conduit and measure its exact length L₀ (${formatLength(DEFAULT_SCRAP_LENGTH, unit)} is pre-filled — change it if yours differs). Bend a 90° in the middle, then measure each leg from the back of the bend to the end of the conduit: hook your tape on the back of the 90°, the trade method.`}
         </SectionHint>
         <ImperialInput
           label="Scrap length L₀"
           value={l0Text}
           onChangeText={setL0Text}
           onParsedChange={setL0}
-          placeholder={`e.g. 30"`}
+          placeholder={`e.g. ${formatLength(DEFAULT_SCRAP_LENGTH, unit)}`}
           unit={unit}
         />
         <ImperialInput
@@ -207,7 +210,7 @@ export default function CalibrationScreen() {
           value={legAText}
           onChangeText={setLegAText}
           onParsedChange={setLegA}
-          placeholder={`e.g. 17"`}
+          placeholder={`e.g. ${formatLength(13, unit)}`}
           unit={unit}
         />
         <ImperialInput
@@ -215,7 +218,7 @@ export default function CalibrationScreen() {
           value={legBText}
           onChangeText={setLegBText}
           onParsedChange={setLegB}
-          placeholder={`e.g. 14.3"`}
+          placeholder={`e.g. ${formatLength(12.5, unit)}`}
           unit={unit}
         />
         <InfoRow
@@ -246,7 +249,7 @@ export default function CalibrationScreen() {
           value={targetText}
           onChangeText={setTargetText}
           onParsedChange={setTarget}
-          placeholder={`e.g. 12"`}
+          placeholder={`e.g. ${formatLength(12, unit)}`}
           unit={unit}
         />
         <ImperialInput
@@ -254,7 +257,7 @@ export default function CalibrationScreen() {
           value={actualText}
           onChangeText={setActualText}
           onParsedChange={setActual}
-          placeholder={`e.g. 12.4"`}
+          placeholder={`e.g. ${formatLength(12.5, unit)}`}
           unit={unit}
         />
         <InfoRow

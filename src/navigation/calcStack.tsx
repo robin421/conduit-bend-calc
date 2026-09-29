@@ -68,12 +68,12 @@ export default function CalcStack() {
       <Stack.Screen
         name="GuidedCalibration"
         component={GuidedCalibrationScreen}
-        options={{ title: 'Calibrate My Bender' }}
+        options={{ title: 'Dial In My Bender' }}
       />
       <Stack.Screen
         name="Calibration"
         component={CalibrationScreen}
-        options={{ title: 'Advanced Calibration' }}
+        options={{ title: 'Full Fingerprint' }}
       />
       <Stack.Screen
         name="Bender"

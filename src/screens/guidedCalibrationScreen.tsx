@@ -37,6 +37,9 @@ import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'GuidedCalibration'>;
 
+/** Full Fingerprint 路径默认废料长度（英寸），与 Calibration 屏预填值一致。 */
+const FULL_FINGERPRINT_SCRAP_LENGTH = 24;
+
 const STEP_TITLES: Record<GuidedStep, string> = {
   1: 'Mark the conduit',
   2: 'Bend 90°',
@@ -118,7 +121,100 @@ function ValueRow({ label, value }: { label: string; value: string | undefined }
   );
 }
 
-export default function GuidedCalibrationScreen({ navigation }: Props) {
+function PathCard({
+  badge,
+  title,
+  body,
+  buttonTitle,
+  onPress,
+}: {
+  badge?: string;
+  title: string;
+  body: string;
+  buttonTitle: string;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Card style={{ gap: theme.spacing.sm }}>
+      <View style={styles.pathTitleRow}>
+        <Text
+          style={{
+            color: theme.colors.textPrimary,
+            fontSize: theme.fontSize.title,
+            fontWeight: theme.fontWeight.semibold,
+          }}
+        >
+          {title}
+        </Text>
+        {badge ? (
+          <Text
+            style={[
+              styles.badge,
+              {
+                color: theme.colors.success,
+                borderColor: theme.colors.success,
+                borderRadius: theme.radius,
+              },
+            ]}
+          >
+            {badge}
+          </Text>
+        ) : null}
+      </View>
+      <BodyText>{body}</BodyText>
+      <BigButton title={buttonTitle} onPress={onPress} />
+    </Card>
+  );
+}
+
+/** 双路径入口：Quick Check（默认推荐）与 Full Fingerprint。 */
+function DialInChooser({
+  navigation,
+  onStartQuick,
+}: {
+  navigation: Props['navigation'];
+  onStartQuick: () => void;
+}) {
+  const theme = useTheme();
+  const { unit } = useUnitSystem();
+  return (
+    <ScrollView
+      style={{ backgroundColor: theme.colors.background }}
+      contentContainerStyle={[
+        styles.content,
+        { padding: theme.spacing.md, gap: theme.spacing.md },
+      ]}
+    >
+      <BodyText>
+        Free calculators are already trade-standard accurate. Dialing in tightens
+        second-order corrections (take-up, gain) to your exact bender.
+      </BodyText>
+      <PathCard
+        badge="Recommended · 1 measurement"
+        title="Quick Check"
+        body={`Bend one ${formatLength(TEST_BEND_MARK, unit)} stub with your bender's standard take-up, enter the finished height, and take-up is corrected to your bender.`}
+        buttonTitle="Start Quick Check"
+        onPress={onStartQuick}
+      />
+      <PathCard
+        title="Full Fingerprint"
+        body={`Cut ${formatLength(FULL_FINGERPRINT_SCRAP_LENGTH, unit)} of scrap, bend a 90° in the middle, measure both legs — the app derives your bender's true centerline radius.`}
+        buttonTitle="Start Full Fingerprint"
+        onPress={() => navigation.navigate('Calibration')}
+      />
+    </ScrollView>
+  );
+}
+
+/** Quick Check 向导：沿用 stub take-up 校准流程（一次测量修正 take-up）。 */
+function QuickCheckWizard({
+  navigation,
+  onExitQuick,
+}: {
+  navigation: Props['navigation'];
+  onExitQuick: () => void;
+}) {
   const theme = useTheme();
   const { unit } = useUnitSystem();
   const { activeProfile } = useBenderProfiles();
@@ -141,7 +237,7 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
   const goNext = useCallback(() => setStep((value) => nextGuidedStep(value)), []);
   const goPrev = useCallback(() => setStep((value) => prevGuidedStep(value)), []);
 
-  // Android 返回键：非首步回到上一步，首步交回导航默认（退出向导）。
+  // Android 返回键：向导内回到上一步，首步回到双路径入口。
   useEffect(() => {
     if (Platform.OS !== 'android') {
       return;
@@ -149,12 +245,13 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       if (step > FIRST_GUIDED_STEP) {
         setStep((value) => prevGuidedStep(value));
-        return true;
+      } else {
+        onExitQuick();
       }
-      return false;
+      return true;
     });
     return () => subscription.remove();
-  }, [step]);
+  }, [step, onExitQuick]);
 
   const handleSave = useCallback(() => {
     if (!canSave) {
@@ -184,7 +281,7 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
             fontVariant: ['tabular-nums'],
           }}
         >
-          {`Step ${progress.current} of ${progress.total} · ${STEP_TITLES[step]}`}
+          {`Quick Check · Step ${progress.current} of ${progress.total} · ${STEP_TITLES[step]}`}
         </Text>
         <Text
           numberOfLines={1}
@@ -214,11 +311,6 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
               measurement you need before bending.
             </BodyText>
             <DiagramBox>{`End ─────●───── ${markLabel} mark`}</DiagramBox>
-            <BigButton
-              title="Advanced calibration"
-              variant="secondary"
-              onPress={() => navigation.navigate('Calibration')}
-            />
           </Card>
         ) : null}
 
@@ -302,11 +394,9 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
           },
         ]}
       >
-        {step === FIRST_GUIDED_STEP ? (
-          <BigButton title="Next" onPress={goNext} />
-        ) : step < 4 ? (
+        {step < 4 ? (
           <View style={styles.footerRow}>
-            <BigButton title="Back" variant="secondary" onPress={goPrev} style={styles.footerButton} />
+            <BigButton title="Back" variant="secondary" onPress={step === FIRST_GUIDED_STEP ? onExitQuick : goPrev} style={styles.footerButton} />
             <BigButton
               title="Next"
               onPress={goNext}
@@ -328,6 +418,16 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
       </View>
     </View>
   );
+}
+
+export default function GuidedCalibrationScreen({ navigation }: Props) {
+  const [mode, setMode] = useState<'choose' | 'quick'>('choose');
+  const startQuick = useCallback(() => setMode('quick'), []);
+  const exitQuick = useCallback(() => setMode('choose'), []);
+  if (mode === 'quick') {
+    return <QuickCheckWizard navigation={navigation} onExitQuick={exitQuick} />;
+  }
+  return <DialInChooser navigation={navigation} onStartQuick={startQuick} />;
 }
 
 function namePlaceholder(base: { conduitSize: string; conduitType: string }): string {
@@ -356,6 +456,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  pathTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  badge: {
+    fontSize: 12,
+    fontWeight: '600',
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
   input: {
     minHeight: 56,

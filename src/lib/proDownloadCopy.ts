@@ -15,12 +15,13 @@ export interface ProDownloadCopy {
 
 export const PRO_DOWNLOAD_COPY: Record<ProDownloadEntryKey, ProDownloadCopy> = {
   GuidedCalibration: {
-    title: 'Calibrate My Bender',
+    title: 'Dial In My Bender',
     value:
-      "One 90° test bend teaches the app your bender's true radius — every offset, stub and saddle then matches your actual bender.",
+      'Free calculators are already trade-standard accurate. Dialing in tightens second-order corrections (take-up, gain) to your exact bender — start with the 1-measurement quick check.',
   },
   Calibration: {
-    title: 'Advanced Calibration',
-    value: 'Fine-tune gain and take-up manually — for worn heads or benders with no preset.',
+    title: 'Full Fingerprint',
+    value:
+      "Cut 24\u2033 of scrap, bend one 90\u00b0 in the middle, enter both legs — the app derives your bender's true centerline radius.",
   },
 };
