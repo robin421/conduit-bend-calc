@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { displaySpecName } from '../calculators/geometry/benderSpecs';
 import type { BenderSpec } from '../constants';
 import { useTheme } from '../theme';
 
@@ -14,7 +15,7 @@ export default function BenderRow({ spec, onPress }: BenderRowProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Bender: ${spec.conduit} · ${spec.brand}. Tap to change`}
+      accessibilityLabel={`Bender: ${displaySpecName(spec)}. Tap to change`}
       onPress={onPress}
       android_ripple={{ color: theme.colors.border }}
       style={styles.row}
@@ -35,7 +36,7 @@ export default function BenderRow({ spec, onPress }: BenderRowProps) {
           marginLeft: theme.spacing.sm,
         }}
       >
-        {spec.conduit} · {spec.brand} ›
+        {displaySpecName(spec)} ›
       </Text>
     </Pressable>
   );

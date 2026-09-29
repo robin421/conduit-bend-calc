@@ -5,11 +5,16 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { defaultBenderSpec } from '../calculators/geometry/benderSpecs.ts';
 import type { BenderSpec } from '../constants.ts';
 import type { HistoryStorage } from './historyStore.ts';
+import {
+  activeSpec,
+  selectSpecByValue,
+  useBenderProfiles,
+} from './benderProfileStore.ts';
 
 /** AsyncStorage 存储键。 */
 export const BENDER_SPEC_STORAGE_KEY = '@cbc:bender-spec-v1';
@@ -108,47 +113,18 @@ export function saveBenderSpec(spec: BenderSpec): void {
 }
 
 /**
- * 全局规格 hook：挂载时确保加载，setSpec 同步更新缓存、通知其它屏幕并立即落盘。
+ * 全局规格 hook（P0-2）：由 BenderProfile 仓库驱动。
+ * 返回 activeProfile 映射出的 BenderSpec；setSpec 会匹配/新建档案并选中。
  */
 export function useBenderSpec(): {
   spec: BenderSpec;
   setSpec: (spec: BenderSpec) => void;
   loaded: boolean;
 } {
-  const [spec, setSpecState] = useState<BenderSpec>(
-    () => cachedSpec ?? defaultBenderSpec(),
-  );
-  const [loaded, setLoaded] = useState(cacheLoaded);
-
-  useEffect(() => {
-    let cancelled = false;
-    const listener = (next: BenderSpec) => {
-      if (!cancelled) {
-        setSpecState(next);
-      }
-    };
-    listeners.add(listener);
-    void ensureLoaded()
-      .then((value) => {
-        if (!cancelled) {
-          setSpecState(value);
-          setLoaded(true);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLoaded(true);
-        }
-      });
-    return () => {
-      cancelled = true;
-      listeners.delete(listener);
-    };
-  }, []);
-
+  const { activeProfile, ready } = useBenderProfiles();
+  const spec = activeSpec(activeProfile);
   const setSpec = useCallback((next: BenderSpec) => {
-    saveBenderSpec(next);
+    selectSpecByValue(next);
   }, []);
-
-  return { spec, setSpec, loaded };
+  return { spec, setSpec, loaded: ready };
 }

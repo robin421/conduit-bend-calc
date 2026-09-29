@@ -178,7 +178,7 @@ export default function BenderPicker({
         {brands.map((value) => (
           <BigButton
             key={value}
-            title={value === 'Custom' ? 'Custom' : value}
+            title={value === 'Custom' ? 'My Bender' : value}
             size="selection"
             selected={brand === value}
             onPress={() => handleBrandPress(value)}
@@ -220,8 +220,7 @@ export default function BenderPicker({
         <View>
           {customSpecs.length > 0 ? (
             <View>
-              <SectionLabel>Saved</SectionLabel>
-              <View style={styles.row}>
+              <SectionLabel>My Benders</SectionLabel>              <View style={styles.row}>
                 {customSpecs.map((custom) => (
                   <BigButton
                     key={custom.customName ?? custom.conduit}
