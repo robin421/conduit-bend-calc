@@ -17,13 +17,14 @@
     },
     "android": {
       "package": "com.robin421.conduitbendcalc",
-      "versionCode": 3,
+      "versionCode": 4,
       "permissions": ["com.android.vending.BILLING"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F2B46"
       }
     },
+    "plugins": ["react-native-iap"],
     "web": {
       "favicon": "./assets/favicon.png"
     },
