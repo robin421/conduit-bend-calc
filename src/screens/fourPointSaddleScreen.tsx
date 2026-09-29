@@ -28,7 +28,7 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatMeasurement } from '../lib/units';
+import { formatLength, formatMeasurement, type UnitSystem } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -37,17 +37,13 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'FourPointSaddle'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 30;
 
-function formatInches(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-}
 
-function formatFromCenter(value: number): string {
+function formatFromCenter(value: number, unit: UnitSystem): string {
   if (value === 0) {
     return 'Center';
   }
-  const abs = formatInches(Math.abs(value));
-  return value < 0 ? `Center −${abs}"` : `Center +${abs}"`;
+  const abs = formatLength(Math.abs(value), unit);
+  return value < 0 ? `Center −${abs}` : `Center +${abs}`;
 }
 
 export default function FourPointSaddleScreen({ route, navigation }: Props) {
@@ -149,8 +145,9 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
       widthInches,
       angle,
       spec,
+      unit,
     );
-  }, [angle, result, spec, widthInches]);
+  }, [angle, result, spec, unit, widthInches]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null || widthInches === null) {
@@ -161,12 +158,12 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
       kind: 'fourPointSaddle',
       title: '4-Point Saddle',
       inputSummary: `${heightText.trim()} · ${widthText.trim()} · ${angle}°`,
-      resultSummary: `Spacing ${formatInches(result.markSpacingInches)}" · span ${formatInches(result.spanInches)}"`,
+      resultSummary: `Spacing ${formatLength(result.markSpacingInches, unit)} · span ${formatLength(result.spanInches, unit)}`,
       timestamp: Date.now(),
       params: { heightText, widthText, angle, specKey: specKey(spec) },
       signature: `four-point-saddle|${heightInches}|${widthInches}|${angle}`,
     };
-  }, [angle, heightInches, heightText, result, spec, widthInches, widthText]);
+  }, [angle, heightInches, heightText, result, spec, unit, widthInches, widthText]);
 
   useHistoryAutoSave(historyEntry);
 
@@ -290,7 +287,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Mark layout · total span {formatInches(result.spanInches)}&quot;
+            Mark layout · total span {formatLength(result.spanInches, unit)}
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -311,7 +308,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {formatFromCenter(mark.fromCenterInches)}
+                {formatFromCenter(mark.fromCenterInches, unit)}
               </Text>
               <Text
                 style={{
@@ -331,7 +328,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
               marginTop: theme.spacing.sm,
             }}
           >
-            Leave about 2&quot; past the inner marks so the conduit clears the
+            Leave about {formatLength(2, unit)} past the inner marks so the conduit clears the
             obstacle.
           </Text>
           {result.totalShrinkInches !== undefined ? (
@@ -341,7 +338,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
                 fontSize: theme.fontSize.secondary,
               }}
             >
-              Measuring from a fixed point? Add {formatInches(result.totalShrinkInches)}&quot;
+              Measuring from a fixed point? Add {formatLength(result.totalShrinkInches, unit)}
               shrink to find the true center.
             </Text>
           ) : null}

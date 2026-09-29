@@ -7,16 +7,24 @@ import {
   UNIT_SYSTEM_STORAGE_KEY,
 } from './unitStore.ts';
 
-test('parseUnitSystem: 仅 metric 为 metric，其余回退 imperial', () => {
+test('parseUnitSystem: 三态解析，老版本 imperial 迁移为 fractional', () => {
   assert.equal(parseUnitSystem('metric'), 'metric');
-  assert.equal(parseUnitSystem('imperial'), 'imperial');
-  assert.equal(parseUnitSystem(null), 'imperial');
-  assert.equal(parseUnitSystem('bogus'), 'imperial');
+  assert.equal(parseUnitSystem('decimal'), 'decimal');
+  assert.equal(parseUnitSystem('fractional'), 'fractional');
+  assert.equal(parseUnitSystem('imperial'), 'fractional');
+});
+
+test('parseUnitSystem: 非法/空值回退 fractional', () => {
+  assert.equal(parseUnitSystem(null), 'fractional');
+  assert.equal(parseUnitSystem('bogus'), 'fractional');
+  assert.equal(parseUnitSystem(''), 'fractional');
 });
 
 test('serializeUnitSystem: 往返', () => {
-  assert.equal(serializeUnitSystem('metric'), 'metric');
-  assert.equal(parseUnitSystem(serializeUnitSystem('imperial')), 'imperial');
+  for (const unit of ['fractional', 'decimal', 'metric'] as const) {
+    assert.equal(serializeUnitSystem(unit), unit);
+    assert.equal(parseUnitSystem(serializeUnitSystem(unit)), unit);
+  }
 });
 
 test('storage key 稳定', () => {

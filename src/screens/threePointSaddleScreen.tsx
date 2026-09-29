@@ -28,7 +28,7 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatMeasurement } from '../lib/units';
+import { formatLength, formatMeasurement, type UnitSystem } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -37,17 +37,13 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'ThreePointSaddle'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 45;
 
-function formatInches(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-}
 
-function formatFromCenter(value: number): string {
+function formatFromCenter(value: number, unit: UnitSystem): string {
   if (value === 0) {
     return 'Center';
   }
-  const abs = formatInches(Math.abs(value));
-  return value < 0 ? `Center −${abs}"` : `Center +${abs}"`;
+  const abs = formatLength(Math.abs(value), unit);
+  return value < 0 ? `Center −${abs}` : `Center +${abs}`;
 }
 
 export default function ThreePointSaddleScreen({ route, navigation }: Props) {
@@ -128,8 +124,8 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
     if (!result) {
       return null;
     }
-    return threePointSaddleFeasibility(result.markSpacingInches, angle, spec);
-  }, [angle, result, spec]);
+    return threePointSaddleFeasibility(result.markSpacingInches, angle, spec, unit);
+  }, [angle, result, spec, unit]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null) {
@@ -140,12 +136,12 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
       kind: 'threePointSaddle',
       title: '3-Point Saddle',
       inputSummary: `${heightText.trim()} · ${angle}°`,
-      resultSummary: `Spacing ${formatInches(result.markSpacingInches)}" · shrink ${formatInches(result.shrinkInches ?? 0)}" · span ${formatInches(result.spanInches)}"`,
+      resultSummary: `Spacing ${formatLength(result.markSpacingInches, unit)} · shrink ${formatLength(result.shrinkInches ?? 0, unit)} · span ${formatLength(result.spanInches, unit)}`,
       timestamp: Date.now(),
       params: { heightText, angle, specKey: specKey(spec) },
       signature: `three-point-saddle|${heightInches}|${angle}`,
     };
-  }, [angle, heightInches, heightText, result, spec]);
+  }, [angle, heightInches, heightText, result, spec, unit]);
 
   useHistoryAutoSave(historyEntry);
 
@@ -280,7 +276,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Mark layout · total span {formatInches(result.spanInches)}&quot;
+            Mark layout · total span {formatLength(result.spanInches, unit)}
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -301,7 +297,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {formatFromCenter(mark.fromCenterInches)}
+                {formatFromCenter(mark.fromCenterInches, unit)}
               </Text>
               <Text
                 style={{

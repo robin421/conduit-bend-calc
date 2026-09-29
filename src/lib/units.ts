@@ -5,9 +5,9 @@
  * 纯 TypeScript，无任何运行时导入，可被 node --test 直接 import。
  */
 
-import { formatImperial, parseImperial } from './imperial.ts';
+import { formatDecimalInches, formatImperial, parseImperial } from './imperial.ts';
 
-export type UnitSystem = 'imperial' | 'metric';
+export type UnitSystem = 'fractional' | 'decimal' | 'metric';
 
 /** 英寸 → 毫米 换算系数（精确值）。 */
 export const MM_PER_INCH = 25.4;
@@ -64,10 +64,14 @@ export function formatMetric(inches: number, fractionDigits = 1): string {
   return `${text} mm`;
 }
 
-/** 按单位系统格式化长度为单字符串（imperial 已含英寸符号）。 */
+/** 按单位系统格式化长度为单字符串（含单位符号）。 */
 export function formatLength(inches: number, unit: UnitSystem): string {
   if (unit === 'metric') {
     return formatMetric(inches);
+  }
+  if (unit === 'decimal') {
+    const text = formatDecimalInches(inches);
+    return text === '' ? '' : `${text}"`;
   }
   return formatImperial(inches);
 }
@@ -79,7 +83,8 @@ export interface Measurement {
 
 /**
  * 结果展示用：把英寸数拆成 value + unit，适配 ResultGroup 的 hero/row。
- * imperial：value 为 ft-in-分数（不含单位），unit 为 `"`；
+ * fractional：value 为 ft-in-分数（含符号），unit 为空；
+ * decimal：value 为去尾零小数，unit 为 `"`；
  * metric：value 为 mm 数值，unit 为 `mm`。
  */
 export function formatMeasurement(inches: number, unit: UnitSystem): Measurement {
@@ -89,7 +94,8 @@ export function formatMeasurement(inches: number, unit: UnitSystem): Measurement
     const value = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
     return { value, unit: 'mm' };
   }
-  const rounded = Math.round(inches * 10) / 10;
-  const value = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  return { value, unit: '"' };
+  if (unit === 'decimal') {
+    return { value: formatDecimalInches(inches), unit: '"' };
+  }
+  return { value: formatImperial(inches), unit: '' };
 }

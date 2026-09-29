@@ -17,6 +17,8 @@ import type { BenderSpec, OffsetAngle } from '../../constants.ts';
 import { layoutChain } from '../geometry/geometry.ts';
 import type { BendNode } from '../geometry/geometry.ts';
 import { OFFSET_ANGLES } from '../../constants.ts';
+import { formatLength } from '../../lib/units.ts';
+import type { UnitSystem } from '../../lib/units.ts';
 
 export type FeasibilityStatus = 'feasible' | 'tight' | 'impossible';
 
@@ -53,19 +55,8 @@ export interface FeasibilityInput {
   spec?: BenderSpec | null;
   /** offset 类角度，用于替代角度建议。 */
   angleDeg?: OffsetAngle;
-}
-
-function formatInchesShort(inches: number): string {
-  const rounded = Math.round(inches * 8) / 8;
-  const whole = Math.floor(rounded);
-  const frac = rounded - whole;
-  if (Math.abs(frac) < 1e-9) {
-    return `${whole}"`;
-  }
-  const denominator = 8;
-  const numerator = Math.round(frac * denominator);
-  const divisor = numerator % 2 === 0 ? 2 : 1;
-  return `${whole} ${numerator / divisor}/${denominator / divisor}"`;
+  /** 显示单位；缺省 fractional。纯显示层，不影响计算。 */
+  unit?: UnitSystem;
 }
 
 /** 展开长 = Σ直段 + Σ弧长（R·θ）；非法时返回 null。 */
@@ -112,6 +103,7 @@ export function evaluateFeasibility(input: FeasibilityInput): FeasibilityResult 
   const messages: string[] = [];
   const suggestions: string[] = [];
   let status: FeasibilityStatus = 'feasible';
+  const unit: UnitSystem = input.unit ?? 'fractional';
 
   const layout = layoutChain(input.bends, input.radius);
   const straights = layout?.straights ?? [];
@@ -137,7 +129,7 @@ export function evaluateFeasibility(input: FeasibilityInput): FeasibilityResult 
     if (minStub !== null && stubHeight < minStub) {
       status = 'impossible';
       messages.push(
-        `Below this bender's minimum stub (${formatInchesShort(minStub)}).`,
+        `Below this bender's minimum stub (${formatLength(minStub, unit)}).`,
       );
     }
   }
@@ -175,7 +167,7 @@ export function evaluateFeasibility(input: FeasibilityInput): FeasibilityResult 
   }
   if (minimumConduitInches !== null && status !== 'feasible') {
     suggestions.push(
-      `Minimum conduit required: ${formatInchesShort(minimumConduitInches)}.`,
+      `Minimum conduit required: ${formatLength(minimumConduitInches, unit)}.`,
     );
   }
 
@@ -200,6 +192,7 @@ export function offsetFeasibility(
   vertexSpacingInches: number,
   angle: OffsetAngle,
   spec: BenderSpec,
+  unit?: UnitSystem,
 ): FeasibilityResult {
   return evaluateFeasibility({
     bends: [
@@ -209,6 +202,7 @@ export function offsetFeasibility(
     radius: spec.centerlineRadius,
     spec,
     angleDeg: angle,
+    unit,
   });
 }
 
@@ -217,6 +211,7 @@ export function threePointSaddleFeasibility(
   centerToSideInches: number,
   angle: OffsetAngle,
   spec: BenderSpec,
+  unit?: UnitSystem,
 ): FeasibilityResult {
   const sideAngle = angle / 2;
   return evaluateFeasibility({
@@ -228,6 +223,7 @@ export function threePointSaddleFeasibility(
     radius: spec.centerlineRadius,
     spec,
     angleDeg: angle,
+    unit,
   });
 }
 
@@ -237,6 +233,7 @@ export function fourPointSaddleFeasibility(
   widthInches: number,
   angle: OffsetAngle,
   spec: BenderSpec,
+  unit?: UnitSystem,
 ): FeasibilityResult {
   return evaluateFeasibility({
     bends: [
@@ -248,6 +245,7 @@ export function fourPointSaddleFeasibility(
     radius: spec.centerlineRadius,
     spec,
     angleDeg: angle,
+    unit,
   });
 }
 
@@ -255,12 +253,14 @@ export function fourPointSaddleFeasibility(
 export function stubFeasibility(
   stubHeightInches: number,
   spec: BenderSpec,
+  unit?: UnitSystem,
 ): FeasibilityResult {
   return evaluateFeasibility({
     bends: [{ thetaDeg: 90 }],
     radius: spec.centerlineRadius,
     stubHeightInches,
     spec,
+    unit,
   });
 }
 
@@ -269,6 +269,7 @@ export function kicked90Feasibility(
   kickAngleDeg: number,
   straightLengthInches: number,
   spec: BenderSpec,
+  unit?: UnitSystem,
 ): FeasibilityResult {
   const r = spec.centerlineRadius;
   const vertexDistanceToNext =
@@ -282,5 +283,6 @@ export function kicked90Feasibility(
     ],
     radius: spec.centerlineRadius,
     spec,
+    unit,
   });
 }

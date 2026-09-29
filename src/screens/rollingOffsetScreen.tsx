@@ -26,7 +26,7 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatMeasurement } from '../lib/units';
+import { formatLength, formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -35,10 +35,6 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'RollingOffset'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 30;
 
-function formatInches(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-}
 
 function formatDeg(value: number): string {
   const rounded = Math.round(value * 10) / 10;
@@ -137,8 +133,8 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
     if (!result) {
       return null;
     }
-    return offsetFeasibility(result.geometry.vertexSpacing, angle, spec);
-  }, [angle, result, spec]);
+    return offsetFeasibility(result.geometry.vertexSpacing, angle, spec, unit);
+  }, [angle, result, spec, unit]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || riseInches === null || rollInches === null) {
@@ -149,12 +145,12 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
       kind: 'rollingOffset',
       title: 'Rolling Offset',
       inputSummary: `rise ${riseText.trim()} · roll ${rollText.trim()} · ${angle}°`,
-      resultSummary: `Spacing ${formatInches(result.spacingDisplay)}" · rotation ${formatDeg(result.rollAngleDeg)}°`,
+      resultSummary: `Spacing ${formatLength(result.spacingDisplay, unit)} · rotation ${formatDeg(result.rollAngleDeg)}°`,
       timestamp: Date.now(),
       params: { riseText, rollText, angle, specKey: specKey(spec) },
       signature: `rollingOffset|${riseInches}|${rollInches}|${angle}|${specKey(spec)}`,
     };
-  }, [angle, riseInches, riseText, result, rollInches, rollText, spec]);
+  }, [angle, riseInches, riseText, result, rollInches, rollText, spec, unit]);
 
   useHistoryAutoSave(historyEntry);
 
@@ -322,7 +318,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {mark.id === 1 ? 'Start' : `+${formatInches(mark.fromStartInches)}"`}
+                {mark.id === 1 ? 'Start' : `+${formatLength(mark.fromStartInches, unit)}`}
               </Text>
             </View>
           ))}

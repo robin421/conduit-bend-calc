@@ -1,6 +1,7 @@
 /**
- * 单位系统仓库（P0-1 Metric）：全局单例，AsyncStorage + 进程内缓存 + listeners，
- * 仿照 benderSpecStore.ts 的模式。默认 imperial（老用户无感）。
+ * 单位系统仓库：全局单例，AsyncStorage + 进程内缓存 + listeners。
+ * 默认 fractional（美国工地口径：分数英寸）。
+ * 迁移：老版本存的 'imperial' 映射为 'fractional'；非法/损坏/未知值回退 'fractional'。
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,12 +13,16 @@ import type { UnitSystem } from './units.ts';
 /** AsyncStorage 存储键。 */
 export const UNIT_SYSTEM_STORAGE_KEY = 'bendcalc:unit-system:v1';
 
-/** 解析存储字符串，非法/损坏/未知值回退 'imperial'，不抛异常。 */
+/** 解析存储字符串：'imperial'（老版本）→ 'fractional'；非法/损坏/未知值回退 'fractional'，不抛异常。 */
 export function parseUnitSystem(raw: string | null): UnitSystem {
   if (raw === 'metric') {
     return 'metric';
   }
-  return 'imperial';
+  if (raw === 'decimal') {
+    return 'decimal';
+  }
+  // 'fractional' 与老版本 'imperial' 都映射为 fractional；其余回退 fractional。
+  return 'fractional';
 }
 
 export function serializeUnitSystem(unit: UnitSystem): string {
@@ -39,12 +44,12 @@ async function ensureLoaded(): Promise<UnitSystem> {
   if (cachedUnit) {
     return cachedUnit;
   }
-  let loaded: UnitSystem = 'imperial';
+  let loaded: UnitSystem = 'fractional';
   try {
     const raw = await storage.getItem(UNIT_SYSTEM_STORAGE_KEY);
     loaded = parseUnitSystem(raw);
   } catch {
-    loaded = 'imperial';
+    loaded = 'fractional';
   }
   if (!cachedUnit) {
     cachedUnit = loaded;
@@ -70,7 +75,7 @@ export function useUnitSystem(): {
   setUnit: (unit: UnitSystem) => void;
   loaded: boolean;
 } {
-  const [unit, setUnitState] = useState<UnitSystem>(() => cachedUnit ?? 'imperial');
+  const [unit, setUnitState] = useState<UnitSystem>(() => cachedUnit ?? 'fractional');
   const [loaded, setLoaded] = useState(cachedUnit !== null);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { formatImperial, parseImperial } from './imperial.ts';
+import { formatDecimalInches, formatImperial, parseImperial } from './imperial.ts';
 
 test('parseImperial: ft-in-fraction 组合', () => {
   assert.equal(parseImperial('2\' 3-1/2"'), 27.5);
@@ -47,4 +47,13 @@ test('parseImperial 与 formatImperial 往返一致', () => {
   for (const value of [0.5, 6, 12, 27, 27.5, 48.25, 36.75]) {
     assert.equal(parseImperial(formatImperial(value)), value);
   }
+});
+
+test('formatDecimalInches: 2 位小数去尾零', () => {
+  assert.equal(formatDecimalInches(12), '12');
+  assert.equal(formatDecimalInches(1.5), '1.5');
+  assert.equal(formatDecimalInches(2.625), '2.63');
+  assert.equal(formatDecimalInches(2.6), '2.6');
+  assert.equal(formatDecimalInches(0.125), '0.13');
+  assert.equal(formatDecimalInches(0), '0');
 });

@@ -26,7 +26,7 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { useHistoryAutoSave, createHistoryId } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatMeasurement } from '../lib/units';
+import { formatLength, formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -35,10 +35,6 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'Offset'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 30;
 
-function formatInches(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-}
 
 export default function OffsetScreen({ route, navigation }: Props) {
   const theme = useTheme();
@@ -115,8 +111,8 @@ export default function OffsetScreen({ route, navigation }: Props) {
     if (!result) {
       return null;
     }
-    return offsetFeasibility(result.geometry.vertexSpacing, angle, spec);
-  }, [angle, result, spec]);
+    return offsetFeasibility(result.geometry.vertexSpacing, angle, spec, unit);
+  }, [angle, result, spec, unit]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || heightInches === null) {
@@ -127,12 +123,12 @@ export default function OffsetScreen({ route, navigation }: Props) {
       kind: 'offset',
       title: 'Offset Bend',
       inputSummary: `${heightText.trim()} · ${angle}°`,
-      resultSummary: `Spacing ${formatInches(result.distanceBetweenBends)}" · shrink ${formatInches(result.shrink)}"`,
+      resultSummary: `Spacing ${formatLength(result.distanceBetweenBends, unit)} · shrink ${formatLength(result.shrink, unit)}`,
       timestamp: Date.now(),
       params: { heightText, angle, specKey: specKey(spec) },
       signature: `offset|${heightInches}|${angle}`,
     };
-  }, [angle, heightInches, heightText, result, spec]);
+  }, [angle, heightInches, heightText, result, spec, unit]);
 
   useHistoryAutoSave(historyEntry);
 

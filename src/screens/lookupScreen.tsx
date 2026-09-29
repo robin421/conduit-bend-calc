@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 
 import Card from '../components/card';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../constants';
+import { formatLength } from '../lib/units';
+import { useUnitSystem } from '../lib/unitStore';
 import { Theme, useTheme } from '../theme';
 
 function Section({
@@ -79,12 +81,13 @@ function TableRow({
 }
 
 function formatShrink(perInch: number): string {
-  // shrinkPerInch 以分数形式展示，如 1/4"/inch
+  // shrinkPerInch 是无量纲比值（如 30° 为 1/4），以分数展示，不带单位符号，
+  // 三种单位模式下数值相同。
   const sixteenths = Math.round(perInch * 16);
   if (sixteenths === 0) return '0';
-  if (sixteenths === 16) return '1"';
+  if (sixteenths === 16) return '1';
   const g = gcd(sixteenths, 16);
-  return `${sixteenths / g}/${16 / g}"`;
+  return `${sixteenths / g}/${16 / g}`;
 }
 
 function gcd(a: number, b: number): number {
@@ -93,6 +96,7 @@ function gcd(a: number, b: number): number {
 
 export default function LookupScreen() {
   const theme = useTheme();
+  const { unit } = useUnitSystem();
 
   return (
     <ScrollView
@@ -127,7 +131,7 @@ export default function LookupScreen() {
         {TAKE_UP_OPTIONS.map((opt, i) => (
           <TableRow
             key={opt.size}
-            cols={[opt.label, `${opt.takeUpInches}"`]}
+            cols={[opt.label, formatLength(opt.takeUpInches, unit)]}
             theme={theme}
             last={i === TAKE_UP_OPTIONS.length - 1}
           />

@@ -101,10 +101,17 @@ export default function CalcHomeScreen({ navigation }: Props) {
         </Text>
         <View style={[styles.unitToggle, { gap: theme.spacing.xs }]}>
           <BigButton
-            title="Inches"
+            title="Fraction"
             size="selection"
-            selected={unit === 'imperial'}
-            onPress={() => setUnit('imperial')}
+            selected={unit === 'fractional'}
+            onPress={() => setUnit('fractional')}
+            style={styles.unitButton}
+          />
+          <BigButton
+            title="Decimal"
+            size="selection"
+            selected={unit === 'decimal'}
+            onPress={() => setUnit('decimal')}
             style={styles.unitButton}
           />
           <BigButton

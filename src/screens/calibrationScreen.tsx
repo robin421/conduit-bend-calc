@@ -17,16 +17,11 @@ import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import type { BenderSpec } from '../constants';
 import { saveBenderSpec } from '../lib/benderSpecStore';
+import { formatLength } from '../lib/units';
+import { useUnitSystem } from '../lib/unitStore';
 import { useCustomSpecs } from '../lib/customSpecs';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
-
-type Props = NativeStackScreenProps<CalcStackParamList, 'Calibration'>;
-
-function formatInches(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
-}
 
 function InfoRow({
   label,
@@ -72,6 +67,7 @@ function SectionHint({ children }: { children: string }) {
 
 export default function CalibrationScreen() {
   const theme = useTheme();
+  const { unit } = useUnitSystem();
   const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
   const { specs: customSpecs, addSpec } = useCustomSpecs();
 
@@ -136,11 +132,11 @@ export default function CalibrationScreen() {
         saveBenderSpec(built);
         setSpec(built);
         setSavedMessage(
-          `Saved "${displaySpecName(built)}": R=${formatInches(built.centerlineRadius)}", take-up=${formatInches(built.takeUp)}" — now selected as the bender for all calculators and available in every bender picker.`,
+          `Saved "${displaySpecName(built)}": R=${formatLength(built.centerlineRadius, unit)}, take-up=${formatLength(built.takeUp, unit)} — now selected as the bender for all calculators and available in every bender picker.`,
         );
       })
       .finally(() => setSaving(false));
-  }, [addSpec, canSave, gainResult, name, saving, spec, takeUpResult]);
+  }, [addSpec, canSave, gainResult, name, saving, spec, takeUpResult, unit]);
 
   const handleClear = useCallback(() => {
     setL0Text('');
@@ -204,6 +200,7 @@ export default function CalibrationScreen() {
           onChangeText={setL0Text}
           onParsedChange={setL0}
           placeholder={`e.g. 30"`}
+          unit={unit}
         />
         <ImperialInput
           label="Leg A"
@@ -211,6 +208,7 @@ export default function CalibrationScreen() {
           onChangeText={setLegAText}
           onParsedChange={setLegA}
           placeholder={`e.g. 17"`}
+          unit={unit}
         />
         <ImperialInput
           label="Leg B"
@@ -218,14 +216,15 @@ export default function CalibrationScreen() {
           onChangeText={setLegBText}
           onParsedChange={setLegB}
           placeholder={`e.g. 14.3"`}
+          unit={unit}
         />
         <InfoRow
           label="Gain（A+B−L₀）"
-          value={gainResult ? `${formatInches(gainResult.gain)}"` : undefined}
+          value={gainResult ? formatLength(gainResult.gain, unit) : undefined}
         />
         <InfoRow
           label="Calibrated radius R"
-          value={gainResult ? `${formatInches(gainResult.radius)}"` : undefined}
+          value={gainResult ? formatLength(gainResult.radius, unit) : undefined}
         />
       </Card>
 
@@ -248,6 +247,7 @@ export default function CalibrationScreen() {
           onChangeText={setTargetText}
           onParsedChange={setTarget}
           placeholder={`e.g. 12"`}
+          unit={unit}
         />
         <ImperialInput
           label="Actual height"
@@ -255,14 +255,15 @@ export default function CalibrationScreen() {
           onChangeText={setActualText}
           onParsedChange={setActual}
           placeholder={`e.g. 12.4"`}
+          unit={unit}
         />
         <InfoRow
           label={`Old take-up (${displaySpecName(spec)})`}
-          value={`${formatInches(spec.takeUp)}"`}
+          value={formatLength(spec.takeUp, unit)}
         />
         <InfoRow
           label="Calibrated take-up"
-          value={takeUpResult !== null ? `${formatInches(takeUpResult)}"` : undefined}
+          value={takeUpResult !== null ? formatLength(takeUpResult, unit) : undefined}
         />
       </Card>
 

@@ -104,6 +104,18 @@ function gcd(a: number, b: number): number {
 }
 
 /**
+ * 将英寸数格式化为小数英寸字符串：round 到 2 位小数并去尾零。
+ * 例：12 → `12`；1.5 → `1.5`；2.625 → `2.63`。
+ */
+export function formatDecimalInches(inches: number): string {
+  if (!Number.isFinite(inches)) {
+    return '';
+  }
+  const rounded = Math.round(inches * 100) / 100;
+  return String(rounded);
+}
+
+/**
  * 将英寸数格式化为英制 ft-in-fraction 字符串，分数按 1/denominator 就近取整并约分。
  * 例：27.5 → `2' 3-1/2"`；6 → `6"`；12 → `1'`。
  */

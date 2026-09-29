@@ -25,17 +25,13 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatMeasurement } from '../lib/units';
+import { formatLength, formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'Kicked90'>;
 
-function formatInches(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-}
 
 /** 解析 kick 角：0 < κ < 90 的数字，非法返回 null。 */
 function parseKickAngle(text: string): number | null {
@@ -126,8 +122,8 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     if (kickAngle === null || lengthInches === null) {
       return null;
     }
-    return kicked90Feasibility(kickAngle, lengthInches, spec);
-  }, [kickAngle, lengthInches, spec]);
+    return kicked90Feasibility(kickAngle, lengthInches, spec, unit);
+  }, [kickAngle, lengthInches, spec, unit]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (!result || kickAngle === null || lengthInches === null) {
@@ -138,12 +134,12 @@ export default function Kicked90Screen({ route, navigation }: Props) {
       kind: 'kicked90',
       title: 'Kicked 90°',
       inputSummary: `kick ${kickText.trim()}° · straight ${lengthText.trim()}`,
-      resultSummary: `Total gain ${formatInches(result.totalGain)}"`,
+      resultSummary: `Total gain ${formatLength(result.totalGain, unit)}`,
       timestamp: Date.now(),
       params: { kickText, lengthText, specKey: specKey(spec) },
       signature: `kicked90|${kickAngle}|${lengthInches}|${specKey(spec)}`,
     };
-  }, [kickAngle, kickText, lengthInches, lengthText, result, spec]);
+  }, [kickAngle, kickText, lengthInches, lengthText, result, spec, unit]);
 
   useHistoryAutoSave(historyEntry);
 
@@ -305,7 +301,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
               >
                 {mark.developedInches === 0
                   ? 'Start'
-                  : `+${formatInches(mark.developedInches)}"`}
+                  : `+${formatLength(mark.developedInches, unit)}`}
               </Text>
             </View>
           ))}
@@ -315,9 +311,10 @@ export default function Kicked90Screen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            {`Bend 90° first, measure ${formatInches(
+            {`Bend 90° first, measure ${formatLength(
               result.marks[1]?.developedInches ?? 0,
-            )}" along the conduit from Mark 1 to Mark 2, then bend ${formatInches(result.kickAngleDeg)}°`}
+              unit,
+            )} along the conduit from Mark 1 to Mark 2, then bend ${result.kickAngleDeg}°`}
           </Text>
         </Card>
       ) : null}

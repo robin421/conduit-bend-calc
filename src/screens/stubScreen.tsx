@@ -32,17 +32,13 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatMeasurement } from '../lib/units';
+import { formatLength, formatMeasurement } from '../lib/units';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'Stub'>;
 
-function formatInches(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-}
 
 export default function StubScreen({ route, navigation }: Props) {
   const theme = useTheme();
@@ -120,8 +116,8 @@ export default function StubScreen({ route, navigation }: Props) {
     if (heightInches === null) {
       return null;
     }
-    return stubFeasibility(heightInches, spec);
-  }, [heightInches, spec]);
+    return stubFeasibility(heightInches, spec, unit);
+  }, [heightInches, spec, unit]);
 
   const historyEntry = useMemo<HistoryEntry | null>(() => {
     if (markPoint === null || heightInches === null) {
@@ -132,12 +128,12 @@ export default function StubScreen({ route, navigation }: Props) {
       kind: 'stub',
       title: '90° Stub',
       inputSummary: `${heightText.trim()} · ${displaySpecName(spec)}`,
-      resultSummary: `Mark at ${formatInches(markPoint)}"`,
+      resultSummary: `Mark at ${formatLength(markPoint, unit)}`,
       timestamp: Date.now(),
       params: { heightText, specKey: specKey(spec) },
       signature: `stub|${heightInches}|${specKey(spec)}`,
     };
-  }, [heightInches, heightText, markPoint, spec]);
+  }, [heightInches, heightText, markPoint, spec, unit]);
 
   useHistoryAutoSave(historyEntry);
 

@@ -33,8 +33,11 @@ test('parseMetric: 非法输入返回 null', () => {
   assert.equal(parseMetric(''), null);
 });
 
-test('parseLength: 按单位系统分派', () => {
-  assert.equal(parseLength('2"', 'imperial'), 2);
+test('parseLength: 按单位系统分派（fractional/decimal 走 parseImperial）', () => {
+  assert.equal(parseLength('2"', 'fractional'), 2);
+  assert.equal(parseLength('2-1/2"', 'fractional'), 2.5);
+  assert.equal(parseLength('2.5"', 'decimal'), 2.5);
+  assert.equal(parseLength(`2' 3-1/2"`, 'decimal'), 27.5);
   assert.ok(Math.abs((parseLength('50.8 mm', 'metric') ?? 0) - 2) < 1e-9);
 });
 
@@ -43,12 +46,31 @@ test('formatMetric: 保留 1 位小数，整数不带小数', () => {
   assert.equal(formatMetric(100 / 25.4), '100 mm');
 });
 
-test('formatLength: imperial 走分数格式', () => {
-  assert.equal(formatLength(27.5, 'imperial'), `2' 3-1/2"`);
+test('formatLength: fractional 走 ft-in-分数格式', () => {
+  assert.equal(formatLength(27.5, 'fractional'), `2' 3-1/2"`);
+  assert.equal(formatLength(6, 'fractional'), '6"');
+  assert.equal(formatLength(0.5, 'fractional'), '1/2"');
+  assert.equal(formatLength(12, 'fractional'), `1'`);
+});
+
+test('formatLength: decimal 走 2 位小数去尾零', () => {
+  assert.equal(formatLength(12, 'decimal'), '12"');
+  assert.equal(formatLength(1.5, 'decimal'), '1.5"');
+  assert.equal(formatLength(2.625, 'decimal'), '2.63"');
+  assert.equal(formatLength(2.6, 'decimal'), '2.6"');
+});
+
+test('formatLength: metric 走 mm', () => {
   assert.equal(formatLength(1, 'metric'), '25.4 mm');
 });
 
-test('formatMeasurement: 拆成 value + unit', () => {
-  assert.deepEqual(formatMeasurement(6, 'imperial'), { value: '6', unit: '"' });
+test('formatMeasurement: 三态拆成 value + unit', () => {
+  assert.deepEqual(formatMeasurement(27.5, 'fractional'), {
+    value: `2' 3-1/2"`,
+    unit: '',
+  });
+  assert.deepEqual(formatMeasurement(6, 'fractional'), { value: '6"', unit: '' });
+  assert.deepEqual(formatMeasurement(1.5, 'decimal'), { value: '1.5', unit: '"' });
+  assert.deepEqual(formatMeasurement(2.625, 'decimal'), { value: '2.63', unit: '"' });
   assert.deepEqual(formatMeasurement(1, 'metric'), { value: '25.4', unit: 'mm' });
 });

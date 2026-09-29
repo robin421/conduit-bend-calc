@@ -31,7 +31,7 @@ import {
 } from '../lib/benderProfileStore';
 import { displayProfileName } from '../lib/profile';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatMeasurement, inchesToMm } from '../lib/units';
+import { formatLength, formatMeasurement } from '../lib/units';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 
@@ -172,10 +172,7 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
   const stubMeasurement =
     measuredInches !== null ? formatMeasurement(measuredInches, unit) : undefined;
   const deductMeasurement = result ? formatMeasurement(result.actualDeduct, unit) : undefined;
-  const markLabel =
-    unit === 'metric'
-      ? `${TEST_BEND_MARK}" (${Math.round(inchesToMm(TEST_BEND_MARK))} mm)`
-      : `${TEST_BEND_MARK}"`;
+  const markLabel = formatLength(TEST_BEND_MARK, unit);
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
@@ -254,7 +251,7 @@ export default function GuidedCalibrationScreen({ navigation }: Props) {
             />
             <ValueRow label="Finished height (S)" value={stubMeasurement ? `${stubMeasurement.value} ${stubMeasurement.unit}` : undefined} />
             <ValueRow
-              label={'Deduct (S − 12")'}
+              label={`Deduct (S − ${markLabel})`}
               value={deductMeasurement ? `${deductMeasurement.value} ${deductMeasurement.unit}` : undefined}
             />
           </Card>

@@ -8,7 +8,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import { formatImperial } from '../lib/imperial';
+import { formatDecimalInches, formatImperial } from '../lib/imperial';
 import { useTheme } from '../theme';
 import { formatMetric, parseLength, type UnitSystem } from '../lib/units';
 
@@ -18,7 +18,7 @@ interface ImperialInputProps {
   onChangeText: (text: string) => void;
   onParsedChange?: (inches: number | null) => void;
   placeholder?: string;
-  /** 单位系统；缺省 imperial（老行为）。 */
+  /** 单位系统；缺省 fractional（分数英寸）。 */
   unit?: UnitSystem;
   /** 软键盘类型；缺省不指定（系统默认）。 */
   keyboardType?: 'default' | 'numeric' | 'decimal-pad' | 'numbers-and-punctuation';
@@ -31,7 +31,7 @@ export default function ImperialInput({
   onChangeText,
   onParsedChange,
   placeholder,
-  unit = 'imperial',
+  unit = 'fractional',
   keyboardType,
   style,
 }: ImperialInputProps) {
@@ -58,7 +58,12 @@ export default function ImperialInput({
 
   const handleBlur = () => {
     if (parsed !== null && !error) {
-      const formatted = metric ? formatMetric(parsed) : formatImperial(parsed);
+      const formatted =
+        unit === 'metric'
+          ? formatMetric(parsed)
+          : unit === 'decimal'
+            ? `${formatDecimalInches(parsed)}"`
+            : formatImperial(parsed);
       if (formatted !== value) {
         onChangeText(formatted);
       }
