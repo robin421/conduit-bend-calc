@@ -19,5 +19,8 @@ export const GOOGLE_PLAY_URL =
 /** 646x250 徽章图的宽高比。 */
 export const GOOGLE_PLAY_BADGE_ASPECT_RATIO = 646 / 250;
 
-/** 徽章图自带透明留白，卡片不再额外加垂直内边距，让高度贴合徽章。 */
-export const GOOGLE_PLAY_CARD_PADDING_VERTICAL = 0;
+/**
+ * 徽章图 100pt 高；上下各留 8pt 呼吸感，卡片总高约 116pt，
+ * 避免 Web 上 Card 默认 padding 撑出大片空白。
+ */
+export const GOOGLE_PLAY_CARD_PADDING_VERTICAL = 8;

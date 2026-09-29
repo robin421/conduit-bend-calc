@@ -21,9 +21,9 @@ test('saddle 图标使用紧凑的 LOGICAL AND，而不是会溢出图标槽的 
   assert.ok(!FOUR_POINT_SADDLE_ICON.includes('\u22c0'));
 });
 
-test('Google Play 卡片不再额外加垂直内边距', () => {
-  assert.equal(GOOGLE_PLAY_CARD_PADDING_VERTICAL, 0);
-  assert.ok(GOOGLE_PLAY_CARD_PADDING_VERTICAL <= 4);
+test('Google Play 卡片垂直内边距保持紧凑', () => {
+  assert.equal(GOOGLE_PLAY_CARD_PADDING_VERTICAL, 8);
+  assert.ok(GOOGLE_PLAY_CARD_PADDING_VERTICAL <= 8);
   assert.equal(GOOGLE_PLAY_BADGE_ASPECT_RATIO, 646 / 250);
   assert.match(GOOGLE_PLAY_URL, /^https:\/\/play\.google\.com\//);
 });

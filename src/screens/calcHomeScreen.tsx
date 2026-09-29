@@ -15,7 +15,6 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import {
   FOUR_POINT_SADDLE_ICON,
-  GOOGLE_PLAY_BADGE_ASPECT_RATIO,
   GOOGLE_PLAY_CARD_PADDING_VERTICAL,
   GOOGLE_PLAY_URL,
   THREE_POINT_SADDLE_ICON,
@@ -219,11 +218,12 @@ const styles = StyleSheet.create({
   },
   playCard: {
     alignItems: 'center',
+    padding: 0,
     paddingVertical: GOOGLE_PLAY_CARD_PADDING_VERTICAL,
   },
   playBadge: {
     width: 258,
-    aspectRatio: GOOGLE_PLAY_BADGE_ASPECT_RATIO,
+    height: 100,
   },
   accentBar: {
     width: 4,
