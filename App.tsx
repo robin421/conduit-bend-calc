@@ -13,7 +13,7 @@ import { getNavigationTheme, useTheme } from './src/theme';
 export default function App() {
   const theme = useTheme();
   useEffect(() => {
-    // Pro 内购初始化：fire-and-forget，内部已 fail-open，异常直接吞掉。
+    // Pro 内购初始化：fire-and-forget，内部 fail-closed（未验证购买一律 locked），异常直接吞掉。
     initProIap().catch(() => undefined);
     // Web 端固定 SEO 标题；Native 端不受影响。
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
