@@ -196,6 +196,12 @@ of an offset.</li>
 <li>Using the multiplier for 30&deg; but actually bending 45&deg; &mdash; check the angle
 against the bender's degree marks, not by feel.</li>
 </ul>
+
+<h2>Watch: an offset bend calculated in 30 seconds</h2>
+<p>See the offset math in action &mdash; a 4&quot; offset at 30&deg;, with mark spacing
+and shrink computed in fractions, exactly as the free calculator does it:
+<a href="https://www.youtube.com/watch?v=wwvxuB244Hc">watch the 38-second demo on
+YouTube</a>.</p>
 """,
     ),
 ]
