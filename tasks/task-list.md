@@ -101,20 +101,20 @@
 
 ## SEO 第二批（2026-09-29）
 
-- [ ] T47 kick-90-calculator 页：App 有 Kicked 90° 计算器，页面挂正常 CTA；内容含两标记布局法（Mark1=90°切点，Mark2=arc90+直段）、worked example、弯制顺序
-- [ ] T48 90-degree-bend-calculator 页：对应 Stub-Up 90°，不与第一批 stub-up 页重复；讲 90° 解剖、gain（≈0.43R）、back-to-back 90s 布局
-- [ ] T49 conduit-bending-chart 页：纯内容，10°–60° multiplier+shrink 总表（精选摘要目标），表格干净规范
-- [ ] T50 conduit-shrink-calculator 页：shrink 概念 + shrink/take-up/gain 辨析 + 3 个 worked example，CTA 指 offset 计算器
-- [ ] T51 parallel-offset-calculator 页：诚实指南页写法（App 无独立 parallel offset 计算器），讲"同角度+同基准+同shrink"做法
-- [ ] T52 how-to-bend-emt-conduit 页：新手指南（工具、读弯管器刻度、第一个 90°、安全习惯）
+- [x] T47 kick-90-calculator 页：App 有 Kicked 90° 计算器，页面挂正常 CTA；内容含两标记布局法（Mark1=90°切点，Mark2=arc90+直段）、worked example、弯制顺序
+- [x] T48 90-degree-bend-calculator 页：对应 Stub-Up 90°，不与第一批 stub-up 页重复；讲 90° 解剖、gain（≈0.43R）、back-to-back 90s 布局
+- [x] T49 conduit-bending-chart 页：纯内容，10°–60° multiplier+shrink 总表（精选摘要目标），表格干净规范
+- [x] T50 conduit-shrink-calculator 页：shrink 概念 + shrink/take-up/gain 辨析 + 3 个 worked example，CTA 指 offset 计算器
+- [x] T51 parallel-offset-calculator 页：诚实指南页写法（App 无独立 parallel offset 计算器），讲"同角度+同基准+同shrink"做法
+- [x] T52 how-to-bend-emt-conduit 页：新手指南（工具、读弯管器刻度、第一个 90°、安全习惯）
       验收：Given 12 页 When 跑 gen-seo-pages.py 自带 assert Then title≤60/desc≤160/正文250–650词全过；Given 生产部署 When 查 6 新 URL Then 全部 200；Given sitemap.xml Then 含 12 页 URL；Given Search Console Then 6 页逐个 Request Indexing 被接受
 
 ## 第三批 SEO 页面（T53–T58，2026-09-29 新增）
 
-- [ ] T53 conduit-bending-formula 页：multiplier/shrink/gain 公式总汇 + 字段表 + worked example，定位公式速查长尾
-- [ ] T54 hand-bender-markings 页：arrow/star/rim notch/degree scale 四标记详解 + back-to-back 90s 示例
-- [ ] T55 emt-sizes-chart 页：1/2"–2" trade size vs OD/ID 表 + bender 选型 + 注明本站无 fill 计算器
-- [ ] T56 box-offset-bend 页：10° mini offset 做法（spacing=depth×6）+ 同平面检查 + shrink 提醒
-- [ ] T57 how-to-bend-3-4-emt 页：3/4" 专属数字（take-up 6"、min radius 4-1/2"）+ stub/offset/back-to-back 示例
-- [ ] T58 emt-vs-rigid-bending 页：从 bending 角度切入（take-up 差异、工具、force、springback），不与安装对比文重复
+- [x] T53 conduit-bending-formula 页：multiplier/shrink/gain 公式总汇 + 字段表 + worked example，定位公式速查长尾
+- [x] T54 hand-bender-markings 页：arrow/star/rim notch/degree scale 四标记详解 + back-to-back 90s 示例
+- [x] T55 emt-sizes-chart 页：1/2"–2" trade size vs OD/ID 表 + bender 选型 + 注明本站无 fill 计算器
+- [x] T56 box-offset-bend 页：10° mini offset 做法（spacing=depth×6）+ 同平面检查 + shrink 提醒
+- [x] T57 how-to-bend-3-4-emt 页：3/4" 专属数字（take-up 6"、min radius 4-1/2"）+ stub/offset/back-to-back 示例
+- [x] T58 emt-vs-rigid-bending 页：从 bending 角度切入（take-up 差异、工具、force、springback），不与安装对比文重复
       验收：Given 18 页 When 跑 gen-seo-pages.py 自带 assert Then title≤60/desc≤160/正文250–650词全过；Given 生产部署 When 查 6 新 URL Then 全部 200；Given sitemap.xml Then 含 18 页 URL；Given Search Console Then 6 页逐个 Request Indexing 被接受
