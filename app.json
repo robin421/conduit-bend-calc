@@ -16,7 +16,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.robin421.conduitbendcalc",
+      "package": "com.kaipu.conduitbendcalc",
       "versionCode": 6,
       "permissions": ["com.android.vending.BILLING"],
       "adaptiveIcon": {
@@ -24,7 +24,18 @@
         "backgroundColor": "#0F2B46"
       }
     },
-    "plugins": ["react-native-iap"],
+    "plugins": [
+      "react-native-iap",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },

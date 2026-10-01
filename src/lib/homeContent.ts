@@ -14,7 +14,7 @@ export const FOUR_POINT_SADDLE_ICON = '∧∧';
 
 /** Google Play 应用页链接：Web 下载引导浮层的 CTA 目标。 */
 export const GOOGLE_PLAY_URL =
-  'https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc';
+  'https://play.google.com/store/apps/details?id=com.kaipu.conduitbendcalc';
 
 /** 646x250 徽章图的宽高比。 */
 export const GOOGLE_PLAY_BADGE_ASPECT_RATIO = 646 / 250;

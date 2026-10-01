@@ -16,7 +16,7 @@ import os
 import re
 import sys
 
-PLAY_URL = "https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc"
+PLAY_URL = "https://play.google.com/store/apps/details?id=com.kaipu.conduitbendcalc"
 
 BASE_CSS = """
 body { font-family: -apple-system, Helvetica, Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.65; color: #1a1a1a; }
