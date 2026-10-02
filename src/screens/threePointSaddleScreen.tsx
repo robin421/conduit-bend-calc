@@ -27,6 +27,7 @@ import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useCalculatorAnalytics } from '../lib/analytics';
+import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement, type UnitSystem } from '../lib/units';
@@ -146,6 +147,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
 
   useHistoryAutoSave(historyEntry);
   useCalculatorAnalytics('saddle3', historyEntry?.signature ?? null);
+  useFirebaseCalculationCompleted('saddle3', historyEntry?.signature ?? null);
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', angle: DEFAULT_ANGLE });

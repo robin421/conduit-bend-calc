@@ -25,6 +25,7 @@ import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { useHistoryAutoSave, createHistoryId } from '../lib/history';
 import { useCalculatorAnalytics } from '../lib/analytics';
+import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
@@ -133,6 +134,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
 
   useHistoryAutoSave(historyEntry);
   useCalculatorAnalytics('offset', historyEntry?.signature ?? null);
+  useFirebaseCalculationCompleted('offset', historyEntry?.signature ?? null);
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', angle: DEFAULT_ANGLE });

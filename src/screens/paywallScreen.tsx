@@ -12,6 +12,7 @@ import {
   useProAccess,
 } from '../lib/proStore';
 import { SKU_UNAVAILABLE_MESSAGE } from '../lib/iap';
+import { logFirebaseProPaywallViewed } from '../lib/firebase';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 
@@ -44,6 +45,11 @@ export default function PaywallScreen({ navigation }: Props) {
       navigation.goBack();
     }
   }, [access, navigation]);
+
+  // 付费墙展示埋点（仅原生端 Firebase，web no-op）。
+  useEffect(() => {
+    logFirebaseProPaywallViewed();
+  }, []);
 
   // 挂载时若产品信息缺失（启动时离线等），刷新一次。
   useEffect(() => {

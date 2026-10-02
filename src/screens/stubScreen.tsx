@@ -31,6 +31,7 @@ import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useCalculatorAnalytics } from '../lib/analytics';
+import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
@@ -138,6 +139,7 @@ export default function StubScreen({ route, navigation }: Props) {
 
   useHistoryAutoSave(historyEntry);
   useCalculatorAnalytics('stub', historyEntry?.signature ?? null);
+  useFirebaseCalculationCompleted('stub', historyEntry?.signature ?? null);
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '' });

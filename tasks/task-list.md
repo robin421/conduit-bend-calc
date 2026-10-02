@@ -118,3 +118,8 @@
 - [x] T57 how-to-bend-3-4-emt 页：3/4" 专属数字（take-up 6"、min radius 4-1/2"）+ stub/offset/back-to-back 示例
 - [x] T58 emt-vs-rigid-bending 页：从 bending 角度切入（take-up 差异、工具、force、springback），不与安装对比文重复
       验收：Given 18 页 When 跑 gen-seo-pages.py 自带 assert Then title≤60/desc≤160/正文250–650词全过；Given 生产部署 When 查 6 新 URL Then 全部 200；Given sitemap.xml Then 含 18 页 URL；Given Search Console Then 6 页逐个 Request Indexing 被接受
+
+## v1.7.0 线上观测：Firebase Analytics + Crashlytics（T59，2026-10-02，规格见 `docs/firebase-integration-brief.md`）
+
+- [x] T59 Firebase 集成：`@react-native-firebase/{app,analytics,crashlytics}` 21.6.1（Expo SDK 52 / RN 0.76.9 / 新架构）+ config plugin；App 入口首屏后初始化，Crashlytics 仅生产启用；最小事件集 `screen_view` / `calculation_completed{bend_type}` / `unit_system_changed{from,to}` / `pro_paywall_viewed`（无 PII）；`scripts/write-google-services.sh` + `eas-build-pre-install` hook 从 EAS Secret 注入 `google-services.json`（根目录，永不提交）；隐私政策补 Firebase 数据收集说明；版本 bump 1.7.0
+      验收：Given `npm run typecheck` When 运行 Then 无错误；Given `npm test` When 运行 Then 231/231 通过；Given `npx expo prebuild --platform android --clean` When 检查产物 Then google-services.json 被引用、Crashlytics gradle 插件已应用、无新增权限（仅既有 BILLING）；Given `git status` When 提交前检查 Then 无 google-services.json

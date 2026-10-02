@@ -22,6 +22,7 @@ import { useTheme } from '../theme';
 import { useProAccess } from '../lib/proStore';
 import { useUnitSystem } from '../lib/unitStore';
 import { trackEvent } from '../lib/analytics';
+import { logFirebaseUnitSystemChanged } from '../lib/firebase';
 import type { UnitSystem } from '../lib/units';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'CalcHome'>;
@@ -55,6 +56,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
   const handleUnitChange = (next: UnitSystem) => {
     if (next !== unit) {
       trackEvent('unit_changed', { unit: next });
+      logFirebaseUnitSystemChanged(unit, next);
     }
     setUnit(next);
   };
