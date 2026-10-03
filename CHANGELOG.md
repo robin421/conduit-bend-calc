@@ -1,5 +1,36 @@
 # Changelog
 
+## v1.7.2 — Electrician tool-brand theme + GA4 on the SEO tool pages
+
+### UI redesign (light + dark)
+- New palette in `src/theme.ts`: charcoal `#1A1A1A` primary, electric
+  orange `#FF6B00` accent, `#F8F9FA` cards, `#1A1A1A` / `#6B7280` text,
+  `#16A34A` success, `#DC2626` error, `#E5E7EB` border. The former navy
+  and warning-gold are fully removed (adaptive icon background too).
+- Dark mode adjusted: elevated charcoal `#2E2E2E` surface, lighter orange
+  `#FF8533`, otherwise unchanged neutral greys.
+- Derived accessibility tokens to keep WCAG AA on every surface:
+  `primaryText` (dark-mode text/icon) and `accentText` (`#C2410C` on light
+  backgrounds where `#FF6B00` text would only reach ~2.9:1).
+- The 4 SEO tool pages and the home screen pick the new palette up through
+  `theme.ts`; no per-screen hardcoded colors were added.
+
+### GA4 coverage on the new tool pages
+- `src/lib/analytics.ts`: adds `trackSeoToolCalculate` (`calculate`),
+  `trackSeoToolUnitChange` (`unit_change` with `from`/`to`/`tool_name`),
+  `trackSeoToolFaqExpand` (`faq_expand`) and `trackInternalLinkClick`
+  (`internal_link_click`), all guarded by the existing no-throw `trackEvent`.
+- Each of `/offset`, `/4-point-saddle`, `/shrink`, `/stub-up` now calls
+  `useCalculatorAnalytics` (open + completed) and
+  `useSeoToolCalculateAnalytics` (valid-result signature → `calculate`).
+- FAQ is now an accordion; expanding a question fires `faq_expand`. The
+  unit toggle fires `unit_change`. The "More free tools" links fire
+  `internal_link_click` with `from`/`to`.
+- Measurement ID stays build-time only: `G-Z6L51MPY1J` is injected by
+  `scripts/inject-web-seo.py` (never hardcoded). The injector now also
+  back-fills the gtag snippet into the 4 SPA tool shells so `/offset` etc.
+  load GA4 regardless of the shell/inject build order.
+
 ## v1.7.1 — SEO tool pages (P0, web)
 
 Four standalone, interactive SEO tool pages at `bendcalc.wattflow.net`,

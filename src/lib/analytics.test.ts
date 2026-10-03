@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { dispatchAnalyticsEvent, trackEvent } from './analytics.ts';
+import {
+  dispatchAnalyticsEvent,
+  trackEvent,
+  trackInternalLinkClick,
+  trackSeoToolCalculate,
+  trackSeoToolFaqExpand,
+  trackSeoToolUnitChange,
+} from './analytics.ts';
 
 test('dispatchAnalyticsEvent: 非 Web 直接 no-op', () => {
   let called = 0;
@@ -71,4 +78,40 @@ test('trackEvent: Node 环境（无 window）静默 no-op 不抛异常', () => {
   assert.doesNotThrow(() => {
     trackEvent('google_play_click', { source: 'banner' });
   });
+});
+
+test('SEO 事件：事件名与 tool_name 参数口径正确', () => {
+  const calls: unknown[][] = [];
+  const scope = globalThis as { window?: unknown };
+  const originalWindow = scope.window;
+  scope.window = {
+    gtag: (...args: unknown[]) => {
+      calls.push(args);
+    },
+  };
+  try {
+    trackSeoToolCalculate('offset');
+    trackSeoToolUnitChange('shrink', 'fractional', 'metric');
+    trackSeoToolFaqExpand('4-point-saddle', 'What is a 4-point saddle?');
+    trackInternalLinkClick('stub-up', 'offset');
+  } finally {
+    scope.window = originalWindow;
+  }
+  assert.deepEqual(calls, [
+    ['event', 'calculate', { tool_name: 'offset' }],
+    [
+      'event',
+      'unit_change',
+      { from: 'fractional', to: 'metric', tool_name: 'shrink' },
+    ],
+    [
+      'event',
+      'faq_expand',
+      {
+        question: 'What is a 4-point saddle?',
+        tool_name: '4-point-saddle',
+      },
+    ],
+    ['event', 'internal_link_click', { from: 'stub-up', to: 'offset' }],
+  ]);
 });

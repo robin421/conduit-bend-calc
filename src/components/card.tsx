@@ -16,14 +16,9 @@ export default function Card({ children, style }: CardProps) {
         styles.card,
         {
           backgroundColor: theme.colors.card,
-          borderRadius: 12,
+          borderRadius: theme.radius,
           borderColor: theme.colors.border,
           padding: theme.spacing.md,
-          shadowColor: '#000',
-          shadowOpacity: 0.06,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 2,
         },
         style,
       ]}

@@ -215,7 +215,7 @@ HistoryParams {
 | `BenderRow` | `{spec, onPress}` | 计算器输入卡顶部的紧凑 bender 行，点击进 Bender Setup。 |
 | `WarningBar` | `{warnings: readonly LayoutWarning[]}` | 无预警不渲染；按 level 着色；`accessibilityRole="alert"`。 |
 | `BendDiagram` | `{input: DiagramInput\|null, height?=140}` | `react-native-svg` 渲染，几何全来自纯函数 `buildBendDiagram`。 |
-| `ResultGroup` | `{hero: ResultItem, rows?: ResultItem[], hint?, style?}` | 深蓝结果容器：hero 大数字 + 次要行 + 空态 hint。`ResultItem={label,value?,unit?}`。 |
+| `ResultGroup` | `{hero: ResultItem, rows?: ResultItem[], hint?, style?}` | 炭黑结果容器：hero 大数字 + 次要行 + 空态 hint。`ResultItem={label,value?,unit?}`。 |
 
 ---
 

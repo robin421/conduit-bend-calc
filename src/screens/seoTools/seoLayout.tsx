@@ -1,5 +1,5 @@
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
-import type { ComponentProps, ComponentType, ReactNode } from 'react';
+import { useState, type ComponentProps, type ComponentType, type ReactNode } from 'react';
 import {
   Platform,
   Pressable,
@@ -17,6 +17,12 @@ import type { OffsetAngle } from '../../constants';
 import type { RootStackParamList } from '../../navigation/rootStack';
 import { SEO_TOOL_SCREENS, type SeoScreenName } from '../../navigation/seoRoutes';
 import { SEO_TOOL_PAGES, type SeoToolPageMeta } from '../../seo/toolPages';
+import {
+  trackInternalLinkClick,
+  trackSeoToolFaqExpand,
+  trackSeoToolUnitChange,
+  type SeoToolName,
+} from '../../lib/analytics';
 import { formatLength } from '../../lib/units';
 import { useTheme } from '../../theme';
 
@@ -155,9 +161,11 @@ const UNIT_OPTIONS = [
 export function SeoUnitToggle({
   value,
   onChange,
+  toolName,
 }: {
   value: 'fractional' | 'decimal' | 'metric';
   onChange: (unit: 'fractional' | 'decimal' | 'metric') => void;
+  toolName: SeoToolName;
 }) {
   const theme = useTheme();
   return (
@@ -169,7 +177,12 @@ export function SeoUnitToggle({
             key={option.key}
             accessibilityRole="button"
             accessibilityState={{ selected }}
-            onPress={() => onChange(option.key)}
+            onPress={() => {
+              if (option.key !== value) {
+                trackSeoToolUnitChange(toolName, value, option.key);
+              }
+              onChange(option.key);
+            }}
             style={[
               styles.segmentItem,
               {
@@ -436,27 +449,70 @@ export function TakeUpTable() {
 
 export function FaqSection({
   page,
+  toolName,
 }: {
   page: { faqs: readonly { question: string; answer: string }[] };
+  toolName: SeoToolName;
 }) {
   const theme = useTheme();
+  const [openQuestions, setOpenQuestions] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+
+  const toggle = (question: string) => {
+    setOpenQuestions((previous) => {
+      const next = new Set(previous);
+      if (next.has(question)) {
+        next.delete(question);
+      } else {
+        next.add(question);
+        trackSeoToolFaqExpand(toolName, question);
+      }
+      return next;
+    });
+  };
+
   return (
     <SeoSection title="Frequently asked questions">
       <View style={{ gap: theme.spacing.sm }}>
-        {page.faqs.map((faq) => (
-          <View key={faq.question} style={{ gap: 2 }}>
-            <SeoHeading level={3}>{faq.question}</SeoHeading>
-            <Text
-              style={{
-                color: theme.colors.textPrimary,
-                fontSize: theme.fontSize.body,
-                lineHeight: 24,
-              }}
-            >
-              {faq.answer}
-            </Text>
-          </View>
-        ))}
+        {page.faqs.map((faq) => {
+          const open = openQuestions.has(faq.question);
+          return (
+            <View key={faq.question} style={{ gap: 2 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: open }}
+                onPress={() => toggle(faq.question)}
+                style={styles.faqQuestion}
+              >
+                <SeoHeading level={3} style={styles.faqQuestionText}>
+                  {faq.question}
+                </SeoHeading>
+                <Text
+                  accessibilityElementsHidden
+                  style={{
+                    color: theme.colors.accentText,
+                    fontSize: theme.fontSize.body,
+                    fontWeight: theme.fontWeight.semibold,
+                  }}
+                >
+                  {open ? '\u2212' : '+'}
+                </Text>
+              </Pressable>
+              {open ? (
+                <Text
+                  style={{
+                    color: theme.colors.textPrimary,
+                    fontSize: theme.fontSize.body,
+                    lineHeight: 24,
+                  }}
+                >
+                  {faq.answer}
+                </Text>
+              ) : null}
+            </View>
+          );
+        })}
       </View>
     </SeoSection>
   );
@@ -469,23 +525,35 @@ export function SeoLink({
   path,
   screen,
   children,
+  trackFrom,
+  trackTo,
 }: {
   path: string;
   screen: SeoScreenName | 'RootTabs';
   children: ReactNode;
+  /** internal_link_click 的 from 参数（当前工具页 tool_name）。 */
+  trackFrom?: string;
+  /** internal_link_click 的 to 参数（目标工具页 key / 'home'）。 */
+  trackTo?: string;
 }) {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const linkStyle: StyleProp<TextStyle> = {
-    color: theme.colors.primary,
+    color: theme.colors.primaryText,
     fontSize: theme.fontSize.body,
     fontWeight: theme.fontWeight.semibold,
     textDecorationLine: 'underline',
   };
 
+  const handlePress = () => {
+    if (trackFrom !== undefined && trackTo !== undefined) {
+      trackInternalLinkClick(trackFrom, trackTo);
+    }
+  };
+
   if (Platform.OS === 'web') {
     return (
-      <AnchorText href={path} style={linkStyle}>
+      <AnchorText href={path} style={linkStyle} onPress={handlePress}>
         {children}
       </AnchorText>
     );
@@ -494,7 +562,10 @@ export function SeoLink({
   return (
     <Text
       accessibilityRole="link"
-      onPress={() => navigation.navigate(screen)}
+      onPress={() => {
+        handlePress();
+        navigation.navigate(screen);
+      }}
       style={linkStyle}
     >
       {children}
@@ -503,7 +574,13 @@ export function SeoLink({
 }
 
 /** 底部内链网：其余 3 个工具页 + 首页。 */
-export function MoreFreeTools({ current }: { current: SeoToolPageMeta }) {
+export function MoreFreeTools({
+  current,
+  toolName,
+}: {
+  current: SeoToolPageMeta;
+  toolName: SeoToolName;
+}) {
   const theme = useTheme();
   const others = SEO_TOOL_PAGES.filter((page) => page.key !== current.key);
   return (
@@ -514,11 +591,13 @@ export function MoreFreeTools({ current }: { current: SeoToolPageMeta }) {
             key={page.key}
             path={page.path}
             screen={SEO_TOOL_SCREENS[page.key]}
+            trackFrom={toolName}
+            trackTo={page.key}
           >
             {page.h1}
           </SeoLink>
         ))}
-        <SeoLink path="/" screen="RootTabs">
+        <SeoLink path="/" screen="RootTabs" trackFrom={toolName} trackTo="home">
           All conduit bending calculators
         </SeoLink>
       </View>
@@ -550,7 +629,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   segmentItem: {
-    minHeight: 44,
+    minHeight: 56,
     paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -561,7 +640,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   angleButton: {
-    minHeight: 44,
+    minHeight: 56,
     minWidth: 56,
     flexGrow: 1,
     flexBasis: '28%',
@@ -597,5 +676,14 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     fontWeight: '600',
+  },
+  faqQuestion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+  },
+  faqQuestionText: {
+    flex: 1,
   },
 });

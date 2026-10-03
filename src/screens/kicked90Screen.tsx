@@ -296,7 +296,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
               </View>
               <Text
                 style={{
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                   fontSize: theme.fontSize.body,
                   fontWeight: theme.fontWeight.semibold,
                   fontVariant: ['tabular-nums'],

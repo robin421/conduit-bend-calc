@@ -47,7 +47,7 @@ export default function FeasibilityPanel({
     result.status === 'feasible'
       ? theme.colors.success
       : result.status === 'tight'
-        ? theme.colors.accent
+        ? theme.colors.accentText
         : theme.colors.error;
 
   if (!isPro) {
@@ -149,7 +149,7 @@ export default function FeasibilityPanel({
         <Text
           key={`suggestion-${index}`}
           style={{
-            color: theme.colors.accent,
+            color: theme.colors.accentText,
             fontSize: theme.fontSize.secondary,
             lineHeight: 20,
           }}

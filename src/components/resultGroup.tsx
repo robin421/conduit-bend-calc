@@ -19,7 +19,7 @@ interface ResultGroupProps {
 const DIVIDER_COLOR = 'rgba(255,255,255,0.16)';
 
 /**
- * 单个海军蓝结果容器：hero 主结果 + 若干次要行。
+ * 单个炭黑结果容器：hero 主结果 + 若干次要行。
  * 数值格式由调用方负责，本组件只负责层级排版与主题色。
  */
 export default function ResultGroup({ hero, rows = [], hint, style }: ResultGroupProps) {
@@ -32,7 +32,7 @@ export default function ResultGroup({ hero, rows = [], hint, style }: ResultGrou
         styles.container,
         {
           backgroundColor: theme.colors.resultBackground,
-          borderRadius: 12,
+          borderRadius: theme.radius,
           padding: theme.spacing.md,
         },
         style,

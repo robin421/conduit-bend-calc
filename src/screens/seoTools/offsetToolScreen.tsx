@@ -3,6 +3,10 @@ import { Text, View } from 'react-native';
 
 import { calculateOffset } from '../../calculators/offset/offset';
 import ImperialInput from '../../components/imperialInput';
+import {
+  useCalculatorAnalytics,
+  useSeoToolCalculateAnalytics,
+} from '../../lib/analytics';
 import { useUnitSystem } from '../../lib/unitStore';
 import { getSeoToolPage } from '../../seo/toolPages';
 import { useTheme } from '../../theme';
@@ -24,6 +28,8 @@ import {
 
 const PAGE = getSeoToolPage('offset');
 const DEFAULT_ANGLE: OffsetAngle = 30;
+/** GA4 tool_name 口径。 */
+const TOOL_NAME = 'offset' as const;
 
 export default function OffsetToolScreen() {
   const theme = useTheme();
@@ -44,6 +50,13 @@ export default function OffsetToolScreen() {
   const spacing = result ? result.distanceBetweenBends : null;
   const mark1 = startInches ?? 0;
   const mark2 = spacing !== null ? mark1 + spacing : null;
+
+  // 有效结果签名：变化即视为发生一次计算。
+  const signature = result
+    ? `${result.distanceBetweenBends}|${result.shrink}|${angle}`
+    : null;
+  useCalculatorAnalytics('offset', signature);
+  useSeoToolCalculateAnalytics(TOOL_NAME, signature);
 
   return (
     <SeoPage>
@@ -66,7 +79,7 @@ export default function OffsetToolScreen() {
           >
             Units
           </Text>
-          <SeoUnitToggle value={unit} onChange={setUnit} />
+          <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
         </View>
 
         <ImperialInput
@@ -142,9 +155,9 @@ export default function OffsetToolScreen() {
         </SeoParagraph>
       </SeoSection>
 
-      <FaqSection page={PAGE} />
+      <FaqSection page={PAGE} toolName={TOOL_NAME} />
 
-      <MoreFreeTools current={PAGE} />
+      <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>
   );
 }

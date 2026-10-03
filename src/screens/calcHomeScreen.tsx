@@ -163,7 +163,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
             />
             <Text
               numberOfLines={1}
-              style={[styles.icon, { color: theme.colors.primary }]}
+              style={[styles.icon, { color: theme.colors.primaryText }]}
             >
               {entry.icon}
             </Text>

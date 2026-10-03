@@ -3,6 +3,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../../calculators/offset/offset';
 import ImperialInput from '../../components/imperialInput';
+import {
+  useCalculatorAnalytics,
+  useSeoToolCalculateAnalytics,
+} from '../../lib/analytics';
 import { useUnitSystem } from '../../lib/unitStore';
 import { getSeoToolPage } from '../../seo/toolPages';
 import { useTheme } from '../../theme';
@@ -24,6 +28,8 @@ import {
 
 const PAGE = getSeoToolPage('shrink');
 const DEFAULT_ANGLE: OffsetAngle = 30;
+/** GA4 tool_name 口径。 */
+const TOOL_NAME = 'shrink' as const;
 
 type ShrinkMode = 'offset' | 'saddle';
 
@@ -51,6 +57,11 @@ export default function ShrinkToolScreen() {
   const totalShrink =
     result === null ? null : mode === 'saddle' ? result.shrink * 2 : result.shrink;
 
+  // 有效结果签名：变化即视为发生一次计算。
+  const signature = result ? `${result.shrink}|${angle}|${mode}` : null;
+  useCalculatorAnalytics('shrink', signature);
+  useSeoToolCalculateAnalytics(TOOL_NAME, signature);
+
   return (
     <SeoPage>
       <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
@@ -72,7 +83,7 @@ export default function ShrinkToolScreen() {
           >
             Units
           </Text>
-          <SeoUnitToggle value={unit} onChange={setUnit} />
+          <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
         </View>
 
         <View style={styles.modeRow}>
@@ -172,9 +183,9 @@ export default function ShrinkToolScreen() {
         </SeoParagraph>
       </SeoSection>
 
-      <FaqSection page={PAGE} />
+      <FaqSection page={PAGE} toolName={TOOL_NAME} />
 
-      <MoreFreeTools current={PAGE} />
+      <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>
   );
 }
@@ -185,7 +196,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   modeButton: {
-    minHeight: 44,
+    minHeight: 56,
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',

@@ -23,7 +23,7 @@ function Section({
           <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>
             {title}
           </Text>
-          <Text style={[styles.chevron, { color: theme.colors.accent }]}>
+          <Text style={[styles.chevron, { color: theme.colors.accentText }]}>
             {open ? '▾' : '▸'}
           </Text>
         </View>
@@ -70,7 +70,7 @@ function TableRow({
           style={[
             styles.cell,
             { color: theme.colors.textPrimary },
-            i === 0 && { color: theme.colors.accent, fontWeight: '700' },
+            i === 0 && { color: theme.colors.accentText, fontWeight: '700' },
           ]}
         >
           {c}

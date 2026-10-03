@@ -22,7 +22,7 @@
       "permissions": ["com.android.vending.BILLING"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0F2B46"
+        "backgroundColor": "#1A1A1A"
       }
     },
     "plugins": [

@@ -30,7 +30,7 @@ export default function WarningBar({ warnings }: WarningBarProps) {
       case 'error':
         return theme.colors.error;
       case 'warning':
-        return theme.colors.accent;
+        return theme.colors.accentText;
       case 'info':
         return theme.colors.textSecondary;
     }

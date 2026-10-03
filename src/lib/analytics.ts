@@ -13,14 +13,32 @@ import { useEffect, useRef } from 'react';
 /** 事件参数：只允许分类标签，不允许输入值 / PII。 */
 export type AnalyticsEventParams = Record<string, string | number>;
 
-/** 6 个计算器的事件 slug。 */
+/** 计算器的事件 slug（含 SEO `/shrink` 工具页）。 */
 export type CalculatorSlug =
   | 'offset'
   | 'stub'
   | 'saddle3'
   | 'saddle4'
   | 'rolling'
-  | 'kicked90';
+  | 'kicked90'
+  | 'shrink';
+
+/**
+ * SEO 工具页的 GA4 `tool_name` 口径（与内部 key 不同）：
+ * offset / 4-point-saddle / shrink / stub-up。
+ */
+export type SeoToolName =
+  | 'offset'
+  | '4-point-saddle'
+  | 'shrink'
+  | 'stub-up';
+
+/**
+ * GA4 Measurement ID 为 `G-Z6L51MPY1J`，但**不在此文件硬编码**：
+ * gtag.js 基础代码由构建期脚本 scripts/inject-web-seo.py 注入
+ * （`--ga4-id G-Z6L51MPY1J` 或 `GA4_ID` 环境变量），见 CHANGELOG 构建流程。
+ * 本模块只负责在 gtag 已就绪时分发事件。
+ */
 
 /** window.gtag 的最小形状，便于 Node 单测注入假对象。 */
 export interface AnalyticsGtagTarget {
@@ -95,4 +113,53 @@ export function useCalculatorAnalytics(
     lastSentRef.current = signature;
     trackEvent('calculation_completed', { calculator });
   }, [calculator, signature]);
+}
+
+/* ------------------------------------------------------------------ */
+/* SEO 工具页专用事件                                                   */
+/* ------------------------------------------------------------------ */
+
+/** calculate：SEO 工具页产出有效结果时触发。 */
+export function trackSeoToolCalculate(toolName: SeoToolName): void {
+  trackEvent('calculate', { tool_name: toolName });
+}
+
+/** unit_change：SEO 工具页切换单位制。 */
+export function trackSeoToolUnitChange(
+  toolName: SeoToolName,
+  from: string,
+  to: string,
+): void {
+  trackEvent('unit_change', { from, to, tool_name: toolName });
+}
+
+/** faq_expand：SEO 工具页展开某条 FAQ。 */
+export function trackSeoToolFaqExpand(
+  toolName: SeoToolName,
+  question: string,
+): void {
+  trackEvent('faq_expand', { question, tool_name: toolName });
+}
+
+/** internal_link_click："More Free Tools" 内链点击。 */
+export function trackInternalLinkClick(from: string, to: string): void {
+  trackEvent('internal_link_click', { from, to });
+}
+
+/**
+ * SEO 工具页的 calculate 埋点：signature 变化（说明用户输入已形成有效结果）
+ * 时发一次 `calculate`，同一结果不重复发送。signature 从不随事件发送。
+ */
+export function useSeoToolCalculateAnalytics(
+  toolName: SeoToolName,
+  signature: string | null,
+): void {
+  const lastSentRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (signature === null || lastSentRef.current === signature) {
+      return;
+    }
+    lastSentRef.current = signature;
+    trackSeoToolCalculate(toolName);
+  }, [toolName, signature]);
 }

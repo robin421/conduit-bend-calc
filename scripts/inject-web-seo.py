@@ -93,6 +93,24 @@ if GA4_SNIPPET and os.path.exists(privacy_path):
             f.write(privacy)
         print("GA4 injected into privacy.html")
 
+# 4 个 SPA 工具页 shell（scripts/gen-seo-tool-shells.ts 生成 dist/<slug>/index.html）。
+# 若 shell 在 GA4 注入之后生成（见 CHANGELOG 构建顺序），它们已经继承了 index.html
+# 的 gtag；若在其之前生成，则此处补齐，保证新工具页无论构建顺序都能被 GA4 覆盖。
+TOOL_SHELL_SLUGS = ["offset", "4-point-saddle", "shrink", "stub-up"]
+if GA4_SNIPPET:
+    for slug in TOOL_SHELL_SLUGS:
+        shell_path = f"{EXPORT_DIR}/{slug}/index.html"
+        if not os.path.exists(shell_path):
+            continue
+        with open(shell_path) as f:
+            shell = f.read()
+        if "googletagmanager" in shell:
+            continue
+        shell = shell.replace("</head>", GA4_SNIPPET + "</head>", 1)
+        with open(shell_path, "w") as f:
+            f.write(shell)
+        print(f"GA4 injected into {slug}/index.html")
+
 with open(f"{EXPORT_DIR}/robots.txt", "w") as f:
     f.write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n")
 

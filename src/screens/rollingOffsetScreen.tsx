@@ -316,7 +316,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
               </Text>
               <Text
                 style={{
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                   fontSize: theme.fontSize.body,
                   fontWeight: theme.fontWeight.semibold,
                   fontVariant: ['tabular-nums'],

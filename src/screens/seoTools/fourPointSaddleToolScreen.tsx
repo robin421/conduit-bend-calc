@@ -3,6 +3,10 @@ import { Text, View } from 'react-native';
 
 import { calculateFourPointSaddle } from '../../calculators/saddle/saddle';
 import ImperialInput from '../../components/imperialInput';
+import {
+  useCalculatorAnalytics,
+  useSeoToolCalculateAnalytics,
+} from '../../lib/analytics';
 import { useUnitSystem } from '../../lib/unitStore';
 import { getSeoToolPage } from '../../seo/toolPages';
 import { useTheme } from '../../theme';
@@ -24,6 +28,8 @@ import {
 
 const PAGE = getSeoToolPage('saddle4');
 const DEFAULT_ANGLE: OffsetAngle = 30;
+/** GA4 tool_name 口径。 */
+const TOOL_NAME = '4-point-saddle' as const;
 
 export default function FourPointSaddleToolScreen() {
   const theme = useTheme();
@@ -50,6 +56,13 @@ export default function FourPointSaddleToolScreen() {
       }))
     : [];
 
+  // 有效结果签名：变化即视为发生一次计算。
+  const signature = result
+    ? `${result.markSpacingInches}|${result.spanInches}|${result.totalShrinkInches ?? ''}|${angle}`
+    : null;
+  useCalculatorAnalytics('saddle4', signature);
+  useSeoToolCalculateAnalytics(TOOL_NAME, signature);
+
   return (
     <SeoPage>
       <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
@@ -71,7 +84,7 @@ export default function FourPointSaddleToolScreen() {
           >
             Units
           </Text>
-          <SeoUnitToggle value={unit} onChange={setUnit} />
+          <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
         </View>
 
         <ImperialInput
@@ -147,9 +160,9 @@ export default function FourPointSaddleToolScreen() {
         </SeoParagraph>
       </SeoSection>
 
-      <FaqSection page={PAGE} />
+      <FaqSection page={PAGE} toolName={TOOL_NAME} />
 
-      <MoreFreeTools current={PAGE} />
+      <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>
   );
 }

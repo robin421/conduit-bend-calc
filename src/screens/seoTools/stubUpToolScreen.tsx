@@ -4,6 +4,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import ImperialInput from '../../components/imperialInput';
 import { TAKE_UP_OPTIONS } from '../../constants';
 import type { EmtTakeUpSize } from '../../constants';
+import {
+  useCalculatorAnalytics,
+  useSeoToolCalculateAnalytics,
+} from '../../lib/analytics';
 import { useUnitSystem } from '../../lib/unitStore';
 import { getSeoToolPage } from '../../seo/toolPages';
 import { useTheme } from '../../theme';
@@ -23,6 +27,8 @@ import {
 
 const PAGE = getSeoToolPage('stubUp');
 const DEFAULT_SIZE: EmtTakeUpSize = '1/2';
+/** GA4 tool_name 口径。 */
+const TOOL_NAME = 'stub-up' as const;
 
 export default function StubUpToolScreen() {
   const theme = useTheme();
@@ -40,6 +46,11 @@ export default function StubUpToolScreen() {
   const mark =
     heightInches === null ? null : heightInches - takeUp;
   const tooShort = mark !== null && mark <= 0;
+
+  // 有效结果签名：变化即视为发生一次计算。
+  const signature = mark !== null ? `${mark}|${takeUp}|${size}` : null;
+  useCalculatorAnalytics('stub', signature);
+  useSeoToolCalculateAnalytics(TOOL_NAME, signature);
 
   return (
     <SeoPage>
@@ -62,7 +73,7 @@ export default function StubUpToolScreen() {
           >
             Units
           </Text>
-          <SeoUnitToggle value={unit} onChange={setUnit} />
+          <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
         </View>
 
         <ImperialInput
@@ -178,9 +189,9 @@ export default function StubUpToolScreen() {
         </SeoParagraph>
       </SeoSection>
 
-      <FaqSection page={PAGE} />
+      <FaqSection page={PAGE} toolName={TOOL_NAME} />
 
-      <MoreFreeTools current={PAGE} />
+      <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>
   );
 }
