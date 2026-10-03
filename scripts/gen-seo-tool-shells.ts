@@ -58,7 +58,7 @@ function buildHead(page: (typeof SEO_TOOL_PAGES)[number], baseUrl: string): stri
     `<meta name="robots" content="index,follow" />`,
     `<link rel="canonical" href="${canonical}" />`,
     `<meta property="og:type" content="website" />`,
-    `<meta property="og:site_name" content="Conduit Bend Calc" />`,
+    `<meta property="og:site_name" content="WattFlow" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${canonical}" />`,

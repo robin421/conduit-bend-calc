@@ -21,11 +21,14 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import WattFlowBrandBar from '../../components/wattflowBrandBar';
+import { BRAND_FOOTER } from '../../seo/brand';
+import { CALCULATOR_NAV, type CalculatorNavItem } from '../../seo/calculatorNav';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../../constants';
 import type { OffsetAngle } from '../../constants';
 import type { RootStackParamList } from '../../navigation/rootStack';
 import { SEO_TOOL_SCREENS, type SeoScreenName } from '../../navigation/seoRoutes';
-import { SEO_TOOL_PAGES, type SeoToolPageMeta } from '../../seo/toolPages';
+import { SEO_TOOL_PAGES, type SeoToolKey, type SeoToolPageMeta } from '../../seo/toolPages';
 import {
   trackInternalLinkClick,
   trackSeoToolCopy,
@@ -53,7 +56,14 @@ const AnchorText = Text as unknown as ComponentType<
 /* ------------------------------------------------------------------ */
 
 /** 移动优先内容容器：maxWidth 720 居中，无阴影/渐变。 */
-export function SeoPage({ children }: { children: ReactNode }) {
+export function SeoPage({
+  children,
+  activeTool,
+}: {
+  children: ReactNode;
+  /** 当前工具页 key；提供后自动渲染 WattFlow 品牌栏 + 计算器切换条 + 页脚。 */
+  activeTool?: SeoToolKey;
+}) {
   const theme = useTheme();
   return (
     <ScrollView
@@ -62,15 +72,146 @@ export function SeoPage({ children }: { children: ReactNode }) {
         styles.page,
         {
           paddingHorizontal: theme.spacing.sm,
-          paddingTop: 12,
+          paddingTop: 8,
           paddingBottom: theme.spacing.lg,
-          gap: 12,
+          gap: 8,
         },
       ]}
       keyboardShouldPersistTaps="handled"
     >
+      <WattFlowBrandBar />
+      {activeTool ? <CalculatorSwitcher activeKey={activeTool} /> : null}
       {children}
+      <SeoFooter />
     </ScrollView>
+  );
+}
+
+/**
+ * WattFlow 页脚：把「这是 WattFlow 的一个整体产品」说到最后一行。
+ */
+export function SeoFooter() {
+  const theme = useTheme();
+  return (
+    <View style={styles.footer}>
+      <Text
+        style={{
+          color: theme.colors.textSecondary,
+          fontSize: 12,
+          textAlign: 'center',
+        }}
+      >
+        {BRAND_FOOTER}
+      </Text>
+    </View>
+  );
+}
+
+/**
+ * 计算器切换条：把所有工具页串成一个整体。
+ * - 窄屏（<600pt）：横向可滑动，不换行；
+ * - 宽屏：平铺换行。
+ * - 当前页橙色下划线 + 橙色文字，其余灰色；Web 端渲染真实 <a href> 可抓取。
+ */
+export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
+  const theme = useTheme();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { width } = useWindowDimensions();
+  const wrap = width >= 600;
+
+  const renderItem = (item: CalculatorNavItem, active: boolean) => {
+    const text = (
+      <Text
+        style={{
+          color: active ? theme.colors.accentText : theme.colors.textSecondary,
+          fontSize: theme.fontSize.secondary,
+          fontWeight: active
+            ? theme.fontWeight.semibold
+            : theme.fontWeight.regular,
+        }}
+      >
+        {item.label}
+      </Text>
+    );
+    const chipStyle = [
+      styles.switcherChip,
+      { borderBottomColor: active ? theme.colors.accent : 'transparent' },
+    ];
+
+    if (active) {
+      return (
+        <View key={item.key} style={chipStyle} accessibilityState={{ selected: true }}>
+          {text}
+        </View>
+      );
+    }
+    if (Platform.OS === 'web') {
+      return (
+        <AnchorText
+          key={item.key}
+          href={item.path}
+          onPress={() => trackInternalLinkClick(activeKey, item.key)}
+          style={chipStyle}
+        >
+          {text}
+        </AnchorText>
+      );
+    }
+    return (
+      <Pressable
+        key={item.key}
+        accessibilityRole="button"
+        onPress={() => {
+          trackInternalLinkClick(activeKey, item.key);
+          navigation.navigate(item.screen);
+        }}
+        style={chipStyle}
+      >
+        {text}
+      </Pressable>
+    );
+  };
+
+  const items = CALCULATOR_NAV.map((item) =>
+    renderItem(item, item.key === activeKey),
+  );
+
+  if (wrap) {
+    return <View style={styles.switcherWrap}>{items}</View>;
+  }
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ marginHorizontal: -theme.spacing.sm }}
+      contentContainerStyle={styles.switcherContent}
+    >
+      {items}
+    </ScrollView>
+  );
+}
+
+/**
+ * 工作区容器：把「输入 + 结果」包成一个视觉块，与下方参考内容（L3/L4）分隔。
+ * 白底 + 描边，配合下方浅灰参考区形成「前线 vs 参考」的对比。
+ */
+export function SeoWorkspace({ children }: { children: ReactNode }) {
+  const theme = useTheme();
+  return (
+    <View
+      style={[
+        styles.workspace,
+        {
+          backgroundColor: theme.colors.background,
+          borderColor: theme.colors.border,
+          borderRadius: theme.radius + 2,
+          padding: theme.spacing.xs,
+          gap: theme.spacing.xs,
+        },
+      ]}
+    >
+      {children}
+    </View>
   );
 }
 
@@ -146,8 +287,64 @@ export function SeoSection({
   const theme = useTheme();
   return (
     <View style={[{ gap: theme.spacing.sm }, style]}>
-      <SeoHeading level={2}>{title}</SeoHeading>
+      <SeoHeading level={2} style={styles.sectionTitle}>
+        {title}
+      </SeoHeading>
       {children}
+    </View>
+  );
+}
+
+/**
+ * L3 参考区（倍数表 / 说明文字）：浅灰背景 + 小一号灰色标题 + 默认折叠。
+ *
+ * 折叠用条件渲染实现（不展开就不占 DOM），刻意让参考内容在首屏彻底消失；
+ * 页面级 SEO 内容由 FAQ JSON-LD 与静态落地页承担。
+ */
+export function SeoCollapsibleSection({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const theme = useTheme();
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <View
+      style={[
+        styles.referenceSection,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+          borderRadius: theme.radius,
+        },
+      ]}
+    >
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        onPress={() => setOpen((previous) => !previous)}
+        style={styles.referenceHeader}
+      >
+        <SeoHeading level={2} style={[styles.referenceTitle, { color: theme.colors.textSecondary }]}>
+          {title}
+        </SeoHeading>
+        <Text
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          style={{
+            color: theme.colors.accentText,
+            fontSize: theme.fontSize.body,
+            fontWeight: theme.fontWeight.semibold,
+          }}
+        >
+          {open ? '\u2212' : '+'}
+        </Text>
+      </Pressable>
+      {open ? <View style={styles.referenceBody}>{children}</View> : null}
     </View>
   );
 }
@@ -518,7 +715,7 @@ export function SeoResultCard({
       <Text
         style={{
           color: theme.colors.resultText,
-          fontSize: 32,
+          fontSize: theme.fontSize.result,
           fontWeight: theme.fontWeight.semibold,
           fontVariant: ['tabular-nums'],
           marginTop: 2,
@@ -792,8 +989,8 @@ export function SeoHint({ children }: { children: ReactNode }) {
     <Text
       style={{
         color: theme.colors.textSecondary,
-        fontSize: theme.fontSize.secondary,
-        lineHeight: 20,
+        fontSize: 13,
+        lineHeight: 18,
       }}
     >
       {children}
@@ -930,8 +1127,26 @@ export function FaqSection({
   };
 
   return (
-    <SeoSection title="Frequently asked questions">
-      <View style={{ gap: theme.spacing.sm }}>
+    <View
+      style={[
+        styles.referenceSection,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+          borderRadius: theme.radius,
+          paddingBottom: theme.spacing.sm,
+        },
+      ]}
+    >
+      <View style={styles.referenceHeader}>
+        <SeoHeading
+          level={2}
+          style={[styles.referenceTitle, { color: theme.colors.textSecondary }]}
+        >
+          Frequently asked questions
+        </SeoHeading>
+      </View>
+      <View style={{ gap: theme.spacing.sm, paddingHorizontal: theme.spacing.sm }}>
         {page.faqs.map((faq) => {
           const open = openQuestions.has(faq.question);
           return (
@@ -942,7 +1157,10 @@ export function FaqSection({
                 onPress={() => toggle(faq.question)}
                 style={styles.faqQuestion}
               >
-                <SeoHeading level={3} style={styles.faqQuestionText}>
+                <SeoHeading
+                  level={3}
+                  style={[styles.faqQuestionText, { color: theme.colors.textSecondary }]}
+                >
                   {faq.question}
                 </SeoHeading>
                 <Text
@@ -959,9 +1177,9 @@ export function FaqSection({
               {open ? (
                 <Text
                   style={{
-                    color: theme.colors.textPrimary,
-                    fontSize: theme.fontSize.body,
-                    lineHeight: 24,
+                    color: theme.colors.textSecondary,
+                    fontSize: theme.fontSize.secondary,
+                    lineHeight: 20,
                   }}
                 >
                   {faq.answer}
@@ -971,7 +1189,7 @@ export function FaqSection({
           );
         })}
       </View>
-    </SeoSection>
+    </View>
   );
 }
 
@@ -1076,7 +1294,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
-    gap: 8,
+    gap: 6,
   },
   segment: {
     flexDirection: 'row',
@@ -1164,15 +1382,15 @@ const styles = StyleSheet.create({
   },
   resultCard: {
     width: '100%',
-    padding: 12,
+    padding: 8,
   },
   resultRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 6,
+    paddingTop: 6,
   },
   table: {
     borderWidth: StyleSheet.hairlineWidth,
@@ -1199,5 +1417,55 @@ const styles = StyleSheet.create({
   },
   faqQuestionText: {
     flex: 1,
+    fontSize: 14,
+  },
+  sectionTitle: {
+    fontSize: 16,
+  },
+  footer: {
+    paddingTop: 8,
+    paddingBottom: 4,
+    alignItems: 'center',
+  },
+  switcherWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 2,
+  },
+  switcherContent: {
+    flexDirection: 'row',
+    gap: 2,
+    paddingHorizontal: 8,
+  },
+  switcherChip: {
+    minHeight: 34,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 2,
+  },
+  workspace: {
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  referenceSection: {
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+  referenceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+    paddingHorizontal: 10,
+  },
+  referenceTitle: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  referenceBody: {
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
   },
 });

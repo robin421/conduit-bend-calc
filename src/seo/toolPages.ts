@@ -5,7 +5,8 @@
  * scripts/gen-seo-tool-shells.ts（Node 类型剥离）同时 import，
  * 保证屏幕内容与静态 HTML 的 title/description/FAQ schema 永远一致。
  *
- * 约定：title ≤ 60 字符，description ≤ 160 字符（见 toolPages.test.ts 断言）。
+ * 约定：title ≤ 60 字符（含 ` | WattFlow` 品牌后缀，见 src/seo/brand.ts
+ * 的 withBrandTitle）、description ≤ 160 字符（见 toolPages.test.ts 断言）。
  */
 
 export type SeoToolKey = 'offset' | 'saddle4' | 'shrink' | 'stubUp';
@@ -38,7 +39,7 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
     key: 'offset',
     path: '/offset',
     slug: 'offset',
-    title: 'Conduit Offset Calculator — Mark Spacing & Shrink',
+    title: 'Conduit Offset Calculator — Spacing & Shrink | WattFlow',
     description:
       'Free conduit offset calculator: enter offset height and bend angle to get mark spacing, shrink, and both mark locations in fractions, decimals, or metric.',
     h1: 'Conduit Offset Calculator',
@@ -76,7 +77,7 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
     key: 'saddle4',
     path: '/4-point-saddle',
     slug: '4-point-saddle',
-    title: '4 Point Saddle Conduit Calculator',
+    title: '4 Point Saddle Conduit Calculator | WattFlow',
     description:
       'Free 4-point saddle conduit calculator: enter obstacle height and width to get all four bend marks, spacing, and total shrink for EMT and rigid conduit.',
     h1: '4-Point Saddle Conduit Calculator',
@@ -114,7 +115,7 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
     key: 'shrink',
     path: '/shrink',
     slug: 'shrink',
-    title: 'Conduit Shrink Calculator — Offset & Saddle',
+    title: 'Conduit Shrink Calculator — Offset & Saddle | WattFlow',
     description:
       'Free conduit shrink calculator: find how much length each offset or saddle bend eats by height and angle. Offset and saddle modes, fractional or metric output.',
     h1: 'Conduit Shrink Calculator',
@@ -152,7 +153,7 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
     key: 'stubUp',
     path: '/stub-up',
     slug: 'stub-up',
-    title: '90 Degree Stub Up Calculator — Take-Up Chart',
+    title: '90 Degree Stub Up Calculator — Take-Up Chart | WattFlow',
     description:
       'Free 90 degree stub up calculator: enter stub height and conduit size to get the mark location, plus the take-up chart for 1/2", 3/4", and 1" EMT.',
     h1: '90° Stub-Up Calculator',

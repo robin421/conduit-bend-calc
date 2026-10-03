@@ -8,8 +8,11 @@
  * 2) 3 秒能看懂吗？能：引导句 "Enter height and width, pick an angle, tap Calculate"，
  *    两个输入框标签分别写明是障碍物的高与宽。
  *
- * 首屏布局（390×844）：12 + 标题/引导 53 + 12 + 输入卡约 310（高/宽并排）+ 12
- *   + 结果卡约 189 + 8 + 复制按钮 48 ≈ 644pt，落在手机可视高度内；说明文/表格/FAQ 全在下方。
+ * 信息层级（T64）：L1 输入+结果工作区 / L2 单位·角度·历史 /
+ *   L3 说明文·倍数表（浅灰折叠）/ L4 FAQ（灰色手风琴）。
+ *
+ * 首屏布局（390×844）：品牌 chrome 132 + 8 + 工作区约 538（高/宽并排输入卡 288 +
+ *   结果/复制 238）≈ 678pt，落在手机可视高度内；L3/L4 全在结果之后且默认收起。
  * 横屏用 SeoCalcLayout 左右分栏。
  */
 
@@ -40,6 +43,7 @@ import {
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
+  SeoCollapsibleSection,
   SeoCopyButton,
   SeoHeading,
   SeoHint,
@@ -47,8 +51,8 @@ import {
   SeoPage,
   SeoParagraph,
   SeoResultCard,
-  SeoSection,
   SeoUnitToggle,
+  SeoWorkspace,
   type SeoQuickPreset,
 } from './seoLayout';
 
@@ -195,13 +199,16 @@ export default function FourPointSaddleToolScreen() {
       : '';
 
   return (
-    <SeoPage>
-      <View style={{ gap: 4 }}>
-        <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
+    <SeoPage activeTool={PAGE.key}>
+      <View style={{ gap: 2 }}>
+        <SeoHeading level={1} style={{ fontSize: 20 }}>
+          {PAGE.h1}
+        </SeoHeading>
         <SeoHint>Enter height and width, pick an angle, tap Calculate.</SeoHint>
       </View>
 
-      <SeoCalcLayout
+      <SeoWorkspace>
+        <SeoCalcLayout
         input={
           <SeoCard>
             <View
@@ -241,14 +248,6 @@ export default function FourPointSaddleToolScreen() {
               />
             </View>
 
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-              }}
-            >
-              Bend angle
-            </Text>
             <AngleSelector
               value={angle}
               onChange={applyAngle}
@@ -290,6 +289,7 @@ export default function FourPointSaddleToolScreen() {
           </View>
         }
       />
+      </SeoWorkspace>
 
       <SeoHistoryList
         entries={entries}
@@ -299,7 +299,7 @@ export default function FourPointSaddleToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoSection title="What is a 4-point saddle?">
+      <SeoCollapsibleSection title="What is a 4-point saddle?">
         <SeoParagraph>{PAGE.tagline}</SeoParagraph>
         <SeoParagraph>
           Each half is a standard offset, so the outer marks sit one mark
@@ -308,16 +308,16 @@ export default function FourPointSaddleToolScreen() {
           four bends so both ends stay parallel, and test-fit before the final
           cut.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
-      <SeoSection title="Multiplier and shrink chart">
+      <SeoCollapsibleSection title="Multiplier and shrink chart">
         <OffsetMultiplierTable />
         <SeoParagraph>
           A 4-point saddle shrinks twice — once per offset. Two 4&quot; offsets
           at 30° eat 2 × (4 × 1/4&quot;) = 2&quot; of run length, so add the
           total shrink to your cut length.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
       <FaqSection page={PAGE} toolName={TOOL_NAME} />
 

@@ -9,10 +9,16 @@
  * 2) 3 秒能看懂吗？能：h1 下一句 "Enter height → pick angle → Calculate"，
  *    按钮就叫 Calculate，输入框标签是 "Offset height (rise)"。
  *
+ * 信息层级（T64）：
+ *   L1 输入卡 + 结果卡（同属一个 SeoWorkspace 工作区）；
+ *   L2 单位切换 / 角度预设 / 最近计算历史，紧贴 L1；
+ *   L3 说明文、倍数表 → SeoCollapsibleSection，浅灰底、小字、默认收起；
+ *   L4 FAQ → 灰色手风琴，默认收起。
+ *
  * 首屏布局（390×844，黄金路径 = 输入 → 计算 → 结果）：
- *   12 顶距 + 标题/引导约 53 + 12 + 输入卡约 366（含折叠的起点输入）+ 12 +
- *   结果卡约 153 + 8 + 复制按钮 48 ≈ 664pt < 手机可视高度（~700pt）。
- *   说明文、对照表、FAQ 全部排在结果区之后，首屏无需滚动。
+ *   8 顶距 + 品牌栏 28 + 8 + 切换条 34 + 8 + 标题/引导约 46 = 132（品牌 chrome）
+ *   + 8 + 工作区约 546（输入卡 328 + 结果/复制 206 + 工作区内边距）≈ 694pt，
+ *   落在手机可视高度（~700pt）内。L3/L4 全部在结果区之后且默认收起，不占首屏。
  *
  * 横屏：SeoCalcLayout 在宽 ≥600 且宽 > 高时把输入卡与结果卡左右并排。
  */
@@ -44,6 +50,7 @@ import {
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
+  SeoCollapsibleSection,
   SeoCopyButton,
   SeoHeading,
   SeoHint,
@@ -51,8 +58,8 @@ import {
   SeoPage,
   SeoParagraph,
   SeoResultCard,
-  SeoSection,
   SeoUnitToggle,
+  SeoWorkspace,
   type SeoQuickPreset,
 } from './seoLayout';
 
@@ -193,13 +200,16 @@ export default function OffsetToolScreen() {
       : '';
 
   return (
-    <SeoPage>
-      <View style={{ gap: 4 }}>
-        <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
+    <SeoPage activeTool={PAGE.key}>
+      <View style={{ gap: 2 }}>
+        <SeoHeading level={1} style={{ fontSize: 20 }}>
+          {PAGE.h1}
+        </SeoHeading>
         <SeoHint>Enter height, pick an angle, tap Calculate.</SeoHint>
       </View>
 
-      <SeoCalcLayout
+      <SeoWorkspace>
+        <SeoCalcLayout
         input={
           <SeoCard>
             <View
@@ -243,7 +253,7 @@ export default function OffsetToolScreen() {
               accessibilityRole="button"
               accessibilityState={{ expanded: startOpen }}
               onPress={() => setStartOpen((open) => !open)}
-              style={{ minHeight: 48, justifyContent: 'center' }}
+              style={{ minHeight: 40, justifyContent: 'center' }}
             >
               <Text
                 style={{
@@ -257,14 +267,6 @@ export default function OffsetToolScreen() {
               </Text>
             </Pressable>
 
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-              }}
-            >
-              Bend angle
-            </Text>
             <AngleSelector
               value={angle}
               onChange={applyAngle}
@@ -302,6 +304,7 @@ export default function OffsetToolScreen() {
           </View>
         }
       />
+      </SeoWorkspace>
 
       <SeoHistoryList
         entries={entries}
@@ -311,7 +314,7 @@ export default function OffsetToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoSection title="What is an offset bend?">
+      <SeoCollapsibleSection title="What is an offset bend?">
         <SeoParagraph>{PAGE.tagline}</SeoParagraph>
         <SeoParagraph>
           Mark spacing equals the offset height multiplied by the multiplier for
@@ -319,16 +322,16 @@ export default function OffsetToolScreen() {
           12&quot; between marks. Bend the first mark to 30°, flip the bender
           180°, line the arrow up with the second mark, and bend back to 30°.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
-      <SeoSection title="Offset multiplier and shrink chart">
+      <SeoCollapsibleSection title="Offset multiplier and shrink chart">
         <OffsetMultiplierTable />
         <SeoParagraph>
           30° is the everyday choice: the math is a clean ×2 and shrink stays
           moderate. Go to 22.5° or 10° when shrink must be minimized, and to
           45° or 60° when a tall obstacle has to be cleared in a short distance.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
       <FaqSection page={PAGE} toolName={TOOL_NAME} />
 

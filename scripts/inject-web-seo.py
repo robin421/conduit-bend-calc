@@ -42,7 +42,7 @@ def resolve_ga4_id(argv: list) -> str | None:
 GA4_ID = resolve_ga4_id(sys.argv)
 GA4_SNIPPET = GA4_TEMPLATE.format(gid=html.escape(GA4_ID)) if GA4_ID else ""
 
-TITLE = "Conduit Bend Calc \u2014 Free Conduit Bending Calculator (Offset, Stub, Saddles)"
+TITLE = "Conduit Bend Calc \u2014 Free Conduit Bending Calculator | WattFlow"
 DESC = (
     "Free conduit bending calculator for electricians: offset bends, 90\u00b0 stubs, "
     "3-point and 4-point saddles, rolling offsets and kicked 90s. Mark spacing, "
@@ -60,7 +60,7 @@ SEO_BLOCK = f"""<title>{html.escape(TITLE)}</title>
 <meta name="keywords" content="{html.escape(KEYWORDS)}" />
 <link rel="canonical" href="{BASE_URL}/" />
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="Conduit Bend Calc" />
+<meta property="og:site_name" content="WattFlow" />
 <meta property="og:title" content="{html.escape(TITLE)}" />
 <meta property="og:description" content="{html.escape(DESC)}" />
 <meta property="og:url" content="{BASE_URL}/" />

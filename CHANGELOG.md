@@ -1,5 +1,52 @@
 # Changelog
 
+## v1.7.4 — WattFlow brand unification + information hierarchy (T64)
+
+### Brand chrome (home + the 4 SEO tool pages)
+- New `src/seo/brand.ts` is the single source for the brand name `WattFlow`,
+  the `⚡` glyph, product name `Conduit Bend Calc`, the footer line
+  `Built by WattFlow for field crews.`, the electric-orange brand color and the
+  ` | WattFlow` title suffix (`withBrandTitle`, idempotent).
+- New `WattFlowBrandBar` (`⚡ WattFlow | Conduit Bend Calc`) is rendered as
+  content on every SEO tool page and as the native-stack `headerTitle` for the
+  home screen (`calcStack.tsx`), so both share the same brand elements. The
+  previous `BendCalc` home header title is gone.
+- Every SEO page now has a horizontally scrollable calculator switcher
+  (`CalculatorSwitcher`) driven by `src/seo/calculatorNav.ts` (single source:
+  paths/screens come from `toolPages.ts` + `seoRoutes.ts`). Narrow screens
+  scroll; ≥600pt they wrap. The active tool gets an orange underline + orange
+  text; the rest are grey. Web renders real `<a href>` links (crawlable +
+  unit selection preserved through the shared `unitStore`).
+- `<title>` suffix unified: `Conduit Offset Calculator — Spacing & Shrink |
+  WattFlow`, all four now ≤ 60 chars; home title and `og:site_name`/`WattFlow`
+  updated in `gen-seo-tool-shells.ts` and `inject-web-seo.py`.
+
+### Information hierarchy (L1–L4)
+- **L1** input + result now live inside one `SeoWorkspace` block (white panel,
+  hairline border); the result card is the page anchor with a **40pt** white
+  number on charcoal.
+- **L2** unit toggle / angle or size presets / recent history stay right under
+  L1; the redundant `Bend angle` / `Conduit size` text labels were removed (the
+  chips carry their own hints + `accessibilityLabel`s).
+- **L3** explanation paragraphs and multiplier/take-up charts moved below the
+  result into `SeoCollapsibleSection`: light-grey background, smaller grey
+  heading, **collapsed by default**.
+- **L4** FAQ is a grey accordion with 14pt grey questions and grey 14pt answers.
+- Decorative text removed; separators use the lightest border token.
+- First-screen (390px) budget re-documented in each screen file: brand chrome
+  ≈132pt + workspace ≈506–554pt ≈ **646–694pt**, under the ~700pt Safari
+  viewport; L3/L4 never appear above the fold.
+
+### Tests
+- `src/seo/brand.test.ts` (constants, `withBrandTitle` idempotence, branded
+  titles ≤ 60) and `src/seo/calculatorNav.test.ts` (switcher covers the four
+  tools + home, paths/screens match the single source). 274 tests pass.
+
+> Scope note: the switcher intentionally lists only routes that exist in the
+> frozen URL structure (the four interactive tools + `All calculators` → `/`).
+> Kick / Rolling / native-only calculators are reachable through home; no new
+> URLs were added (brief III).
+
 ## v1.7.3 — Mobile hard metrics + field-use conveniences on the SEO tool pages
 
 ### First-screen (390px) golden path

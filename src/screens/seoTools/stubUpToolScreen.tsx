@@ -8,8 +8,11 @@
  *    现场最常见错误），所以交互重点放在管径预设而不是输入本身。
  * 2) 3 秒能看懂吗？能：管径按钮直接显示各自的 take-up，引导句说明先选管径。
  *
- * 首屏布局（390×844）：12 + 标题/引导 53 + 12 + 输入卡约 310 + 12 + 结果卡约 153
- *   + 8 + 复制 48 ≈ 608pt，一屏完成；说明 / take-up 表 / FAQ 全在下方。
+ * 信息层级（T64）：L1 输入+结果工作区 / L2 管径预设·单位·历史 /
+ *   L3 说明文·take-up 表（浅灰折叠）/ L4 FAQ（灰色手风琴）。
+ *
+ * 首屏布局（390×844）：品牌 chrome 132 + 8 + 工作区约 506（输入卡 288 +
+ *   结果/复制 206）≈ 646pt，一屏完成；L3/L4 全在结果之后且默认收起。
  * 横屏用 SeoCalcLayout 左右分栏。
  *
  * 注：stub 是 90° 弯，没有角度参数，因此本页的「预设」是常用 EMT 管径，
@@ -40,6 +43,7 @@ import {
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
+  SeoCollapsibleSection,
   SeoCopyButton,
   SeoHeading,
   SeoHint,
@@ -48,8 +52,8 @@ import {
   SeoParagraph,
   SeoPresetRow,
   SeoResultCard,
-  SeoSection,
   SeoUnitToggle,
+  SeoWorkspace,
   TakeUpTable,
   type SeoQuickPreset,
 } from './seoLayout';
@@ -179,13 +183,16 @@ export default function StubUpToolScreen() {
   const displayTakeUp = committedTakeUp ?? takeUp;
 
   return (
-    <SeoPage>
-      <View style={{ gap: 4 }}>
-        <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
+    <SeoPage activeTool={PAGE.key}>
+      <View style={{ gap: 2 }}>
+        <SeoHeading level={1} style={{ fontSize: 20 }}>
+          {PAGE.h1}
+        </SeoHeading>
         <SeoHint>Pick the conduit size, enter the target height, tap Calculate.</SeoHint>
       </View>
 
-      <SeoCalcLayout
+      <SeoWorkspace>
+        <SeoCalcLayout
         input={
           <SeoCard>
             <View
@@ -214,14 +221,6 @@ export default function StubUpToolScreen() {
               placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
             />
 
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-              }}
-            >
-              Conduit size (EMT)
-            </Text>
             <SeoPresetRow
               presets={SIZE_PRESETS}
               activeId={size}
@@ -270,6 +269,7 @@ export default function StubUpToolScreen() {
           </View>
         }
       />
+      </SeoWorkspace>
 
       <SeoHistoryList
         entries={entries}
@@ -279,7 +279,7 @@ export default function StubUpToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoSection title="What is a stub-up?">
+      <SeoCollapsibleSection title="What is a stub-up?">
         <SeoParagraph>{PAGE.tagline}</SeoParagraph>
         <SeoParagraph>
           Mark location = target height − take-up. For a 12&quot; stub with
@@ -287,9 +287,9 @@ export default function StubUpToolScreen() {
           bender arrow on the mark, bend to 90°, and the back of the bend lands
           at exactly 12&quot;.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
-      <SeoSection title="Take-up chart (hand benders, EMT)">
+      <SeoCollapsibleSection title="Take-up chart (hand benders, EMT)">
         <TakeUpTable />
         <SeoParagraph>
           Take-up is a property of the bender head, not a formula — always
@@ -297,7 +297,7 @@ export default function StubUpToolScreen() {
           stub comes out consistently off, bend one test stub on scrap and apply
           that correction.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
       <FaqSection page={PAGE} toolName={TOOL_NAME} />
 

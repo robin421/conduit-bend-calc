@@ -8,8 +8,11 @@
  * 2) 3 秒能看懂吗？能：Offset / Saddle 两个大模式按钮把「算哪种 shrink」摆在最前，
  *    输入框写明 Offset height，引导句一句话说明。
  *
- * 首屏布局（390×844）：12 + 标题/引导 53 + 12 + 输入卡约 366（含模式行）+ 12 +
- *   结果卡约 153 + 8 + 复制 48 ≈ 664pt，主流手机一屏可完成；说明/表格/FAQ 全在下方。
+ * 信息层级（T64）：L1 输入+结果工作区 / L2 模式·角度·单位·历史 /
+ *   L3 说明文·shrink 表（浅灰折叠）/ L4 FAQ（灰色手风琴）。
+ *
+ * 首屏布局（390×844）：品牌 chrome 132 + 8 + 工作区约 554（模式行输入卡 336 +
+ *   结果/复制 206）≈ 694pt，落在手机可视高度内；L3/L4 全在结果之后且默认收起。
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -39,6 +42,7 @@ import {
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
+  SeoCollapsibleSection,
   SeoCopyButton,
   SeoHeading,
   SeoHint,
@@ -46,8 +50,8 @@ import {
   SeoPage,
   SeoParagraph,
   SeoResultCard,
-  SeoSection,
   SeoUnitToggle,
+  SeoWorkspace,
   type SeoQuickPreset,
 } from './seoLayout';
 
@@ -188,13 +192,16 @@ export default function ShrinkToolScreen() {
       : '';
 
   return (
-    <SeoPage>
-      <View style={{ gap: 4 }}>
-        <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
+    <SeoPage activeTool={PAGE.key}>
+      <View style={{ gap: 2 }}>
+        <SeoHeading level={1} style={{ fontSize: 20 }}>
+          {PAGE.h1}
+        </SeoHeading>
         <SeoHint>Pick offset or saddle, enter the height, tap Calculate.</SeoHint>
       </View>
 
-      <SeoCalcLayout
+      <SeoWorkspace>
+        <SeoCalcLayout
         input={
           <SeoCard>
             <View
@@ -263,14 +270,6 @@ export default function ShrinkToolScreen() {
               />
             </View>
 
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-              }}
-            >
-              Bend angle
-            </Text>
             <AngleSelector
               value={angle}
               onChange={applyAngle}
@@ -306,6 +305,7 @@ export default function ShrinkToolScreen() {
           </View>
         }
       />
+      </SeoWorkspace>
 
       <SeoHistoryList
         entries={entries}
@@ -315,7 +315,7 @@ export default function ShrinkToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoSection title="What is conduit shrink?">
+      <SeoCollapsibleSection title="What is conduit shrink?">
         <SeoParagraph>{PAGE.tagline}</SeoParagraph>
         <SeoParagraph>
           Multiply the offset height by the shrink per inch for your angle. A
@@ -323,15 +323,15 @@ export default function ShrinkToolScreen() {
           the same as take-up: take-up is where the bend starts before the mark,
           shrink is the run length the bend eats.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
-      <SeoSection title="Shrink chart">
+      <SeoCollapsibleSection title="Shrink chart">
         <OffsetMultiplierTable />
         <SeoParagraph>
           Saddle mode doubles the offset shrink because a 4-point saddle is two
           offsets. A 3-point saddle uses its own smaller center shrink.
         </SeoParagraph>
-      </SeoSection>
+      </SeoCollapsibleSection>
 
       <FaqSection page={PAGE} toolName={TOOL_NAME} />
 

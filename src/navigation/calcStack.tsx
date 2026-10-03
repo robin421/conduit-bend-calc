@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import WattFlowBrandBar from '../components/wattflowBrandBar';
 import type { HistoryParams } from '../lib/historyStore';
 import BenderScreen from '../screens/benderScreen';
 import CalcHomeScreen from '../screens/calcHomeScreen';
@@ -42,7 +43,14 @@ export default function CalcStack() {
         contentStyle: { backgroundColor: theme.colors.background },
       }}
     >
-      <Stack.Screen name="CalcHome" component={CalcHomeScreen} options={{ title: 'BendCalc' }} />
+      <Stack.Screen
+        name="CalcHome"
+        component={CalcHomeScreen}
+        options={{
+          title: 'WattFlow',
+          headerTitle: () => <WattFlowBrandBar tone="header" />,
+        }}
+      />
       <Stack.Screen name="Offset" component={OffsetScreen} options={{ title: 'Offset Bend' }} />
       <Stack.Screen name="Stub" component={StubScreen} options={{ title: '90° Stub' }} />
       <Stack.Screen

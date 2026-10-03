@@ -7,11 +7,12 @@ import {
   WEB_DOCUMENT_TITLE,
 } from './documentTitle.ts';
 
-test('WEB_DOCUMENT_TITLE: 使用约定的 SEO 标题，不再是 "BendCalc"', () => {
+test('WEB_DOCUMENT_TITLE: 使用约定的 SEO 标题，并带 WattFlow 品牌后缀', () => {
   assert.equal(
     WEB_DOCUMENT_TITLE,
-    'Conduit Bend Calc — Free Conduit Bending Calculator (Offset, Stub, Saddles)',
+    'Conduit Bend Calc — Free Conduit Bending Calculator | WattFlow',
   );
+  assert.ok(WEB_DOCUMENT_TITLE.endsWith('| WattFlow'));
   assert.notEqual(WEB_DOCUMENT_TITLE, 'BendCalc');
 });
 
