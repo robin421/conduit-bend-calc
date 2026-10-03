@@ -5,9 +5,16 @@
  * scripts/gen-seo-tool-shells.ts（Node 类型剥离）同时 import，
  * 保证屏幕内容与静态 HTML 的 title/description/FAQ schema 永远一致。
  *
+ * 多语言（2026-10-05）：
+ * - 英语文案平铺在 meta 上（title/description/h1/tagline/faqs），保持既有调用点不变；
+ * - 西班牙语文案集中在 `es`，结构完全一致（见 toolPages.test.ts 的逐字段断言）；
+ * - 运行时/生成脚本统一经 `getSeoToolPageCopy(page, lang)` 取文案，杜绝漂移。
+ *
  * 约定：title ≤ 60 字符（含 ` | WattFlow` 品牌后缀，见 src/seo/brand.ts
  * 的 withBrandTitle）、description ≤ 160 字符（见 toolPages.test.ts 断言）。
  */
+
+import { DEFAULT_LANG, type Lang } from '../i18n/lang.ts';
 
 export type SeoToolKey = 'offset' | 'saddle4' | 'shrink' | 'stubUp';
 
@@ -17,12 +24,8 @@ export interface SeoFaqItem {
   answer: string;
 }
 
-export interface SeoToolPageMeta {
-  key: SeoToolKey;
-  /** 无尾斜杠路由，如 `/offset`。 */
-  path: string;
-  /** 目录名（canonical 用），如 `offset`。 */
-  slug: string;
+/** 单个语言下的页面文案。 */
+export interface SeoToolPageCopy {
   /** <title>，含目标关键词，≤ 60 字符。 */
   title: string;
   /** <meta description>，含关键词，≤ 160 字符。 */
@@ -32,6 +35,16 @@ export interface SeoToolPageMeta {
   /** 一句话说明：这个弯是什么、什么时候用。 */
   tagline: string;
   faqs: readonly SeoFaqItem[];
+}
+
+/** 英语为基准（平铺），西班牙语集中在 `es`（同结构）。 */
+export interface SeoToolPageMeta extends SeoToolPageCopy {
+  key: SeoToolKey;
+  /** 无尾斜杠路由，如 `/offset`。 */
+  path: string;
+  /** 目录名（canonical 用），如 `offset`。 */
+  slug: string;
+  es: SeoToolPageCopy;
 }
 
 export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
@@ -72,6 +85,41 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           'Use 30° for everyday offsets: the multiplier is a clean 2.0 and shrink stays moderate. Go shallower (22.5°, 15°, or 10°) on long runs where shrink must be minimized, and steeper (45° or 60°) when you must clear a tall obstacle in a short distance.',
       },
     ],
+    es: {
+      title: 'Calculadora de desplazamiento de conducto | WattFlow',
+      description:
+        'Calculadora gratuita de desplazamientos de conducto: introduce la altura y el ángulo para obtener la distancia entre marcas, la contracción y las dos marcas.',
+      h1: 'Calculadora de desplazamiento de conducto',
+      tagline:
+        'Un desplazamiento usa dos dobleces iguales en direcciones opuestas para llevar el conducto alrededor de un obstáculo o hasta la altura de una caja. Introduce la altura y el ángulo para marcar bien a la primera.',
+      faqs: [
+        {
+          question: '¿Cómo se calcula un desplazamiento de conducto?',
+          answer:
+            'La distancia entre marcas es igual a la altura del desplazamiento multiplicada por el multiplicador de tu ángulo de doblado. A 30°, el multiplicador es 2,0, así que un desplazamiento de 6" necesita 12" entre las dos marcas. La contracción es igual a la altura multiplicada por la contracción por pulgada de ese ángulo: 1/4" por pulgada a 30°, así que el mismo desplazamiento de 6" consume 1,5" de longitud de tramo.',
+        },
+        {
+          question: '¿Cuál es el multiplicador de un desplazamiento a 30 grados?',
+          answer:
+            'El multiplicador de un desplazamiento a 30° es 2,0. Es la cosecante de 30° (1 ÷ sen 30°), lo que hace la cuenta de campo muy sencilla: duplica la altura del desplazamiento para obtener la distancia entre marcas. Un desplazamiento de 4" son 8" entre marcas, y uno de 6", 12".',
+        },
+        {
+          question: '¿Cuánto contrae el conducto un desplazamiento a 30 grados?',
+          answer:
+            'Un desplazamiento a 30° contrae el tramo 1/4" por cada pulgada de altura. Un desplazamiento de 6" pierde 1,5" y uno de 8" pierde 2". Suma la contracción a tu longitud de corte antes de cortar, o el extremo lejano del tramo quedará corto.',
+        },
+        {
+          question: '¿A qué distancia se marcan 6 pulgadas de desplazamiento a 30 grados?',
+          answer:
+            'Marca los dos dobleces a 12" de distancia: altura de 6" × multiplicador 2,0 = 12". Coloca la flecha de la dobladora en la primera marca, dobla a 30°, gira la dobladora 180°, alinea la flecha con la segunda marca y vuelve a doblar a 30°.',
+        },
+        {
+          question: '¿Qué ángulo debo usar para un desplazamiento de conducto?',
+          answer:
+            'Usa 30° para los desplazamientos del día a día: el multiplicador es un 2,0 limpio y la contracción se mantiene moderada. Usa ángulos más suaves (22,5°, 15° o 10°) en tramos largos donde haya que minimizar la contracción, y más pronunciados (45° o 60°) cuando debas salvar un obstáculo alto en poca distancia.',
+        },
+      ],
+    },
   },
   {
     key: 'saddle4',
@@ -110,6 +158,41 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           '30° is the standard choice because the multiplier is exactly 2.0, which keeps the mark spacing simple. Use all four bends at the same angle so both ends of the run stay parallel. Shallower angles such as 22.5° reduce shrink on long runs.',
       },
     ],
+    es: {
+      title: 'Calculadora de silla de 4 puntos | WattFlow',
+      description:
+        'Calculadora gratuita de silla de 4 puntos: introduce la altura y el ancho del obstáculo para obtener las cuatro marcas, la distancia y la contracción total.',
+      h1: 'Calculadora de silla de conducto de 4 puntos',
+      tagline:
+        'Una silla de 4 puntos son dos desplazamientos iguales doblados uno a continuación del otro —cuatro dobleces en total— que rodean un obstáculo ancho, como un conducto o una bandeja.',
+      faqs: [
+        {
+          question: '¿Qué es una silla de 4 puntos al doblar conducto?',
+          answer:
+            'Una silla de 4 puntos son dos dobleces de desplazamiento colocados uno a continuación del otro para que el conducto suba sobre un obstáculo, recorra plano la parte superior y vuelva a bajar. Recibe el nombre de las cuatro marcas de doblez. Los electricistas la usan para obstáculos anchos que una silla de 3 puntos no cubre bien.',
+        },
+        {
+          question: '¿Cómo se traza una silla de 4 puntos?',
+          answer:
+            'Mide la altura y el ancho del obstáculo. Cada mitad es un desplazamiento estándar: las dos marcas exteriores quedan una distancia de marca (altura × multiplicador) fuera de cada borde del obstáculo, y las dos interiores caen sobre los bordes. Marca los cuatro puntos antes de doblar, mantén el mismo ángulo en los cuatro dobleces y comprueba el ajuste antes del corte final.',
+        },
+        {
+          question: '¿Cuánto conducto contrae una silla de 4 puntos?',
+          answer:
+            'La contracción se aplica dos veces en una silla de 4 puntos, una por desplazamiento. Dos desplazamientos de 4" a 30° contraen el tramo 2 × (4 × 1/4") = 2". Suma la contracción total a tu longitud de corte antes de cortar el conducto.',
+        },
+        {
+          question: '¿Cuándo debo usar una silla de 4 puntos en lugar de una de 3 puntos?',
+          answer:
+            'Usa una silla de 4 puntos cuando el obstáculo sea más ancho de unos 6", cuando el conducto deba recorrer plano la parte superior del obstáculo o cuando necesites que el tramo quede en el mismo plano a ambos lados. Una silla de 3 puntos es más rápida para obstáculos pequeños y estrechos.',
+        },
+        {
+          question: '¿Qué ángulo se usa para una silla de 4 puntos?',
+          answer:
+            '30° es la opción estándar porque el multiplicador es exactamente 2,0, lo que mantiene sencilla la distancia entre marcas. Usa los cuatro dobleces con el mismo ángulo para que ambos extremos del tramo queden paralelos. Ángulos más suaves, como 22,5°, reducen la contracción en tramos largos.',
+        },
+      ],
+    },
   },
   {
     key: 'shrink',
@@ -148,6 +231,41 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           'No. Shrink is run length eaten by the bend geometry. Take-up is how far the bend starts before the arrow mark on the bender, which is why you mark a stub-up at target height minus take-up. Both shorten the finished run, but they are different numbers used for different steps.',
       },
     ],
+    es: {
+      title: 'Calculadora de contracción de conducto | WattFlow',
+      description:
+        'Calculadora gratuita de contracción: averigua cuánta longitud consume cada desplazamiento o silla según la altura y el ángulo. Modos desplazamiento y silla.',
+      h1: 'Calculadora de contracción de conducto',
+      tagline:
+        'La contracción es la longitud que un doblez le quita a tu tramo de conducto. Introduce la altura y el ángulo para saber cuánto más corto queda el tramo antes de cortar.',
+      faqs: [
+        {
+          question: '¿Qué es la contracción al doblar conducto?',
+          answer:
+            'La contracción es la cantidad de longitud de tramo que consume un doblez. El recorrido doblado entre dos marcas es más largo que la distancia en línea recta que cubre el doblez, así que el tramo terminado queda más corto que el conducto sin doblar. En un desplazamiento, la contracción es igual a la altura del desplazamiento multiplicada por la contracción por pulgada del ángulo de doblado.',
+        },
+        {
+          question: '¿Cómo se calcula la contracción del conducto?',
+          answer:
+            'Multiplica la altura del desplazamiento por la contracción por pulgada de tu ángulo: 1/16" a 10°, 1/8" a 15°, 3/16" a 22,5°, 1/4" a 30°, 3/8" a 45° y 1/2" a 60°. Un desplazamiento de 6" a 30° se contrae 6 × 1/4" = 1,5". Suma el total de cada doblez del tramo antes de cortar.',
+        },
+        {
+          question: '¿Cuánto contrae un desplazamiento a 30 grados?',
+          answer:
+            'Un desplazamiento a 30° contrae 1/4" por pulgada de altura. Un desplazamiento de 4" contrae 1", uno de 6" contrae 1,5" y uno de 8" contrae 2". Es el ángulo de desplazamiento más común, así que vale la pena memorizarlo.',
+        },
+        {
+          question: '¿Una silla contrae el conducto dos veces?',
+          answer:
+            'Una silla de 4 puntos sí, porque son dos desplazamientos en un mismo doblez: cada desplazamiento contrae de forma independiente, así que el total es el doble de un solo desplazamiento. Una silla de 3 puntos tiene su propia contracción central, más pequeña. Elige el modo silla en la calculadora para obtener el total correcto en lugar de estimarlo.',
+        },
+        {
+          question: '¿La contracción es lo mismo que la recogida?',
+          answer:
+            'No. La contracción es la longitud de tramo que consume la geometría del doblez. La recogida es cuánto antes de la marca empieza el doblez en la dobladora, por eso una subida se marca a la altura objetivo menos la recogida. Ambas acortan el tramo terminado, pero son números distintos que se usan en pasos distintos.',
+        },
+      ],
+    },
   },
   {
     key: 'stubUp',
@@ -186,6 +304,41 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           'Measure from the end of the conduit to the back (outside) of the 90° bend — not the inside corner. That is the same reference the take-up number is defined against, so the mark math stays consistent.',
       },
     ],
+    es: {
+      title: 'Calculadora de subida de 90° — Recogida | WattFlow',
+      description:
+        'Calculadora gratuita de subida de 90°: introduce la altura y el tamaño del conducto para obtener la marca y la tabla de recogida para EMT de 1/2", 3/4" y 1".',
+      h1: 'Calculadora de subida a 90°',
+      tagline:
+        'Una subida de 90° es un solo doblez que lleva el conducto a una altura exacta desde una losa o hasta un panel. Marca a la altura objetivo menos la recogida de la dobladora.',
+      faqs: [
+        {
+          question: '¿Cómo se calcula una subida de 90 grados?',
+          answer:
+            'Resta la recogida de la dobladora a la altura objetivo para hallar la marca. Para EMT de 1/2" con una recogida de 5" y una subida objetivo de 12", marca a 12" − 5" = 7" desde el extremo del conducto. Coloca la flecha de la dobladora en la marca, dobla a 90° y la parte posterior del doblez quedará a la altura objetivo.',
+        },
+        {
+          question: '¿Qué es la recogida en una dobladora de conducto?',
+          answer:
+            'La recogida es cuánto antes de la marca empieza el cabezal de la dobladora el doblez, medido desde el extremo del conducto hasta la parte posterior del codo de 90° terminado. Es una propiedad del cabezal y del tamaño del conducto, no una fórmula, por eso los fabricantes la graban en la dobladora.',
+        },
+        {
+          question: '¿Cuánta recogida tiene el EMT de 1/2 pulgada?',
+          answer:
+            'Una dobladora manual estándar recoge 5" en EMT de 1/2". La recogida es 6" para EMT de 3/4" y 8" para EMT de 1". Las dobladoras manuales Ideal y Klein coinciden en estos valores, pero confírmalos siempre con las marcas de la dobladora que tienes en la mano.',
+        },
+        {
+          question: '¿Por qué mi subida queda demasiado corta o demasiado alta?',
+          answer:
+            'Un error constante en todas las subidas suele significar que la recogida que usaste no coincide con tu dobladora, o que la flecha se movió de la marca al doblar. Dobla una subida de prueba en un recorte, mide el error y aplica esa corrección. Si el conducto resbaló, presiona con más firmeza con el pie para que la flecha no se mueva de la marca.',
+        },
+        {
+          question: '¿Dónde se mide la altura de una subida?',
+          answer:
+            'Mide desde el extremo del conducto hasta la parte posterior (exterior) del codo de 90°, no la esquina interior. Esa es la misma referencia con la que se define la recogida, así que la cuenta de la marca se mantiene coherente.',
+        },
+      ],
+    },
   },
 ] as const;
 
@@ -198,6 +351,25 @@ export function getSeoToolPage(key: SeoToolKey): SeoToolPageMeta {
   return page;
 }
 
+/**
+ * 取某页某语言的文案。英语平铺在 meta 上，直接返回；西班牙语取 `es`。
+ * 返回值结构统一为 `SeoToolPageCopy`，供屏幕与 JSON-LD 共用。
+ */
+export function getSeoToolPageCopy(
+  page: SeoToolPageMeta,
+  lang: Lang = DEFAULT_LANG,
+): SeoToolPageCopy {
+  return lang === 'es' ? page.es : page;
+}
+
+/** 归一化 pathname（去尾斜杠、小写）后按路由找页面；非工具页返回 null。 */
+export function findSeoToolPageByPath(pathname: string): SeoToolPageMeta | null {
+  const normalized = pathname.trim().toLowerCase().replace(/\/+$/, '') || '/';
+  return (
+    SEO_TOOL_PAGES.find((page) => page.path.toLowerCase() === normalized) ?? null
+  );
+}
+
 /** 所有工具页路由（无尾斜杠），用于链接与测试。 */
 export const SEO_TOOL_PATHS: readonly string[] = SEO_TOOL_PAGES.map((p) => p.path);
 
@@ -206,10 +378,7 @@ export const SEO_TOOL_PATHS: readonly string[] = SEO_TOOL_PAGES.map((p) => p.pat
  * 静态 shell 目录名与 toolPages.path 一致，两者共用本函数避免漂移。
  */
 export function isSeoToolPath(pathname: string): boolean {
-  const normalized = pathname.trim().toLowerCase().replace(/\/+$/, '') || '/';
-  return SEO_TOOL_PATHS.some(
-    (path) => path.toLowerCase() === normalized,
-  );
+  return findSeoToolPageByPath(pathname) !== null;
 }
 
 /* ---------- 站点 URL 与 Schema.org JSON-LD ---------- */
@@ -220,25 +389,33 @@ export interface JsonLdObject {
   [key: string]: unknown;
 }
 
-/** canonical / 屏幕自身 URL：如 https://bendcalc.wattflow.net/offset/ */
+/**
+ * canonical / 屏幕自身 URL：如 https://bendcalc.wattflow.net/offset/。
+ * 非默认语言追加 `?lang=es`。
+ */
 export function buildCanonicalUrl(
   page: SeoToolPageMeta,
   siteUrl: string = SEO_SITE_URL,
+  lang: Lang = DEFAULT_LANG,
 ): string {
-  return `${siteUrl.replace(/\/$/, '')}/${page.slug}/`;
+  const base = `${siteUrl.replace(/\/$/, '')}/${page.slug}/`;
+  return lang === DEFAULT_LANG ? base : `${base}?lang=${lang}`;
 }
 
 /** WebApplication schema：页面是免费、纯前端、无登录的在线工具。 */
 export function buildWebApplicationJsonLd(
   page: SeoToolPageMeta,
   siteUrl: string = SEO_SITE_URL,
+  lang: Lang = DEFAULT_LANG,
 ): JsonLdObject {
+  const copy = getSeoToolPageCopy(page, lang);
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: page.h1,
-    url: buildCanonicalUrl(page, siteUrl),
-    description: page.description,
+    name: copy.h1,
+    url: buildCanonicalUrl(page, siteUrl, lang),
+    description: copy.description,
+    inLanguage: lang,
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Any',
     browserRequirements: 'Requires JavaScript',
@@ -252,11 +429,16 @@ export function buildWebApplicationJsonLd(
 }
 
 /** FAQPage schema：问题与答案与页面展示同源。 */
-export function buildFaqPageJsonLd(page: SeoToolPageMeta): JsonLdObject {
+export function buildFaqPageJsonLd(
+  page: SeoToolPageMeta,
+  lang: Lang = DEFAULT_LANG,
+): JsonLdObject {
+  const copy = getSeoToolPageCopy(page, lang);
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: page.faqs.map((faq) => ({
+    inLanguage: lang,
+    mainEntity: copy.faqs.map((faq) => ({
       '@type': 'Question',
       name: faq.question,
       acceptedAnswer: {

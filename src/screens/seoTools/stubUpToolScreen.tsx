@@ -11,8 +11,9 @@
  * 信息层级（T64）：L1 输入+结果工作区 / L2 管径预设·单位·历史 /
  *   L3 说明文·take-up 表（浅灰折叠）/ L4 FAQ（灰色手风琴）。
  *
- * 首屏布局（390×844）：品牌 chrome 132（移动端汉堡导航为 90）+ 8 + 工作区约 506（输入卡 288 +
- *   结果/复制 206）≈ 646pt，一屏完成；L3/L4 全在结果之后且默认收起。
+ * 首屏布局（390×844，T66 间距体系 16/24/32）：顶距 16 + 品牌栏 28（含汉堡）+ 16
+ *   + 标题/引导约 44 + 16 + 管径预设输入卡约 360 = 结果卡顶部约 504pt，
+ *   落在 ~700pt 手机可视区内；L3/L4 全在结果之后且默认收起。
  * 横屏用 SeoCalcLayout 左右分栏。
  *
  * 注：stub 是 90° 弯，没有角度参数，因此本页的「预设」是常用 EMT 管径，
@@ -34,7 +35,8 @@ import { createSeoHistoryEntry, type SeoHistoryEntry } from '../../lib/seoHistor
 import { parseLength } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
-import { getSeoToolPage } from '../../seo/toolPages';
+import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
+import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme';
 import {
   FaqSection,
@@ -63,12 +65,7 @@ const DEFAULT_SIZE: EmtTakeUpSize = '1/2';
 /** GA4 tool_name 口径。 */
 const TOOL_NAME = 'stub-up' as const;
 
-// v2: preset 接口 —— 「常见场景」预设配置；本页是常用 EMT 管径。
-const SIZE_PRESETS: readonly SeoQuickPreset[] = TAKE_UP_OPTIONS.map((option) => ({
-  id: option.size,
-  label: `${option.size}"`,
-  hint: `${option.takeUpInches}" take-up`,
-}));
+// v2: preset 接口 —— 本页是常用 EMT 管径；标签/提示在组件内按语言生成。
 
 interface CommittedStub {
   heightInches: number;
@@ -77,7 +74,14 @@ interface CommittedStub {
 
 export default function StubUpToolScreen() {
   const theme = useTheme();
+  const { lang, t } = useI18n();
+  const copy = getSeoToolPageCopy(PAGE, lang);
   const { unit, setUnit } = useUnitSystem();
+  const sizePresets: readonly SeoQuickPreset[] = TAKE_UP_OPTIONS.map((option) => ({
+    id: option.size,
+    label: `${option.size}"`,
+    hint: t('stub.takeUpHint', { takeUp: option.takeUpInches }),
+  }));
   const [heightText, setHeightText] = useState('');
   const [size, setSize] = useState<EmtTakeUpSize>(DEFAULT_SIZE);
   const [committed, setCommitted] = useState<CommittedStub | null>(null);
@@ -184,11 +188,11 @@ export default function StubUpToolScreen() {
 
   return (
     <SeoPage activeTool={PAGE.key}>
-      <View style={{ gap: 2 }}>
+      <View style={{ gap: theme.spacing.xs }}>
         <SeoHeading level={1} style={{ fontSize: 20 }}>
-          {PAGE.h1}
+          {copy.h1}
         </SeoHeading>
-        <SeoHint>Pick the conduit size, enter the target height, tap Calculate.</SeoHint>
+        <SeoHint>{t('stub.hint')}</SeoHint>
       </View>
 
       <SeoWorkspace>
@@ -208,21 +212,25 @@ export default function StubUpToolScreen() {
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                Units
+                {t('common.units')}
               </Text>
               <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
             </View>
 
             <ImperialInput
-              label="Target stub height"
+              label={t('stub.heightLabel')}
               value={heightText}
               onChangeText={setHeightText}
               unit={unit}
-              placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
+              placeholder={
+                unit === 'metric'
+                  ? t('placeholder.mm300')
+                  : t('placeholder.inch12')
+              }
             />
 
             <SeoPresetRow
-              presets={SIZE_PRESETS}
+              presets={sizePresets}
               activeId={size}
               toolName={TOOL_NAME}
               onSelect={(preset) => applySize(preset.id as EmtTakeUpSize)}
@@ -234,21 +242,21 @@ export default function StubUpToolScreen() {
           </SeoCard>
         }
         result={
-          <View style={{ gap: theme.spacing.sm }}>
+          <View style={{ gap: theme.spacing.md }}>
             <SeoResultCard
-              headline="Mark location (from conduit end)"
+              headline={t('stub.markLocation')}
               headlineValue={
                 mark !== null && !tooShort ? formatSeoLength(mark, unit) : undefined
               }
               rows={[
                 {
-                  label: 'Target height',
+                  label: t('stub.targetHeight'),
                   value:
                     committed !== null
                       ? formatSeoLength(committed.heightInches, unit)
                       : '—',
                 },
-                { label: 'Take-up', value: `${displayTakeUp}"` },
+                { label: t('stub.takeUp'), value: `${displayTakeUp}"` },
               ]}
             />
             {tooShort ? (
@@ -258,7 +266,7 @@ export default function StubUpToolScreen() {
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                Target height must be greater than the {displayTakeUp}&quot; take-up.
+                {t('stub.tooShort', { takeUp: displayTakeUp })}
               </Text>
             ) : null}
             <SeoCopyButton
@@ -279,8 +287,8 @@ export default function StubUpToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoCollapsibleSection title="What is a stub-up?">
-        <SeoParagraph>{PAGE.tagline}</SeoParagraph>
+      <SeoCollapsibleSection title={t('stub.whatTitle')}>
+        <SeoParagraph>{copy.tagline}</SeoParagraph>
         <SeoParagraph>
           Mark location = target height − take-up. For a 12&quot; stub with
           1/2&quot; EMT: 12&quot; − 5&quot; = 7&quot; from the end. Put the
@@ -289,7 +297,7 @@ export default function StubUpToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <SeoCollapsibleSection title="Take-up chart (hand benders, EMT)">
+      <SeoCollapsibleSection title={t('stub.chartTitle')}>
         <TakeUpTable />
         <SeoParagraph>
           Take-up is a property of the bender head, not a formula — always
@@ -299,7 +307,7 @@ export default function StubUpToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <FaqSection page={PAGE} toolName={TOOL_NAME} />
+      <FaqSection page={copy} toolName={TOOL_NAME} />
 
       <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>

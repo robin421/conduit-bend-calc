@@ -16,10 +16,11 @@
  *   L4 FAQ → 灰色手风琴，默认收起。
  *
  * 首屏布局（390×844，黄金路径 = 输入 → 计算 → 结果）：
- *   移动端（<600pt）：8 顶距 + 品牌栏 28（含汉堡）+ 8 + 标题/引导约 46 = 90（品牌 chrome）；
- *   桌面端（≥600pt）再多一条切换条：+ 8 + 34 = 132；
- *   + 8 + 工作区约 546（输入卡 328 + 结果/复制 206 + 工作区内边距）≈ 644pt（移动端），
- *   落在手机可视高度（~700pt）内。L3/L4 全部在结果区之后且默认收起，不占首屏。
+ *   T66 间距体系：区块间距统一 16/24/32（8pt 网格）。
+ *   移动端（<600pt）：顶距 16 + 品牌栏 28（含汉堡）+ 16 + 标题/引导约 44 + 16
+ *   + 输入卡约 388（16pt 内距 / 16pt 行距）= 结果卡顶部约 532pt，
+ *   标题 + 40pt 结果数字落在 ~700pt 手机可视区内。
+ *   桌面端（≥600pt）再多一条切换条（+ 16 + 34）。L3/L4 全部在结果区之后且默认收起，不占首屏。
  *
  * 横屏：SeoCalcLayout 在宽 ≥600 且宽 > 高时把输入卡与结果卡左右并排。
  */
@@ -39,7 +40,8 @@ import { createSeoHistoryEntry, type SeoHistoryEntry } from '../../lib/seoHistor
 import { parseLength } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
-import { getSeoToolPage } from '../../seo/toolPages';
+import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
+import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme';
 import {
   AngleSelector,
@@ -80,6 +82,8 @@ interface CommittedOffset {
 
 export default function OffsetToolScreen() {
   const theme = useTheme();
+  const { lang, t } = useI18n();
+  const copy = getSeoToolPageCopy(PAGE, lang);
   const { unit, setUnit } = useUnitSystem();
   const [riseText, setRiseText] = useState('');
   const [startText, setStartText] = useState('');
@@ -202,11 +206,11 @@ export default function OffsetToolScreen() {
 
   return (
     <SeoPage activeTool={PAGE.key}>
-      <View style={{ gap: 2 }}>
+      <View style={{ gap: theme.spacing.xs }}>
         <SeoHeading level={1} style={{ fontSize: 20 }}>
-          {PAGE.h1}
+          {copy.h1}
         </SeoHeading>
-        <SeoHint>Enter height, pick an angle, tap Calculate.</SeoHint>
+        <SeoHint>{t('offset.hint')}</SeoHint>
       </View>
 
       <SeoWorkspace>
@@ -226,27 +230,35 @@ export default function OffsetToolScreen() {
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                Units
+                {t('common.units')}
               </Text>
               <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
             </View>
 
             <ImperialInput
-              label="Offset height (rise)"
+              label={t('offset.heightLabel')}
               value={riseText}
               onChangeText={setRiseText}
               unit={unit}
-              placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+              placeholder={
+                unit === 'metric'
+                  ? t('placeholder.mm150')
+                  : t('placeholder.inch6')
+              }
             />
 
             {startOpen ? (
               <View>
                 <ImperialInput
-                  label="Start of offset from conduit end (optional)"
+                  label={t('offset.startLabel')}
                   value={startText}
                   onChangeText={setStartText}
                   unit={unit}
-                  placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
+                  placeholder={
+                    unit === 'metric'
+                      ? t('placeholder.mm300')
+                      : t('placeholder.inch12')
+                  }
                 />
               </View>
             ) : null}
@@ -264,7 +276,7 @@ export default function OffsetToolScreen() {
                   textDecorationLine: 'underline',
                 }}
               >
-                {startOpen ? '− Hide start position' : '+ Add start position (optional)'}
+                {startOpen ? t('offset.hideStart') : t('offset.addStart')}
               </Text>
             </Pressable>
 
@@ -281,19 +293,19 @@ export default function OffsetToolScreen() {
           </SeoCard>
         }
         result={
-          <View style={{ gap: theme.spacing.sm }}>
+          <View style={{ gap: theme.spacing.md }}>
             <SeoResultCard
-              headline="Mark spacing"
+              headline={t('offset.markSpacing')}
               headlineValue={
                 spacing !== null ? formatSeoLength(spacing, unit) : undefined
               }
               rows={[
                 {
-                  label: 'Shrink (add to cut length)',
+                  label: t('offset.shrinkLabel'),
                   value: result ? formatSeoLength(result.shrink, unit) : '—',
                 },
                 {
-                  label: 'Mark 1 → Mark 2',
+                  label: t('offset.mark1to2'),
                   value:
                     result && mark2 !== null
                       ? `${formatSeoLength(mark1, unit)} → ${formatSeoLength(mark2, unit)}`
@@ -315,8 +327,8 @@ export default function OffsetToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoCollapsibleSection title="What is an offset bend?">
-        <SeoParagraph>{PAGE.tagline}</SeoParagraph>
+      <SeoCollapsibleSection title={t('offset.whatTitle')}>
+        <SeoParagraph>{copy.tagline}</SeoParagraph>
         <SeoParagraph>
           Mark spacing equals the offset height multiplied by the multiplier for
           your angle. At 30° the multiplier is 2.0, so a 6&quot; offset needs
@@ -325,7 +337,7 @@ export default function OffsetToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <SeoCollapsibleSection title="Offset multiplier and shrink chart">
+      <SeoCollapsibleSection title={t('offset.chartTitle')}>
         <OffsetMultiplierTable />
         <SeoParagraph>
           30° is the everyday choice: the math is a clean ×2 and shrink stays
@@ -334,7 +346,7 @@ export default function OffsetToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <FaqSection page={PAGE} toolName={TOOL_NAME} />
+      <FaqSection page={copy} toolName={TOOL_NAME} />
 
       <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>

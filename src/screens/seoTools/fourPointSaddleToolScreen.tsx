@@ -11,8 +11,9 @@
  * 信息层级（T64）：L1 输入+结果工作区 / L2 单位·角度·历史 /
  *   L3 说明文·倍数表（浅灰折叠）/ L4 FAQ（灰色手风琴）。
  *
- * 首屏布局（390×844）：品牌 chrome 132（移动端汉堡导航为 90）+ 8 + 工作区约 538（高/宽并排输入卡 288 +
- *   结果/复制 238）≈ 678pt，落在手机可视高度内；L3/L4 全在结果之后且默认收起。
+ * 首屏布局（390×844，T66 间距体系 16/24/32）：顶距 16 + 品牌栏 28（含汉堡）+ 16
+ *   + 标题/引导约 44 + 16 + 高/宽输入卡约 372 = 结果卡顶部约 516pt，
+ *   落在 ~700pt 手机可视区内；L3/L4 全在结果之后且默认收起。
  * 横屏用 SeoCalcLayout 左右分栏。
  */
 
@@ -31,7 +32,8 @@ import { createSeoHistoryEntry, type SeoHistoryEntry } from '../../lib/seoHistor
 import { parseLength } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
-import { getSeoToolPage } from '../../seo/toolPages';
+import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
+import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme';
 import {
   AngleSelector,
@@ -72,6 +74,8 @@ interface CommittedSaddle {
 
 export default function FourPointSaddleToolScreen() {
   const theme = useTheme();
+  const { lang, t } = useI18n();
+  const copy = getSeoToolPageCopy(PAGE, lang);
   const { unit, setUnit } = useUnitSystem();
   const [heightText, setHeightText] = useState('');
   const [widthText, setWidthText] = useState('');
@@ -200,11 +204,11 @@ export default function FourPointSaddleToolScreen() {
 
   return (
     <SeoPage activeTool={PAGE.key}>
-      <View style={{ gap: 2 }}>
+      <View style={{ gap: theme.spacing.xs }}>
         <SeoHeading level={1} style={{ fontSize: 20 }}>
-          {PAGE.h1}
+          {copy.h1}
         </SeoHeading>
-        <SeoHint>Enter height and width, pick an angle, tap Calculate.</SeoHint>
+        <SeoHint>{t('saddle.hint')}</SeoHint>
       </View>
 
       <SeoWorkspace>
@@ -224,7 +228,7 @@ export default function FourPointSaddleToolScreen() {
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                Units
+                {t('common.units')}
               </Text>
               <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
             </View>
@@ -232,19 +236,27 @@ export default function FourPointSaddleToolScreen() {
             <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
               <ImperialInput
                 style={{ flex: 1 }}
-                label="Obstruction height"
+                label={t('saddle.heightLabel')}
                 value={heightText}
                 onChangeText={setHeightText}
                 unit={unit}
-                placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+                placeholder={
+                  unit === 'metric'
+                    ? t('placeholder.mm150')
+                    : t('placeholder.inch6')
+                }
               />
               <ImperialInput
                 style={{ flex: 1 }}
-                label="Obstruction width"
+                label={t('saddle.widthLabel')}
                 value={widthText}
                 onChangeText={setWidthText}
                 unit={unit}
-                placeholder={unit === 'metric' ? 'e.g. 100 mm' : 'e.g. 4"'}
+                placeholder={
+                  unit === 'metric'
+                    ? t('placeholder.mm100')
+                    : t('placeholder.inch4')
+                }
               />
             </View>
 
@@ -261,26 +273,26 @@ export default function FourPointSaddleToolScreen() {
           </SeoCard>
         }
         result={
-          <View style={{ gap: theme.spacing.sm }}>
+          <View style={{ gap: theme.spacing.md }}>
             <SeoResultCard
-              headline="Mark spacing (obstacle edge ↔ bend)"
+              headline={t('saddle.markSpacing')}
               headlineValue={
                 result ? formatSeoLength(result.markSpacingInches, unit) : undefined
               }
               rows={[
                 {
-                  label: 'Mark 1 → Mark 4 (total span)',
+                  label: t('saddle.span'),
                   value: result ? formatSeoLength(result.spanInches, unit) : '—',
                 },
                 {
-                  label: 'Total shrink (add to cut length)',
+                  label: t('saddle.totalShrink'),
                   value:
                     result && result.totalShrinkInches !== undefined
                       ? formatSeoLength(result.totalShrinkInches, unit)
                       : '—',
                 },
                 {
-                  label: 'Marks left → right of center',
+                  label: t('saddle.marksFromCenter'),
                   value: marksLine,
                 },
               ]}
@@ -299,8 +311,8 @@ export default function FourPointSaddleToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoCollapsibleSection title="What is a 4-point saddle?">
-        <SeoParagraph>{PAGE.tagline}</SeoParagraph>
+      <SeoCollapsibleSection title={t('saddle.whatTitle')}>
+        <SeoParagraph>{copy.tagline}</SeoParagraph>
         <SeoParagraph>
           Each half is a standard offset, so the outer marks sit one mark
           spacing outside each obstacle edge and the inner marks land on the
@@ -310,7 +322,7 @@ export default function FourPointSaddleToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <SeoCollapsibleSection title="Multiplier and shrink chart">
+      <SeoCollapsibleSection title={t('saddle.chartTitle')}>
         <OffsetMultiplierTable />
         <SeoParagraph>
           A 4-point saddle shrinks twice — once per offset. Two 4&quot; offsets
@@ -319,7 +331,7 @@ export default function FourPointSaddleToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <FaqSection page={PAGE} toolName={TOOL_NAME} />
+      <FaqSection page={copy} toolName={TOOL_NAME} />
 
       <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>

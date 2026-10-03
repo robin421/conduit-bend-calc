@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BRAND_COLOR, PRODUCT_NAME, WATTFLOW_LOGO, WATTFLOW_NAME } from '../seo/brand';
+import { useI18n } from '../i18n';
 import { useTheme } from '../theme';
 
 /**
@@ -25,6 +26,7 @@ export default function WattFlowBrandBar({
   onMenuPress?: () => void;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const headerTone = tone === 'header';
   const wordmarkColor = headerTone ? theme.colors.onPrimary : theme.colors.textPrimary;
   const productColor = headerTone ? 'rgba(255,255,255,0.72)' : theme.colors.textSecondary;
@@ -39,12 +41,13 @@ export default function WattFlowBrandBar({
       {onMenuPress ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Open calculator menu"
+          accessibilityLabel={t('brand.menuLabel')}
           onPress={onMenuPress}
           hitSlop={{ top: 10, bottom: 10, left: 4, right: 4 }}
           style={styles.menuButton}
         >
-          <Text style={[styles.menuGlyph, { color: wordmarkColor }]}>\u2630</Text>
+          {/* 直接用字形，避免任何转义层把它渲染成字面量 "U2630"。 */}
+          <Text style={[styles.menuGlyph, { color: wordmarkColor }]}>{'☰'}</Text>
         </Pressable>
       ) : null}
       <View style={styles.logo}>

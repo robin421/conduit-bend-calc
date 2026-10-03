@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { formatDecimalInches, formatImperial } from '../lib/imperial';
+import { useI18n } from '../i18n';
 import { useTheme } from '../theme';
 import { formatMetric, parseLength, sanitizeInputForUnit, type UnitSystem } from '../lib/units';
 
@@ -44,6 +45,7 @@ export default function ImperialInput({
   style,
 }: ImperialInputProps) {
   const theme = useTheme();
+  const { t } = useI18n();
   const metric = unit === 'metric';
 
   // T62：数字输入框一律调数字键盘；仅当调用方显式指定 keyboardType 时不干预。
@@ -56,9 +58,9 @@ export default function ImperialInput({
   let error: string | null = null;
   if (!isBlank) {
     if (parsed === null) {
-      error = metric ? 'Invalid format, e.g. 150 mm' : 'Invalid format, e.g. 2\' 3-1/2"';
+      error = metric ? t('input.invalidMetric') : t('input.invalidImperial');
     } else if (parsed <= 0) {
-      error = 'Must be greater than 0';
+      error = t('input.mustBePositive');
     }
   }
 
@@ -95,7 +97,9 @@ export default function ImperialInput({
     }
   };
 
-  const resolvedPlaceholder = placeholder ?? (metric ? 'e.g. 150 mm' : `e.g. 2' 3-1/2"`);
+  const resolvedPlaceholder =
+    placeholder ??
+    (metric ? t('input.placeholderMetric') : t('input.placeholderImperial'));
 
   return (
     <View style={style}>
@@ -103,7 +107,7 @@ export default function ImperialInput({
         style={{
           color: theme.colors.textSecondary,
           fontSize: theme.fontSize.secondary,
-          marginBottom: theme.spacing.xs,
+          marginBottom: theme.spacing.sm,
         }}
       >
         {label}

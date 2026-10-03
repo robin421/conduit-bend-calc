@@ -5,7 +5,9 @@ import {
   buildCanonicalUrl,
   buildFaqPageJsonLd,
   buildWebApplicationJsonLd,
+  findSeoToolPageByPath,
   getSeoToolPage,
+  getSeoToolPageCopy,
   isSeoToolPath,
   SEO_SITE_URL,
   SEO_TOOL_PAGES,
@@ -134,4 +136,91 @@ test('FAQPage JSON-LD 每个 FAQ 一个问题节点', () => {
     '@type': 'Answer',
     text: page.faqs[0].answer,
   });
+});
+
+/* ---------------- 多语言（en 基准 + es） ---------------- */
+
+const ES_KEYWORDS: Record<SeoToolKey, string> = {
+  offset: 'desplazamiento',
+  saddle4: 'silla',
+  shrink: 'contracción',
+  stubUp: 'subida',
+};
+
+test('es 文案字段齐全：title/description/h1/tagline/faqs', () => {
+  for (const page of SEO_TOOL_PAGES) {
+    const es = page.es;
+    for (const field of ['title', 'description', 'h1', 'tagline'] as const) {
+      assert.ok(
+        typeof es[field] === 'string' && es[field].trim().length > 0,
+        `${page.key}.es.${field} missing`,
+      );
+    }
+    assert.ok(es.faqs.length >= 3 && es.faqs.length <= 5, `${page.key} es faqs`);
+    for (const faq of es.faqs) {
+      assert.ok(faq.question.trim().length > 0);
+      assert.ok(faq.answer.trim().length > 0);
+    }
+  }
+});
+
+test('es title ≤ 60、description ≤ 160，且含西语关键词', () => {
+  for (const page of SEO_TOOL_PAGES) {
+    assert.ok(
+      page.es.title.length <= 60,
+      `${page.key} es title ${page.es.title.length} > 60`,
+    );
+    assert.ok(
+      page.es.title.includes('| WattFlow'),
+      `${page.key} es title missing brand suffix`,
+    );
+    assert.ok(
+      page.es.description.length > 0 && page.es.description.length <= 160,
+      `${page.key} es description ${page.es.description.length} invalid`,
+    );
+    assert.ok(
+      page.es.title.toLowerCase().includes(ES_KEYWORDS[page.key]),
+      `${page.key} es title missing keyword: ${page.es.title}`,
+    );
+  }
+});
+
+test('西语不使用 tubería（统一 conducto）', () => {
+  for (const page of SEO_TOOL_PAGES) {
+    const text = JSON.stringify(page.es).toLowerCase();
+    assert.ok(!text.includes('tuber'), `${page.key} es copy uses tubería`);
+    assert.match(text, /conducto/);
+  }
+});
+
+test('getSeoToolPageCopy：en 平铺，es 取 page.es', () => {
+  const page = getSeoToolPage('offset');
+  assert.equal(getSeoToolPageCopy(page, 'en').h1, page.h1);
+  assert.equal(getSeoToolPageCopy(page, 'es').h1, page.es.h1);
+  assert.equal(getSeoToolPageCopy(page).h1, page.h1);
+});
+
+test('findSeoToolPageByPath：容忍尾斜杠 / 大小写，非工具页 null', () => {
+  assert.equal(findSeoToolPageByPath('/offset')?.key, 'offset');
+  assert.equal(findSeoToolPageByPath('/Offset/')?.key, 'offset');
+  assert.equal(findSeoToolPageByPath('/4-point-saddle/')?.key, 'saddle4');
+  assert.equal(findSeoToolPageByPath('/'), null);
+  assert.equal(findSeoToolPageByPath('/nope'), null);
+});
+
+test('es canonical 带 ?lang=es，JSON-LD 用西语文案', () => {
+  const page = getSeoToolPage('stubUp');
+  assert.equal(
+    buildCanonicalUrl(page, SEO_SITE_URL, 'es'),
+    `${SEO_SITE_URL}/stub-up/?lang=es`,
+  );
+  const jsonLd = buildWebApplicationJsonLd(page, SEO_SITE_URL, 'es');
+  assert.equal(jsonLd.name, page.es.h1);
+  assert.equal(jsonLd.inLanguage, 'es');
+  const faq = buildFaqPageJsonLd(page, 'es');
+  const mainEntity = faq.mainEntity as unknown[];
+  assert.equal(
+    (mainEntity[0] as Record<string, unknown>).name,
+    page.es.faqs[0].question,
+  );
 });

@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 
 import { trackInternalLinkClick } from '../lib/analytics';
+import { useI18n } from '../i18n';
 import type { RootStackParamList } from '../navigation/rootStackTypes';
 import {
   CALCULATOR_NAV,
@@ -59,6 +60,7 @@ export default function CalculatorDrawer({
   onClose,
 }: CalculatorDrawerProps) {
   const theme = useTheme();
+  const { t } = useI18n();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { width } = useWindowDimensions();
   const drawerWidth = drawerWidthForViewport(width);
@@ -153,7 +155,7 @@ export default function CalculatorDrawer({
         >
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Close calculator menu"
+            accessibilityLabel={t('brand.closeMenuLabel')}
             onPress={onClose}
             style={StyleSheet.absoluteFill}
           />
@@ -185,7 +187,7 @@ export default function CalculatorDrawer({
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Close calculator menu"
+              accessibilityLabel={t('brand.closeMenuLabel')}
               onPress={onClose}
               hitSlop={8}
               style={styles.closeButton}
@@ -216,7 +218,7 @@ export default function CalculatorDrawer({
                       : theme.fontWeight.regular,
                   }}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </Text>
               );
               const itemStyle = [

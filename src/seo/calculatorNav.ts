@@ -11,36 +11,46 @@
 
 import type { SeoScreenName } from '../navigation/seoRoutes.ts';
 import { SEO_TOOL_SCREENS } from '../navigation/seoRoutes.ts';
+import { en, type TranslationKey } from '../i18n/dictionaries.ts';
 import { SEO_TOOL_PAGES, type SeoToolKey } from './toolPages.ts';
 
 export interface CalculatorNavItem {
   /** 稳定 key（工具页用 SeoToolKey，首页用 'home'）。 */
   key: string;
-  /** 切换条上的短标签。 */
+  /** 英语短标签（静态回退 / 测试用）。 */
   label: string;
+  /** 字典 key，UI 用 `t(labelKey)` 取当前语言文案。 */
+  labelKey: TranslationKey;
   /** SPA 内路由（首页为 `/`）。 */
   path: string;
   /** React Navigation screen 名。 */
   screen: SeoScreenName | 'RootTabs';
 }
 
-/** 工具页在切换条上的短标签（页面 h1 太长，不适合芯片）。 */
-const SHORT_LABELS: Record<SeoToolKey, string> = {
-  offset: 'Offset',
-  saddle4: '4-Point Saddle',
-  shrink: 'Shrink',
-  stubUp: '90° Stub',
+/** 工具页在切换条上的短标签 key（页面 h1 太长，不适合芯片）。 */
+const SHORT_LABEL_KEYS: Record<SeoToolKey, TranslationKey> = {
+  offset: 'nav.offset',
+  saddle4: 'nav.saddle4',
+  shrink: 'nav.shrink',
+  stubUp: 'nav.stubUp',
 };
 
 /** 4 个交互式工具页 + 回首页入口。顺序即切换条展示顺序。 */
 export const CALCULATOR_NAV: readonly CalculatorNavItem[] = [
   ...SEO_TOOL_PAGES.map((page) => ({
     key: page.key as string,
-    label: SHORT_LABELS[page.key],
+    label: en[SHORT_LABEL_KEYS[page.key]],
+    labelKey: SHORT_LABEL_KEYS[page.key],
     path: page.path,
     screen: SEO_TOOL_SCREENS[page.key],
   })),
-  { key: 'home', label: 'All calculators', path: '/', screen: 'RootTabs' },
+  {
+    key: 'home',
+    label: en['nav.home'],
+    labelKey: 'nav.home',
+    path: '/',
+    screen: 'RootTabs',
+  },
 ];
 
 /** 判断某 key 是否为当前激活项。 */

@@ -11,8 +11,9 @@
  * 信息层级（T64）：L1 输入+结果工作区 / L2 模式·角度·单位·历史 /
  *   L3 说明文·shrink 表（浅灰折叠）/ L4 FAQ（灰色手风琴）。
  *
- * 首屏布局（390×844）：品牌 chrome 132（移动端汉堡导航为 90）+ 8 + 工作区约 554（模式行输入卡 336 +
- *   结果/复制 206）≈ 694pt，落在手机可视高度内；L3/L4 全在结果之后且默认收起。
+ * 首屏布局（390×844，T66 间距体系 16/24/32）：顶距 16 + 品牌栏 28（含汉堡）+ 16
+ *   + 标题/引导约 44 + 16 + 模式/角度输入卡约 400 = 结果卡顶部约 544pt，
+ *   落在 ~700pt 手机可视区内；L3/L4 全在结果之后且默认收起。
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -30,7 +31,8 @@ import { createSeoHistoryEntry, type SeoHistoryEntry, type ShrinkMode } from '..
 import { parseLength } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
-import { getSeoToolPage } from '../../seo/toolPages';
+import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
+import { useI18n } from '../../i18n';
 import { useTheme } from '../../theme';
 import {
   AngleSelector,
@@ -63,10 +65,10 @@ const TOOL_NAME = 'shrink' as const;
 // v2: preset 接口 —— 本页常用角度预设集中定义。
 const ANGLE_PRESETS: readonly SeoQuickPreset[] = DEFAULT_ANGLE_PRESETS;
 
-const MODES: readonly { key: ShrinkMode; label: string }[] = [
-  { key: 'offset', label: 'Offset' },
-  { key: 'saddle', label: 'Saddle (4-point)' },
-];
+const MODES = [
+  { key: 'offset', labelKey: 'shrink.modeOffset' },
+  { key: 'saddle', labelKey: 'shrink.modeSaddle' },
+] as const;
 
 interface CommittedShrink {
   heightInches: number;
@@ -76,6 +78,8 @@ interface CommittedShrink {
 
 export default function ShrinkToolScreen() {
   const theme = useTheme();
+  const { lang, t } = useI18n();
+  const copy = getSeoToolPageCopy(PAGE, lang);
   const { unit, setUnit } = useUnitSystem();
   const [heightText, setHeightText] = useState('');
   const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
@@ -193,11 +197,11 @@ export default function ShrinkToolScreen() {
 
   return (
     <SeoPage activeTool={PAGE.key}>
-      <View style={{ gap: 2 }}>
+      <View style={{ gap: theme.spacing.xs }}>
         <SeoHeading level={1} style={{ fontSize: 20 }}>
-          {PAGE.h1}
+          {copy.h1}
         </SeoHeading>
-        <SeoHint>Pick offset or saddle, enter the height, tap Calculate.</SeoHint>
+        <SeoHint>{t('shrink.hint')}</SeoHint>
       </View>
 
       <SeoWorkspace>
@@ -217,7 +221,7 @@ export default function ShrinkToolScreen() {
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                Units
+                {t('common.units')}
               </Text>
               <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
             </View>
@@ -253,7 +257,7 @@ export default function ShrinkToolScreen() {
                         fontWeight: theme.fontWeight.semibold,
                       }}
                     >
-                      {option.label}
+                      {t(option.labelKey)}
                     </Text>
                   </Pressable>
                 );
@@ -262,11 +266,15 @@ export default function ShrinkToolScreen() {
 
             <View>
               <ImperialInput
-                label="Offset height (rise)"
+                label={t('shrink.heightLabel')}
                 value={heightText}
                 onChangeText={setHeightText}
                 unit={unit}
-                placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+                placeholder={
+                  unit === 'metric'
+                    ? t('placeholder.mm150')
+                    : t('placeholder.inch6')
+                }
               />
             </View>
 
@@ -283,19 +291,23 @@ export default function ShrinkToolScreen() {
           </SeoCard>
         }
         result={
-          <View style={{ gap: theme.spacing.sm }}>
+          <View style={{ gap: theme.spacing.md }}>
             <SeoResultCard
-              headline={mode === 'saddle' ? 'Total shrink (two offsets)' : 'Shrink'}
+              headline={
+                mode === 'saddle'
+                  ? t('shrink.totalShrink')
+                  : t('shrink.shrink')
+              }
               headlineValue={
                 totalShrink !== null ? formatSeoLength(totalShrink, unit) : undefined
               }
               rows={[
                 {
-                  label: 'Shrink per inch of height',
+                  label: t('shrink.perInch'),
                   value: perInch !== null ? formatSeoLength(perInch, unit) : '—',
                 },
                 {
-                  label: 'Conduit length to add',
+                  label: t('shrink.lengthToAdd'),
                   value:
                     totalShrink !== null ? formatSeoLength(totalShrink, unit) : '—',
                 },
@@ -315,8 +327,8 @@ export default function ShrinkToolScreen() {
         toolName={TOOL_NAME}
       />
 
-      <SeoCollapsibleSection title="What is conduit shrink?">
-        <SeoParagraph>{PAGE.tagline}</SeoParagraph>
+      <SeoCollapsibleSection title={t('shrink.whatTitle')}>
+        <SeoParagraph>{copy.tagline}</SeoParagraph>
         <SeoParagraph>
           Multiply the offset height by the shrink per inch for your angle. A
           6&quot; offset at 30° shrinks 6 × 1/4&quot; = 1.5&quot;. Shrink is not
@@ -325,7 +337,7 @@ export default function ShrinkToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <SeoCollapsibleSection title="Shrink chart">
+      <SeoCollapsibleSection title={t('shrink.chartTitle')}>
         <OffsetMultiplierTable />
         <SeoParagraph>
           Saddle mode doubles the offset shrink because a 4-point saddle is two
@@ -333,7 +345,7 @@ export default function ShrinkToolScreen() {
         </SeoParagraph>
       </SeoCollapsibleSection>
 
-      <FaqSection page={PAGE} toolName={TOOL_NAME} />
+      <FaqSection page={copy} toolName={TOOL_NAME} />
 
       <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>

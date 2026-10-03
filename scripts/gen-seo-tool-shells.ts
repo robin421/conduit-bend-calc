@@ -24,6 +24,7 @@ import {
   SEO_SITE_URL,
   SEO_TOOL_PAGES,
 } from '../src/seo/toolPages.ts';
+import { buildAlternatesForPath } from '../src/lib/seoHead.ts';
 
 const HEAD_TAG_PATTERNS = [
   /<title>.*?<\/title>/gis,
@@ -52,11 +53,18 @@ function buildHead(page: (typeof SEO_TOOL_PAGES)[number], baseUrl: string): stri
   const canonical = buildCanonicalUrl(page, baseUrl);
   const title = escapeHtml(page.title);
   const description = escapeHtml(page.description);
+  const alternates = buildAlternatesForPath(page.path, baseUrl)
+    .map(
+      (alt) =>
+        `<link rel="alternate" hreflang="${alt.hreflang}" href="${alt.href}" />`,
+    )
+    .join('\n');
   return [
     `<title>${title}</title>`,
     `<meta name="description" content="${description}" />`,
     `<meta name="robots" content="index,follow" />`,
     `<link rel="canonical" href="${canonical}" />`,
+    alternates,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="WattFlow" />`,
     `<meta property="og:title" content="${title}" />`,
@@ -100,6 +108,14 @@ function main(): void {
     }
     if (page.description.length > 160) {
       throw new Error(`description too long for ${page.slug}: ${page.description.length}`);
+    }
+    if (page.es.title.length > 60) {
+      throw new Error(`es title too long for ${page.slug}: ${page.es.title.length}`);
+    }
+    if (page.es.description.length > 160) {
+      throw new Error(
+        `es description too long for ${page.slug}: ${page.es.description.length}`,
+      );
     }
     const html = injectHead(indexHtml, buildHead(page, baseUrl));
     const outDir = join(exportDir, page.slug);

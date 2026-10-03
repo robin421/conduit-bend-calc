@@ -1,5 +1,41 @@
 # Changelog
 
+## v1.8.0 — Spanish (es) UI + SEO + mobile spacing (T66)
+
+### Hamburger glyph fix
+- `wattflowBrandBar.tsx` rendered the literal text `U2630` because the JSX text
+  `\u2630` is not a JS string escape. It now renders the real `☰` glyph, so
+  `grep '\\u2630' src` is clean.
+
+### i18n (en + es), no new dependencies
+- `src/i18n/`: `lang.ts` (pure resolve/persist/URL helpers), `dictionaries.ts`
+  (keyed strings; `es` is `Record<TranslationKey, string>` so a missing key fails
+  `tsc`), `store.ts` (module store + localStorage + URL/head side effects),
+  `useI18n.ts` (`useSyncExternalStore` hook), `index.ts` (barrel).
+- Precedence `?lang=es` > localStorage (`bendcalc:lang:v1`) > `en`. Choosing a
+  language persists it and rewrites `?lang=` with `history.replaceState`.
+- EN / ES switcher in the SEO footer; all core UI translated (nav, drawer, unit
+  toggle, buttons, result labels, input placeholders/errors, tables, FAQ) using
+  field terminology: desplazamiento / conducto / ángulo de doblado / distancia
+  entre marcas / contracción / subida de 90° / recogida.
+- `toolPages.ts` carries per-page `es` copy (title ≤60, description ≤160, h1,
+  tagline, FAQ) next to the English baseline; `getSeoToolPageCopy(page, lang)` is
+  the single accessor. Long-form explainer prose stays English for a later batch.
+- `seoHead.ts` rewrites title/description/canonical/og/twitter/hreflang at
+  runtime; static shells emit `hreflang` en/es/x-default, and the es canonical is
+  `?lang=es`.
+
+### Mobile spacing (8pt grid)
+- SEO page / workspace / card / result gaps moved to 16–32pt, labels and result
+  rows breathe, body line-height 24→26. The result card still enters the ~700pt
+  first screen at 390×844; per-screen height notes were updated.
+
+### Verification
+- New `src/i18n/i18n.test.ts` and `src/lib/seoHead.test.ts`; `toolPages.test.ts`
+  gained es length/keyword/JSON-LD assertions. `typecheck` ✓, `test` 298 ✓,
+  `web:export` ✓, entry bundle Brotli 183.9 KB (<200 KB), `__loadBundleAsync`
+  setter present.
+
 ## v1.7.5 — Mobile calculator drawer navigation (T65)
 
 ### Responsive calculator navigation (SEO tool pages)

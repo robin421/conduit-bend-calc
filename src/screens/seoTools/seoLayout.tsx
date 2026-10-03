@@ -23,7 +23,8 @@ import {
 
 import WattFlowBrandBar from '../../components/wattflowBrandBar';
 import CalculatorDrawer from '../../components/calculatorDrawer';
-import { BRAND_FOOTER } from '../../seo/brand';
+import LanguageSwitcher from '../../components/languageSwitcher';
+import { useI18n } from '../../i18n';
 import {
   CALCULATOR_NAV,
   calculatorNavMode,
@@ -33,7 +34,7 @@ import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../../constant
 import type { OffsetAngle } from '../../constants';
 import type { RootStackParamList } from '../../navigation/rootStack';
 import { SEO_TOOL_SCREENS, type SeoScreenName } from '../../navigation/seoRoutes';
-import { SEO_TOOL_PAGES, type SeoToolKey, type SeoToolPageMeta } from '../../seo/toolPages';
+import { SEO_TOOL_PAGES, getSeoToolPageCopy, type SeoToolKey, type SeoToolPageMeta } from '../../seo/toolPages';
 import {
   trackInternalLinkClick,
   trackSeoToolCopy,
@@ -92,9 +93,10 @@ export function SeoPage({
           styles.page,
           {
             paddingHorizontal: theme.spacing.sm,
-            paddingTop: 8,
-            paddingBottom: theme.spacing.lg,
-            gap: 8,
+            paddingTop: theme.spacing.md,
+            paddingBottom: theme.spacing.xl,
+            // 8pt 网格：区块之间 16pt 呼吸感（T66 移动端间距）。
+            gap: theme.spacing.md,
           },
         ]}
         keyboardShouldPersistTaps="handled"
@@ -128,8 +130,9 @@ export function SeoPage({
  */
 export function SeoFooter() {
   const theme = useTheme();
+  const { t } = useI18n();
   return (
-    <View style={styles.footer}>
+    <View style={[styles.footer, { gap: theme.spacing.sm }]}>
       <Text
         style={{
           color: theme.colors.textSecondary,
@@ -137,8 +140,9 @@ export function SeoFooter() {
           textAlign: 'center',
         }}
       >
-        {BRAND_FOOTER}
+        {t('brand.footer')}
       </Text>
+      <LanguageSwitcher />
     </View>
   );
 }
@@ -151,6 +155,7 @@ export function SeoFooter() {
  */
 export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { width } = useWindowDimensions();
   const wrap = width >= 600;
@@ -166,7 +171,7 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
             : theme.fontWeight.regular,
         }}
       >
-        {item.label}
+        {t(item.labelKey)}
       </Text>
     );
     const chipStyle = [
@@ -241,8 +246,9 @@ export function SeoWorkspace({ children }: { children: ReactNode }) {
           backgroundColor: theme.colors.background,
           borderColor: theme.colors.border,
           borderRadius: theme.radius + 2,
-          padding: theme.spacing.xs,
-          gap: theme.spacing.xs,
+          padding: theme.spacing.sm,
+          // 输入卡与结果卡之间留出 16pt，避免挤成一团。
+          gap: theme.spacing.md,
         },
       ]}
     >
@@ -301,7 +307,7 @@ export function SeoCard({
           backgroundColor: theme.colors.card,
           borderColor: theme.colors.border,
           borderRadius: theme.radius,
-          padding: theme.spacing.sm,
+          padding: theme.spacing.md,
         },
         style,
       ]}
@@ -322,7 +328,7 @@ export function SeoSection({
 }) {
   const theme = useTheme();
   return (
-    <View style={[{ gap: theme.spacing.sm }, style]}>
+    <View style={[{ gap: theme.spacing.md }, style]}>
       <SeoHeading level={2} style={styles.sectionTitle}>
         {title}
       </SeoHeading>
@@ -392,7 +398,7 @@ export function SeoParagraph({ children }: { children: ReactNode }) {
       style={{
         color: theme.colors.textPrimary,
         fontSize: theme.fontSize.body,
-        lineHeight: 24,
+        lineHeight: 26,
       }}
     >
       {children}
@@ -405,9 +411,9 @@ export function SeoParagraph({ children }: { children: ReactNode }) {
 /* ------------------------------------------------------------------ */
 
 const UNIT_OPTIONS = [
-  { key: 'fractional', label: 'Fraction' },
-  { key: 'decimal', label: 'Decimal' },
-  { key: 'metric', label: 'Metric' },
+  { key: 'fractional', labelKey: 'common.unit.fractional' },
+  { key: 'decimal', labelKey: 'common.unit.decimal' },
+  { key: 'metric', labelKey: 'common.unit.metric' },
 ] as const;
 
 export function SeoUnitToggle({
@@ -420,6 +426,7 @@ export function SeoUnitToggle({
   toolName: SeoToolName;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   return (
     <View style={[styles.segment, { borderColor: theme.colors.border }]}>
       {UNIT_OPTIONS.map((option) => {
@@ -453,7 +460,7 @@ export function SeoUnitToggle({
                 fontWeight: theme.fontWeight.semibold,
               }}
             >
-              {option.label}
+              {t(option.labelKey)}
             </Text>
           </Pressable>
         );
@@ -793,6 +800,7 @@ export function SeoCopyButton({
   toolName: SeoToolName;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -839,7 +847,7 @@ export function SeoCopyButton({
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          Copy result
+          {t('common.copy')}
         </Text>
       </Pressable>
       {status !== 'idle' ? (
@@ -856,7 +864,7 @@ export function SeoCopyButton({
             fontSize: theme.fontSize.secondary,
           }}
         >
-          {status === 'copied' ? 'Copied to clipboard' : 'Copy failed'}
+          {status === 'copied' ? t('common.copied') : t('common.copyFailed')}
         </Text>
       ) : null}
     </View>
@@ -870,12 +878,13 @@ export function SeoCopyButton({
  */
 export function SeoCalculateButton({
   onPress,
-  label = 'Calculate',
+  label,
 }: {
   onPress: () => void;
   label?: string;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   return (
     <Pressable
       accessibilityRole="button"
@@ -896,7 +905,7 @@ export function SeoCalculateButton({
           fontWeight: theme.fontWeight.semibold,
         }}
       >
-        {label}
+        {label ?? t('common.calculate')}
       </Text>
     </Pressable>
   );
@@ -920,17 +929,21 @@ export function SeoHistoryList({
   toolName: SeoToolName;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   if (!loaded || entries.length === 0) {
     return null;
   }
   return (
-    <SeoSection title="Recent calculations">
+    <SeoSection title={t('common.recentCalculations')}>
       <View style={{ gap: theme.spacing.xs }}>
         {entries.map((entry) => (
           <Pressable
             key={entry.id}
             accessibilityRole="button"
-            accessibilityLabel={`Refill: ${entry.inputSummary}, ${entry.summary}`}
+            accessibilityLabel={t('common.refillLabel', {
+              input: entry.inputSummary,
+              summary: entry.summary,
+            })}
             onPress={() => {
               trackSeoToolHistoryRefill(toolName);
               onRefill(entry);
@@ -979,7 +992,7 @@ export function SeoHistoryList({
               textDecorationLine: 'underline',
             }}
           >
-            Clear history
+            {t('common.clearHistory')}
           </Text>
         </Pressable>
       </View>
@@ -1026,7 +1039,7 @@ export function SeoHint({ children }: { children: ReactNode }) {
       style={{
         color: theme.colors.textSecondary,
         fontSize: 13,
-        lineHeight: 18,
+        lineHeight: 20,
       }}
     >
       {children}
@@ -1104,9 +1117,14 @@ export function SeoDataTable({
 
 /** 标准角度 multiplier / shrink 对照表（数据来自 constants.ts）。 */
 export function OffsetMultiplierTable() {
+  const { t } = useI18n();
   return (
     <SeoDataTable
-      columns={['Angle', 'Multiplier', 'Shrink per inch']}
+      columns={[
+        t('table.angle'),
+        t('table.multiplier'),
+        t('table.shrinkPerInch'),
+      ]}
       rows={OFFSET_ANGLES.map((angle) => [
         `${angle}°`,
         String(OFFSET_CONSTANTS[angle].multiplier),
@@ -1126,9 +1144,10 @@ function formatShrinkPerInch(angle: OffsetAngle): string {
 }
 
 export function TakeUpTable() {
+  const { t } = useI18n();
   return (
     <SeoDataTable
-      columns={['Conduit size', 'Take-up']}
+      columns={[t('table.conduitSize'), t('table.takeUp')]}
       rows={TAKE_UP_OPTIONS.map((option) => [
         option.label,
         `${option.takeUpInches}"`,
@@ -1145,6 +1164,7 @@ export function FaqSection({
   toolName: SeoToolName;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const [openQuestions, setOpenQuestions] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
@@ -1179,7 +1199,7 @@ export function FaqSection({
           level={2}
           style={[styles.referenceTitle, { color: theme.colors.textSecondary }]}
         >
-          Frequently asked questions
+          {t('common.faq')}
         </SeoHeading>
       </View>
       <View style={{ gap: theme.spacing.sm, paddingHorizontal: theme.spacing.sm }}>
@@ -1293,9 +1313,10 @@ export function MoreFreeTools({
   toolName: SeoToolName;
 }) {
   const theme = useTheme();
+  const { lang, t } = useI18n();
   const others = SEO_TOOL_PAGES.filter((page) => page.key !== current.key);
   return (
-    <SeoSection title="More free tools">
+    <SeoSection title={t('common.moreFreeTools')}>
       <View style={[{ gap: theme.spacing.xs }]}>
         {others.map((page) => (
           <SeoLink
@@ -1305,11 +1326,11 @@ export function MoreFreeTools({
             trackFrom={toolName}
             trackTo={page.key}
           >
-            {page.h1}
+            {getSeoToolPageCopy(page, lang).h1}
           </SeoLink>
         ))}
         <SeoLink path="/" screen="RootTabs" trackFrom={toolName} trackTo="home">
-          All conduit bending calculators
+          {t('nav.allCalculatorsLink')}
         </SeoLink>
       </View>
     </SeoSection>
@@ -1333,7 +1354,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
-    gap: 6,
+    gap: 16,
   },
   segment: {
     flexDirection: 'row',
@@ -1350,7 +1371,7 @@ const styles = StyleSheet.create({
   },
   angleRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
   angleButton: {
     minHeight: 48,
@@ -1421,15 +1442,15 @@ const styles = StyleSheet.create({
   },
   resultCard: {
     width: '100%',
-    padding: 8,
+    padding: 16,
   },
   resultRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: 6,
-    paddingTop: 6,
+    marginTop: 12,
+    paddingTop: 12,
   },
   table: {
     borderWidth: StyleSheet.hairlineWidth,
@@ -1503,8 +1524,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   referenceBody: {
-    gap: 8,
+    gap: 16,
     paddingHorizontal: 10,
-    paddingBottom: 10,
+    paddingBottom: 16,
   },
 });
