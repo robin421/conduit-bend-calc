@@ -581,8 +581,8 @@ export const DEFAULT_ANGLE_PRESETS: readonly SeoQuickPreset[] = (
 }));
 
 /**
- * 角度选择：一行放下全部 6 个标准角度，30°/45° 是更大的预设按钮（带 multiplier 提示），
- * 一点即填，无需下拉（T62 交互项 1）。390px 宽度下单行不换行。
+ * 角度选择：全部 6 个标准角度固定 3 列网格，30°/45° 是更大的预设按钮（带 multiplier 提示），
+ * 一点即填，无需下拉（T62 交互项 1）。390pt 与桌面窄列（横屏 600pt 分栏）都换行、不横向溢出。
  */
 export function AngleSelector({
   value,
@@ -1388,13 +1388,18 @@ const styles = StyleSheet.create({
   },
   angleRow: {
     flexDirection: 'row',
+    // 换行 + 3 列网格：6 个按钮不再依赖单行 minWidth。旧版单行 minWidth 合计
+    // 296pt + 5×8pt gap = 336pt，超过卡内 326pt（390pt 屏），末尾 60° 被裁。
+    flexWrap: 'wrap',
     gap: 8,
   },
   angleButton: {
     minHeight: 48,
     minWidth: 48,
     flexGrow: 1,
-    flexBasis: '12%',
+    flexShrink: 1,
+    // 28% ≈ (100% - 2×8pt gap)/3，保证每行严格 3 个后换行；最后一行 grow 补满。
+    flexBasis: '28%',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
@@ -1403,7 +1408,8 @@ const styles = StyleSheet.create({
     minHeight: 64,
     minWidth: 52,
     flexGrow: 1,
-    flexBasis: '16%',
+    flexShrink: 1,
+    flexBasis: '28%',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
@@ -1411,12 +1417,16 @@ const styles = StyleSheet.create({
   },
   presetRow: {
     flexDirection: 'row',
+    // 3 个 size 预设旧版 flexBasis 40% 合计 120% 且 flexShrink 0，必然溢出；
+    // 改为换行 + 30% 网格，单行放 3 个，窄列自动退化为每行 2 个。
+    flexWrap: 'wrap',
     gap: 8,
   },
   presetButton: {
     minHeight: 64,
     flexGrow: 1,
-    flexBasis: '40%',
+    flexShrink: 1,
+    flexBasis: '30%',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
