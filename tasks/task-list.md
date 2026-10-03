@@ -123,3 +123,8 @@
 
 - [x] T59 Firebase 集成：`@react-native-firebase/{app,analytics,crashlytics}` 21.6.1（Expo SDK 52 / RN 0.76.9 / 新架构）+ config plugin；App 入口首屏后初始化，Crashlytics 仅生产启用；最小事件集 `screen_view` / `calculation_completed{bend_type}` / `unit_system_changed{from,to}` / `pro_paywall_viewed`（无 PII）；`scripts/write-google-services.sh` + `eas-build-pre-install` hook 从 EAS Secret 注入 `google-services.json`（根目录，永不提交）；隐私政策补 Firebase 数据收集说明；版本 bump 1.7.0
       验收：Given `npm run typecheck` When 运行 Then 无错误；Given `npm test` When 运行 Then 231/231 通过；Given `npx expo prebuild --platform android --clean` When 检查产物 Then google-services.json 被引用、Crashlytics gradle 插件已应用、无新增权限（仅既有 BILLING）；Given `git status` When 提交前检查 Then 无 google-services.json
+
+## Web SEO 工具页 P0（T60，2026-10-04）
+
+- [x] T60 四个独立 SEO 工具页：`/offset`（offset calculator）、`/4-point-saddle`（4 point saddle conduit calculator）、`/shrink`（conduit shrink calculator）、`/stub-up`（90 degree stub up calculator）。React Navigation 根 stack + web linking 路由；每页首屏计算器（复用 `src/constants.ts` 常数与现有 calculator/`ImperialInput`，校验非法输入）、说明区、3–5 条 FAQ、Multiplier/take-up 表、底部内链网（其余 3 页 + 首页）；设计遵循 `theme.ts`/`DESIGN.md`（8pt 圆角、无阴影渐变、40pt tabular-nums 深蓝结果卡）；SEO 每页独立 title/description/canonical + `WebApplication`/`FAQPage` JSON-LD，由 `src/seo/toolPages.ts` 单一来源经 `scripts/gen-seo-tool-shells.ts` 生成静态 shell；sitemap 新增 4 条；SEO 路由隐藏下载 banner
+      验收：Given `npm run typecheck` When 运行 Then 无错误；Given `npm test` When 运行 Then 245/245 通过；Given `npm run web:export` + shell 生成 When 检查 dist/<route>/index.html Then title/description/canonical/JSON-LD 正确且可重复运行不重复注入；Given `getStateFromPath` When 解析 4 条路径 Then 命中对应屏幕

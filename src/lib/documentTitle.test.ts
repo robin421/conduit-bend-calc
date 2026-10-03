@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import {
   applyWebDocumentTitle,
+  shouldApplyWebDocumentTitle,
   WEB_DOCUMENT_TITLE,
 } from './documentTitle.ts';
 
@@ -32,4 +33,14 @@ test('applyWebDocumentTitle: 允许覆盖标题', () => {
   const doc = { title: 'BendCalc' };
   assert.equal(applyWebDocumentTitle(true, doc, 'Custom Title'), true);
   assert.equal(doc.title, 'Custom Title');
+});
+
+test('shouldApplyWebDocumentTitle: 首页/App 路由写标题，SEO 工具页不写', () => {
+  assert.equal(shouldApplyWebDocumentTitle('/'), true);
+  assert.equal(shouldApplyWebDocumentTitle('/reference'), true);
+  assert.equal(shouldApplyWebDocumentTitle('/offset'), false);
+  assert.equal(shouldApplyWebDocumentTitle('/offset/'), false);
+  assert.equal(shouldApplyWebDocumentTitle('/4-point-saddle'), false);
+  assert.equal(shouldApplyWebDocumentTitle('/shrink'), false);
+  assert.equal(shouldApplyWebDocumentTitle('/stub-up'), false);
 });

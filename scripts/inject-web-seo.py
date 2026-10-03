@@ -112,6 +112,13 @@ SEO_PATHS = [
     "conduit-shrink-calculator/",
     "parallel-offset-calculator/",
     "how-to-bend-emt-conduit/",
+    # Batch 4 (2026-10-04, P0 interactive tools). Generated as SPA shells by
+    # scripts/gen-seo-tool-shells.ts (not content pages by gen-seo-pages.py),
+    # but they share the same sitemap. Keep in sync with src/seo/toolPages.ts.
+    "offset/",
+    "4-point-saddle/",
+    "shrink/",
+    "stub-up/",
     # Batch 3 (2026-09-29). Keep in sync with scripts/gen-seo-pages.py page list.
     "conduit-bending-formula/",
     "hand-bender-markings/",

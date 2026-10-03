@@ -1,5 +1,44 @@
 # Changelog
 
+## v1.7.1 — SEO tool pages (P0, web)
+
+Four standalone, interactive SEO tool pages at `bendcalc.wattflow.net`,
+built with the existing React Native + Expo web stack (no new UI deps beyond
+Expo's required web packages).
+
+### Routes
+- `/offset` — conduit offset calculator (rise + angle → mark spacing, shrink,
+  both mark locations).
+- `/4-point-saddle` — 4-point saddle (height + width + angle → all four marks,
+  total span, total shrink).
+- `/shrink` — shrink calculator with offset / 4-point saddle mode.
+- `/stub-up` — 90° stub-up (target height + EMT size → mark location + take-up
+  chart).
+
+### Implementation
+- Root native-stack (`src/navigation/rootStack.tsx`) adds the four screens
+  above `RootTabs`; web-only `linking` config (`src/navigation/rootLinking.ts`)
+  parses the URL. Native behavior is unchanged (linking is disabled off web).
+- Screen + content are one source of truth (`src/seo/toolPages.ts`), reused by
+  `scripts/gen-seo-tool-shells.ts` to stamp per-route static HTML shells
+  (`dist/<slug>/index.html`) with independent title/description/canonical,
+  Open Graph/Twitter tags, and `WebApplication` + `FAQPage` JSON-LD.
+- Design follows `theme.ts` / `DESIGN.md`: 8pt radius, no shadow/gradient,
+  40pt tabular-nums navy result card, min 44–56pt touch targets. All math uses
+  `src/constants.ts` and the existing calculators; inputs validate via the
+  shared `ImperialInput` (fraction / decimal / metric).
+- The fixed download banner is hidden on these four routes (MVP: validate
+  organic traffic first, no "Get the App" pitch).
+- Sitemap (`scripts/inject-web-seo.py`) now lists the four new URLs.
+
+### Build pipeline (web deploy)
+```
+npm run web:export
+node scripts/gen-seo-tool-shells.ts dist https://bendcalc.wattflow.net
+python3 scripts/inject-web-seo.py dist https://bendcalc.wattflow.net [--ga4-id G-XXXX]
+python3 scripts/gen-seo-pages.py  dist https://bendcalc.wattflow.net
+```
+
 ## v1.6.0 — Free/Pro value redefinition
 
 Free = a fast professional conduit bending calculator. Pro = a bending assistant

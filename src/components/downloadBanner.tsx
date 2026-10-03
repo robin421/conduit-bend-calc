@@ -18,6 +18,7 @@ import {
   DOWNLOAD_BANNER_DISMISS_KEY,
 } from '../lib/downloadBannerCopy';
 import { GOOGLE_PLAY_URL } from '../lib/homeContent';
+import { isSeoToolPath } from '../seo/toolPages';
 import { trackEvent } from '../lib/analytics';
 import { useTheme } from '../theme';
 
@@ -63,6 +64,13 @@ function writeDismissedNow(): void {
   }
 }
 
+function isSeoRoute(): boolean {
+  if (typeof window === 'undefined' || !window.location) {
+    return false;
+  }
+  return isSeoToolPath(window.location.pathname);
+}
+
 function isDismissedWithinWindow(): boolean {
   const ts = readDismissedAt();
   if (ts === null) {
@@ -76,15 +84,18 @@ function isDismissedWithinWindow(): boolean {
  * Web 顶部固定下载 banner：常驻提醒访客下载 App 体验更多功能。
  * 仅在 Web 渲染；Native 端返回 null。
  *
+ * SEO 工具页（/offset、/4-point-saddle、/shrink、/stub-up）不展示，
+ * 保持工具页纯粹、不挂 "Get the App"（MVP 先验证自然流量）。
+ *
  * 挂载位置说明：必须挂在 App 根节点（NavigationContainer 之外），
  * 因为 native-stack 的导航头渲染在屏幕容器之外的同级堆叠上下文里，
  * banner 放在任何屏幕内部都无法用 z-index 压过导航头。
- * 因此 banner 出现在全部 Web 页面顶部（不只首页），这是有意为之。
+ * 因此 banner 出现在其余 Web 页面顶部（不只首页），这是有意为之。
  */
 export default function DownloadBanner() {
   const theme = useTheme();
   const [visible, setVisible] = useState(
-    () => Platform.OS === 'web' && !isDismissedWithinWindow(),
+    () => Platform.OS === 'web' && !isDismissedWithinWindow() && !isSeoRoute(),
   );
 
   if (Platform.OS !== 'web' || !visible) {
