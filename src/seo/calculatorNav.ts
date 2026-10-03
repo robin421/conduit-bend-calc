@@ -47,3 +47,44 @@ export const CALCULATOR_NAV: readonly CalculatorNavItem[] = [
 export function isActiveCalculator(activeKey: string, itemKey: string): boolean {
   return activeKey === itemKey;
 }
+
+/* ------------------------------------------------------------------ */
+/* 响应式导航布局（纯函数，可被 node --test 直接断言）                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 移动 / 桌面导航断点：宽 < 600pt 用汉堡 + 左侧抽屉，
+ * 宽 >= 600pt 用横向切换条。与 `SeoCalcLayout` 的 600 断点保持一致。
+ */
+export const MOBILE_NAV_BREAKPOINT = 600;
+
+/** 抽屉最大宽度（pt）。 */
+export const DRAWER_MAX_WIDTH = 280;
+/** 抽屉相对屏幕宽度的上限比例（更窄的手机上不超过屏幕 85%）。 */
+export const DRAWER_WIDTH_RATIO = 0.85;
+/** 抽屉滑入 / 滑出动画时长（ms），ease-out。 */
+export const DRAWER_ANIMATION_MS = 300;
+
+/** 是否使用移动端汉堡 + 抽屉导航。 */
+export function isMobileNavViewport(width: number): boolean {
+  return width < MOBILE_NAV_BREAKPOINT;
+}
+
+/** 导航呈现模式：`drawer` = 汉堡 + 左侧抽屉，`switcher` = 横向切换条。 */
+export type CalculatorNavMode = 'drawer' | 'switcher';
+
+/** 根据视口宽度决定导航呈现模式（SeoPage 与测试共用的唯一断点逻辑）。 */
+export function calculatorNavMode(width: number): CalculatorNavMode {
+  return isMobileNavViewport(width) ? 'drawer' : 'switcher';
+}
+
+/**
+ * 计算抽屉宽度：280pt，且不超过屏幕宽度的 85%。
+ * 传入的是 viewport 宽度（useWindowDimensions().width）。
+ */
+export function drawerWidthForViewport(width: number): number {
+  if (!Number.isFinite(width) || width <= 0) {
+    return DRAWER_MAX_WIDTH;
+  }
+  return Math.min(DRAWER_MAX_WIDTH, Math.floor(width * DRAWER_WIDTH_RATIO));
+}

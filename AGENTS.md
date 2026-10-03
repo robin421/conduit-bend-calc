@@ -41,3 +41,9 @@
 - 4 个 SEO 工具页 `<title>` 已含 ` | WattFlow`，总长 ≤60；改标题要同步 `src/seo/toolPages.ts`、`toolPages.test.ts`、`brand.test.ts` 以及 `scripts/inject-web-seo.py`（首页 title / og:site_name）。
 - 计算器切换条数据来源 `src/seo/calculatorNav.ts`，只收录已有 Web 路由（URL 结构冻结，禁止造死链）；Kick/Rolling 等经首页 `All calculators` 到达。
 - 信息层级：L1 输入+结果（`SeoWorkspace`，结果卡 40pt）/ L2 预设·单位·历史 / L3 说明·倍数表（`SeoCollapsibleSection` 默认折叠）/ L4 FAQ。首屏 390px 高度预算写在每个工具屏文件顶部注释，改动布局要同步更新。
+
+## 计算器导航响应式（2026-10-04, T65）
+- 断点唯一来源 `src/seo/calculatorNav.ts`：`calculatorNavMode(width)`（<600 → `drawer`，≥600 → `switcher`）、`isMobileNavViewport`、`drawerWidthForViewport`（280pt 封顶 / 85% 屏宽）、`DRAWER_ANIMATION_MS=300`。这些都是纯函数，`calculatorNav.test.ts` 直接断言，不要在其他文件里重复写 `width < 600`。
+- `SeoPage` 是唯一决定导航形态的地方：`mobileNav` 时品牌栏传 `onMenuPress` 显示汉堡、渲染 `CalculatorDrawer`，否则渲染 `CalculatorSwitcher`（桌面横条，行为不变）。
+- 抽屉 = `src/components/calculatorDrawer.tsx`：RN `Modal` + `Animated` `translateX`；`mounted` 与 `visible` 分开以便播完退出动画再卸载；Web 端 ESC 关闭 + `document.body.style.overflow='hidden'` 锁滚动，页面层再叠 `ScrollView scrollEnabled={!drawerOpen}`（react-native-web 0.19 的 ScrollView 确实支持 `scrollEnabled`）。非当前项 Web 用 `Text href` 真 `<a>`，Native 用 `navigate`。
+- 移动端品牌 chrome 从 ≈132pt 降到 ≈90pt（切换条 34 + gap 8 被抽屉取代）；四个工具屏顶部首屏预算注释已同步。

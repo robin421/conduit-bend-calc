@@ -22,8 +22,13 @@ import {
 } from 'react-native';
 
 import WattFlowBrandBar from '../../components/wattflowBrandBar';
+import CalculatorDrawer from '../../components/calculatorDrawer';
 import { BRAND_FOOTER } from '../../seo/brand';
-import { CALCULATOR_NAV, type CalculatorNavItem } from '../../seo/calculatorNav';
+import {
+  CALCULATOR_NAV,
+  calculatorNavMode,
+  type CalculatorNavItem,
+} from '../../seo/calculatorNav';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../../constants';
 import type { OffsetAngle } from '../../constants';
 import type { RootStackParamList } from '../../navigation/rootStack';
@@ -61,29 +66,60 @@ export function SeoPage({
   activeTool,
 }: {
   children: ReactNode;
-  /** 当前工具页 key；提供后自动渲染 WattFlow 品牌栏 + 计算器切换条 + 页脚。 */
+  /** 当前工具页 key；提供后自动渲染 WattFlow 品牌栏 + 计算器导航 + 页脚。 */
   activeTool?: SeoToolKey;
 }) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  // 响应式断点：<600pt 汉堡 + 抽屉，>=600pt 横向切换条。
+  const mobileNav = calculatorNavMode(width) === 'drawer';
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // 从移动端切到桌面端时自动收起抽屉，避免遗留遮罩。
+  useEffect(() => {
+    if (!mobileNav && drawerOpen) {
+      setDrawerOpen(false);
+    }
+  }, [mobileNav, drawerOpen]);
+
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.page,
-        {
-          paddingHorizontal: theme.spacing.sm,
-          paddingTop: 8,
-          paddingBottom: theme.spacing.lg,
-          gap: 8,
-        },
-      ]}
-      keyboardShouldPersistTaps="handled"
+    <View
+      style={[styles.pageRoot, { backgroundColor: theme.colors.background }]}
     >
-      <WattFlowBrandBar />
-      {activeTool ? <CalculatorSwitcher activeKey={activeTool} /> : null}
-      {children}
-      <SeoFooter />
-    </ScrollView>
+      <ScrollView
+        style={{ backgroundColor: theme.colors.background }}
+        contentContainerStyle={[
+          styles.page,
+          {
+            paddingHorizontal: theme.spacing.sm,
+            paddingTop: 8,
+            paddingBottom: theme.spacing.lg,
+            gap: 8,
+          },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        // 抽屉打开时禁止背景滚动（Web 端另有 body overflow 兜底）。
+        scrollEnabled={!drawerOpen}
+      >
+        <WattFlowBrandBar
+          onMenuPress={
+            activeTool && mobileNav ? () => setDrawerOpen(true) : undefined
+          }
+        />
+        {activeTool && !mobileNav ? (
+          <CalculatorSwitcher activeKey={activeTool} />
+        ) : null}
+        {children}
+        <SeoFooter />
+      </ScrollView>
+      {activeTool ? (
+        <CalculatorDrawer
+          visible={mobileNav && drawerOpen}
+          activeKey={activeTool}
+          onClose={() => setDrawerOpen(false)}
+        />
+      ) : null}
+    </View>
   );
 }
 
@@ -108,10 +144,10 @@ export function SeoFooter() {
 }
 
 /**
- * 计算器切换条：把所有工具页串成一个整体。
- * - 窄屏（<600pt）：横向可滑动，不换行；
- * - 宽屏：平铺换行。
- * - 当前页橙色下划线 + 橙色文字，其余灰色；Web 端渲染真实 <a href> 可抓取。
+ * 计算器切换条（仅桌面端 >=600pt 渲染）：把所有工具页串成一个整体。
+ * - 平铺换行；当前页橙色下划线 + 橙色文字，其余灰色；
+ * - Web 端渲染真实 <a href> 可抓取。
+ * - 移动端（<600pt）改用 WattFlowBrandBar 的汉堡按钮 + CalculatorDrawer。
  */
 export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
   const theme = useTheme();
@@ -1286,6 +1322,9 @@ export function formatSeoLength(inches: number, unit: 'fractional' | 'decimal' |
 }
 
 const styles = StyleSheet.create({
+  pageRoot: {
+    flex: 1,
+  },
   page: {
     flexGrow: 1,
     width: '100%',

@@ -1,5 +1,30 @@
 # Changelog
 
+## v1.7.5 — Mobile calculator drawer navigation (T65)
+
+### Responsive calculator navigation (SEO tool pages)
+- **Mobile (<600pt):** the horizontally scrollable switcher is gone; the brand
+  bar now shows a hamburger (☰) that opens a left drawer listing all
+  calculators in order — Offset / 4-Point Saddle / Shrink / 90° Stub / All
+  calculators. The current page is highlighted in electric orange (3pt accent
+  bar + accent text + light card background). Menu items are ≥48pt; the panel
+  is 280pt wide, capped at 85% of the viewport.
+- **Desktop (≥600pt):** the existing horizontal switcher is unchanged.
+- Drawer details: `rgba(0,0,0,0.5)` scrim (tap to close), 300ms ease-out
+  `translateX` slide, WattFlow brand + `✕` in the header, tap-outside / `✕` /
+  **ESC** (web) to close, background scroll locked while open. No shadow or
+  gradient; the panel/content divider is a 1px `#E5E7EB` border.
+- Web keeps real `<a href>` links for every non-current item (crawlable
+  internal link graph); native uses `navigate`. URL structure and calculator
+  logic are untouched.
+- Breakpoint + drawer geometry are pure functions in `src/seo/calculatorNav.ts`
+  (`isMobileNavViewport`, `drawerWidthForViewport`, `DRAWER_ANIMATION_MS`),
+  asserted in `calculatorNav.test.ts`.
+
+### First-screen budget
+- Mobile brand chrome drops from ≈132pt to ≈90pt (no switcher row); the
+  per-screen height notes in the four tool screens were updated accordingly.
+
 ## v1.7.4 — WattFlow brand unification + information hierarchy (T64)
 
 ### Brand chrome (home + the 4 SEO tool pages)
