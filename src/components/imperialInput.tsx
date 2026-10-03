@@ -22,6 +22,13 @@ interface ImperialInputProps {
   unit?: UnitSystem;
   /** 软键盘类型；缺省不指定（系统默认）。 */
   keyboardType?: 'default' | 'numeric' | 'decimal-pad' | 'numbers-and-punctuation';
+  /**
+   * HTML `inputmode`：调起原生数字键盘而非全键盘（T62 硬指标）。
+   * 缺省时按单位自动选择：公制用 `numeric`，分数/小数英寸用 `decimal`
+   * （decimal 仍是纯数字键盘，但带小数点，方便输入 6.5）。
+   * 调用方显式传了 keyboardType 时不覆盖，避免影响内部计算器屏。
+   */
+  inputMode?: 'numeric' | 'decimal' | 'text';
   style?: StyleProp<ViewStyle>;
 }
 
@@ -33,10 +40,15 @@ export default function ImperialInput({
   placeholder,
   unit = 'fractional',
   keyboardType,
+  inputMode,
   style,
 }: ImperialInputProps) {
   const theme = useTheme();
   const metric = unit === 'metric';
+
+  // T62：数字输入框一律调数字键盘；仅当调用方显式指定 keyboardType 时不干预。
+  const resolvedInputMode =
+    inputMode ?? (keyboardType ? undefined : metric ? 'numeric' : 'decimal');
 
   const parsed = useMemo(() => parseLength(value, unit), [unit, value]);
   const isBlank = value.trim() === '';
@@ -103,6 +115,7 @@ export default function ImperialInput({
         placeholder={resolvedPlaceholder}
         placeholderTextColor={theme.colors.textSecondary}
         keyboardType={keyboardType}
+        inputMode={resolvedInputMode}
         autoCapitalize="none"
         autoCorrect={false}
         style={[

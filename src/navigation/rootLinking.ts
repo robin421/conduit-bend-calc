@@ -1,6 +1,6 @@
 import type { LinkingOptions } from '@react-navigation/native';
 
-import type { RootStackParamList } from './rootStack';
+import type { RootStackParamList } from './rootStackTypes';
 
 /**
  * 纯配置模块（只依赖类型，可被 node --test 直接 import 做路径解析回归）。

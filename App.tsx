@@ -6,7 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { applyWebDocumentTitle, shouldApplyWebDocumentTitle } from './src/lib/documentTitle';
 import { initFirebase, logFirebaseScreenView } from './src/lib/firebase';
-import { initProIap } from './src/lib/proStore';
+import { initPro } from './src/lib/proInit';
+import { registerServiceWorker } from './src/lib/serviceWorker';
 import DownloadBanner from './src/components/downloadBanner';
 import RootStack, { rootLinking, type RootStackParamList } from './src/navigation/rootStack';
 import { getNavigationTheme, useTheme } from './src/theme';
@@ -17,9 +18,12 @@ export default function App() {
   const currentRouteRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     // Pro 内购初始化：fire-and-forget，内部 fail-closed（未验证购买一律 locked），异常直接吞掉。
-    initProIap().catch(() => undefined);
+    // Web 端经 proInit.web.ts no-op，避免把 react-native-iap 打进首屏。
+    initPro().catch(() => undefined);
     // Firebase 初始化：首屏渲染后执行，避免拖慢冷启动；dev 下 Crashlytics 关闭。
     initFirebase();
+    // Web 端注册 service worker：首屏关键资源离线缓存（工地断网也能开）。
+    registerServiceWorker(Platform.OS === 'web');
     // Web 端固定 SEO 标题；Native 端不受影响。
     // SEO 工具页保留静态 shell 的页面级 <title>，不被首页标题覆盖。
     if (

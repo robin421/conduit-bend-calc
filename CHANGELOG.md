@@ -1,5 +1,52 @@
 # Changelog
 
+## v1.7.3 — Mobile hard metrics + field-use conveniences on the SEO tool pages
+
+### First-screen (390px) golden path
+- The 4 tool pages (`/offset`, `/4-point-saddle`, `/shrink`, `/stub-up`) now
+  show **input → Calculate → result** without scrolling: compact spacing
+  (`SeoPage` 12pt padding/gap), 24pt h1, 48pt unit toggle/inputs, a single
+  row of angle buttons (30°/45° as larger presets), an explicit orange
+  **Calculate** button, and a compact result card (32pt headline, merged mark
+  rows). The offset page's optional start position is collapsed by default.
+  Layout math is documented at the top of each screen file.
+- `SeoCalcLayout` switches input/result to two columns in landscape
+  (`width ≥ 600 && width > height`) so the calculator does not cram.
+- Every interactive element is ≥ 48pt (input, unit segments, angle chips,
+  size presets, history rows, copy, FAQ questions, Calculate).
+- `ImperialInput` now sets `inputMode` (`numeric` for metric, `decimal` for
+  fractional/decimal inches) so phones raise a number pad, not a full keyboard.
+
+### Field-use conveniences
+- **Angle / size presets** — `SeoQuickPreset` config (`// v2: preset 接口`)
+  drives one-tap 30°/45° angle buttons and the EMT size presets; no dropdown.
+- **Recent calculations** — `src/lib/seoHistory.ts` keeps the last 5 per tool
+  (AsyncStorage ⇒ localStorage on web, injectable for tests). One tap refills
+  every input and re-runs the calculation.
+- **Copy result** — `src/lib/copyResult.ts` builds a natural sentence per tool;
+  `SeoCopyButton` copies it (`navigator.clipboard` → execCommand → RN
+  Clipboard, no new deps) and shows a 2s `aria-live` toast.
+- **New GA4 events** — `preset_apply`, `copy_result`, `history_refill`.
+
+### First-screen performance (code splitting)
+- Web now lazy-loads `RootTabs` and each tool screen via platform-specific
+  `src/navigation/rootStack.web.tsx` (`React.lazy` + Metro async chunks) and
+  moves Pro IAP init behind `src/lib/proInit.web.ts` (no-op), so
+  `react-native-svg` / `react-native-iap` / the internal calculator screens no
+  longer load on the SEO pages.
+- Brotli transfer for a tool page: entry ~175KB + screen chunk ~2KB < 200KB
+  (was a single ~275KB bundle). Chunks are served by Cloudflare Pages with br.
+
+### Offline
+- `src/lib/serviceWorker.ts` registers `/sw.js` on Web (HTTPS/localhost only).
+  `scripts/inject-web-seo.py` writes `sw.js` with an **entry-only precache**
+  (`/`, `/index.html`, the hashed entry bundle); split chunks are cache-first
+  with runtime fill; navigations are network-first with a cached shell fallback.
+
+### Extensibility
+- `// v2: preset 接口` and `// v2: 示意图插槽` markers are in place; every
+  result card reserves a diagram slot (`SeoResultCard` `diagram` prop).
+
 ## v1.7.2 — Electrician tool-brand theme + GA4 on the SEO tool pages
 
 ### UI redesign (light + dark)

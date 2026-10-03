@@ -146,6 +146,21 @@ export function trackInternalLinkClick(from: string, to: string): void {
   trackEvent('internal_link_click', { from, to });
 }
 
+/** preset_apply：SEO 工具页点常用预设（角度 / 管径）。 */
+export function trackSeoToolPreset(toolName: SeoToolName, preset: string): void {
+  trackEvent('preset_apply', { preset, tool_name: toolName });
+}
+
+/** copy_result：SEO 工具页一键复制结果（success 只记是否成功，不记内容）。 */
+export function trackSeoToolCopy(toolName: SeoToolName, success: boolean): void {
+  trackEvent('copy_result', { success: success ? 1 : 0, tool_name: toolName });
+}
+
+/** history_refill：SEO 工具页点历史条目回填。 */
+export function trackSeoToolHistoryRefill(toolName: SeoToolName): void {
+  trackEvent('history_refill', { tool_name: toolName });
+}
+
 /**
  * SEO 工具页的 calculate 埋点：signature 变化（说明用户输入已形成有效结果）
  * 时发一次 `calculate`，同一结果不重复发送。signature 从不随事件发送。

@@ -1,29 +1,54 @@
-import { useMemo, useState } from 'react';
+/**
+ * SEO /shrink 工具页。
+ *
+ * 产品验证（T62 要求）：
+ * 1) 比心算快多少？shrink 心算是「高度 × 每英寸 shrink 表值」（30° = ¼）；
+ *    心算单次约 3–5 秒，本页选模式 + 输入 + Calculate 约 2 秒，且自动区分
+ *    offset 单次 shrink 与 4 点 saddle 的两次 shrink（现场最容易漏的就是 ×2）。
+ * 2) 3 秒能看懂吗？能：Offset / Saddle 两个大模式按钮把「算哪种 shrink」摆在最前，
+ *    输入框写明 Offset height，引导句一句话说明。
+ *
+ * 首屏布局（390×844）：12 + 标题/引导 53 + 12 + 输入卡约 366（含模式行）+ 12 +
+ *   结果卡约 153 + 8 + 复制 48 ≈ 664pt，主流手机一屏可完成；说明/表格/FAQ 全在下方。
+ */
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../../calculators/offset/offset';
 import ImperialInput from '../../components/imperialInput';
+import type { OffsetAngle } from '../../constants';
 import {
   useCalculatorAnalytics,
   useSeoToolCalculateAnalytics,
 } from '../../lib/analytics';
+import { buildShrinkCopyText } from '../../lib/copyResult';
+import { createSeoHistoryEntry, type SeoHistoryEntry, type ShrinkMode } from '../../lib/seoHistory';
+import { parseLength } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
+import { useSeoHistory } from '../../lib/useSeoHistory';
 import { getSeoToolPage } from '../../seo/toolPages';
 import { useTheme } from '../../theme';
-import type { OffsetAngle } from '../../constants';
 import {
-  formatSeoLength,
   AngleSelector,
+  DEFAULT_ANGLE_PRESETS,
   FaqSection,
+  formatSeoLength,
   MoreFreeTools,
   OffsetMultiplierTable,
+  SeoCalculateButton,
+  SeoCalcLayout,
   SeoCard,
+  SeoCopyButton,
   SeoHeading,
+  SeoHint,
+  SeoHistoryList,
   SeoPage,
   SeoParagraph,
   SeoResultCard,
   SeoSection,
   SeoUnitToggle,
+  type SeoQuickPreset,
 } from './seoLayout';
 
 const PAGE = getSeoToolPage('shrink');
@@ -31,138 +56,263 @@ const DEFAULT_ANGLE: OffsetAngle = 30;
 /** GA4 tool_name 口径。 */
 const TOOL_NAME = 'shrink' as const;
 
-type ShrinkMode = 'offset' | 'saddle';
+// v2: preset 接口 —— 本页常用角度预设集中定义。
+const ANGLE_PRESETS: readonly SeoQuickPreset[] = DEFAULT_ANGLE_PRESETS;
 
 const MODES: readonly { key: ShrinkMode; label: string }[] = [
   { key: 'offset', label: 'Offset' },
   { key: 'saddle', label: 'Saddle (4-point)' },
 ];
 
+interface CommittedShrink {
+  heightInches: number;
+  angle: OffsetAngle;
+  mode: ShrinkMode;
+}
+
 export default function ShrinkToolScreen() {
   const theme = useTheme();
   const { unit, setUnit } = useUnitSystem();
   const [heightText, setHeightText] = useState('');
-  const [heightInches, setHeightInches] = useState<number | null>(null);
   const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
   const [mode, setMode] = useState<ShrinkMode>('offset');
+  const [committed, setCommitted] = useState<CommittedShrink | null>(null);
+  const { entries, loaded, add, clear } = useSeoHistory('shrink');
 
-  const result = useMemo(() => {
-    if (heightInches === null) {
-      return null;
-    }
-    return calculateOffset(heightInches, angle);
-  }, [heightInches, angle]);
+  const calculate = useCallback(
+    (override?: {
+      angle?: OffsetAngle;
+      mode?: ShrinkMode;
+      heightText?: string;
+    }) => {
+      const nextAngle = override?.angle ?? angle;
+      const nextMode = override?.mode ?? mode;
+      const height = parseLength(override?.heightText ?? heightText, unit);
+      if (height === null || height <= 0) {
+        setCommitted(null);
+        return;
+      }
+      setCommitted({ heightInches: height, angle: nextAngle, mode: nextMode });
+    },
+    [angle, heightText, mode, unit],
+  );
 
-  const perInch = result ? result.shrink / (heightInches ?? 1) : null;
+  const applyAngle = useCallback(
+    (next: OffsetAngle) => {
+      setAngle(next);
+      calculate({ angle: next });
+    },
+    [calculate],
+  );
+
+  const applyMode = useCallback(
+    (next: ShrinkMode) => {
+      setMode(next);
+      calculate({ mode: next });
+    },
+    [calculate],
+  );
+
+  const result = useMemo(
+    () => (committed ? calculateOffset(committed.heightInches, committed.angle) : null),
+    [committed],
+  );
+
+  const perInch =
+    result && committed ? result.shrink / committed.heightInches : null;
   const totalShrink =
-    result === null ? null : mode === 'saddle' ? result.shrink * 2 : result.shrink;
+    result === null || committed === null
+      ? null
+      : committed.mode === 'saddle'
+        ? result.shrink * 2
+        : result.shrink;
 
-  // 有效结果签名：变化即视为发生一次计算。
-  const signature = result ? `${result.shrink}|${angle}|${mode}` : null;
-  useCalculatorAnalytics('shrink', signature);
-  useSeoToolCalculateAnalytics(TOOL_NAME, signature);
+  const committedSignature = committed
+    ? `${committed.heightInches}|${committed.angle}|${committed.mode}`
+    : null;
+
+  useCalculatorAnalytics('shrink', committedSignature);
+  useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
+
+  useEffect(() => {
+    if (!committed || !result || !committedSignature) {
+      return;
+    }
+    add(
+      createSeoHistoryEntry({
+        kind: 'shrink',
+        inputSummary: `${formatSeoLength(committed.heightInches, unit)} @ ${committed.angle}° · ${committed.mode}`,
+        summary: `shrink ${formatSeoLength(result.shrink * (committed.mode === 'saddle' ? 2 : 1), unit)}`,
+        params: {
+          heightText,
+          angle: committed.angle,
+          mode: committed.mode,
+          unit,
+        },
+        signature: committedSignature,
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [committedSignature]);
+
+  const handleRefill = useCallback(
+    (entry: SeoHistoryEntry) => {
+      const params = entry.params;
+      const entryUnit = params.unit ?? 'fractional';
+      setUnit(entryUnit);
+      if (params.heightText !== undefined) {
+        setHeightText(params.heightText);
+      }
+      const nextAngle = params.angle ?? DEFAULT_ANGLE;
+      const nextMode = params.mode ?? 'offset';
+      setAngle(nextAngle);
+      setMode(nextMode);
+      const height = params.heightText
+        ? parseLength(params.heightText, entryUnit)
+        : null;
+      if (height !== null && height > 0) {
+        setCommitted({ heightInches: height, angle: nextAngle, mode: nextMode });
+      }
+    },
+    [setUnit],
+  );
+
+  const copyText =
+    result && committed && totalShrink !== null
+      ? buildShrinkCopyText({
+          mode: committed.mode,
+          angle: committed.angle,
+          shrink: totalShrink,
+          unit,
+        })
+      : '';
 
   return (
     <SeoPage>
-      <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
+      <View style={{ gap: 4 }}>
+        <SeoHeading level={1}>{PAGE.h1}</SeoHeading>
+        <SeoHint>Pick offset or saddle, enter the height, tap Calculate.</SeoHint>
+      </View>
 
-      <SeoCard>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.fontSize.secondary,
-            }}
-          >
-            Units
-          </Text>
-          <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
-        </View>
-
-        <View style={styles.modeRow}>
-          {MODES.map((option) => {
-            const selected = option.key === mode;
-            return (
-              <Pressable
-                key={option.key}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                onPress={() => setMode(option.key)}
-                style={[
-                  styles.modeButton,
-                  {
-                    backgroundColor: selected
-                      ? theme.colors.accent
-                      : theme.colors.background,
-                    borderColor: theme.colors.border,
-                    borderRadius: theme.radius,
-                  },
-                ]}
+      <SeoCalcLayout
+        input={
+          <SeoCard>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.textSecondary,
+                  fontSize: theme.fontSize.secondary,
+                }}
               >
-                <Text
-                  style={{
-                    color: selected
-                      ? theme.colors.onAccent
-                      : theme.colors.textPrimary,
-                    fontSize: theme.fontSize.secondary,
-                    fontWeight: theme.fontWeight.semibold,
-                  }}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                Units
+              </Text>
+              <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
+            </View>
 
-        <View style={{ marginTop: theme.spacing.sm }}>
-          <ImperialInput
-            label="Offset height (rise)"
-            value={heightText}
-            onChangeText={setHeightText}
-            onParsedChange={setHeightInches}
-            unit={unit}
-            placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
-          />
-        </View>
+            <View style={styles.modeRow}>
+              {MODES.map((option) => {
+                const selected = option.key === mode;
+                return (
+                  <Pressable
+                    key={option.key}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => applyMode(option.key)}
+                    style={[
+                      styles.modeButton,
+                      {
+                        backgroundColor: selected
+                          ? theme.colors.accent
+                          : theme.colors.background,
+                        borderColor: selected
+                          ? theme.colors.accent
+                          : theme.colors.border,
+                        borderRadius: theme.radius,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color: selected
+                          ? theme.colors.onAccent
+                          : theme.colors.textPrimary,
+                        fontSize: theme.fontSize.secondary,
+                        fontWeight: theme.fontWeight.semibold,
+                      }}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
 
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-            marginTop: theme.spacing.sm,
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          Bend angle
-        </Text>
-        <AngleSelector value={angle} onChange={setAngle} />
-      </SeoCard>
+            <View>
+              <ImperialInput
+                label="Offset height (rise)"
+                value={heightText}
+                onChangeText={setHeightText}
+                unit={unit}
+                placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+              />
+            </View>
 
-      <SeoResultCard
-        headline={
-          mode === 'saddle' ? 'Total shrink (two offsets)' : 'Shrink'
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+              }}
+            >
+              Bend angle
+            </Text>
+            <AngleSelector
+              value={angle}
+              onChange={applyAngle}
+              presets={ANGLE_PRESETS}
+              toolName={TOOL_NAME}
+            />
+
+            <View>
+              <SeoCalculateButton onPress={() => calculate()} />
+            </View>
+          </SeoCard>
         }
-        headlineValue={
-          totalShrink !== null ? formatSeoLength(totalShrink, unit) : undefined
+        result={
+          <View style={{ gap: theme.spacing.sm }}>
+            <SeoResultCard
+              headline={mode === 'saddle' ? 'Total shrink (two offsets)' : 'Shrink'}
+              headlineValue={
+                totalShrink !== null ? formatSeoLength(totalShrink, unit) : undefined
+              }
+              rows={[
+                {
+                  label: 'Shrink per inch of height',
+                  value: perInch !== null ? formatSeoLength(perInch, unit) : '—',
+                },
+                {
+                  label: 'Conduit length to add',
+                  value:
+                    totalShrink !== null ? formatSeoLength(totalShrink, unit) : '—',
+                },
+              ]}
+            />
+            <SeoCopyButton text={copyText} disabled={!result} toolName={TOOL_NAME} />
+          </View>
         }
-        rows={[
-          {
-            label: 'Shrink per inch of height',
-            value: perInch !== null ? formatSeoLength(perInch, unit) : '—',
-          },
-          {
-            label: 'Conduit length to add',
-            value: totalShrink !== null ? formatSeoLength(totalShrink, unit) : '—',
-          },
-        ]}
+      />
+
+      <SeoHistoryList
+        entries={entries}
+        loaded={loaded}
+        onRefill={handleRefill}
+        onClear={clear}
+        toolName={TOOL_NAME}
       />
 
       <SeoSection title="What is conduit shrink?">
@@ -196,7 +346,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   modeButton: {
-    minHeight: 56,
+    minHeight: 48,
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',

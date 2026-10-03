@@ -1,5 +1,13 @@
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
-import { useState, type ComponentProps, type ComponentType, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ComponentType,
+  type ReactNode,
+} from 'react';
 import {
   Platform,
   Pressable,
@@ -7,6 +15,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
   type StyleProp,
   type TextStyle,
   type ViewStyle,
@@ -19,10 +28,15 @@ import { SEO_TOOL_SCREENS, type SeoScreenName } from '../../navigation/seoRoutes
 import { SEO_TOOL_PAGES, type SeoToolPageMeta } from '../../seo/toolPages';
 import {
   trackInternalLinkClick,
+  trackSeoToolCopy,
   trackSeoToolFaqExpand,
+  trackSeoToolHistoryRefill,
+  trackSeoToolPreset,
   trackSeoToolUnitChange,
   type SeoToolName,
 } from '../../lib/analytics';
+import { copyToClipboard } from '../../lib/clipboard';
+import type { SeoHistoryEntry } from '../../lib/seoHistory';
 import { formatLength } from '../../lib/units';
 import { useTheme } from '../../theme';
 
@@ -46,7 +60,12 @@ export function SeoPage({ children }: { children: ReactNode }) {
       style={{ backgroundColor: theme.colors.background }}
       contentContainerStyle={[
         styles.page,
-        { padding: theme.spacing.md, gap: theme.spacing.md },
+        {
+          paddingHorizontal: theme.spacing.sm,
+          paddingTop: 12,
+          paddingBottom: theme.spacing.lg,
+          gap: 12,
+        },
       ]}
       keyboardShouldPersistTaps="handled"
     >
@@ -67,7 +86,7 @@ interface SeoHeadingProps {
  */
 export function SeoHeading({ level, children, style }: SeoHeadingProps) {
   const theme = useTheme();
-  const fontSize = level === 1 ? 26 : level === 2 ? 20 : 16;
+  const fontSize = level === 1 ? 24 : level === 2 ? 20 : 16;
   const domProps =
     Platform.OS === 'web'
       ? ({ role: 'heading', 'aria-level': level } as object)
@@ -210,17 +229,180 @@ export function SeoUnitToggle({
   );
 }
 
-export function AngleSelector({
-  value,
-  onChange,
+// v2: preset 接口 —— 每个计算器把自己的「常见场景」配置传进来。
+// 当前只放角度 / 管径快捷项；以后加整场景一键套用（如「4" offset @ 30°」）
+// 只需往 presets 数组里加一条，屏幕无需改动。
+export interface SeoQuickPreset {
+  id: string;
+  /** 主标签，如 `30°` 或 `1/2"`。 */
+  label: string;
+  /** 次要说明，如 `× 2.0` 或 `5" take-up`。 */
+  hint?: string;
+}
+
+/** 大号快捷预设行：一点即填，不用下拉；最小高度 64pt（T62 硬指标）。 */
+export function SeoPresetRow({
+  presets,
+  activeId,
+  onSelect,
+  toolName,
 }: {
-  value: OffsetAngle;
-  onChange: (angle: OffsetAngle) => void;
+  presets: readonly SeoQuickPreset[];
+  activeId: string;
+  onSelect: (preset: SeoQuickPreset) => void;
+  toolName: SeoToolName;
 }) {
   const theme = useTheme();
   return (
+    <View style={styles.presetRow}>
+      {presets.map((preset) => {
+        const selected = preset.id === activeId;
+        return (
+          <Pressable
+            key={preset.id}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            accessibilityLabel={
+              preset.hint ? `${preset.label}, ${preset.hint}` : preset.label
+            }
+            onPress={() => {
+              trackSeoToolPreset(toolName, preset.id);
+              onSelect(preset);
+            }}
+            style={[
+              styles.presetButton,
+              {
+                backgroundColor: selected
+                  ? theme.colors.accent
+                  : theme.colors.background,
+                borderColor: selected
+                  ? theme.colors.accent
+                  : theme.colors.border,
+                borderRadius: theme.radius,
+              },
+            ]}
+          >
+            <Text
+              style={{
+                color: selected
+                  ? theme.colors.onAccent
+                  : theme.colors.textPrimary,
+                fontSize: theme.fontSize.title,
+                fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {preset.label}
+            </Text>
+            {preset.hint ? (
+              <Text
+                style={{
+                  color: selected
+                    ? theme.colors.onAccent
+                    : theme.colors.textSecondary,
+                  fontSize: theme.fontSize.secondary,
+                  fontVariant: ['tabular-nums'],
+                }}
+              >
+                {preset.hint}
+              </Text>
+            ) : null}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** 默认角度预设：30°/45° 是最常用的两个，multiplier 从 constants 派生不硬编。 */
+export const DEFAULT_ANGLE_PRESETS: readonly SeoQuickPreset[] = (
+  [30, 45] as OffsetAngle[]
+).map((angle) => ({
+  id: String(angle),
+  label: `${angle}°`,
+  hint: `× ${OFFSET_CONSTANTS[angle].multiplier}`,
+}));
+
+/**
+ * 角度选择：一行放下全部 6 个标准角度，30°/45° 是更大的预设按钮（带 multiplier 提示），
+ * 一点即填，无需下拉（T62 交互项 1）。390px 宽度下单行不换行。
+ */
+export function AngleSelector({
+  value,
+  onChange,
+  presets = DEFAULT_ANGLE_PRESETS,
+  toolName,
+}: {
+  value: OffsetAngle;
+  onChange: (angle: OffsetAngle) => void;
+  presets?: readonly SeoQuickPreset[];
+  toolName: SeoToolName;
+}) {
+  const theme = useTheme();
+  const presetAngles = new Set(presets.map((preset) => Number(preset.id)));
+  const remainingAngles = OFFSET_ANGLES.filter(
+    (angle) => !presetAngles.has(angle),
+  );
+  return (
     <View style={styles.angleRow}>
-      {OFFSET_ANGLES.map((angle) => {
+      {presets.map((preset) => {
+        const angle = Number(preset.id) as OffsetAngle;
+        const selected = angle === value;
+        return (
+          <Pressable
+            key={preset.id}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            accessibilityLabel={
+              preset.hint ? `${preset.label}, ${preset.hint}` : preset.label
+            }
+            onPress={() => {
+              trackSeoToolPreset(toolName, preset.id);
+              onChange(angle);
+            }}
+            style={[
+              styles.anglePresetButton,
+              {
+                backgroundColor: selected
+                  ? theme.colors.accent
+                  : theme.colors.background,
+                borderColor: selected
+                  ? theme.colors.accent
+                  : theme.colors.border,
+                borderWidth: selected ? 1.5 : StyleSheet.hairlineWidth,
+                borderRadius: theme.radius,
+              },
+            ]}
+          >
+            <Text
+              style={{
+                color: selected
+                  ? theme.colors.onAccent
+                  : theme.colors.textPrimary,
+                fontSize: theme.fontSize.body,
+                fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {preset.label}
+            </Text>
+            {preset.hint ? (
+              <Text
+                style={{
+                  color: selected
+                    ? theme.colors.onAccent
+                    : theme.colors.textSecondary,
+                  fontSize: 11,
+                  fontVariant: ['tabular-nums'],
+                }}
+              >
+                {preset.hint}
+              </Text>
+            ) : null}
+          </Pressable>
+        );
+      })}
+      {remainingAngles.map((angle) => {
         const selected = angle === value;
         return (
           <Pressable
@@ -234,15 +416,19 @@ export function AngleSelector({
                 backgroundColor: selected
                   ? theme.colors.accent
                   : theme.colors.background,
-                borderColor: theme.colors.border,
+                borderColor: selected
+                  ? theme.colors.accent
+                  : theme.colors.border,
                 borderRadius: theme.radius,
               },
             ]}
           >
             <Text
               style={{
-                color: selected ? theme.colors.onAccent : theme.colors.textPrimary,
-                fontSize: theme.fontSize.body,
+                color: selected
+                  ? theme.colors.onAccent
+                  : theme.colors.textPrimary,
+                fontSize: theme.fontSize.secondary,
                 fontWeight: theme.fontWeight.semibold,
                 fontVariant: ['tabular-nums'],
               }}
@@ -305,10 +491,13 @@ export function SeoResultCard({
   headline,
   headlineValue,
   rows,
+  diagram,
 }: {
   headline: string;
   headlineValue?: string;
   rows: readonly { label: string; value: string }[];
+  /** v2 示意区：由调用方传入示意图插槽，缺省渲染空插槽。 */
+  diagram?: ReactNode;
 }) {
   const theme = useTheme();
   return (
@@ -329,7 +518,7 @@ export function SeoResultCard({
       <Text
         style={{
           color: theme.colors.resultText,
-          fontSize: theme.fontSize.result,
+          fontSize: 32,
           fontWeight: theme.fontWeight.semibold,
           fontVariant: ['tabular-nums'],
           marginTop: 2,
@@ -340,7 +529,275 @@ export function SeoResultCard({
       {rows.map((row) => (
         <SeoResultRow key={row.label} label={row.label} value={row.value} />
       ))}
+      {/* v2: 示意图插槽 —— 以后在此挂 SVG 标注 mark 位置。 */}
+      {diagram ?? <SeoDiagramSlot />}
     </View>
+  );
+}
+
+// v2: 示意图插槽 —— 空 div + 注释；加图时把 SVG 传进 SeoResultCard 的 diagram 即可。
+export function SeoDiagramSlot() {
+  return (
+    <View
+      style={styles.diagramSlot}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    />
+  );
+}
+
+/**
+ * 一键复制：把结果拼成一句自然文本（copyResult.ts）复制到剪贴板，
+ * 复制成功在按钮下方显示 2 秒 toast（aria-live polite，屏幕阅读器可读）。
+ */
+export function SeoCopyButton({
+  text,
+  disabled,
+  toolName,
+}: {
+  text: string;
+  disabled?: boolean;
+  toolName: SeoToolName;
+}) {
+  const theme = useTheme();
+  const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+
+  const handlePress = useCallback(async () => {
+    const ok = await copyToClipboard(text);
+    trackSeoToolCopy(toolName, ok);
+    setStatus(ok ? 'copied' : 'failed');
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => setStatus('idle'), 2000);
+  }, [text, toolName]);
+
+  return (
+    <View style={{ gap: theme.spacing.xs }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: Boolean(disabled) }}
+        disabled={disabled}
+        onPress={handlePress}
+        style={({ pressed }) => [
+          styles.secondaryButton,
+          {
+            backgroundColor: theme.colors.card,
+            borderColor: theme.colors.border,
+            borderRadius: theme.radius,
+            opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+          },
+        ]}
+      >
+        <Text
+          style={{
+            color: theme.colors.textPrimary,
+            fontSize: theme.fontSize.body,
+            fontWeight: theme.fontWeight.semibold,
+          }}
+        >
+          Copy result
+        </Text>
+      </Pressable>
+      {status !== 'idle' ? (
+        <Text
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          style={{
+            color:
+              status === 'copied'
+                ? theme.scheme === 'dark'
+                  ? theme.colors.success
+                  : '#15803D'
+                : theme.colors.error,
+            fontSize: theme.fontSize.secondary,
+          }}
+        >
+          {status === 'copied' ? 'Copied to clipboard' : 'Copy failed'}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * 主「计算」按钮：大号电工橙，写死 56pt 高，戴手套也好按。
+ * 它的存在让“输入 → 计算 → 结果”成为一条明确黄金路径，
+ * 也避免边打字边弹结果、混淆“当前结果对应哪组输入”。
+ */
+export function SeoCalculateButton({
+  onPress,
+  label = 'Calculate',
+}: {
+  onPress: () => void;
+  label?: string;
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.calculateButton,
+        {
+          backgroundColor: theme.colors.accent,
+          borderRadius: theme.radius,
+          opacity: pressed ? 0.85 : 1,
+        },
+      ]}
+    >
+      <Text
+        style={{
+          color: theme.colors.onAccent,
+          fontSize: theme.fontSize.body,
+          fontWeight: theme.fontWeight.semibold,
+        }}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * 最近计算历史：一点回填全部输入。条目最小高度 48pt（戴手套可点）。
+ * 无历史时不渲染（不占首屏）。
+ */
+export function SeoHistoryList({
+  entries,
+  loaded,
+  onRefill,
+  onClear,
+  toolName,
+}: {
+  entries: readonly SeoHistoryEntry[];
+  loaded: boolean;
+  onRefill: (entry: SeoHistoryEntry) => void;
+  onClear: () => void;
+  toolName: SeoToolName;
+}) {
+  const theme = useTheme();
+  if (!loaded || entries.length === 0) {
+    return null;
+  }
+  return (
+    <SeoSection title="Recent calculations">
+      <View style={{ gap: theme.spacing.xs }}>
+        {entries.map((entry) => (
+          <Pressable
+            key={entry.id}
+            accessibilityRole="button"
+            accessibilityLabel={`Refill: ${entry.inputSummary}, ${entry.summary}`}
+            onPress={() => {
+              trackSeoToolHistoryRefill(toolName);
+              onRefill(entry);
+            }}
+            style={({ pressed }) => [
+              styles.historyRow,
+              {
+                backgroundColor: pressed
+                  ? theme.colors.background
+                  : theme.colors.card,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius,
+              },
+            ]}
+          >
+            <Text
+              style={{
+                color: theme.colors.textPrimary,
+                fontSize: theme.fontSize.body,
+                fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {entry.inputSummary}
+            </Text>
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {entry.summary}
+            </Text>
+          </Pressable>
+        ))}
+        <Pressable
+          accessibilityRole="button"
+          onPress={onClear}
+          style={styles.historyClear}
+        >
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+              textDecorationLine: 'underline',
+            }}
+          >
+            Clear history
+          </Text>
+        </Pressable>
+      </View>
+    </SeoSection>
+  );
+}
+
+/**
+ * 计算器黄金路径布局：
+ * - 竖屏：输入卡 → 计算按钮 → 结果卡，单列紧凑排列，390px 首屏一屏可见；
+ * - 横屏（宽 ≥ 600 且宽 > 高）：输入与结果左右分栏，避免挤成一团。
+ */
+export function SeoCalcLayout({
+  input,
+  result,
+}: {
+  input: ReactNode;
+  result: ReactNode;
+}) {
+  const theme = useTheme();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height && width >= 600;
+  if (!landscape) {
+    return (
+    <>
+      {input}
+      {result}
+    </>
+    );
+  }
+  return (
+    <View style={[styles.calcRow, { gap: theme.spacing.md }]}>
+      <View style={{ flex: 1, gap: theme.spacing.sm }}>{input}</View>
+      <View style={{ flex: 1 }}>{result}</View>
+    </View>
+  );
+}
+
+/** 3 秒引导：一句操作提示，降低首次打开的理解成本。 */
+export function SeoHint({ children }: { children: ReactNode }) {
+  const theme = useTheme();
+  return (
+    <Text
+      style={{
+        color: theme.colors.textSecondary,
+        fontSize: theme.fontSize.secondary,
+        lineHeight: 20,
+      }}
+    >
+      {children}
+    </Text>
   );
 }
 
@@ -629,36 +1086,93 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   segmentItem: {
-    minHeight: 56,
+    minHeight: 48,
     paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   angleRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
   },
   angleButton: {
-    minHeight: 56,
-    minWidth: 56,
+    minHeight: 48,
+    minWidth: 48,
     flexGrow: 1,
-    flexBasis: '28%',
+    flexBasis: '12%',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
   },
+  anglePresetButton: {
+    minHeight: 64,
+    minWidth: 52,
+    flexGrow: 1,
+    flexBasis: '16%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    gap: 2,
+  },
+  presetRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  presetButton: {
+    minHeight: 64,
+    flexGrow: 1,
+    flexBasis: '40%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 2,
+  },
+  calculateButton: {
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  secondaryButton: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  calcRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  historyRow: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 2,
+  },
+  historyClear: {
+    minHeight: 48,
+    justifyContent: 'center',
+  },
+  diagramSlot: {
+    width: '100%',
+    height: 0,
+  },
   resultCard: {
     width: '100%',
-    padding: 16,
+    padding: 12,
   },
   resultRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: 8,
+    paddingTop: 8,
   },
   table: {
     borderWidth: StyleSheet.hairlineWidth,
@@ -681,7 +1195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    minHeight: 44,
+    minHeight: 48,
   },
   faqQuestionText: {
     flex: 1,
