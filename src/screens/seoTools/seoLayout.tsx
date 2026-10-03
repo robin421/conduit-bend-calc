@@ -149,7 +149,7 @@ export function SeoFooter() {
 
 /**
  * 计算器切换条（仅桌面端 >=600pt 渲染）：把所有工具页串成一个整体。
- * - 平铺换行；当前页橙色下划线 + 橙色文字，其余灰色；
+ * - 平铺换行；当前页橙色下划线 + 深橙文字，其余灰色；
  * - Web 端渲染真实 <a href> 可抓取。
  * - 移动端（<600pt）改用 WattFlowBrandBar 的汉堡按钮 + CalculatorDrawer。
  */
@@ -164,6 +164,8 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
     const text = (
       <Text
         style={{
+          // 选中态：文字用 accentText（浅色 #C2410C，白底小字号对比度达标）；
+          // 下划线仍保持品牌橙 theme.colors.accent。未选中：灰色。
           color: active ? theme.colors.accentText : theme.colors.textSecondary,
           fontSize: theme.fontSize.secondary,
           fontWeight: active
@@ -174,28 +176,43 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
         {t(item.labelKey)}
       </Text>
     );
-    const chipStyle = [
-      styles.switcherChip,
-      { borderBottomColor: active ? theme.colors.accent : 'transparent' },
-    ];
 
+    // 选中下划线：绝对定位的 3px 橙条，不占布局、不用 border，
+    // 因此不会产生任何凹陷/内阴影观感。未选中项无下划线。
+    const underline = active ? (
+      <View
+        style={[
+          styles.switcherUnderline,
+          { backgroundColor: theme.colors.accent },
+        ]}
+      />
+    ) : null;
+
+    // 所有条目统一用同一个 flex 容器做垂直居中。之前 Web 未选中项直接把
+    // chip 样式挂在 <a>（RNW Text，display:inline→block）上，alignItems /
+    // justifyContent 失效、文字贴顶，导致选中项相对其他项“下沉”。
     if (active) {
       return (
-        <View key={item.key} style={chipStyle} accessibilityState={{ selected: true }}>
+        <View
+          key={item.key}
+          style={styles.switcherChip}
+          accessibilityState={{ selected: true }}
+        >
           {text}
+          {underline}
         </View>
       );
     }
     if (Platform.OS === 'web') {
       return (
-        <AnchorText
-          key={item.key}
-          href={item.path}
-          onPress={() => trackInternalLinkClick(activeKey, item.key)}
-          style={chipStyle}
-        >
-          {text}
-        </AnchorText>
+        <View key={item.key} style={styles.switcherChip}>
+          <AnchorText
+            href={item.path}
+            onPress={() => trackInternalLinkClick(activeKey, item.key)}
+          >
+            {text}
+          </AnchorText>
+        </View>
       );
     }
     return (
@@ -206,7 +223,7 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
           trackInternalLinkClick(activeKey, item.key);
           navigation.navigate(item.screen);
         }}
-        style={chipStyle}
+        style={styles.switcherChip}
       >
         {text}
       </Pressable>
@@ -1502,7 +1519,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    borderBottomWidth: 2,
+    // 扁平：无背景、无边框、无阴影；选中态仅靠下方绝对定位的橙条区分。
+    position: 'relative',
+  },
+  switcherUnderline: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 3,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
   },
   workspace: {
     borderWidth: StyleSheet.hairlineWidth,
