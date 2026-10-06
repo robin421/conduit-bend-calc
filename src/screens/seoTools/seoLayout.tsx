@@ -34,7 +34,7 @@ import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../../constant
 import type { OffsetAngle } from '../../constants';
 import type { RootStackParamList } from '../../navigation/rootStack';
 import { SEO_TOOL_SCREENS, type SeoScreenName } from '../../navigation/seoRoutes';
-import { SEO_TOOL_PAGES, getSeoToolPageCopy, type SeoToolKey, type SeoToolPageMeta } from '../../seo/toolPages';
+import { buildRelatedLinks, getRelatedCalculatorsTitle, type SeoToolKey, type SeoToolPageMeta } from '../../seo/toolPages';
 import {
   trackInternalLinkClick,
   trackSeoToolCopy,
@@ -1321,8 +1321,13 @@ export function SeoLink({
   );
 }
 
-/** 底部内链网：其余 3 个工具页 + 首页。 */
-export function MoreFreeTools({
+/**
+ * 底部内链网（L2 SEO 内容，位于计算器与 FAQ 之后）：
+ * 其余 3 个工具页（各带一句 tagline 说明）+ 回首页 `/` 链接。
+ * 链接数据与静态 shell 同源（src/seo/toolPages.ts 的 buildRelatedLinks），
+ * 默认折叠之外、永远在计算器下方，不影响首屏 390×844 预算。
+ */
+export function RelatedCalculators({
   current,
   toolName,
 }: {
@@ -1330,25 +1335,36 @@ export function MoreFreeTools({
   toolName: SeoToolName;
 }) {
   const theme = useTheme();
-  const { lang, t } = useI18n();
-  const others = SEO_TOOL_PAGES.filter((page) => page.key !== current.key);
+  const { lang } = useI18n();
+  const links = buildRelatedLinks(current, lang);
   return (
-    <SeoSection title={t('common.moreFreeTools')}>
-      <View style={[{ gap: theme.spacing.xs }]}>
-        {others.map((page) => (
-          <SeoLink
-            key={page.key}
-            path={page.path}
-            screen={SEO_TOOL_SCREENS[page.key]}
-            trackFrom={toolName}
-            trackTo={page.key}
-          >
-            {getSeoToolPageCopy(page, lang).h1}
-          </SeoLink>
+    <SeoSection title={getRelatedCalculatorsTitle(lang)}>
+      <View style={{ gap: theme.spacing.md }}>
+        {links.map((link) => (
+          <View key={link.key} style={{ gap: 2 }}>
+            <SeoLink
+              path={link.path}
+              screen={
+                link.key === 'home' ? 'RootTabs' : SEO_TOOL_SCREENS[link.key]
+              }
+              trackFrom={toolName}
+              trackTo={link.key}
+            >
+              {link.title}
+            </SeoLink>
+            {link.description ? (
+              <Text
+                style={{
+                  color: theme.colors.textSecondary,
+                  fontSize: theme.fontSize.secondary,
+                  lineHeight: 20,
+                }}
+              >
+                {link.description}
+              </Text>
+            ) : null}
+          </View>
         ))}
-        <SeoLink path="/" screen="RootTabs" trackFrom={toolName} trackTo="home">
-          {t('nav.allCalculatorsLink')}
-        </SeoLink>
       </View>
     </SeoSection>
   );

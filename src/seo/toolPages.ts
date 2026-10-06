@@ -14,6 +14,7 @@
  * 的 withBrandTitle）、description ≤ 160 字符（见 toolPages.test.ts 断言）。
  */
 
+import { en, es } from '../i18n/dictionaries.ts';
 import { DEFAULT_LANG, type Lang } from '../i18n/lang.ts';
 
 export type SeoToolKey = 'offset' | 'saddle4' | 'shrink' | 'stubUp';
@@ -79,11 +80,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'Mark the two bends 12" apart: 6" offset height × 2.0 multiplier = 12". Put the bender arrow on the first mark, bend to 30°, flip the bender 180°, line the arrow up with the second mark, and bend back to 30°.',
       },
-      {
-        question: 'What angle should I use for a conduit offset?',
-        answer:
-          'Use 30° for everyday offsets: the multiplier is a clean 2.0 and shrink stays moderate. Go shallower (22.5°, 15°, or 10°) on long runs where shrink must be minimized, and steeper (45° or 60°) when you must clear a tall obstacle in a short distance.',
-      },
     ],
     es: {
       title: 'Calculadora de desplazamiento de conducto | WattFlow',
@@ -112,11 +108,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿A qué distancia se marcan 6 pulgadas de desplazamiento a 30 grados?',
           answer:
             'Marca los dos dobleces a 12" de distancia: altura de 6" × multiplicador 2,0 = 12". Coloca la flecha de la dobladora en la primera marca, dobla a 30°, gira la dobladora 180°, alinea la flecha con la segunda marca y vuelve a doblar a 30°.',
-        },
-        {
-          question: '¿Qué ángulo debo usar para un desplazamiento de conducto?',
-          answer:
-            'Usa 30° para los desplazamientos del día a día: el multiplicador es un 2,0 limpio y la contracción se mantiene moderada. Usa ángulos más suaves (22,5°, 15° o 10°) en tramos largos donde haya que minimizar la contracción, y más pronunciados (45° o 60°) cuando debas salvar un obstáculo alto en poca distancia.',
         },
       ],
     },
@@ -152,11 +143,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'Use a 4-point saddle when the obstruction is wider than roughly 6", when the conduit must run flat across the top of the obstacle, or when you need the run to stay in the same plane on both sides. A 3-point saddle is faster for small, narrow obstacles.',
       },
-      {
-        question: 'What angle do you use for a 4-point saddle?',
-        answer:
-          '30° is the standard choice because the multiplier is exactly 2.0, which keeps the mark spacing simple. Use all four bends at the same angle so both ends of the run stay parallel. Shallower angles such as 22.5° reduce shrink on long runs.',
-      },
     ],
     es: {
       title: 'Calculadora de silla de 4 puntos | WattFlow',
@@ -185,11 +171,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿Cuándo debo usar una silla de 4 puntos en lugar de una de 3 puntos?',
           answer:
             'Usa una silla de 4 puntos cuando el obstáculo sea más ancho de unos 6", cuando el conducto deba recorrer plano la parte superior del obstáculo o cuando necesites que el tramo quede en el mismo plano a ambos lados. Una silla de 3 puntos es más rápida para obstáculos pequeños y estrechos.',
-        },
-        {
-          question: '¿Qué ángulo se usa para una silla de 4 puntos?',
-          answer:
-            '30° es la opción estándar porque el multiplicador es exactamente 2,0, lo que mantiene sencilla la distancia entre marcas. Usa los cuatro dobleces con el mismo ángulo para que ambos extremos del tramo queden paralelos. Ángulos más suaves, como 22,5°, reducen la contracción en tramos largos.',
         },
       ],
     },
@@ -225,11 +206,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'A 4-point saddle does, because it is two offsets in one bend: each offset shrinks independently, so the total is double a single offset. A 3-point saddle has its own smaller center shrink. Enter the saddle mode in the calculator to get the right total instead of guessing.',
       },
-      {
-        question: 'Is shrink the same as take-up?',
-        answer:
-          'No. Shrink is run length eaten by the bend geometry. Take-up is how far the bend starts before the arrow mark on the bender, which is why you mark a stub-up at target height minus take-up. Both shorten the finished run, but they are different numbers used for different steps.',
-      },
     ],
     es: {
       title: 'Calculadora de contracción de conducto | WattFlow',
@@ -258,11 +234,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿Una silla contrae el conducto dos veces?',
           answer:
             'Una silla de 4 puntos sí, porque son dos desplazamientos en un mismo doblez: cada desplazamiento contrae de forma independiente, así que el total es el doble de un solo desplazamiento. Una silla de 3 puntos tiene su propia contracción central, más pequeña. Elige el modo silla en la calculadora para obtener el total correcto en lugar de estimarlo.',
-        },
-        {
-          question: '¿La contracción es lo mismo que la recogida?',
-          answer:
-            'No. La contracción es la longitud de tramo que consume la geometría del doblez. La recogida es cuánto antes de la marca empieza el doblez en la dobladora, por eso una subida se marca a la altura objetivo menos la recogida. Ambas acortan el tramo terminado, pero son números distintos que se usan en pasos distintos.',
         },
       ],
     },
@@ -298,11 +269,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'A consistent error on every stub usually means the take-up value you used does not match your bender, or the arrow drifted off the mark while bending. Bend one test stub on scrap, measure the error, and apply that correction. If the conduit slipped, keep firmer foot pressure so the arrow stays on the mark.',
       },
-      {
-        question: 'Where do you measure stub up height?',
-        answer:
-          'Measure from the end of the conduit to the back (outside) of the 90° bend — not the inside corner. That is the same reference the take-up number is defined against, so the mark math stays consistent.',
-      },
     ],
     es: {
       title: 'Calculadora de subida de 90° — Recogida | WattFlow',
@@ -331,11 +297,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿Por qué mi subida queda demasiado corta o demasiado alta?',
           answer:
             'Un error constante en todas las subidas suele significar que la recogida que usaste no coincide con tu dobladora, o que la flecha se movió de la marca al doblar. Dobla una subida de prueba en un recorte, mide el error y aplica esa corrección. Si el conducto resbaló, presiona con más firmeza con el pie para que la flecha no se mueva de la marca.',
-        },
-        {
-          question: '¿Dónde se mide la altura de una subida?',
-          answer:
-            'Mide desde el extremo del conducto hasta la parte posterior (exterior) del codo de 90°, no la esquina interior. Esa es la misma referencia con la que se define la recogida, así que la cuenta de la marca se mantiene coherente.',
         },
       ],
     },
@@ -379,6 +340,60 @@ export const SEO_TOOL_PATHS: readonly string[] = SEO_TOOL_PAGES.map((p) => p.pat
  */
 export function isSeoToolPath(pathname: string): boolean {
   return findSeoToolPageByPath(pathname) !== null;
+}
+
+/* ---------- 相关计算器内链（屏幕 / 静态 shell 同源） ---------- */
+
+export interface SeoRelatedLink {
+  /** 工具页 key；首页为 'home'。 */
+  key: SeoToolKey | 'home';
+  /** SPA 路由，无尾斜杠（首页为 `/`）。 */
+  path: string;
+  /** 链接标题（工具页用 h1，首页用「全部计算器」文案）。 */
+  title: string;
+  /** 一句话说明（工具页用 tagline）；首页没有说明，为 null。 */
+  description: string | null;
+}
+
+const RELATED_SECTION_TITLE: Record<Lang, string> = {
+  en: 'Related calculators',
+  es: 'Calculadoras relacionadas',
+};
+
+/** 「Related calculators」区块标题（en/es），屏幕与静态 shell 共用。 */
+export function getRelatedCalculatorsTitle(lang: Lang = DEFAULT_LANG): string {
+  return RELATED_SECTION_TITLE[lang];
+}
+
+/**
+ * 生成当前工具页的相关内链：其余 3 个工具页（各带一句话 tagline）
+ * 加一条回首页 `/` 的链接。顺序与 SEO_TOOL_PAGES 一致，天然排除当前页。
+ * 屏幕（RN）与静态 shell 生成器都调用本函数，杜绝文案漂移。
+ */
+export function buildRelatedLinks(
+  page: SeoToolPageMeta,
+  lang: Lang = DEFAULT_LANG,
+): SeoRelatedLink[] {
+  const others: SeoRelatedLink[] = SEO_TOOL_PAGES.filter(
+    (candidate) => candidate.key !== page.key,
+  ).map((candidate) => {
+    const copy = getSeoToolPageCopy(candidate, lang);
+    return {
+      key: candidate.key,
+      path: candidate.path,
+      title: copy.h1,
+      description: copy.tagline,
+    };
+  });
+  return [
+    ...others,
+    {
+      key: 'home',
+      path: '/',
+      title: lang === 'es' ? es['nav.allCalculatorsLink'] : en['nav.allCalculatorsLink'],
+      description: null,
+    },
+  ];
 }
 
 /* ---------- 站点 URL 与 Schema.org JSON-LD ---------- */

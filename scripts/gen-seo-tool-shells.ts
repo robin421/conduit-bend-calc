@@ -20,7 +20,9 @@ import { join } from 'node:path';
 import {
   buildCanonicalUrl,
   buildFaqPageJsonLd,
+  buildRelatedLinks,
   buildWebApplicationJsonLd,
+  getRelatedCalculatorsTitle,
   SEO_SITE_URL,
   SEO_TOOL_PAGES,
 } from '../src/seo/toolPages.ts';
@@ -89,6 +91,47 @@ function injectHead(shell: string, headBlock: string): string {
   return output.replace('</head>', `${headBlock}\n</head>`);
 }
 
+/**
+ * 相关计算器静态内链（爬虫在 hydration 前就能读到）。
+ * 文案与 RN 屏幕同源：`buildRelatedLinks` / `getRelatedCalculatorsTitle`。
+ * 用根相对 href（`/offset/`），不依赖部署域名。
+ */
+function buildRelatedSectionHtml(page: (typeof SEO_TOOL_PAGES)[number]): string {
+  const heading = getRelatedCalculatorsTitle();
+  const items = buildRelatedLinks(page)
+    .map((link) => {
+      const href = link.path === '/' ? '/' : `${link.path}/`;
+      const description = link.description
+        ? ` <span>${escapeHtml(link.description)}</span>`
+        : '';
+      return `<li><a href="${href}">${escapeHtml(link.title)}</a>${description}</li>`;
+    })
+    .join('\n      ');
+  return [
+    '<nav aria-label="Related calculators">',
+    `  <h2>${escapeHtml(heading)}</h2>`,
+    '  <ul>',
+    `      ${items}`,
+    '  </ul>',
+    '</nav>',
+  ].join('\n');
+}
+
+/**
+ * 把相关内链塞进 `#root`：未执行 JS 时可见（离线/noscript 也有内容），
+ * React 首次 render 会替换掉它；文件本身的静态 HTML 始终带有这些链接。
+ * 始终从 base index.html 读取，所以可重复运行不累积。
+ */
+function injectRelatedSection(shell: string, section: string): string {
+  const marker = '<div id="root"></div>';
+  if (!shell.includes(marker)) {
+    throw new Error(
+      'index.html has no empty #root; cannot inject related calculators',
+    );
+  }
+  return shell.replace(marker, `<div id="root">\n${section}\n</div>`);
+}
+
 function main(): void {
   const args = process.argv.slice(2);
   if (args.length < 2) {
@@ -117,7 +160,8 @@ function main(): void {
         `es description too long for ${page.slug}: ${page.es.description.length}`,
       );
     }
-    const html = injectHead(indexHtml, buildHead(page, baseUrl));
+    const shell = injectRelatedSection(indexHtml, buildRelatedSectionHtml(page));
+    const html = injectHead(shell, buildHead(page, baseUrl));
     const outDir = join(exportDir, page.slug);
     mkdirSync(outDir, { recursive: true });
     const outPath = join(outDir, 'index.html');

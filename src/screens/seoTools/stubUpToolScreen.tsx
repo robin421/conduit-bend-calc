@@ -41,7 +41,7 @@ import { useTheme } from '../../theme';
 import {
   FaqSection,
   formatSeoLength,
-  MoreFreeTools,
+  RelatedCalculators,
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
@@ -309,7 +309,7 @@ export default function StubUpToolScreen() {
 
       <FaqSection page={copy} toolName={TOOL_NAME} />
 
-      <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
+      <RelatedCalculators current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>
   );
 }

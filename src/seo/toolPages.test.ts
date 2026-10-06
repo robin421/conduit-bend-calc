@@ -4,8 +4,10 @@ import { test } from 'node:test';
 import {
   buildCanonicalUrl,
   buildFaqPageJsonLd,
+  buildRelatedLinks,
   buildWebApplicationJsonLd,
   findSeoToolPageByPath,
+  getRelatedCalculatorsTitle,
   getSeoToolPage,
   getSeoToolPageCopy,
   isSeoToolPath,
@@ -67,10 +69,10 @@ test('每个页面 h1 含目标关键词、路由唯一且无尾斜杠', () => {
   }
 });
 
-test('每个页面 3–5 条 FAQ，问答均非空', () => {
+test('每个页面 3–4 条 FAQ，问答均非空', () => {
   for (const page of SEO_TOOL_PAGES) {
     assert.ok(
-      page.faqs.length >= 3 && page.faqs.length <= 5,
+      page.faqs.length >= 3 && page.faqs.length <= 4,
       `${page.key} has ${page.faqs.length} faqs`,
     );
     for (const faq of page.faqs) {
@@ -138,6 +140,66 @@ test('FAQPage JSON-LD 每个 FAQ 一个问题节点', () => {
   });
 });
 
+/* ---------------- 相关计算器内链（单一口径） ---------------- */
+
+test('buildRelatedLinks：恰好 4 条（其余 3 页 + 首页）且不自链', () => {
+  for (const page of SEO_TOOL_PAGES) {
+    const links = buildRelatedLinks(page);
+    assert.equal(links.length, 4, `${page.key} link count`);
+    const keys = links.map((link) => link.key);
+    assert.ok(!keys.includes(page.key), `${page.key} links to itself`);
+    assert.equal(keys[keys.length - 1], 'home');
+    for (const link of links) {
+      assert.ok(link.title.trim().length > 0, `${link.key} title empty`);
+      assert.ok(link.path.startsWith('/'), `${link.key} path ${link.path}`);
+      if (link.key === 'home') {
+        assert.equal(link.path, '/');
+        assert.equal(link.description, null);
+      } else {
+        assert.ok(
+          (link.description ?? '').trim().length > 0,
+          `${link.key} description empty`,
+        );
+      }
+    }
+  }
+});
+
+test('related links 覆盖另外 3 个 slug 且指向正确路径', () => {
+  const page = getSeoToolPage('offset');
+  const toolLinks = buildRelatedLinks(page).filter(
+    (link) => link.key !== 'home',
+  );
+  assert.deepEqual(
+    toolLinks.map((link) => link.path).sort(),
+    ['/4-point-saddle', '/shrink', '/stub-up'].sort(),
+  );
+  const first = getSeoToolPage(toolLinks[0].key as SeoToolKey);
+  assert.equal(toolLinks[0].title, first.h1);
+  assert.equal(toolLinks[0].description, first.tagline);
+});
+
+test('es related links 用西语 h1 / tagline，标题随语言切换', () => {
+  const page = getSeoToolPage('shrink');
+  const offset = buildRelatedLinks(page, 'es').find(
+    (link) => link.key === 'offset',
+  );
+  assert.equal(offset?.title, getSeoToolPage('offset').es.h1);
+  assert.equal(offset?.description, getSeoToolPage('offset').es.tagline);
+  assert.equal(getRelatedCalculatorsTitle(), 'Related calculators');
+  assert.equal(getRelatedCalculatorsTitle('es'), 'Calculadoras relacionadas');
+});
+
+test('文案不含 emoji（title / tagline / FAQ / related）', () => {
+  const emoji = /\p{Extended_Pictographic}/u;
+  for (const page of SEO_TOOL_PAGES) {
+    assert.ok(
+      !emoji.test(JSON.stringify(page)),
+      `${page.key} contains emoji`,
+    );
+  }
+});
+
 /* ---------------- 多语言（en 基准 + es） ---------------- */
 
 const ES_KEYWORDS: Record<SeoToolKey, string> = {
@@ -156,7 +218,7 @@ test('es 文案字段齐全：title/description/h1/tagline/faqs', () => {
         `${page.key}.es.${field} missing`,
       );
     }
-    assert.ok(es.faqs.length >= 3 && es.faqs.length <= 5, `${page.key} es faqs`);
+    assert.ok(es.faqs.length >= 3 && es.faqs.length <= 4, `${page.key} es faqs`);
     for (const faq of es.faqs) {
       assert.ok(faq.question.trim().length > 0);
       assert.ok(faq.answer.trim().length > 0);

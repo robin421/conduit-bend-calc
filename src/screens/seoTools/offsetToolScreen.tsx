@@ -48,7 +48,7 @@ import {
   DEFAULT_ANGLE_PRESETS,
   FaqSection,
   formatSeoLength,
-  MoreFreeTools,
+  RelatedCalculators,
   OffsetMultiplierTable,
   SeoCalculateButton,
   SeoCalcLayout,
@@ -348,7 +348,7 @@ export default function OffsetToolScreen() {
 
       <FaqSection page={copy} toolName={TOOL_NAME} />
 
-      <MoreFreeTools current={PAGE} toolName={TOOL_NAME} />
+      <RelatedCalculators current={PAGE} toolName={TOOL_NAME} />
     </SeoPage>
   );
 }
