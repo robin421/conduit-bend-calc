@@ -5,6 +5,12 @@ import { useTheme } from '../theme';
 
 const OPTIONS: readonly ConduitType[] = ['EMT', 'Rigid'];
 
+/** 显示文案：Rigid 与 IMC 共用同一组弯管机规格（厂家文档），故合称。 */
+const OPTION_LABELS: Record<ConduitType, string> = {
+  EMT: 'EMT',
+  Rigid: 'Rigid / IMC',
+};
+
 interface ConduitTypeToggleProps {
   value: ConduitType;
   onChange: (value: ConduitType) => void;
@@ -46,7 +52,7 @@ export default function ConduitTypeToggle({
               key={option}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              accessibilityLabel={`Conduit material ${option}`}
+              accessibilityLabel={`Conduit material ${OPTION_LABELS[option]}`}
               onPress={() => onChange(option)}
               android_ripple={{ color: theme.colors.border }}
               style={[
@@ -67,7 +73,7 @@ export default function ConduitTypeToggle({
                   fontWeight: theme.fontWeight.semibold,
                 }}
               >
-                {option}
+                {OPTION_LABELS[option]}
               </Text>
             </Pressable>
           );
