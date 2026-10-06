@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """Inject SEO tags into expo web export + write robots.txt/sitemap.xml.
 
-Usage: python3 scripts/inject-web-seo.py dist/ https://bendcalc.wattflow.net [--ga4-id G-XXXX]
+Usage: python3 scripts/inject-web-seo.py dist/ https://bendcalc.wattflow.net [--ga4-id G-XXXX] [--cf-beacon TOKEN]
 
 The GA4 measurement ID can also come from the GA4_ID env var. When no ID is
 given, no GA4 code is emitted (pages stay analytics-free). The ID is never
 hardcoded; it is injected at build time only.
+
+The Cloudflare Web Analytics beacon token can also come from the
+CF_BEACON_TOKEN env var. It must be 32 lowercase hex characters. When no token
+is given, no beacon is emitted. The token is never hardcoded; it is injected at
+build time only.
 Replaces the old /tmp/seo-inject.py (deleted during /tmp cleanup 2026-09-29).
 """
 import html
@@ -39,8 +44,33 @@ def resolve_ga4_id(argv: list) -> str | None:
     return None
 
 
+def resolve_cf_beacon(argv: list) -> str | None:
+    for i, a in enumerate(argv):
+        if a == "--cf-beacon" and i + 1 < len(argv):
+            candidate = argv[i + 1].strip()
+            break
+    else:
+        candidate = (os.environ.get("CF_BEACON_TOKEN") or "").strip()
+    if candidate and re.fullmatch(r"[0-9a-f]{32}", candidate):
+        return candidate
+    if candidate:
+        print(f"warning: ignoring malformed CF beacon token {candidate!r}", file=sys.stderr)
+    return None
+
+
 GA4_ID = resolve_ga4_id(sys.argv)
 GA4_SNIPPET = GA4_TEMPLATE.format(gid=html.escape(GA4_ID)) if GA4_ID else ""
+
+CF_BEACON_TEMPLATE = (
+    "<script defer src='https://static.cloudflareinsights.com/beacon.min.js' "
+    "data-cf-beacon='{{\"token\": \"{token}\"}}'></script>"
+)
+CF_BEACON_TOKEN = resolve_cf_beacon(sys.argv)
+CF_BEACON_SNIPPET = (
+    CF_BEACON_TEMPLATE.format(token=html.escape(CF_BEACON_TOKEN))
+    if CF_BEACON_TOKEN
+    else ""
+)
 
 TITLE = "Conduit Bend Calc \u2014 Free Conduit Bending Calculator | WattFlow"
 DESC = (
@@ -78,6 +108,8 @@ content = re.sub(r"<title>.*?</title>", "", content, flags=re.DOTALL)
 content = content.replace("</head>", SEO_BLOCK + "</head>", 1)
 if GA4_SNIPPET:
     content = content.replace("</head>", GA4_SNIPPET + "</head>", 1)
+if CF_BEACON_SNIPPET and "cloudflareinsights.com/beacon" not in content:
+    content = content.replace("</head>", CF_BEACON_SNIPPET + "</head>", 1)
 
 with open(index_path, "w") as f:
     f.write(content)
@@ -92,6 +124,16 @@ if GA4_SNIPPET and os.path.exists(privacy_path):
         with open(privacy_path, "w") as f:
             f.write(privacy)
         print("GA4 injected into privacy.html")
+
+# 隐私页同样注入 Cloudflare Web Analytics beacon（与 GA4 同样的注入位置和幂等标记）。
+if CF_BEACON_SNIPPET and os.path.exists(privacy_path):
+    with open(privacy_path) as f:
+        privacy = f.read()
+    if "cloudflareinsights.com/beacon" not in privacy:
+        privacy = privacy.replace("</head>", CF_BEACON_SNIPPET + "</head>", 1)
+        with open(privacy_path, "w") as f:
+            f.write(privacy)
+        print("CF beacon injected into privacy.html")
 
 # 4 个 SPA 工具页 shell（scripts/gen-seo-tool-shells.ts 生成 dist/<slug>/index.html）。
 # 若 shell 在 GA4 注入之后生成（见 CHANGELOG 构建顺序），它们已经继承了 index.html
@@ -110,6 +152,21 @@ if GA4_SNIPPET:
         with open(shell_path, "w") as f:
             f.write(shell)
         print(f"GA4 injected into {slug}/index.html")
+
+# 4 个 SPA 工具页 shell 同样补齐 Cloudflare Web Analytics beacon。
+if CF_BEACON_SNIPPET:
+    for slug in TOOL_SHELL_SLUGS:
+        shell_path = f"{EXPORT_DIR}/{slug}/index.html"
+        if not os.path.exists(shell_path):
+            continue
+        with open(shell_path) as f:
+            shell = f.read()
+        if "cloudflareinsights.com/beacon" in shell:
+            continue
+        shell = shell.replace("</head>", CF_BEACON_SNIPPET + "</head>", 1)
+        with open(shell_path, "w") as f:
+            f.write(shell)
+        print(f"CF beacon injected into {slug}/index.html")
 
 with open(f"{EXPORT_DIR}/robots.txt", "w") as f:
     f.write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n")
@@ -168,6 +225,9 @@ with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:
 
 print(f"SEO injected: title={TITLE[:40]}... base={BASE_URL}")
 print(f"GA4: {'on (' + GA4_ID + ')' if GA4_ID else 'off'}")
+print(
+    f"CF beacon: {'on (' + CF_BEACON_TOKEN + ')' if CF_BEACON_TOKEN else 'off'}"
+)
 
 
 # ---------------------------------------------------------------------------
