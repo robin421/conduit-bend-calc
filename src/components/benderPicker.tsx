@@ -11,6 +11,7 @@ import {
   listPresetModels,
 } from '../calculators/geometry/benderSpecs';
 import type { BenderBrand, BenderSpec } from '../constants';
+import { matchesConduitType, type ConduitType } from '../lib/profile';
 import { useProAccess } from '../lib/proStore';
 import { useTheme } from '../theme';
 import BigButton from './bigButton';
@@ -29,10 +30,47 @@ interface BenderPickerProps {
   allowCustom?: boolean;
   /** 锁定态点击 "Unlock Pro" 时回调（通常导航到 Paywall）。 */
   onUnlockPro?: () => void;
+  /** 仅展示指定导体材质（EMT / Rigid）的预设；缺省展示全部。 */
+  conduitTypeFilter?: ConduitType;
 }
 
 function formatNum(value: number): string {
   return String(Math.round(value * 10000) / 10000);
+}
+
+/** 该品牌下属于指定材质的型号（材质缺省时返回全部）。 */
+function modelsFor(brand: BenderBrand, filter?: ConduitType): string[] {
+  const all = listPresetModels(brand);
+  if (!filter) {
+    return all;
+  }
+  return all.filter((model) =>
+    listPresetConduits(brand, model).some((conduit) =>
+      matchesConduitType(conduit, filter),
+    ),
+  );
+}
+
+/** 某品牌 + 型号下属于指定材质的管径（材质缺省时返回全部）。 */
+function conduitsFor(
+  brand: BenderBrand,
+  model: string,
+  filter?: ConduitType,
+): string[] {
+  const all = listPresetConduits(brand, model);
+  if (!filter) {
+    return all;
+  }
+  return all.filter((conduit) => matchesConduitType(conduit, filter));
+}
+
+/** 至少有一个指定材质预设的品牌（材质缺省时返回全部）。 */
+function brandsFor(filter?: ConduitType): BenderBrand[] {
+  const all = listPresetBrands();
+  if (!filter) {
+    return all;
+  }
+  return all.filter((brand) => modelsFor(brand, filter).length > 0);
 }
 
 function SectionLabel({ children }: { children: string }) {
@@ -58,6 +96,7 @@ export default function BenderPicker({
   onCreateCustom,
   allowCustom = true,
   onUnlockPro,
+  conduitTypeFilter,
 }: BenderPickerProps) {
   const theme = useTheme();
   const { access } = useProAccess();
@@ -76,17 +115,22 @@ export default function BenderPicker({
   }, [spec.brand]);
 
   const brand: BenderBrand = activeBrand;
+  const presetBrands = brandsFor(conduitTypeFilter);
+  const presetModels = modelsFor(brand, conduitTypeFilter);
+  const presetConduits = conduitsFor(brand, spec.model, conduitTypeFilter);
   const brands: BenderBrand[] = allowCustom
-    ? [...listPresetBrands(), 'Custom']
-    : [...listPresetBrands()];
+    ? [...presetBrands, 'Custom']
+    : [...presetBrands];
 
   const handleBrandPress = (next: BenderBrand) => {
     setActiveBrand(next);
     if (next === 'Custom') {
       return;
     }
-    const model = listPresetModels(next)[0];
-    const conduit = model ? listPresetConduits(next, model)[0] : undefined;
+    const model = modelsFor(next, conduitTypeFilter)[0];
+    const conduit = model
+      ? conduitsFor(next, model, conduitTypeFilter)[0]
+      : undefined;
     const found =
       model && conduit ? findBenderSpec(next, model, conduit) : undefined;
     if (found) {
@@ -98,7 +142,7 @@ export default function BenderPicker({
     if (brand === 'Custom') {
       return;
     }
-    const conduit = listPresetConduits(brand, model)[0];
+    const conduit = conduitsFor(brand, model, conduitTypeFilter)[0];
     const found = conduit ? findBenderSpec(brand, model, conduit) : undefined;
     if (found) {
       onChange(found);
@@ -207,7 +251,7 @@ export default function BenderPicker({
         <View>
           <SectionLabel>Model</SectionLabel>
           <View style={styles.row}>
-            {listPresetModels(brand).map((model) => (
+            {presetModels.map((model) => (
               <BigButton
                 key={model}
                 title={model}
@@ -220,7 +264,7 @@ export default function BenderPicker({
           </View>
           <SectionLabel>Conduit size</SectionLabel>
           <View style={styles.row}>
-            {listPresetConduits(brand, spec.model).map((conduit) => (
+            {presetConduits.map((conduit) => (
               <BigButton
                 key={conduit}
                 title={conduit}

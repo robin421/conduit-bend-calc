@@ -99,6 +99,9 @@ export interface BenderProfile {
   datum: 'arrow' | 'hook';
 }
 
+/** 导体材质类型：目前 UI 只区分 EMT / Rigid（预设表中仅这两种）。 */
+export type ConduitType = 'EMT' | 'Rigid';
+
 /** 解析 `1/2" EMT` / `1-1/4" Rigid` 为规格 + 类型。 */
 export function parseConduitLabel(conduit: string): {
   conduitSize: string;
@@ -112,6 +115,21 @@ export function parseConduitLabel(conduit: string): {
     conduitSize: (match[1] ?? '').trim(),
     conduitType: (match[2] ?? '').trim(),
   };
+}
+
+/** 管径标签是否属于指定导体材质（大小写不敏感）。 */
+export function matchesConduitType(conduit: string, conduitType: string): boolean {
+  return (
+    parseConduitLabel(conduit).conduitType.trim().toLowerCase() ===
+    conduitType.trim().toLowerCase()
+  );
+}
+
+/** 预设表中第一个属于指定材质的规格；找不到返回 undefined。 */
+export function findFirstSpecByConduitType(
+  conduitType: string,
+): BenderSpec | undefined {
+  return BENDER_SPECS.find((spec) => matchesConduitType(spec.conduit, conduitType));
 }
 
 /** 档案对应的计算引擎规格键，用于历史回填 / 选中匹配。 */

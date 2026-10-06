@@ -12,10 +12,11 @@ import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'Bender'>;
 
-export default function BenderScreen({ navigation }: Props) {
+export default function BenderScreen({ route, navigation }: Props) {
   const theme = useTheme();
   const { spec, setSpec } = useBenderSpec();
   const { specs: customSpecs, addSpec } = useCustomSpecs();
+  const conduitTypeFilter = route.params?.conduitTypeFilter;
 
   const handleChange = useCallback(
     (next: BenderSpec) => {
@@ -51,6 +52,7 @@ export default function BenderScreen({ navigation }: Props) {
           onChange={handleChange}
           onCreateCustom={handleCreateCustom}
           onUnlockPro={() => navigation.navigate('Paywall')}
+          conduitTypeFilter={conduitTypeFilter}
         />
       </Card>
     </ScrollView>

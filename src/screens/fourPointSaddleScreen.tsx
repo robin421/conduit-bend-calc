@@ -11,6 +11,7 @@ import BenderRow from '../components/benderRow';
 import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import ConduitTypeToggle from '../components/conduitTypeToggle';
 import BendDiagram from '../components/bendDiagram';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
@@ -23,7 +24,12 @@ import { fourPointSaddleFeasibility } from '../calculators/feasibility/feasibili
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
 import { useProAccess } from '../lib/proStore';
-import { applyCalibrationOffset } from '../lib/profile';
+import {
+  applyCalibrationOffset,
+  findFirstSpecByConduitType,
+  matchesConduitType,
+} from '../lib/profile';
+import type { ConduitType } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { useCalculatorAnalytics } from '../lib/analytics';
@@ -64,6 +70,9 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
   const { activeProfile } = useBenderProfiles();
   const { access } = useProAccess();
 
+  /** 屏幕级导体材质（本屏默认 EMT），约束弯管机规格选择。 */
+  const [conduitType, setConduitType] = useState<ConduitType>('EMT');
+
   const setHeightText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, heightText: text })),
     [setMemory],
@@ -78,6 +87,21 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
   );
 
   const backfill = route.params?.backfill;
+
+  // 材质与当前全局规格不一致时，自动切到该材质的第一个预设规格。
+  useEffect(() => {
+    if (matchesConduitType(spec.conduit, conduitType)) {
+      return;
+    }
+    const next = findFirstSpecByConduitType(conduitType);
+    if (next) {
+      setSpec(next);
+    }
+  }, [conduitType, spec, setSpec]);
+
+  const handleConduitTypeChange = useCallback((next: ConduitType) => {
+    setConduitType(next);
+  }, []);
 
   useEffect(() => {
     if (!backfill) {
@@ -194,7 +218,18 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.sm }}>
-        <BenderRow spec={spec} onPress={() => navigation.navigate('Bender')} />
+        <BenderRow
+          spec={spec}
+          onPress={() =>
+            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+          }
+        />
+        <View style={{ marginTop: theme.spacing.sm }}>
+          <ConduitTypeToggle
+            value={conduitType}
+            onChange={handleConduitTypeChange}
+          />
+        </View>
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Obstacle height"

@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import WattFlowBrandBar from '../components/wattflowBrandBar';
 import type { HistoryParams } from '../lib/historyStore';
+import type { ConduitType } from '../lib/profile';
 import BenderScreen from '../screens/benderScreen';
 import CalcHomeScreen from '../screens/calcHomeScreen';
 import CalculatorPlaceholderScreen from '../screens/calculatorPlaceholderScreen';
@@ -26,7 +27,7 @@ export type CalcStackParamList = {
   Kicked90: { backfill?: HistoryParams } | undefined;
   GuidedCalibration: undefined;
   Calibration: undefined;
-  Bender: undefined;
+  Bender: { conduitTypeFilter?: ConduitType } | undefined;
   Paywall: undefined;
   Placeholder: { title: string };
 };
