@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Platform,
   StyleProp,
   StyleSheet,
   Text,
@@ -152,6 +153,62 @@ function reduceFractionalParts(parts: FractionalParts): FractionalParts {
   };
 }
 
+/** FractionBox 的 props：一行分数数字框的最小接口。 */
+interface FractionBoxProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  onBlur: () => void;
+  placeholder: string;
+  placeholderTextColor: string;
+  accessibilityLabel: string;
+  style: StyleProp<ViewStyle>;
+}
+
+/**
+ * 分数英寸的三个数字框之一。
+ *
+ * iOS Safari 只认 DOM 上真实的 `pattern="[0-9]*"`（配合 inputmode）才会弹数字键盘；
+ * react-native-web 0.19 的 TextInput 只转发白名单 prop，`pattern` 会被 `pickProps` 丢弃，
+ * 所以在 web 端挂载后直接写 DOM 属性。native 端 inputMode/keyboardType 已足够。
+ */
+function FractionBox({
+  value,
+  onChangeText,
+  onBlur,
+  placeholder,
+  placeholderTextColor,
+  accessibilityLabel,
+  style,
+}: FractionBoxProps) {
+  const inputRef = useRef<TextInput>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      return;
+    }
+    const node = inputRef.current as unknown as {
+      setAttribute?: (name: string, value: string) => void;
+    } | null;
+    node?.setAttribute?.('pattern', '[0-9]*');
+  }, []);
+
+  return (
+    <TextInput
+      ref={inputRef}
+      value={value}
+      onChangeText={onChangeText}
+      onBlur={onBlur}
+      placeholder={placeholder}
+      placeholderTextColor={placeholderTextColor}
+      keyboardType="numeric"
+      inputMode="numeric"
+      autoCapitalize="none"
+      autoCorrect={false}
+      accessibilityLabel={accessibilityLabel}
+      style={style}
+    />
+  );
+}
+
 export default function ImperialInput({
   label,
   value,
@@ -298,6 +355,12 @@ export default function ImperialInput({
     paddingHorizontal: theme.spacing.md,
   };
 
+  // 分数框更窄，横向内边距收紧到 sm，避免 3 框在 390px 屏幕上溢出。
+  const fractionInputStyle = {
+    ...inputStyle,
+    paddingHorizontal: theme.spacing.sm,
+  };
+
   return (
     <View style={style}>
       <Text
@@ -315,31 +378,23 @@ export default function ImperialInput({
           style={[styles.fractionRow, { gap: theme.spacing.sm }]}
           accessibilityRole="none"
         >
-          <TextInput
+          <FractionBox
             value={parts.whole}
             onChangeText={(text) => updateFractionalPart('whole', text)}
             onBlur={handleFractionalBlur}
             placeholder={resolvedPlaceholder}
             placeholderTextColor={theme.colors.textSecondary}
-            keyboardType="numeric"
-            inputMode="numeric"
-            autoCapitalize="none"
-            autoCorrect={false}
             accessibilityLabel={`${label} inches`}
-            style={[styles.input, styles.fractionWhole, inputStyle]}
+            style={[styles.input, styles.fractionWhole, fractionInputStyle]}
           />
-          <TextInput
+          <FractionBox
             value={parts.numerator}
             onChangeText={(text) => updateFractionalPart('numerator', text)}
             onBlur={handleFractionalBlur}
             placeholder="0"
             placeholderTextColor={theme.colors.textSecondary}
-            keyboardType="numeric"
-            inputMode="numeric"
-            autoCapitalize="none"
-            autoCorrect={false}
             accessibilityLabel={`${label} numerator`}
-            style={[styles.input, styles.fractionPart, inputStyle]}
+            style={[styles.input, styles.fractionPart, fractionInputStyle]}
           />
           <Text
             style={[
@@ -352,18 +407,14 @@ export default function ImperialInput({
           >
             /
           </Text>
-          <TextInput
+          <FractionBox
             value={parts.denominator}
             onChangeText={(text) => updateFractionalPart('denominator', text)}
             onBlur={handleFractionalBlur}
             placeholder="16"
             placeholderTextColor={theme.colors.textSecondary}
-            keyboardType="numeric"
-            inputMode="numeric"
-            autoCapitalize="none"
-            autoCorrect={false}
             accessibilityLabel={`${label} denominator`}
-            style={[styles.input, styles.fractionPart, inputStyle]}
+            style={[styles.input, styles.fractionPart, fractionInputStyle]}
           />
         </View>
       ) : (
@@ -405,12 +456,17 @@ const styles = StyleSheet.create({
   fractionRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
   },
   fractionWhole: {
     flex: 1.4,
+    minWidth: 0,
+    flexShrink: 1,
   },
   fractionPart: {
     flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
   },
   slash: {
     fontVariant: ['tabular-nums'],
