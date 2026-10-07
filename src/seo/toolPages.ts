@@ -55,7 +55,7 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
     slug: 'offset',
     title: 'Conduit Offset Calculator — Spacing & Shrink | WattFlow',
     description:
-      'Free conduit offset calculator: enter offset height and bend angle to get mark spacing, shrink, and both mark locations in fractions, decimals, or metric.',
+      'Free conduit offset calculator for EMT and rigid conduit: enter offset height and bend angle to get mark spacing, shrink, and both mark locations.',
     h1: 'Conduit Offset Calculator',
     tagline:
       'An offset uses two equal bends in opposite directions to move conduit around an obstacle or up to box height. Enter the height and angle to mark it correctly the first time.',
@@ -80,11 +80,16 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'Mark the two bends 12" apart: 6" offset height × 2.0 multiplier = 12". Put the bender arrow on the first mark, bend to 30°, flip the bender 180°, line the arrow up with the second mark, and bend back to 30°.',
       },
+      {
+        question: 'Does this calculator work for Rigid conduit (not just EMT)?',
+        answer:
+          'Yes. The offset calculator is bender-aware and supports both EMT and Rigid/IMC conduit, so spacing and shrink follow the material you select. Choose the material toggle and the marks match the bender spec in your hand.',
+      },
     ],
     es: {
       title: 'Calculadora de desplazamiento de conducto | WattFlow',
       description:
-        'Calculadora gratuita de desplazamientos de conducto: introduce la altura y el ángulo para obtener la distancia entre marcas, la contracción y las dos marcas.',
+        'Calculadora gratuita de desplazamientos para EMT y conducto rígido: introduce la altura y el ángulo para obtener las marcas, la distancia y la contracción.',
       h1: 'Calculadora de desplazamiento de conducto',
       tagline:
         'Un desplazamiento usa dos dobleces iguales en direcciones opuestas para llevar el conducto alrededor de un obstáculo o hasta la altura de una caja. Introduce la altura y el ángulo para marcar bien a la primera.',
@@ -108,6 +113,11 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿A qué distancia se marcan 6 pulgadas de desplazamiento a 30 grados?',
           answer:
             'Marca los dos dobleces a 12" de distancia: altura de 6" × multiplicador 2,0 = 12". Coloca la flecha de la dobladora en la primera marca, dobla a 30°, gira la dobladora 180°, alinea la flecha con la segunda marca y vuelve a doblar a 30°.',
+        },
+        {
+          question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
+          answer:
+            'Sí. La calculadora de desplazamientos tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la distancia entre marcas y la contracción siguen el material que elijas. Cambia el selector de material y los resultados coincidirán con las especificaciones de la dobladora que tienes en la mano.',
         },
       ],
     },
@@ -143,6 +153,11 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'Use a 4-point saddle when the obstruction is wider than roughly 6", when the conduit must run flat across the top of the obstacle, or when you need the run to stay in the same plane on both sides. A 3-point saddle is faster for small, narrow obstacles.',
       },
+      {
+        question: 'Does this calculator work for Rigid conduit (not just EMT)?',
+        answer:
+          'Yes. The 4-point saddle calculator is bender-aware and supports both EMT and Rigid/IMC conduit, so the four marks and total shrink follow the material you select. Choose the material toggle and the layout matches the bender spec in your hand.',
+      },
     ],
     es: {
       title: 'Calculadora de silla de 4 puntos | WattFlow',
@@ -172,6 +187,11 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           answer:
             'Usa una silla de 4 puntos cuando el obstáculo sea más ancho de unos 6", cuando el conducto deba recorrer plano la parte superior del obstáculo o cuando necesites que el tramo quede en el mismo plano a ambos lados. Una silla de 3 puntos es más rápida para obstáculos pequeños y estrechos.',
         },
+        {
+          question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
+          answer:
+            'Sí. La calculadora de silla de 4 puntos tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que las cuatro marcas y la contracción total siguen el material que elijas. Cambia el selector de material y el trazado coincidirá con las especificaciones de la dobladora que tienes en la mano.',
+        },
       ],
     },
   },
@@ -181,7 +201,7 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
     slug: 'shrink',
     title: 'Conduit Shrink Calculator — Offset & Saddle | WattFlow',
     description:
-      'Free conduit shrink calculator: find how much length each offset or saddle bend eats by height and angle. Offset and saddle modes, fractional or metric output.',
+      'Free conduit shrink calculator for EMT and rigid conduit: find the length each offset or saddle bend eats by height and angle. Fractional or metric output.',
     h1: 'Conduit Shrink Calculator',
     tagline:
       'Shrink is the length a bend eats from your conduit run. Enter the height and angle to find how much shorter the finished run becomes before you cut.',
@@ -206,11 +226,16 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'A 4-point saddle does, because it is two offsets in one bend: each offset shrinks independently, so the total is double a single offset. A 3-point saddle has its own smaller center shrink. Enter the saddle mode in the calculator to get the right total instead of guessing.',
       },
+      {
+        question: 'Does this calculator work for Rigid conduit (not just EMT)?',
+        answer:
+          'Yes. The shrink calculator is bender-aware and supports both EMT and Rigid/IMC conduit, so the length each bend eats follows the material you select. Choose the material toggle and the numbers match the bender spec in your hand.',
+      },
     ],
     es: {
       title: 'Calculadora de contracción de conducto | WattFlow',
       description:
-        'Calculadora gratuita de contracción: averigua cuánta longitud consume cada desplazamiento o silla según la altura y el ángulo. Modos desplazamiento y silla.',
+        'Calculadora gratuita de contracción para EMT y conducto rígido: averigua cuánta longitud consume cada desplazamiento o silla según la altura y el ángulo.',
       h1: 'Calculadora de contracción de conducto',
       tagline:
         'La contracción es la longitud que un doblez le quita a tu tramo de conducto. Introduce la altura y el ángulo para saber cuánto más corto queda el tramo antes de cortar.',
@@ -235,6 +260,11 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           answer:
             'Una silla de 4 puntos sí, porque son dos desplazamientos en un mismo doblez: cada desplazamiento contrae de forma independiente, así que el total es el doble de un solo desplazamiento. Una silla de 3 puntos tiene su propia contracción central, más pequeña. Elige el modo silla en la calculadora para obtener el total correcto en lugar de estimarlo.',
         },
+        {
+          question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
+          answer:
+            'Sí. La calculadora de contracción tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la longitud que consume cada doblez sigue el material que elijas. Cambia el selector de material y los valores coincidirán con las especificaciones de la dobladora que tienes en la mano.',
+        },
       ],
     },
   },
@@ -244,7 +274,7 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
     slug: 'stub-up',
     title: '90 Degree Stub Up Calculator — Take-Up Chart | WattFlow',
     description:
-      'Free 90 degree stub up calculator: enter stub height and conduit size to get the mark location, plus the take-up chart for 1/2", 3/4", and 1" EMT.',
+      'Free 90 degree stub up calculator for EMT and rigid conduit: enter stub height to get the mark location, plus the take-up chart for 1/2", 3/4", and 1".',
     h1: '90° Stub-Up Calculator',
     tagline:
       'A stub-up is a single 90° bend that brings conduit to an exact height out of a slab or into a panel. Mark at the target height minus the bender take-up.',
@@ -269,11 +299,16 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
         answer:
           'A consistent error on every stub usually means the take-up value you used does not match your bender, or the arrow drifted off the mark while bending. Bend one test stub on scrap, measure the error, and apply that correction. If the conduit slipped, keep firmer foot pressure so the arrow stays on the mark.',
       },
+      {
+        question: 'Does this calculator work for Rigid conduit (not just EMT)?',
+        answer:
+          'Yes. The stub-up calculator is bender-aware and supports both EMT and Rigid/IMC conduit, so the take-up and mark location follow the material you select. Choose the material toggle and the stub matches the bender spec in your hand.',
+      },
     ],
     es: {
       title: 'Calculadora de subida de 90° — Recogida | WattFlow',
       description:
-        'Calculadora gratuita de subida de 90°: introduce la altura y el tamaño del conducto para obtener la marca y la tabla de recogida para EMT de 1/2", 3/4" y 1".',
+        'Calculadora gratuita de subida de 90° para EMT y conducto rígido: introduce la altura y el tamaño para obtener la marca y la tabla de recogida.',
       h1: 'Calculadora de subida a 90°',
       tagline:
         'Una subida de 90° es un solo doblez que lleva el conducto a una altura exacta desde una losa o hasta un panel. Marca a la altura objetivo menos la recogida de la dobladora.',
@@ -297,6 +332,11 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿Por qué mi subida queda demasiado corta o demasiado alta?',
           answer:
             'Un error constante en todas las subidas suele significar que la recogida que usaste no coincide con tu dobladora, o que la flecha se movió de la marca al doblar. Dobla una subida de prueba en un recorte, mide el error y aplica esa corrección. Si el conducto resbaló, presiona con más firmeza con el pie para que la flecha no se mueva de la marca.',
+        },
+        {
+          question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
+          answer:
+            'Sí. La calculadora de subida de 90° tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la recogida y la marca siguen el material que elijas. Cambia el selector de material y la subida coincidirá con las especificaciones de la dobladora que tienes en la mano.',
         },
       ],
     },

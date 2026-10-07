@@ -69,10 +69,10 @@ test('每个页面 h1 含目标关键词、路由唯一且无尾斜杠', () => {
   }
 });
 
-test('每个页面 3–4 条 FAQ，问答均非空', () => {
+test('每个页面 3–5 条 FAQ，问答均非空', () => {
   for (const page of SEO_TOOL_PAGES) {
     assert.ok(
-      page.faqs.length >= 3 && page.faqs.length <= 4,
+      page.faqs.length >= 3 && page.faqs.length <= 5,
       `${page.key} has ${page.faqs.length} faqs`,
     );
     for (const faq of page.faqs) {
@@ -218,7 +218,7 @@ test('es 文案字段齐全：title/description/h1/tagline/faqs', () => {
         `${page.key}.es.${field} missing`,
       );
     }
-    assert.ok(es.faqs.length >= 3 && es.faqs.length <= 4, `${page.key} es faqs`);
+    assert.ok(es.faqs.length >= 3 && es.faqs.length <= 5, `${page.key} es faqs`);
     for (const faq of es.faqs) {
       assert.ok(faq.question.trim().length > 0);
       assert.ok(faq.answer.trim().length > 0);
