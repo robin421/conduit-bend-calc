@@ -51,6 +51,7 @@ export const en = {
   'input.invalidMetric': 'Invalid format, e.g. 150 mm',
   'input.invalidImperial': 'Invalid format, e.g. 2\' 3-1/2"',
   'input.mustBePositive': 'Must be greater than 0',
+  'input.denominatorZero': 'Denominator cannot be 0',
   'input.placeholderMetric': 'e.g. 150 mm',
   'input.placeholderImperial': 'e.g. 2\' 3-1/2"',
 
@@ -151,6 +152,7 @@ export const es: Record<TranslationKey, string> = {
   'input.invalidMetric': 'Formato no válido, p. ej. 150 mm',
   'input.invalidImperial': 'Formato no válido, p. ej. 2\' 3-1/2"',
   'input.mustBePositive': 'Debe ser mayor que 0',
+  'input.denominatorZero': 'El denominador no puede ser 0',
   'input.placeholderMetric': 'p. ej. 150 mm',
   'input.placeholderImperial': 'p. ej. 2\' 3-1/2"',
 
