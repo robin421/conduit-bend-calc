@@ -169,7 +169,9 @@ interface FractionBoxProps {
  *
  * iOS Safari 只认 DOM 上真实的 `pattern="[0-9]*"`（配合 inputmode）才会弹数字键盘；
  * react-native-web 0.19 的 TextInput 只转发白名单 prop，`pattern` 会被 `pickProps` 丢弃，
- * 所以在 web 端挂载后直接写 DOM 属性。native 端 inputMode/keyboardType 已足够。
+ * 所以在 web 端节点挂载时同步写 DOM 属性（callback ref，不用 useEffect，
+ * 避免「挂载后才补 pattern」导致首帧点击仍弹全键盘的竞态）。native 端
+ * inputMode/keyboardType 已足够。
  */
 function FractionBox({
   value,
@@ -180,20 +182,15 @@ function FractionBox({
   accessibilityLabel,
   style,
 }: FractionBoxProps) {
-  const inputRef = useRef<TextInput>(null);
-  useEffect(() => {
-    if (Platform.OS !== 'web') {
-      return;
-    }
-    const node = inputRef.current as unknown as {
-      setAttribute?: (name: string, value: string) => void;
-    } | null;
-    node?.setAttribute?.('pattern', '[0-9]*');
-  }, []);
-
   return (
     <TextInput
-      ref={inputRef}
+      ref={(node) => {
+        if (node && Platform.OS === 'web') {
+          (
+            node as unknown as { setAttribute?: (name: string, value: string) => void }
+          ).setAttribute?.('pattern', '[0-9]*');
+        }
+      }}
       value={value}
       onChangeText={onChangeText}
       onBlur={onBlur}
