@@ -51,6 +51,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <meta name="twitter:description" content="{desc}" />
 <style>{css}</style>
 {ga4}
+{faq_jsonld}
 </head>
 <body>
 <h1>{h1}</h1>
@@ -1117,10 +1118,315 @@ the bender's actual bend radius.</p>
 ]
 
 
+# Batch 5 (2026-10-08): AI-search Q&A pages ("ChatGPT sent me" traffic).
+# Topics de-duplicated against existing 18 pages: offset multiplier, gain, and
+# deduct have no dedicated page; conduit-shrink-calculator already covers the
+# shrink chart (replaced by bending-mistakes); 3-point-saddle-calculator already
+# covers the saddle layout (replaced by bend-radius).
+PAGES += [
+    dict(
+        slug="offset-multiplier-guide",
+        title="Conduit Offset Multiplier Chart \u2014 How to Use It",
+        desc="Offset multiplier chart for conduit bending: what the multiplier is, "
+             "the cosecant table for 10\u00b0\u201360\u00b0, and how to get mark spacing right.",
+        h1="Conduit Offset Multiplier",
+        cta_label="Open the free offset bend calculator",
+        body="""
+<p>Every offset bend starts with one number: the <em>multiplier</em>. It converts the
+height of your offset into the distance between your two bend marks. Get the
+multiplier right and the offset lands exactly where the box is; get it wrong and
+nothing lines up.</p>
+
+<h2>What the multiplier actually is</h2>
+<p>The multiplier is the cosecant of the bend angle &mdash; 1 divided by the sine.
+You do not need to do the trigonometry on the job: the table below covers every
+angle a hand bender makes. Find your angle, multiply the offset height by the
+number in the table, and that is the distance between your marks.</p>
+
+<h2>Offset multiplier and shrink chart</h2>
+<table>
+<tr><th>Bend angle</th><th>Multiplier</th><th>Shrink per inch of offset</th></tr>
+<tr><td>10&deg;</td><td>6.0</td><td>1/16&quot;</td></tr>
+<tr><td>15&deg;</td><td>3.9</td><td>1/8&quot;</td></tr>
+<tr><td>22.5&deg;</td><td>2.6</td><td>3/16&quot;</td></tr>
+<tr><td>30&deg;</td><td>2.0</td><td>1/4&quot;</td></tr>
+<tr><td>45&deg;</td><td>1.4</td><td>3/8&quot;</td></tr>
+<tr><td>60&deg;</td><td>1.2</td><td>1/2&quot;</td></tr>
+</table>
+
+<h2>How to use it</h2>
+<p>Say you need a 4&quot; offset and you are bending 30&deg; kicks. The multiplier for
+30&deg; is 2.0, so your marks go 4 &times; 2.0 = <strong>8&quot; apart</strong>.
+Make the first bend on the first mark, flip the bender, and make the second bend
+on the second mark in the opposite direction. The conduit shifts 4&quot; and keeps
+running parallel.</p>
+<p>Do not forget the third column: the bend also <em>eats</em> conduit. That same
+4&quot; offset at 30&deg; shrinks the run by 4 &times; 1/4&quot; = 1&quot;. If the
+conduit has to land on a coupling or a box at an exact point, add that inch back
+when you measure.</p>
+
+<h2>Why 30&deg; is the shop favorite</h2>
+<p>Thirty degrees is the default offset angle for a reason: the multiplier is
+exactly 2.0, so the math is doubling &mdash; no chart needed. The shrink is a
+manageable 1/4&quot; per inch, and the bend is shallow enough to pull wire through
+easily. Save the 45&deg; and 60&deg; kicks for when space is tight.</p>
+""",
+        faqs=[
+            ("What is the multiplier for a 30-degree offset?",
+             "Exactly 2.0. A 6-inch offset at 30 degrees needs 12 inches between bend marks &mdash; just double the height."),
+            ("What if my bend angle is not in the chart?",
+             "The multiplier is 1 divided by the sine of the angle. For odd angles, skip the hand math: the free offset calculator gives you mark spacing and shrink directly."),
+            ("Does the multiplier change between EMT and rigid conduit?",
+             "No. The multiplier is pure geometry &mdash; it depends only on the bend angle, not the material. What changes between EMT and rigid is take-up and springback, not the multiplier."),
+            ("What is the difference between multiplier and shrink?",
+             "The multiplier sets the distance <em>between</em> your bend marks. Shrink is the conduit length the bend consumes along the run. You need both: multiplier to place the marks, shrink to cut the pipe to the right length."),
+        ],
+    ),
+    dict(
+        slug="conduit-bending-gain",
+        title="Gain in Conduit Bending \u2014 What It Is & Why It Matters",
+        desc="What gain means in conduit bending, why a 90\u00b0 bend \u201csaves\u201d conduit, "
+             "and how gain differs from take-up and deduct.",
+        h1="Gain in Conduit Bending",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>Bend a 90&deg; in a piece of conduit and something odd happens: the bent pipe is
+<em>shorter</em> than the two straight legs measured to the corner. That missing
+length is <strong>gain</strong> &mdash; the conduit the bend &ldquo;saves&rdquo; by
+taking the curved path instead of going all the way to the corner and back.</p>
+
+<h2>Where gain comes from</h2>
+<p>Picture the corner of a 90&deg; bend. If the conduit ran straight to the corner
+point and then turned, it would travel the full length of both legs. The real
+pipe cuts the corner along an arc, and an arc is shorter than two straights.
+The difference &mdash; legs minus developed length &mdash; is the gain. For a
+90&deg; bend it equals about <strong>0.4292 &times; the centerline bend
+radius</strong>, so a bigger bender radius means more gain.</p>
+
+<h2>Why it matters on the job</h2>
+<p>Gain matters whenever you cut conduit to an exact length before bending. A
+stub-up that has to land at a precise height, a 90&deg; that must hit a coupling
+dead on &mdash; if you cut to the corner-to-corner measurement, the finished bend
+comes up short by exactly the gain. On a run with several 90s the error stacks:
+four 90s at 1&quot; of gain each puts you 4&quot; off at the end of the run.</p>
+<p>The fix is simple once you know the number: subtract the gain from your cut
+length. Measure twice, subtract the gain, bend once.</p>
+
+<h2>Gain vs take-up vs deduct</h2>
+<p>These three get mixed up constantly. <strong>Take-up</strong> tells you
+<em>where to mark</em>: it is the distance from the end of the pipe to the bend
+mark, and it is a fixed number for your bender head. <strong>Gain</strong> tells
+you <em>how much shorter to cut</em>: it is the length the bend saves. The
+<strong>deduct</strong> is what you actually subtract from your measurement on
+the job &mdash; for a 90&deg; stub it equals the take-up. Mark with take-up, cut
+with gain in mind.</p>
+""",
+        faqs=[
+            ("How do I calculate gain for a 90-degree bend?",
+             "Multiply 0.4292 by the centerline bend radius of your bender. A head with a 6-inch radius gives about 2.6 inches of gain. Most electricians look it up once for their bender and reuse the number."),
+            ("Is gain the same as take-up?",
+             "No. Take-up locates the bend mark &mdash; it is a fixed property of the bender head. Gain is the conduit length the bend saves, and it shortens your cut. Confusing the two is one of the most common bending mistakes."),
+            ("Do offsets and saddles have gain?",
+             "Every bend has gain, because every bend cuts a corner. It matters most on 90s where the full 0.4292 &times; radius applies; on shallow offsets the gain is small enough that most electricians ignore it."),
+            ("Why do gain charts disagree between manufacturers?",
+             "Gain depends on the bender's actual bend radius, and every head is slightly different. If precision matters, bend one test 90&deg;, measure the real gain, and use your number instead of the chart's."),
+        ],
+    ),
+    dict(
+        slug="conduit-bending-deduct",
+        title="Deduct in Conduit Bending \u2014 What It Is & How to Use It",
+        desc="Conduit bending deduct explained: what to subtract from your measurement, "
+             "when take-up is the deduct, and a worked stub-up example.",
+        h1="Deduct in Conduit Bending",
+        cta_label="Open the free stub-up calculator",
+        body="""
+<p>The <strong>deduct</strong> is the number you subtract from your measurement to
+find where to put the bend mark. It is the most practical of the three bending
+numbers: the multiplier tells you spacing, shrink tells you what the bend eats,
+and deduct tells you where to draw the line.</p>
+
+<h2>The 90&deg; stub: deduct equals take-up</h2>
+<p>For a 90&deg; stub-up, the deduct <em>is</em> the take-up &mdash; the fixed
+number for your bender head. The classic example every apprentice learns: 1/2&quot;
+EMT in a standard hand bender has a 5&quot; take-up. Want a 30&quot; stub? Subtract
+5&quot;, mark at 25&quot;, put the bender's arrow on the mark, and bend to
+90&deg;. The stub comes out at 30&quot;.</p>
+<p>Forget the deduct and the stub lands 5&quot; too tall &mdash; exactly the
+take-up you failed to subtract. There is no partial credit in stub heights.</p>
+
+<h2>Where to find your take-up</h2>
+<p>Take-up is stamped on most bender heads or printed in the manufacturer's chart,
+listed by conduit size. It is an <em>empirical</em> number &mdash; measured from
+the actual head, not derived from a formula &mdash; so use the number for
+<em>your</em> bender, not a generic table. Two heads for the same size EMT can
+differ.</p>
+
+<h2>Deduct on other bends</h2>
+<p>On offsets, the &ldquo;deduct&rdquo; idea is replaced by shrink: you do not
+subtract a fixed number, you add the shrink back to your cut length. On saddles,
+you lay out from the centerline of the obstruction instead of deducting. The
+deduct rule &mdash; subtract take-up, mark, bend &mdash; belongs to 90s.</p>
+""",
+        faqs=[
+            ("Is the deduct always equal to the take-up?",
+             "For 90-degree stub-ups, yes &mdash; the deduct is the take-up. For offsets, use shrink instead of a deduct; for saddles, lay out from the obstruction's centerline."),
+            ("Where is the take-up marked on my bender?",
+             "Most hand benders stamp it on the head near the size markings, or print it in the manufacturer's bending chart. If yours is worn off, bend a test 90&deg; and measure &mdash; take-up is the distance from the pipe end to the arrow mark."),
+            ("What happens if I forget the deduct?",
+             "The stub comes out too tall by exactly the deduct &mdash; 5 inches too tall on 1/2-inch EMT with a standard bender. Cut a new piece; you cannot unbend the extra height."),
+            ("Does the deduct apply to saddle bends?",
+             "No. Saddles are laid out from the center of the obstruction with the center bend first, then the side bends. Deduct is a 90-degree-stub concept."),
+        ],
+    ),
+    dict(
+        slug="conduit-bending-mistakes",
+        title="5 Conduit Bending Mistakes That Waste Pipe (and Time)",
+        desc="The five conduit bending mistakes electricians make most \u2014 wrong multiplier, "
+             "forgotten shrink, take-up confusion \u2014 and how to avoid each one.",
+        h1="5 Conduit Bending Mistakes That Waste Pipe",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>Ask a journeyman what wastes the most pipe and you will hear the same list.
+These five mistakes account for nearly every ruined stick of EMT &mdash; and
+every one of them is avoidable once you know what to watch for.</p>
+
+<h2>1. Wrong multiplier for the angle</h2>
+<p>The classic: bending 30&deg; kicks but spacing the marks with the 45&deg;
+multiplier (1.4 instead of 2.0). The offset comes out shallow and short. Tape the
+multiplier chart inside your bender handle or let the app do it &mdash; never
+guess.</p>
+
+<h2>2. Forgetting shrink</h2>
+<p>The offset lands at the right height but an inch short of the box, because the
+bend ate conduit you did not account for. A 6&quot; offset at 30&deg; eats
+1-1/2&quot;. Always add shrink back when the landing point matters.</p>
+
+<h2>3. Bending on the wrong mark</h2>
+<p>Hand benders have an arrow, a star, and a teardrop &mdash; each for a different
+bend. The arrow is for 90&deg; stubs and offsets; the star is for back-to-back
+bends. Bend an offset on the star and every mark is off by inches. When in doubt,
+check the head: the symbols are stamped next to their names.</p>
+
+<h2>4. Ignoring springback on rigid</h2>
+<p>EMT stays where you bend it. Rigid springs back, so a bend that looked like
+30&deg; relaxes to 27&deg; overnight &mdash; and your saddle no longer clears the
+pipe. Bend rigid a touch past the target angle and let it settle, or measure
+after it rests.</p>
+
+<h2>5. Measuring to the wrong point</h2>
+<p>Hook the tape on the end of the conduit for every measurement, and remember
+that gain shortens 90s. A run measured corner-to-corner with four 90s and no
+gain allowance ends up inches short at the far end. Developed length &mdash;
+what the tape reads <em>along the pipe</em> &mdash; is the only measurement that
+counts.</p>
+""",
+        faqs=[
+            ("Why does my offset always come up short of the box?",
+             "Almost always forgotten shrink. A 6-inch offset at 30 degrees eats 1-1/2 inches of conduit. Add the shrink to your cut length and the landing point stops moving."),
+            ("Why is my 90-degree stub too tall?",
+             "You forgot the deduct. Subtract the take-up &mdash; 5 inches for 1/2-inch EMT on a standard bender &mdash; from the stub height before marking."),
+            ("Can I fix a bend that went wrong?",
+             "Small corrections on EMT are fine &mdash; work it gently back with the bender. Rigid punishes re-bending: it flattens or cracks instead of improving. When rigid goes wrong, cut a new piece."),
+            ("How do I stop wasting pipe while learning?",
+             "Bend one test piece per new angle and keep it as a reference. Mark it with the angle, multiplier, and measured shrink. A five-dollar stick of EMT as a template beats a spool of mistakes."),
+        ],
+    ),
+    dict(
+        slug="conduit-bend-radius",
+        title="Conduit Bend Radius \u2014 Minimums & Why They Matter",
+        desc="Conduit bend radius explained: what centerline radius means, NEC minimum "
+             "radius for EMT sizes, and why tight bends fail inspection.",
+        h1="Conduit Bend Radius",
+        cta_label="Open the free conduit bending calculator",
+        body="""
+<p>The <strong>bend radius</strong> is the radius of the arc the conduit follows
+through a bend, measured to the pipe's centerline. It is set by your bender head
+&mdash; you cannot bend tighter than the head allows &mdash; and the electrical
+code sets a floor below which you must not go.</p>
+
+<h2>Why radius matters</h2>
+<p>Two reasons. First, wire pulling: a tight bend kinks conductors and makes the
+pull brutal; a generous sweep pulls easy. Second, the code: the NEC limits how
+tight any bend can be, because crushed or flattened conduit at a bend is a
+failed installation. Bend tighter than the minimum and the inspector fails it
+&mdash; even if the wire pulled fine.</p>
+
+<h2>NEC minimum bend radius for EMT</h2>
+<p>NEC Chapter 9, Table 2 gives the minimum radius to the centerline for each
+size. For EMT:</p>
+<table>
+<tr><th>EMT size</th><th>Minimum radius</th></tr>
+<tr><td>1/2&quot;</td><td>4&quot;</td></tr>
+<tr><td>3/4&quot;</td><td>4-1/2&quot;</td></tr>
+<tr><td>1&quot;</td><td>5-3/4&quot;</td></tr>
+<tr><td>1-1/4&quot;</td><td>7-1/4&quot;</td></tr>
+<tr><td>1-1/2&quot;</td><td>8-1/4&quot;</td></tr>
+<tr><td>2&quot;</td><td>9-1/2&quot;</td></tr>
+</table>
+<p>Standard hand benders are built around these minimums, which is why a 1/2&quot;
+hand bender and a 2&quot; hydraulic bender feel like different tools &mdash; the
+geometry scales with the pipe.</p>
+
+<h2>Radius, gain, and your layout</h2>
+<p>Radius is not just a code number: it drives gain. A 90&deg; bend saves about
+0.4292 &times; the centerline radius, so the same 90&deg; on a big-radius bender
+eats more layout length than on a tight one. When precision matters &mdash;
+panel stubs, long runs &mdash; use the radius of <em>your</em> bender, not a
+generic chart.</p>
+""",
+        faqs=[
+            ("What happens if a bend is tighter than the minimum radius?",
+             "The conduit can flatten or kink, conductors get damaged during the pull, and the installation fails inspection. The NEC minimums in Chapter 9, Table 2 are hard limits, not suggestions."),
+            ("Is the minimum radius the same for rigid conduit?",
+             "No &mdash; NEC Table 2 lists each raceway type separately, and rigid (RMC) has larger minimums than EMT for the same trade size. Always check the row for the raceway you are actually bending."),
+            ("Can I bend a larger radius than the minimum?",
+             "Yes, and for long wire pulls you should. Sweeps and large-radius bends pull dramatically easier than minimum-radius 90s. The code sets a floor, not a ceiling."),
+            ("How does bend radius relate to gain?",
+             "Directly: gain on a 90&deg; bend is about 0.4292 times the centerline radius. A bigger radius means more gain, which means more to subtract from your cut length."),
+        ],
+    ),
+]
+
 def word_count(html_body: str) -> int:
     text = re.sub(r"<[^>]+>", " ", html_body)
     text = html.unescape(text)
     return len([w for w in text.split() if w.strip()])
+
+
+def render_faq_section(faqs: list) -> str:
+    """Visible FAQ section appended after the body. Answers are HTML."""
+    if not faqs:
+        return ""
+    parts = ["\n<h2>Frequently asked questions</h2>"]
+    for q, a in faqs:
+        parts.append(f"<h3>{html.escape(q)}</h3>\n<p>{a}</p>")
+    return "\n".join(parts) + "\n"
+
+
+def render_faq_jsonld(faqs: list) -> str:
+    """FAQPage JSON-LD for <head>. Answers are plain text (tags stripped)."""
+    if not faqs:
+        return ""
+    import json
+    entities = []
+    for q, a in faqs:
+        text = html.unescape(re.sub(r"<[^>]+>", " ", a))
+        text = re.sub(r"\s+", " ", text).strip()
+        entities.append({
+            "@type": "Question",
+            "name": q,
+            "acceptedAnswer": {"@type": "Answer", "text": text},
+        })
+    data = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": entities,
+    }
+    return (
+        '<script type="application/ld+json">\n'
+        + json.dumps(data, ensure_ascii=False, indent=2)
+        + "\n</script>"
+    )
 
 
 def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
@@ -1131,18 +1437,21 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         if p["slug"] != page["slug"]
     )
     ga4 = GA4_TEMPLATE.format(gid=html.escape(ga4_id)) if ga4_id else ""
+    faqs = page.get("faqs", [])
+    body = page["body"] + render_faq_section(faqs)
     return PAGE_TEMPLATE.format(
         title=html.escape(page["title"]),
         desc=html.escape(page["desc"]),
         canonical=canonical,
         h1=html.escape(page["h1"]),
-        body=page["body"],
+        body=body,
         cta_label=html.escape(page["cta_label"]),
         base=base_url,
         play_url=PLAY_URL,
         related=related,
         css=BASE_CSS.strip(),
         ga4=ga4,
+        faq_jsonld=render_faq_jsonld(faqs),
     )
 
 
@@ -1164,7 +1473,8 @@ def main() -> None:
     for page in PAGES:
         assert len(page["title"]) <= 60, f"title too long ({len(page['title'])}): {page['slug']}"
         assert len(page["desc"]) <= 160, f"desc too long ({len(page['desc'])}): {page['slug']}"
-        wc = word_count(page["body"])
+        full_body = page["body"] + render_faq_section(page.get("faqs", []))
+        wc = word_count(full_body)
         assert 250 <= wc <= 650, f"word count {wc} out of range: {page['slug']}"
 
     for page in PAGES:

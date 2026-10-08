@@ -94,7 +94,9 @@ SEO_BLOCK = f"""<title>{html.escape(TITLE)}</title>
 <meta property="og:title" content="{html.escape(TITLE)}" />
 <meta property="og:description" content="{html.escape(DESC)}" />
 <meta property="og:url" content="{BASE_URL}/" />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content="{BASE_URL}/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="{BASE_URL}/og-image.png" />
 <meta name="twitter:title" content="{html.escape(TITLE)}" />
 <meta name="twitter:description" content="{html.escape(DESC)}" />
 """
@@ -105,6 +107,8 @@ with open(index_path) as f:
 
 # Remove any existing <title> to avoid duplicates, then inject before </head>.
 content = re.sub(r"<title>.*?</title>", "", content, flags=re.DOTALL)
+# 幂等：剥离旧的 og:/twitter: meta 标签，重复跑不再叠加。
+content = re.sub(r'<meta\s+(?:property="og:[^"]*"|name="twitter:[^"]*")[^>]*/?>\s*', "", content)
 content = content.replace("</head>", SEO_BLOCK + "</head>", 1)
 if GA4_SNIPPET:
     content = content.replace("</head>", GA4_SNIPPET + "</head>", 1)
@@ -113,6 +117,16 @@ if CF_BEACON_SNIPPET and "cloudflareinsights.com/beacon" not in content:
 
 with open(index_path, "w") as f:
     f.write(content)
+
+# OG 分享图：expo export 不会拷贝未被代码引用的 assets，手动拷到 dist/（幂等，直接覆盖）。
+og_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "og-image.png")
+og_dst = f"{EXPORT_DIR}/og-image.png"
+if os.path.exists(og_src):
+    import shutil
+    shutil.copyfile(og_src, og_dst)
+    print("og-image.png copied to dist/")
+else:
+    print("warning: assets/og-image.png not found, skipping", file=sys.stderr)
 
 # 隐私页（若已拷贝到 dist）：同样注入 GA4 基础代码，保证整站口径一致。
 privacy_path = f"{EXPORT_DIR}/privacy.html"
@@ -201,6 +215,12 @@ SEO_PATHS = [
     "box-offset-bend/",
     "how-to-bend-3-4-emt/",
     "emt-vs-rigid-bending/",
+    # Batch 5 (2026-10-08, AI-search Q&A). Keep in sync with scripts/gen-seo-pages.py.
+    "offset-multiplier-guide/",
+    "conduit-bending-gain/",
+    "conduit-bending-deduct/",
+    "conduit-bending-mistakes/",
+    "conduit-bend-radius/",
 ]
 
 with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:
