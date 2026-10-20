@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.9.0 — Android 16 KB page size support
+
+Google Play requires every new app bundle targeting Android 15+ to support
+16 KB memory page sizes. The previous build used Expo SDK 52 / React Native
+0.76, whose native libraries are only 4 KB aligned.
+
+### Toolchain
+- Upgraded Expo SDK 52 → 53 (`expo` 53.0.27, React Native 0.79.6, React 19.0.0).
+  React Native 0.77+ is the first release with 16 KB page size support.
+- Aligned native modules with SDK 53: `expo-asset`, `expo-build-properties`,
+  `expo-status-bar`, `expo-updates`, `react-native-screens`,
+  `react-native-safe-area-context`, `react-native-svg`, AsyncStorage, and
+  `react-native-web`.
+- `react-native-iap` 12.16.4 and the Billing 8.0.0 source patch are unchanged;
+  `@react-native-firebase` stays on 21.6.1 (Firebase BoM 33.5.1, which includes
+  the 16 KB-aligned Crashlytics NDK).
+- Android packaging keeps `useLegacyPackaging=false`, so native libraries are
+  stored uncompressed for page alignment.
+
+### Version
+- `versionName` 1.9.0, `versionCode` 7 (production builds also auto-increment
+  the remote version code).
+
 ## v1.8.0 — Spanish (es) UI + SEO + mobile spacing (T66)
 
 ### Hamburger glyph fix

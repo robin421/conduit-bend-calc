@@ -1,7 +1,7 @@
 # Agent 工作规范：Conduit Bend Calc
 
 ## 技术栈（锁定）
-- React Native + Expo SDK 52、TypeScript（strict）
+- React Native + Expo SDK 53（RN 0.79 / React 19）、TypeScript（strict）
 - 导航：React Navigation（bottom tabs）
 - 本地存储：@react-native-async-storage/async-storage
 - 不引入后端，不引入任何网络请求库
@@ -34,7 +34,12 @@
 - npm install 必须加 --no-bin-links（overlay fs 不支持 chown）
 - 每次 npm install 后需手动重建 node_modules/.bin/{expo,tsc} 软链接
 - 不要用 `npx tsc`（会误装 tsc@2.0.4），用 `npm run typecheck` 或 `node node_modules/typescript/bin/tsc --noEmit`
-- expo-asset 版本必须与 Expo SDK 52 对齐（~11.0.5），不要装 latest
+- expo-asset 版本必须与 Expo SDK 53 对齐（~11.1.7），不要装 latest
+
+## Android 16 KB 页面（2026-10-20, v1.9.0）
+- Google Play 要求 targetSdk 35+ 的 AAB 支持 16 KB 页面；Expo SDK 53+ 是官方最低支持版本，不要退回 SDK 52。
+- 保持 `expo-build-properties` 的 `android.useLegacyPackaging=false`（默认），native lib 不能压缩打包。
+- 发布前用 NDK 的 `llvm-readelf -lW` 检查 AAB 内 arm64-v8a/x86_64 的 LOAD 段 `p_align` 必须 ≥ 0x4000。
 
 ## 品牌与信息层级（2026-10-04, T64）
 - 品牌文案单一来源 `src/seo/brand.ts`：WattFlow / `⚡` / Conduit Bend Calc / 页脚句 / ` | WattFlow` 标题后缀（`withBrandTitle` 幂等）。静态 shell 脚本、document title、屏幕共用。
