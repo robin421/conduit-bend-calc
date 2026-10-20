@@ -21,6 +21,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import WattFlowBrandBar from '../../components/wattflowBrandBar';
 import CalculatorDrawer from '../../components/calculatorDrawer';
 import LanguageSwitcher from '../../components/languageSwitcher';
@@ -71,6 +73,7 @@ export function SeoPage({
   activeTool?: SeoToolKey;
 }) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   // 响应式断点：<600pt 汉堡 + 抽屉，>=600pt 横向切换条。
   const mobileNav = calculatorNavMode(width) === 'drawer';
@@ -93,7 +96,7 @@ export function SeoPage({
           styles.page,
           {
             paddingHorizontal: theme.spacing.sm,
-            paddingTop: theme.spacing.md,
+            paddingTop: theme.spacing.md + (Platform.OS === 'web' ? 0 : insets.top),
             paddingBottom: theme.spacing.xl,
             // 8pt 网格：区块之间 16pt 呼吸感（T66 移动端间距）。
             gap: theme.spacing.md,

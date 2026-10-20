@@ -19,6 +19,11 @@ Google Play requires every new app bundle targeting Android 15+ to support
 - Android packaging keeps `useLegacyPackaging=false`, so native libraries are
   stored uncompressed for page alignment.
 
+### Android edge-to-edge
+- Status bar is opaque with the brand color; native headers no longer overlap it
+  on targetSdk 36.
+- SEO tool pages add the top safe-area inset on native.
+
 ### Version
 - `versionName` 1.9.0, `versionCode` 7 (production builds also auto-increment
   the remote version code).

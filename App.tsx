@@ -60,7 +60,7 @@ export default function App() {
       >
         <RootStack />
       </NavigationContainer>
-      <StatusBar style="light" />
+      <StatusBar style="light" translucent={false} />
     </SafeAreaProvider>
   );
 }

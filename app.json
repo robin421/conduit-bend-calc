@@ -15,6 +15,11 @@
     "ios": {
       "supportsTablet": true
     },
+    "androidStatusBar": {
+      "backgroundColor": "#1A1A1A",
+      "barStyle": "light-content",
+      "translucent": false
+    },
     "android": {
       "package": "com.kaipu.conduitbendcalc",
       "versionCode": 7,
