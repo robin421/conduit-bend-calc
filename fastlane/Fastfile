@@ -1,0 +1,48 @@
+default_platform(:android)
+
+PACKAGE_NAME = "com.kaipu.conduitbendcalc"
+PROJECT_ROOT = File.expand_path("..", __dir__)
+AAB_PATH = ENV["AAB_PATH"] || Dir[File.join(PROJECT_ROOT, "dist", "*.aab")].max
+JSON_KEY = ENV["PLAY_JSON_KEY"] || File.join(Dir.home, ".fastlane", "keys", "conduit-play-sa.json")
+
+platform :android do
+  desc "Upload the signed AAB to the production track"
+  lane :deploy do |options|
+    UI.user_error!("AAB not found: #{AAB_PATH}") unless AAB_PATH && File.exist?(AAB_PATH)
+
+    upload_to_play_store(
+      package_name: PACKAGE_NAME,
+      aab: AAB_PATH,
+      track: options[:track] || "production",
+      release_status: options[:release_status] || "completed",
+      json_key: JSON_KEY,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Show the current release status of every track"
+  lane :status do
+    require "google/apis/androidpublisher_v3"
+    require "googleauth"
+
+    creds = Google::Auth::ServiceAccountCredentials.make_creds(
+      json_key_io: File.open(JSON_KEY),
+      scope: "https://www.googleapis.com/auth/androidpublisher"
+    )
+    service = Google::Apis::AndroidpublisherV3::AndroidPublisherService.new
+    service.authorization = creds
+
+    edit = service.insert_edit(PACKAGE_NAME)
+    tracks = service.list_edit_tracks(PACKAGE_NAME, edit.id).tracks
+    tracks.each do |t|
+      releases = (t.releases || []).map do |r|
+        { name: r.name, status: r.status, versionCodes: r.version_codes, userFraction: r.user_fraction }
+      end
+      UI.message("#{t.track}: #{releases.to_json}")
+    end
+    service.delete_edit(PACKAGE_NAME, edit.id)
+  end
+end

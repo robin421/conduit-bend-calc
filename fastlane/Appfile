@@ -1,0 +1,6 @@
+# Google Play app identity.
+package_name("com.kaipu.conduitbendcalc")
+
+# Service account JSON used by `upload_to_play_store`.
+# Default lives outside the repo; override with PLAY_JSON_KEY when needed.
+json_key_file(ENV["PLAY_JSON_KEY"] || File.join(Dir.home, ".fastlane", "keys", "conduit-play-sa.json"))
