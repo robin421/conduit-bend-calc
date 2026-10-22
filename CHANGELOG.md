@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.9.1 — Material 3 Android UI optimization (T73)
+
+### Android UI/UX Refinements (Material 3)
+- Cards & Surfaces: Subtle tonal elevation, rounded-2xl geometry, polished padding.
+- Interactive controls: Material 3 state layers, ripple feedback on touchable elements, enhanced touch targets (>= 48dp).
+- Typography & Layout: Tabular numerics preserved, clearer visual hierarchy between primary calculation inputs and contextual reference cards.
+- Status bars & headers: Seamless Android 15 edge-to-edge alignment with brand color theming.
+
+### Version
+- `versionName` 1.9.1, `versionCode` 8.
+
 ## v1.9.0 — Android 16 KB page size support
 
 Google Play requires every new app bundle targeting Android 15+ to support

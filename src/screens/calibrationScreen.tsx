@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   buildCalibratedSpec,
@@ -288,6 +288,8 @@ export default function CalibrationScreen() {
           onChangeText={setName}
           placeholder="Name it, e.g. My Ideal (field-tested)"
           placeholderTextColor={theme.colors.textSecondary}
+          selectionColor={theme.colors.accent}
+          cursorColor={theme.colors.accent}
           autoCapitalize="none"
           autoCorrect={false}
           style={[
@@ -299,6 +301,7 @@ export default function CalibrationScreen() {
               color: theme.colors.textPrimary,
               fontSize: theme.fontSize.body,
               paddingHorizontal: theme.spacing.md,
+              paddingVertical: Platform.OS === 'android' ? 8 : 12,
             },
           ]}
         />

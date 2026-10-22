@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   createCustomSpec,
@@ -185,14 +185,25 @@ export default function BenderPicker({
     spec.takeUp,
   )}"${isHookDatum(spec) ? '(hook front-edge datum)' : ''}`;
 
+  const rippleColor =
+    theme.scheme === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.06)';
+
   return (
     <View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={expanded ? 'Collapse bender picker' : 'Expand to change bender'}
         onPress={() => setExpanded((value) => !value)}
-        android_ripple={{ color: theme.colors.border }}
-        style={styles.summaryRow}
+        android_ripple={{ color: rippleColor }}
+        style={({ pressed }) => [
+          styles.summaryRow,
+          {
+            borderRadius: theme.radius,
+            opacity: pressed && Platform.OS !== 'android' ? 0.75 : 1,
+          },
+        ]}
       >
         <View style={styles.summaryText}>
           <Text
@@ -226,7 +237,7 @@ export default function BenderPicker({
           </Text>
         </View>
         <Text
-          style={[styles.summaryChevron, { color: theme.colors.textSecondary }]}
+          style={[styles.summaryChevron, { color: theme.colors.accentText }]}
         >
           {expanded ? '▾' : '▸'}
         </Text>
@@ -306,6 +317,8 @@ export default function BenderPicker({
             onChangeText={setCustomName}
             placeholder="Name, e.g. My bender (field-tested)"
             placeholderTextColor={theme.colors.textSecondary}
+            selectionColor={theme.colors.accent}
+            cursorColor={theme.colors.accent}
             autoCapitalize="none"
             autoCorrect={false}
             style={[
@@ -317,6 +330,7 @@ export default function BenderPicker({
                 color: theme.colors.textPrimary,
                 fontSize: theme.fontSize.body,
                 paddingHorizontal: theme.spacing.md,
+                paddingVertical: Platform.OS === 'android' ? 8 : 10,
               },
             ]}
           />
@@ -326,6 +340,8 @@ export default function BenderPicker({
               onChangeText={setCustomR}
               placeholder="R (inches)"
               placeholderTextColor={theme.colors.textSecondary}
+              selectionColor={theme.colors.accent}
+              cursorColor={theme.colors.accent}
               keyboardType="decimal-pad"
               autoCapitalize="none"
               autoCorrect={false}
@@ -339,6 +355,7 @@ export default function BenderPicker({
                   color: theme.colors.textPrimary,
                   fontSize: theme.fontSize.body,
                   paddingHorizontal: theme.spacing.md,
+                  paddingVertical: Platform.OS === 'android' ? 8 : 10,
                 },
               ]}
             />
@@ -347,6 +364,8 @@ export default function BenderPicker({
               onChangeText={setCustomTakeUp}
               placeholder="take-up (inches)"
               placeholderTextColor={theme.colors.textSecondary}
+              selectionColor={theme.colors.accent}
+              cursorColor={theme.colors.accent}
               keyboardType="decimal-pad"
               autoCapitalize="none"
               autoCorrect={false}
@@ -360,6 +379,7 @@ export default function BenderPicker({
                   color: theme.colors.textPrimary,
                   fontSize: theme.fontSize.body,
                   paddingHorizontal: theme.spacing.md,
+                  paddingVertical: Platform.OS === 'android' ? 8 : 10,
                 },
               ]}
             />
@@ -422,13 +442,16 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
+    minHeight: 48,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    overflow: 'hidden',
   },
   summaryText: {
     flex: 1,
   },
   summaryChevron: {
-    fontSize: 22,
+    fontSize: 20,
     marginLeft: 8,
   },
   row: {

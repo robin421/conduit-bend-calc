@@ -42,11 +42,18 @@ export default function ConduitTypeToggle({
           {
             borderColor: theme.colors.border,
             borderRadius: theme.radius,
+            backgroundColor: theme.colors.card,
           },
         ]}
       >
-        {OPTIONS.map((option) => {
+        {OPTIONS.map((option, index) => {
           const selected = option === value;
+          const rippleColor = selected
+            ? 'rgba(0, 0, 0, 0.15)'
+            : theme.scheme === 'dark'
+              ? 'rgba(255, 255, 255, 0.08)'
+              : 'rgba(0, 0, 0, 0.06)';
+
           return (
             <Pressable
               key={option}
@@ -54,9 +61,13 @@ export default function ConduitTypeToggle({
               accessibilityState={{ selected }}
               accessibilityLabel={`Conduit material ${OPTION_LABELS[option]}`}
               onPress={() => onChange(option)}
-              android_ripple={{ color: theme.colors.border }}
+              android_ripple={{ color: rippleColor }}
               style={[
                 styles.option,
+                index > 0 && {
+                  borderLeftWidth: StyleSheet.hairlineWidth,
+                  borderLeftColor: theme.colors.border,
+                },
                 {
                   backgroundColor: selected
                     ? theme.colors.accent
@@ -71,6 +82,8 @@ export default function ConduitTypeToggle({
                     : theme.colors.textPrimary,
                   fontSize: theme.fontSize.body,
                   fontWeight: theme.fontWeight.semibold,
+                  letterSpacing: 0.2,
+                  includeFontPadding: false,
                 }}
               >
                 {OPTION_LABELS[option]}
@@ -91,7 +104,7 @@ const styles = StyleSheet.create({
   },
   option: {
     flex: 1,
-    minHeight: 44,
+    minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,

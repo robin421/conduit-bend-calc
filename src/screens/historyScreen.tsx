@@ -67,6 +67,7 @@ export default function HistoryScreen({ navigation }: Props) {
             accessibilityRole="button"
             onPress={handleClear}
             hitSlop={8}
+            android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true }}
             style={styles.headerButton}
           >
             <Text style={[styles.headerButtonText, { color: theme.colors.accent }]}>
@@ -124,55 +125,53 @@ export default function HistoryScreen({ navigation }: Props) {
 
   const renderItem = useCallback(
     ({ item }: { item: HistoryEntry }) => (
-      <Pressable
+      <Card
         accessibilityRole="button"
         onPress={() => handlePress(item)}
-        android_ripple={{ color: theme.colors.border }}
+        style={styles.itemCard}
       >
-        <Card style={styles.itemCard}>
-          <View style={styles.itemHeader}>
-            <Text
-              style={{
-                color: theme.colors.textPrimary,
-                fontSize: theme.fontSize.body,
-                fontWeight: theme.fontWeight.semibold,
-              }}
-            >
-              {item.title}
-            </Text>
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-                fontVariant: ['tabular-nums'],
-              }}
-            >
-              {formatHistoryTime(item.timestamp)}
-            </Text>
-          </View>
+        <View style={styles.itemHeader}>
+          <Text
+            style={{
+              color: theme.colors.textPrimary,
+              fontSize: theme.fontSize.body,
+              fontWeight: theme.fontWeight.semibold,
+            }}
+          >
+            {item.title}
+          </Text>
           <Text
             style={{
               color: theme.colors.textSecondary,
               fontSize: theme.fontSize.secondary,
-              marginTop: theme.spacing.xs,
               fontVariant: ['tabular-nums'],
             }}
           >
-            {item.inputSummary}
+            {formatHistoryTime(item.timestamp)}
           </Text>
-          <Text
-            style={{
-              color: theme.colors.primaryText,
-              fontSize: theme.fontSize.body,
-              fontWeight: theme.fontWeight.semibold,
-              marginTop: theme.spacing.xs,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
-            {item.resultSummary}
-          </Text>
-        </Card>
-      </Pressable>
+        </View>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            marginTop: theme.spacing.xs,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {item.inputSummary}
+        </Text>
+        <Text
+          style={{
+            color: theme.colors.primaryText,
+            fontSize: theme.fontSize.body,
+            fontWeight: theme.fontWeight.semibold,
+            marginTop: theme.spacing.xs,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {item.resultSummary}
+        </Text>
+      </Card>
     ),
     [handlePress, theme],
   );
@@ -180,8 +179,26 @@ export default function HistoryScreen({ navigation }: Props) {
   if (entries.length === 0) {
     return (
       <View style={[styles.empty, { backgroundColor: theme.colors.background }]}>
+        <View
+          style={[
+            styles.emptyIconCircle,
+            {
+              backgroundColor: theme.colors.card,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
+          <Text style={[styles.emptyIcon, { color: theme.colors.textSecondary }]}>
+            ↺
+          </Text>
+        </View>
         <Text
-          style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.body }}
+          style={{
+            color: theme.colors.textPrimary,
+            fontSize: theme.fontSize.body,
+            fontWeight: theme.fontWeight.semibold,
+            marginTop: theme.spacing.md,
+          }}
         >
           No calculations yet
         </Text>
@@ -190,6 +207,8 @@ export default function HistoryScreen({ navigation }: Props) {
             color: theme.colors.textSecondary,
             fontSize: theme.fontSize.secondary,
             marginTop: theme.spacing.xs,
+            textAlign: 'center',
+            maxWidth: 260,
           }}
         >
           Calculations you run will be recorded here
@@ -221,6 +240,7 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     gap: 0,
+    padding: 14,
   },
   itemHeader: {
     flexDirection: 'row',
@@ -230,6 +250,8 @@ const styles = StyleSheet.create({
   headerButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
+    borderRadius: 6,
+    overflow: 'hidden',
   },
   headerButtonText: {
     fontSize: 16,
@@ -240,5 +262,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+  },
+  emptyIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyIcon: {
+    fontSize: 28,
   },
 });

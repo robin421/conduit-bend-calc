@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import Card from '../components/card';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../constants';
@@ -16,18 +16,33 @@ function Section({
 }) {
   const theme = useTheme();
   const [open, setOpen] = useState(true);
+  const rippleColor =
+    theme.scheme === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.06)';
+
   return (
     <Card style={styles.section}>
-      <TouchableOpacity onPress={() => setOpen((v) => !v)} activeOpacity={0.7}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>
-            {title}
-          </Text>
-          <Text style={[styles.chevron, { color: theme.colors.accentText }]}>
-            {open ? '▾' : '▸'}
-          </Text>
-        </View>
-      </TouchableOpacity>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${title}, tap to ${open ? 'collapse' : 'expand'}`}
+        accessibilityState={{ expanded: open }}
+        onPress={() => setOpen((v) => !v)}
+        android_ripple={{ color: rippleColor }}
+        style={({ pressed }) => [
+          styles.sectionHeader,
+          {
+            opacity: pressed && Platform.OS !== 'android' ? 0.75 : 1,
+          },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>
+          {title}
+        </Text>
+        <Text style={[styles.chevron, { color: theme.colors.accentText }]}>
+          {open ? '▾' : '▸'}
+        </Text>
+      </Pressable>
       {open && <View style={styles.sectionBody}>{children}</View>}
     </Card>
   );
@@ -167,15 +182,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    minHeight: 48,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderRadius: 6,
+    overflow: 'hidden',
   },
   sectionTitle: { fontSize: 18, fontWeight: '700' },
-  chevron: { fontSize: 20, fontWeight: '700' },
+  chevron: { fontSize: 18, fontWeight: '700' },
   sectionBody: { marginTop: 8 },
-  row: { flexDirection: 'row', paddingVertical: 10 },
-  headerRow: { borderBottomWidth: 1 },
-  cell: { flex: 1, fontSize: 16, fontVariant: ['tabular-nums'] },
+  row: { flexDirection: 'row', paddingVertical: 12 },
+  headerRow: { borderBottomWidth: 1.5, paddingBottom: 10 },
+  cell: { flex: 1, fontSize: 16, fontVariant: ['tabular-nums'], includeFontPadding: false },
   headerCell: { fontSize: 13, fontWeight: '600' },
-  note: { fontSize: 13, marginTop: 10, lineHeight: 18 },
+  note: { fontSize: 13, marginTop: 12, lineHeight: 20 },
   body: { fontSize: 15, lineHeight: 24 },
 });

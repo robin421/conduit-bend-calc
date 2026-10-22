@@ -1,4 +1,4 @@
-import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme';
 
@@ -49,12 +49,21 @@ export default function BigButton({
   const height =
     size === 'selection' ? theme.size.selectionButtonHeight : theme.size.buttonMinHeight;
 
+  const rippleColor =
+    resolvedVariant === 'primary'
+      ? 'rgba(255, 255, 255, 0.16)'
+      : resolvedVariant === 'accent'
+        ? 'rgba(0, 0, 0, 0.16)'
+        : theme.scheme === 'dark'
+          ? 'rgba(255, 255, 255, 0.08)'
+          : 'rgba(0, 0, 0, 0.08)';
+
   return (
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
-      android_ripple={{ color: theme.colors.border }}
+      android_ripple={{ color: rippleColor }}
       style={({ pressed }) => [
         styles.button,
         {
@@ -63,7 +72,7 @@ export default function BigButton({
           minHeight: height,
           borderWidth: showHairline ? StyleSheet.hairlineWidth : 0,
           borderColor: theme.colors.border,
-          opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+          opacity: disabled ? 0.4 : pressed && Platform.OS !== 'android' ? 0.85 : 1,
         },
         style,
       ]}
@@ -74,6 +83,8 @@ export default function BigButton({
           fontSize: theme.fontSize.body,
           fontWeight: theme.fontWeight.semibold,
           fontVariant: ['tabular-nums'],
+          letterSpacing: 0.2,
+          includeFontPadding: false,
         }}
       >
         {title}
@@ -87,5 +98,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
+    overflow: 'hidden',
   },
 });

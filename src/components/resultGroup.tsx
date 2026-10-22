@@ -33,6 +33,7 @@ export default function ResultGroup({ hero, rows = [], hint, style }: ResultGrou
         {
           backgroundColor: theme.colors.resultBackground,
           borderRadius: theme.radius,
+          borderColor: 'rgba(255, 255, 255, 0.08)',
           padding: theme.spacing.md,
         },
         style,
@@ -53,6 +54,7 @@ export default function ResultGroup({ hero, rows = [], hint, style }: ResultGrou
             fontSize: theme.fontSize.result,
             fontWeight: theme.fontWeight.semibold,
             fontVariant: ['tabular-nums'],
+            includeFontPadding: false,
           }}
         >
           {heroEmpty ? '—' : hero.value}
@@ -64,6 +66,8 @@ export default function ResultGroup({ hero, rows = [], hint, style }: ResultGrou
               fontSize: theme.fontSize.body,
               fontWeight: theme.fontWeight.semibold,
               marginLeft: theme.spacing.xs,
+              marginBottom: 4,
+              includeFontPadding: false,
             }}
           >
             {hero.unit}
@@ -112,6 +116,7 @@ export default function ResultGroup({ hero, rows = [], hint, style }: ResultGrou
                 fontSize: theme.fontSize.title,
                 fontWeight: theme.fontWeight.semibold,
                 fontVariant: ['tabular-nums'],
+                includeFontPadding: false,
               }}
             >
               {rowEmpty ? '—' : row.value}
@@ -131,6 +136,8 @@ export default function ResultGroup({ hero, rows = [], hint, style }: ResultGrou
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   heroRow: {
     flexDirection: 'row',

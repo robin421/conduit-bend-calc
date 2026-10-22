@@ -144,68 +144,66 @@ export default function CalcHomeScreen({ navigation }: Props) {
       </View>
 
       {ENTRIES.map((entry) => (
-        <Pressable
+        <Card
           key={entry.key}
           accessibilityRole="button"
           onPress={() => handlePress(entry)}
-          android_ripple={{ color: theme.colors.border }}
+          style={styles.card}
         >
-          <Card style={styles.card}>
-            <View
-              style={[
-                styles.accentBar,
-                {
-                  backgroundColor: theme.colors.accent,
-                  marginRight: theme.spacing.sm,
-                  borderRadius: 2,
-                },
-              ]}
-            />
-            <Text
-              numberOfLines={1}
-              style={[styles.icon, { color: theme.colors.primaryText }]}
-            >
-              {entry.icon}
-            </Text>
-            <View style={styles.textBlock}>
-              <View style={styles.nameRow}>
-                <Text
-                  style={{
-                    color: theme.colors.textPrimary,
-                    fontSize: theme.fontSize.body,
-                    fontWeight: theme.fontWeight.semibold,
-                  }}
-                >
-                  {entry.name}
-                </Text>
-                {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
-                  <Text
-                    style={[
-                      styles.proPill,
-                      {
-                        backgroundColor: theme.colors.accent,
-                        color: theme.colors.onAccent,
-                        marginLeft: theme.spacing.xs,
-                      },
-                    ]}
-                  >
-                    PRO
-                  </Text>
-                ) : null}
-              </View>
+          <View
+            style={[
+              styles.accentBar,
+              {
+                backgroundColor: theme.colors.accent,
+                marginRight: theme.spacing.sm,
+              },
+            ]}
+          />
+          <Text
+            numberOfLines={1}
+            style={[styles.icon, { color: theme.colors.primaryText }]}
+          >
+            {entry.icon}
+          </Text>
+          <View style={styles.textBlock}>
+            <View style={styles.nameRow}>
               <Text
                 style={{
-                  color: theme.colors.textSecondary,
-                  fontSize: theme.fontSize.secondary,
-                  marginTop: theme.spacing.xs,
+                  color: theme.colors.textPrimary,
+                  fontSize: theme.fontSize.body,
+                  fontWeight: theme.fontWeight.semibold,
+                  letterSpacing: 0.1,
                 }}
               >
-                {entry.description}
+                {entry.name}
               </Text>
+              {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
+                <Text
+                  style={[
+                    styles.proPill,
+                    {
+                      backgroundColor: theme.colors.accent,
+                      color: theme.colors.onAccent,
+                      marginLeft: theme.spacing.xs,
+                    },
+                  ]}
+                >
+                  PRO
+                </Text>
+              ) : null}
             </View>
-            <Text style={[styles.chevron, { color: theme.colors.textSecondary }]}>›</Text>
-          </Card>
-        </Pressable>
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                marginTop: theme.spacing.xs,
+              }}
+            >
+              {entry.description}
+            </Text>
+          </View>
+          <Text style={[styles.chevron, { color: theme.colors.accentText }]}>›</Text>
+        </Card>
       ))}
       </ScrollView>
       <ProDownloadSheet
@@ -227,10 +225,13 @@ const styles = StyleSheet.create({
     minHeight: 72,
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   proPill: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 999,
@@ -238,23 +239,26 @@ const styles = StyleSheet.create({
   },
   accentBar: {
     width: 4,
-    height: 40,
+    height: 44,
     flexShrink: 0,
+    borderRadius: 2,
   },
   icon: {
-    fontSize: 28,
-    width: 48,
+    fontSize: 26,
+    width: 44,
+    textAlign: 'center',
     flexShrink: 0,
   },
   textBlock: {
     flex: 1,
+    paddingLeft: 4,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   chevron: {
-    fontSize: 28,
+    fontSize: 24,
     marginLeft: 8,
   },
   unitRow: {

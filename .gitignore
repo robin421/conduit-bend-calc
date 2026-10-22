@@ -27,7 +27,11 @@ yarn-error.*
 
 # macOS
 .DS_Store
+._*
 *.pem
+*.zip
+.commandcode/
+fastlane/report.xml
 
 # local env files
 .env*.local

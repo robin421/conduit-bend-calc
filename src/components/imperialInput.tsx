@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TextStyle,
   View,
   ViewStyle,
 } from 'react-native';
@@ -160,8 +161,10 @@ interface FractionBoxProps {
   onBlur: () => void;
   placeholder: string;
   placeholderTextColor: string;
+  selectionColor?: string;
+  cursorColor?: string;
   accessibilityLabel: string;
-  style: StyleProp<ViewStyle>;
+  style: StyleProp<TextStyle>;
 }
 
 /**
@@ -179,6 +182,8 @@ function FractionBox({
   onBlur,
   placeholder,
   placeholderTextColor,
+  selectionColor,
+  cursorColor,
   accessibilityLabel,
   style,
 }: FractionBoxProps) {
@@ -196,6 +201,8 @@ function FractionBox({
       onBlur={onBlur}
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
+      selectionColor={selectionColor}
+      cursorColor={cursorColor}
       keyboardType="numeric"
       inputMode="numeric"
       autoCapitalize="none"
@@ -350,6 +357,7 @@ export default function ImperialInput({
     color: theme.colors.textPrimary,
     fontSize: theme.fontSize.title,
     paddingHorizontal: theme.spacing.md,
+    paddingVertical: Platform.OS === 'android' ? 8 : 12,
   };
 
   // 分数框更窄，横向内边距收紧到 sm，避免 3 框在 390px 屏幕上溢出。
@@ -381,6 +389,8 @@ export default function ImperialInput({
             onBlur={handleFractionalBlur}
             placeholder={resolvedPlaceholder}
             placeholderTextColor={theme.colors.textSecondary}
+            selectionColor={theme.colors.accent}
+            cursorColor={theme.colors.accent}
             accessibilityLabel={`${label} inches`}
             style={[styles.input, styles.fractionWhole, fractionInputStyle]}
           />
@@ -390,8 +400,10 @@ export default function ImperialInput({
             onBlur={handleFractionalBlur}
             placeholder="0"
             placeholderTextColor={theme.colors.textSecondary}
+            selectionColor={theme.colors.accent}
+            cursorColor={theme.colors.accent}
             accessibilityLabel={`${label} numerator`}
-            style={[styles.input, styles.fractionPart, fractionInputStyle]}
+            style={[styles.input, styles.fractionPart, fractionInputStyle, styles.centeredText]}
           />
           <Text
             style={[
@@ -410,8 +422,10 @@ export default function ImperialInput({
             onBlur={handleFractionalBlur}
             placeholder="16"
             placeholderTextColor={theme.colors.textSecondary}
+            selectionColor={theme.colors.accent}
+            cursorColor={theme.colors.accent}
             accessibilityLabel={`${label} denominator`}
-            style={[styles.input, styles.fractionPart, fractionInputStyle]}
+            style={[styles.input, styles.fractionPart, fractionInputStyle, styles.centeredText]}
           />
         </View>
       ) : (
@@ -421,6 +435,8 @@ export default function ImperialInput({
           onBlur={handleBlur}
           placeholder={resolvedPlaceholder}
           placeholderTextColor={theme.colors.textSecondary}
+          selectionColor={theme.colors.accent}
+          cursorColor={theme.colors.accent}
           keyboardType={resolvedKeyboardType}
           inputMode={resolvedInputMode}
           autoCapitalize="none"
@@ -465,7 +481,12 @@ const styles = StyleSheet.create({
     minWidth: 0,
     flexShrink: 1,
   },
+  centeredText: {
+    textAlign: 'center',
+  },
   slash: {
     fontVariant: ['tabular-nums'],
+    paddingHorizontal: 2,
+    fontWeight: '600',
   },
 });

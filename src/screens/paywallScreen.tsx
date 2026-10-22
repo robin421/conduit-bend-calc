@@ -235,6 +235,7 @@ export default function PaywallScreen({ navigation }: Props) {
           accessibilityRole="button"
           disabled={busy}
           onPress={() => navigation.goBack()}
+          android_ripple={{ color: theme.colors.border }}
           style={styles.notNow}
         >
           <Text
@@ -275,15 +276,18 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    minHeight: 52,
+    overflow: 'hidden',
   },
   check: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   notNow: {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
+    overflow: 'hidden',
   },
 });

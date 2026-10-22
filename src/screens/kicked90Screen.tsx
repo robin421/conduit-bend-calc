@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
 import { calculateKicked90 } from '../calculators/kicked90/kicked90';
@@ -215,7 +215,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
             style={{
               color: theme.colors.textSecondary,
               fontSize: theme.fontSize.secondary,
-              marginBottom: theme.spacing.xs,
+              marginBottom: theme.spacing.sm,
             }}
           >
             Kick angle κ (degrees, typically 10–30)
@@ -225,6 +225,8 @@ export default function Kicked90Screen({ route, navigation }: Props) {
             onChangeText={setKickText}
             placeholder="e.g. 15"
             placeholderTextColor={theme.colors.textSecondary}
+            selectionColor={theme.colors.accent}
+            cursorColor={theme.colors.accent}
             keyboardType="decimal-pad"
             autoCapitalize="none"
             autoCorrect={false}
@@ -239,6 +241,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
                 color: theme.colors.textPrimary,
                 fontSize: theme.fontSize.title,
                 paddingHorizontal: theme.spacing.md,
+                paddingVertical: Platform.OS === 'android' ? 8 : 12,
               },
             ]}
           />

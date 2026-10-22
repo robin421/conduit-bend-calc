@@ -41,6 +41,11 @@ export default function CalcStack() {
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.primary },
         headerTintColor: theme.colors.onPrimary,
+        headerTitleAlign: 'left',
+        headerTitleStyle: {
+          fontSize: 20,
+          fontWeight: '600',
+        },
         contentStyle: { backgroundColor: theme.colors.background },
       }}
     >

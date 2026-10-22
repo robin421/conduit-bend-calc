@@ -49,7 +49,8 @@ export default function WarningBar({ warnings }: WarningBarProps) {
                 borderLeftColor: color,
                 backgroundColor: `${color}1A`,
                 borderRadius: theme.radius,
-                padding: theme.spacing.sm,
+                paddingHorizontal: theme.spacing.md,
+                paddingVertical: 10,
               },
             ]}
             accessibilityRole="alert"
@@ -84,7 +85,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     borderLeftWidth: 4,
-    gap: 8,
+    gap: 10,
+    overflow: 'hidden',
   },
   icon: {
     fontSize: 18,

@@ -365,6 +365,8 @@ function QuickCheckWizard({
               onChangeText={setName}
               placeholder={namePlaceholder(base)}
               placeholderTextColor={theme.colors.textSecondary}
+              selectionColor={theme.colors.accent}
+              cursorColor={theme.colors.accent}
               autoCapitalize="words"
               autoCorrect={false}
               style={[
@@ -376,6 +378,7 @@ function QuickCheckWizard({
                   color: theme.colors.textPrimary,
                   fontSize: theme.fontSize.body,
                   paddingHorizontal: theme.spacing.md,
+                  paddingVertical: Platform.OS === 'android' ? 8 : 12,
                 },
               ]}
             />
@@ -466,8 +469,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    overflow: 'hidden',
   },
   input: {
     minHeight: 56,

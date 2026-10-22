@@ -87,7 +87,12 @@ export default function FeasibilityPanel({
 
   return (
     <Card style={{ gap: theme.spacing.sm }}>
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: theme.colors.border },
+        ]}
+      >
         <Text style={[styles.icon, { color }]}>{STATUS_ICON[result.status]}</Text>
         <Text
           style={{
@@ -165,7 +170,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+    paddingBottom: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   icon: {
     fontSize: 20,
@@ -175,5 +182,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 4,
   },
 });

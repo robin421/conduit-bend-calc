@@ -35,7 +35,8 @@ export default function BenderStatusBanner({
             backgroundColor: theme.colors.card,
             borderColor: theme.colors.success,
             borderRadius: theme.radius,
-            padding: theme.spacing.sm,
+            paddingHorizontal: theme.spacing.md,
+            paddingVertical: 10,
           },
         ]}
       >
@@ -64,7 +65,8 @@ export default function BenderStatusBanner({
             backgroundColor: theme.colors.card,
             borderColor: theme.colors.border,
             borderRadius: theme.radius,
-            padding: theme.spacing.sm,
+            paddingHorizontal: theme.spacing.md,
+            paddingVertical: 10,
           },
         ]}
       >
@@ -109,11 +111,13 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+    minHeight: 48,
     borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
   },
   icon: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
   },
 });
