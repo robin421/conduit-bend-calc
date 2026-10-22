@@ -9,12 +9,11 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
-      },
-      "autoIncrement": true
+      }
     }
   },
   "cli": {
-    "appVersionSource": "remote",
+    "appVersionSource": "local",
     "version": ">= 16.0.0"
   },
   "submit": {

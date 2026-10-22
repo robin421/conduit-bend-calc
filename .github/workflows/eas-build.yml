@@ -1,4 +1,4 @@
-name: EAS Build (Android APK)
+name: EAS Build (Android)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       profile:
         description: "EAS build profile"
         required: false
-        default: "preview"
+        default: "production"
 
 jobs:
   build:
@@ -33,5 +33,27 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build Android APK
-        run: eas build -p android -e "${{ inputs.profile || 'preview' }}" --non-interactive --no-wait
+      - name: Build Android
+        run: |
+          mkdir -p dist
+          eas build -p android -e "${{ inputs.profile || 'production' }}" --non-interactive --wait --json > eas-build-output.json
+          cat eas-build-output.json
+          BUILD_URL=$(node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("eas-build-output.json", "utf8"));
+            const item = Array.isArray(data) ? data[0] : data;
+            console.log(item?.artifacts?.buildUrl || "");
+          ')
+          if [ -n "$BUILD_URL" ]; then
+            echo "Downloading build artifact from $BUILD_URL..."
+            curl -fL "$BUILD_URL" -o dist/conduit-bend-calc-1.9.1-vc8.aab
+          else
+            echo "Warning: no buildUrl found in eas-build-output.json"
+          fi
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-aab
+          path: dist/*.aab
+          if-no-files-found: warn
