@@ -7,6 +7,7 @@ import BenderScreen from '../screens/benderScreen';
 import CalcHomeScreen from '../screens/calcHomeScreen';
 import CalculatorPlaceholderScreen from '../screens/calculatorPlaceholderScreen';
 import CalibrationScreen from '../screens/calibrationScreen';
+import ConduitFillScreen from '../screens/conduitFillScreen';
 import FourPointSaddleScreen from '../screens/fourPointSaddleScreen';
 import GuidedCalibrationScreen from '../screens/guidedCalibrationScreen';
 import Kicked90Screen from '../screens/kicked90Screen';
@@ -15,6 +16,8 @@ import PaywallScreen from '../screens/paywallScreen';
 import RollingOffsetScreen from '../screens/rollingOffsetScreen';
 import StubScreen from '../screens/stubScreen';
 import ThreePointSaddleScreen from '../screens/threePointSaddleScreen';
+import VoltageDropScreen from '../screens/voltageDropScreen';
+import WireSizeScreen from '../screens/wireSizeScreen';
 import { useTheme } from '../theme';
 
 export type CalcStackParamList = {
@@ -25,6 +28,9 @@ export type CalcStackParamList = {
   FourPointSaddle: { backfill?: HistoryParams } | undefined;
   RollingOffset: { backfill?: HistoryParams } | undefined;
   Kicked90: { backfill?: HistoryParams } | undefined;
+  ConduitFill: undefined;
+  VoltageDrop: undefined;
+  WireSize: undefined;
   GuidedCalibration: undefined;
   Calibration: undefined;
   Bender: { conduitTypeFilter?: ConduitType } | undefined;
@@ -78,6 +84,13 @@ export default function CalcStack() {
         name="Kicked90"
         component={Kicked90Screen}
         options={{ title: 'Kicked 90°' }}
+      />
+      <Stack.Screen name="ConduitFill" component={ConduitFillScreen} options={{ title: 'Conduit Fill' }} />
+      <Stack.Screen name="VoltageDrop" component={VoltageDropScreen} options={{ title: 'Voltage Drop' }} />
+      <Stack.Screen
+        name="WireSize"
+        component={WireSizeScreen}
+        options={{ title: 'Wire Size' }}
       />
       <Stack.Screen
         name="GuidedCalibration"

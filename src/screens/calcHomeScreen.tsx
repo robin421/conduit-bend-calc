@@ -43,6 +43,9 @@ const ENTRIES: CalculatorEntry[] = [
   { key: 'FourPointSaddle', icon: FOUR_POINT_SADDLE_ICON, name: '4-Point Saddle', description: '4-point saddle' },
   { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
   { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
+  { key: 'ConduitFill', icon: '◍', name: 'Conduit Fill', description: 'How many THHN wires fit (NEC Ch. 9)' },
+  { key: 'VoltageDrop', icon: '⚡', name: 'Voltage Drop', description: 'Drop % and wire size for 3% / 5%' },
+  { key: 'WireSize', icon: '⌇', name: 'Wire Size', description: 'Minimum AWG from amps (NEC 310.16)' },
   { key: 'GuidedCalibration', icon: '◎', name: 'Dial In My Bender', description: 'Quick check or full fingerprint — match the app to your bender', pro: true },
   { key: 'Calibration', icon: '⌁', name: 'Full Fingerprint', description: "Gain method: derive your bender's true radius", pro: true },
 ];
@@ -91,6 +94,12 @@ export default function CalcHomeScreen({ navigation }: Props) {
       navigation.navigate('RollingOffset');
     } else if (entry.key === 'Kicked90') {
       navigation.navigate('Kicked90');
+    } else if (entry.key === 'ConduitFill') {
+      navigation.navigate('ConduitFill');
+    } else if (entry.key === 'VoltageDrop') {
+      navigation.navigate('VoltageDrop');
+    } else if (entry.key === 'WireSize') {
+      navigation.navigate('WireSize');
     } else if (entry.key === 'GuidedCalibration') {
       navigation.navigate('GuidedCalibration');
     } else if (entry.key === 'Calibration') {
