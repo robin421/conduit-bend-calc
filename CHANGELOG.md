@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.10.0 — Electrician Calculators: Conduit Fill, Voltage Drop, Wire Size (T74)
+
+### New Offline Calculators
+- **Conduit Fill**: NEC Ch. 9 Tables 1/4/5, EMT/IMC/RMC/PVC 40, THHN/THWN-2, 53%/31%/40% fill limits with Note 7 rounding; optional wire count displays fill percentage and compliance.
+- **Voltage Drop**: NEC Ch. 9 Table 8 DC resistance at 75°C, single-phase and three-phase, copper and aluminum; recommends the smallest conductor size within 3% or 5%.
+- **Wire Size (Ampacity)**: NEC Table 310.16 (60°C/75°C/90°C), 125% continuous load factor, 110.14(C) termination temperature column, and 240.4(D) small-conductor overcurrent limits.
+
+### Version
+- `versionName` 1.10.0, `versionCode` 9.
+
 ## v1.9.1 — Material 3 Android UI optimization (T73)
 
 ### Android UI/UX Refinements (Material 3)
