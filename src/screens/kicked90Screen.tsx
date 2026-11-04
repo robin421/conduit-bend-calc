@@ -23,6 +23,7 @@ import { useProAccess } from '../lib/proStore';
 import { applyCalibrationOffset } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
+import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
@@ -143,6 +144,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
   }, [kickAngle, kickText, lengthInches, lengthText, result, spec, unit]);
 
   useHistoryAutoSave(historyEntry);
+  useReviewOnSuccessfulCalc(historyEntry?.signature ?? null, feasibility?.status);
   useCalculatorAnalytics('kicked90', historyEntry?.signature ?? null);
 
   const handleClear = useCallback(() => {

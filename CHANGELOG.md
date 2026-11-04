@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.6.1 — In-App Review after successful bends
+
+- Play In-App Review (`expo-store-review`) after 3 successful free-core calcs,
+  with install ≥3 days and ≤1 request / 90 days. Impossible bends do not count.
+- No star pre-prompt; home screen keeps a manual “Rate on Google Play” link.
+- Regression test: Offset / Stub / Saddles / Rolling / Kicked90 stay Free; only
+  custom bender create is Pro-gated.
+
+
 ## v1.6.0 — Free/Pro value redefinition
 
 Free = a fast professional conduit bending calculator. Pro = a bending assistant

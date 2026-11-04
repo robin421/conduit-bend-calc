@@ -19,6 +19,7 @@ import {
 import type { ProDownloadEntryKey } from '../lib/proDownloadCopy';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
+import { openPlayStoreListing } from '../lib/inAppReview';
 import { useProAccess } from '../lib/proStore';
 import { useUnitSystem } from '../lib/unitStore';
 import { trackEvent } from '../lib/analytics';
@@ -205,6 +206,25 @@ export default function CalcHomeScreen({ navigation }: Props) {
           </Card>
         </Pressable>
       ))}
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Rate on Google Play"
+        onPress={() => {
+          void openPlayStoreListing();
+        }}
+        style={{ marginTop: theme.spacing.sm, paddingVertical: theme.spacing.sm }}
+      >
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            textAlign: 'center',
+            textDecorationLine: 'underline',
+          }}
+        >
+          Rate on Google Play
+        </Text>
+      </Pressable>
       </ScrollView>
       <ProDownloadSheet
         entryKey={sheetEntryKey}
