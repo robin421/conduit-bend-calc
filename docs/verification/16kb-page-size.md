@@ -25,3 +25,6 @@ Including: libreactnative.so, libhermes.so, libexpo-modules-core.so, librnscreen
 ## Tests
 - npm test: 235 passed / 0 failed
 - npm run typecheck: clean
+
+## Package id
+Restored to `com.robin421.conduitbendcalc` to match Play Console (app id 4975842102456686420). Git history shows this repo originally shipped that id; `com.kaipu.conduitbendcalc` was introduced 2026-10-01 and caused EAS to mint a new keystore (`VVLMMJXcl4`), separate from the pre-rename credentials (`0oYi3dOSbt`).

@@ -16,7 +16,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.kaipu.conduitbendcalc",
+      "package": "com.robin421.conduitbendcalc",
       "versionCode": 8,
       "permissions": [
         "com.android.vending.BILLING"

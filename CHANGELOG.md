@@ -1,5 +1,6 @@
 ## v1.6.2 — Android 16 KB page size support
 
+- Restore Android `applicationId` / `android.package` to `com.robin421.conduitbendcalc` (Play Console listing); Oct 1 rename to `com.kaipu.conduitbendcalc` was never the live Play app.
 - Upgrade Expo SDK 52 → 53 (React Native 0.76 → 0.79.6, React 18 → 19) so
   Play's 16 KB memory page size requirement is met (`expo@≥53.0.14`).
 - Pin Android NDK r28.2 via `expo-build-properties` so native `.so` libs are
