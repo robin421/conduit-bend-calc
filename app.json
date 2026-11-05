@@ -2,7 +2,7 @@
   "expo": {
     "name": "Conduit Bend Calc",
     "slug": "conduit-bend-calc",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,8 +17,10 @@
     },
     "android": {
       "package": "com.kaipu.conduitbendcalc",
-      "versionCode": 7,
-      "permissions": ["com.android.vending.BILLING"],
+      "versionCode": 8,
+      "permissions": [
+        "com.android.vending.BILLING"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F2B46"
@@ -34,7 +36,8 @@
             "targetSdkVersion": 36
           }
         }
-      ]
+      ],
+      "./plugins/withNdkR28"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
