@@ -1,0 +1,4 @@
+• Totalmente compatible con páginas de memoria de 16 KB en Android
+• Interfaz renovada con Material 3: bordes de enfoque activos y navegación de 80dp
+• Nuevas calculadoras para electricistas según NEC: Llenado, Caída de tensión, Calibre de cable
+• Cálculos en obra 100% offline y ultra rápidos

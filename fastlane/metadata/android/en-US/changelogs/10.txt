@@ -1,0 +1,4 @@
+• Fully compliant with Android 16 KB memory page size requirements
+• Upgraded Material 3 UI: high-contrast active input focus rings and 80dp navigation bar
+• Added NEC Electrician offline calculators: Conduit Fill, Voltage Drop, Wire Size
+• Ultra-fast offline field calculations with 0 tracking
