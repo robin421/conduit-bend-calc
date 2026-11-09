@@ -70,7 +70,11 @@ export default function BigButton({
           backgroundColor,
           borderRadius: theme.radius,
           minHeight: height,
-          borderWidth: showHairline ? StyleSheet.hairlineWidth : 0,
+          borderWidth: showHairline
+            ? Platform.OS === 'android'
+              ? 1
+              : StyleSheet.hairlineWidth
+            : 0,
           borderColor: theme.colors.border,
           opacity: disabled ? 0.4 : pressed && Platform.OS !== 'android' ? 0.85 : 1,
         },

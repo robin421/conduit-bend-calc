@@ -76,7 +76,10 @@ function TableRow({
     <View
       style={[
         styles.row,
-        !last && { borderBottomColor: theme.colors.border, borderBottomWidth: StyleSheet.hairlineWidth },
+        !last && {
+          borderBottomColor: theme.colors.border,
+          borderBottomWidth: Platform.OS === 'android' ? 1 : StyleSheet.hairlineWidth,
+        },
       ]}
     >
       {cols.map((c, i) => (

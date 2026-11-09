@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import { calculateConduitFill } from '../calculators/conduitFill/conduitFill';
+import Card from '../components/card';
 import NumberField, { parseNumberInput } from '../components/numberField';
 import OptionRow from '../components/optionRow';
 import ResultGroup from '../components/resultGroup';
@@ -65,17 +66,19 @@ export default function ConduitFillScreen() {
       contentContainerStyle={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.md }]}
       keyboardShouldPersistTaps="handled"
     >
-      <OptionRow label="Raceway" options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => setM((p) => ({ ...p, raceway }))} />
-      <OptionRow label="Trade size (in)" options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => setM((p) => ({ ...p, trade }))} />
-      <OptionRow label="Wire (THHN / THWN-2)" options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => setM((p) => ({ ...p, wire }))} />
-      <NumberField
-        label="Number of wires (optional)"
-        value={m.countText}
-        onChangeText={(countText) => setM((p) => ({ ...p, countText }))}
-        placeholder="e.g. 9"
-        integer
-        error={countError}
-      />
+      <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
+        <OptionRow label="Raceway" options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => setM((p) => ({ ...p, raceway }))} />
+        <OptionRow label="Trade size (in)" options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => setM((p) => ({ ...p, trade }))} />
+        <OptionRow label="Wire (THHN / THWN-2)" options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => setM((p) => ({ ...p, wire }))} />
+        <NumberField
+          label="Number of wires (optional)"
+          value={m.countText}
+          onChangeText={(countText) => setM((p) => ({ ...p, countText }))}
+          placeholder="e.g. 9"
+          integer
+          error={countError}
+        />
+      </Card>
       <ResultGroup
         hero={{ label: `Max ${wireSizeLabel(m.wire)} THHN in ${m.trade}" ${RACEWAY_LABEL[m.raceway]}`, value: result ? String(result.maxConductors) : undefined, unit: 'wires' }}
         rows={rows}

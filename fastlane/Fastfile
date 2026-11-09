@@ -2,7 +2,17 @@ default_platform(:android)
 
 PACKAGE_NAME = "com.kaipu.conduitbendcalc"
 PROJECT_ROOT = File.expand_path("..", __dir__)
-AAB_PATH = ENV["AAB_PATH"] || Dir[File.join(PROJECT_ROOT, "dist", "*.aab")].max
+def resolve_latest_aab(dist_dir)
+  aabs = Dir[File.join(dist_dir, "*.aab")].reject { |f| File.basename(f).start_with?("._") }
+  return nil if aabs.empty?
+
+  aabs.max_by do |path|
+    match = path.match(/-vc(\d+)\.aab$/)
+    match ? match[1].to_i : File.mtime(path).to_i
+  end
+end
+
+AAB_PATH = ENV["AAB_PATH"] || resolve_latest_aab(File.join(PROJECT_ROOT, "dist"))
 JSON_KEY = ENV["PLAY_JSON_KEY"] || File.join(Dir.home, ".fastlane", "keys", "conduit-play-sa.json")
 
 platform :android do

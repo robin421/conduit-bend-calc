@@ -65,7 +65,7 @@ export default function ConduitTypeToggle({
               style={[
                 styles.option,
                 index > 0 && {
-                  borderLeftWidth: StyleSheet.hairlineWidth,
+                  borderLeftWidth: 1,
                   borderLeftColor: theme.colors.border,
                 },
                 {
@@ -99,7 +99,7 @@ export default function ConduitTypeToggle({
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     overflow: 'hidden',
   },
   option: {

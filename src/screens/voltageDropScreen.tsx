@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import { calculateVoltageDrop, smallestSizeWithinDrop } from '../calculators/voltageDrop/voltageDrop';
 import type { Phase } from '../calculators/voltageDrop/voltageDrop';
+import Card from '../components/card';
 import NumberField, { parseNumberInput } from '../components/numberField';
 import OptionRow from '../components/optionRow';
 import ResultGroup from '../components/resultGroup';
@@ -74,13 +75,15 @@ export default function VoltageDropScreen() {
       contentContainerStyle={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.md }]}
       keyboardShouldPersistTaps="handled"
     >
-      <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => setM((p) => ({ ...p, metal }))} />
-      <OptionRow label="System" options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? 'Single-phase' : 'Three-phase')} onChange={(phase) => setM((p) => ({ ...p, phase }))} />
-      <OptionRow label="Voltage (V)" options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => setM((p) => ({ ...p, volts }))} />
-      <OptionRow label="Wire size" options={sizes} value={size} perRow={6} onChange={(s) => setM((p) => ({ ...p, size: s }))} />
-      <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => setM((p) => ({ ...p, ampsText }))} placeholder="e.g. 16" error={ampsError} />
-      <NumberField label="One-way length" unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => setM((p) => ({ ...p, lengthText }))} placeholder={metric ? 'e.g. 30' : 'e.g. 100'} error={lengthError} />
-      <OptionRow label="Limit" options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? 'Branch 3%' : 'Feeder + branch 5%')} onChange={(l) => setM((p) => ({ ...p, limit: l }))} />
+      <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
+        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => setM((p) => ({ ...p, metal }))} />
+        <OptionRow label="System" options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? 'Single-phase' : 'Three-phase')} onChange={(phase) => setM((p) => ({ ...p, phase }))} />
+        <OptionRow label="Voltage (V)" options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => setM((p) => ({ ...p, volts }))} />
+        <OptionRow label="Wire size" options={sizes} value={size} perRow={6} onChange={(s) => setM((p) => ({ ...p, size: s }))} />
+        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => setM((p) => ({ ...p, ampsText }))} placeholder="e.g. 16" error={ampsError} />
+        <NumberField label="One-way length" unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => setM((p) => ({ ...p, lengthText }))} placeholder={metric ? 'e.g. 30' : 'e.g. 100'} error={lengthError} />
+        <OptionRow label="Limit" options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? 'Branch 3%' : 'Feeder + branch 5%')} onChange={(l) => setM((p) => ({ ...p, limit: l }))} />
+      </Card>
       <ResultGroup
         hero={{ label: 'Voltage drop', value: result ? (result.dropFraction * 100).toFixed(2) : undefined, unit: '%' }}
         rows={

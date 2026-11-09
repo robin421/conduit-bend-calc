@@ -186,7 +186,15 @@ function FractionBox({
   cursorColor,
   accessibilityLabel,
   style,
-}: FractionBoxProps) {
+  isError,
+  accentColor,
+  defaultBorderColor,
+}: FractionBoxProps & {
+  isError?: boolean;
+  accentColor?: string;
+  defaultBorderColor?: string;
+}) {
+  const [focused, setFocused] = useState(false);
   return (
     <TextInput
       ref={(node) => {
@@ -198,7 +206,11 @@ function FractionBox({
       }}
       value={value}
       onChangeText={onChangeText}
-      onBlur={onBlur}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        onBlur();
+      }}
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
       selectionColor={selectionColor}
@@ -208,7 +220,17 @@ function FractionBox({
       autoCapitalize="none"
       autoCorrect={false}
       accessibilityLabel={accessibilityLabel}
-      style={style}
+      style={[
+        style,
+        {
+          borderColor: isError
+            ? defaultBorderColor
+            : focused && accentColor
+              ? accentColor
+              : defaultBorderColor,
+          borderWidth: isError || focused ? 2 : 1,
+        },
+      ]}
     />
   );
 }
@@ -228,6 +250,7 @@ export default function ImperialInput({
   const { t } = useI18n();
   const metric = unit === 'metric';
   const fractional = unit === 'fractional';
+  const [standardFocused, setStandardFocused] = useState(false);
 
   // 分数英寸：三个数字框是本地状态；value 仍是单一来源（外部变化时回填）。
   const [parts, setParts] = useState<FractionalParts>(() => splitFractional(value));
@@ -370,8 +393,11 @@ export default function ImperialInput({
     <View style={style}>
       <Text
         style={{
-          color: theme.colors.textSecondary,
+          color: standardFocused
+            ? theme.colors.accentText
+            : theme.colors.textSecondary,
           fontSize: theme.fontSize.secondary,
+          fontWeight: standardFocused ? theme.fontWeight.medium : theme.fontWeight.regular,
           marginBottom: theme.spacing.sm,
         }}
       >
@@ -392,6 +418,9 @@ export default function ImperialInput({
             selectionColor={theme.colors.accent}
             cursorColor={theme.colors.accent}
             accessibilityLabel={`${label} inches`}
+            isError={Boolean(error)}
+            accentColor={theme.colors.accent}
+            defaultBorderColor={borderColor}
             style={[styles.input, styles.fractionWhole, fractionInputStyle]}
           />
           <FractionBox
@@ -403,6 +432,9 @@ export default function ImperialInput({
             selectionColor={theme.colors.accent}
             cursorColor={theme.colors.accent}
             accessibilityLabel={`${label} numerator`}
+            isError={Boolean(error)}
+            accentColor={theme.colors.accent}
+            defaultBorderColor={borderColor}
             style={[styles.input, styles.fractionPart, fractionInputStyle, styles.centeredText]}
           />
           <Text
@@ -425,6 +457,9 @@ export default function ImperialInput({
             selectionColor={theme.colors.accent}
             cursorColor={theme.colors.accent}
             accessibilityLabel={`${label} denominator`}
+            isError={Boolean(error)}
+            accentColor={theme.colors.accent}
+            defaultBorderColor={borderColor}
             style={[styles.input, styles.fractionPart, fractionInputStyle, styles.centeredText]}
           />
         </View>
@@ -432,7 +467,11 @@ export default function ImperialInput({
         <TextInput
           value={value}
           onChangeText={handleTextChange}
-          onBlur={handleBlur}
+          onFocus={() => setStandardFocused(true)}
+          onBlur={() => {
+            setStandardFocused(false);
+            handleBlur();
+          }}
           placeholder={resolvedPlaceholder}
           placeholderTextColor={theme.colors.textSecondary}
           selectionColor={theme.colors.accent}
@@ -441,7 +480,18 @@ export default function ImperialInput({
           inputMode={resolvedInputMode}
           autoCapitalize="none"
           autoCorrect={false}
-          style={[styles.input, inputStyle]}
+          style={[
+            styles.input,
+            inputStyle,
+            {
+              borderColor: error
+                ? theme.colors.error
+                : standardFocused
+                  ? theme.colors.accent
+                  : theme.colors.border,
+              borderWidth: error || standardFocused ? 2 : 1,
+            },
+          ]}
         />
       )}
 
@@ -463,7 +513,7 @@ export default function ImperialInput({
 const styles = StyleSheet.create({
   input: {
     minHeight: 56,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     fontVariant: ['tabular-nums'],
   },
   fractionRow: {

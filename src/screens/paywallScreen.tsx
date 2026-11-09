@@ -306,13 +306,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   footer: {
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: Platform.OS === 'android' ? 1 : StyleSheet.hairlineWidth,
     width: '100%',
     maxWidth: 720,
     alignSelf: 'center',
   },
   featureRow: {
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: Platform.OS === 'android' ? 1 : StyleSheet.hairlineWidth,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,

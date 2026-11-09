@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import { calculateWireSize, defaultTempColumn } from '../calculators/wireSize/wireSize';
+import Card from '../components/card';
 import NumberField, { parseNumberInput } from '../components/numberField';
 import OptionRow from '../components/optionRow';
 import ResultGroup from '../components/resultGroup';
@@ -57,10 +58,12 @@ export default function WireSizeScreen() {
       contentContainerStyle={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.md }]}
       keyboardShouldPersistTaps="handled"
     >
-      <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => setM((p) => ({ ...p, ampsText }))} placeholder="e.g. 20" error={ampsError} />
-      <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => setM((p) => ({ ...p, metal }))} />
-      <OptionRow label="Continuous load (3 h or more)" options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? 'Yes, ×125%' : 'No')} onChange={(c) => setM((p) => ({ ...p, continuous: c }))} />
-      <OptionRow label="Termination rating" options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => setM((p) => ({ ...p, column }))} />
+      <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
+        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => setM((p) => ({ ...p, ampsText }))} placeholder="e.g. 20" error={ampsError} />
+        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => setM((p) => ({ ...p, metal }))} />
+        <OptionRow label="Continuous load (3 h or more)" options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? 'Yes, ×125%' : 'No')} onChange={(c) => setM((p) => ({ ...p, continuous: c }))} />
+        <OptionRow label="Termination rating" options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => setM((p) => ({ ...p, column }))} />
+      </Card>
       <ResultGroup
         hero={{ label: 'Minimum wire size', value: result ? wireSizeLabel(result.size) : undefined }}
         rows={

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Platform,
   Pressable,
   Share,
   StyleSheet,
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: Platform.OS === 'android' ? 1 : StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
   },

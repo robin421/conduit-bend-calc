@@ -47,10 +47,13 @@ export default function WarningBar({ warnings }: WarningBarProps) {
               styles.bar,
               {
                 borderLeftColor: color,
+                borderTopColor: `${color}33`,
+                borderRightColor: `${color}33`,
+                borderBottomColor: `${color}33`,
                 backgroundColor: `${color}1A`,
                 borderRadius: theme.radius,
                 paddingHorizontal: theme.spacing.md,
-                paddingVertical: 10,
+                paddingVertical: 12,
               },
             ]}
             accessibilityRole="alert"
@@ -85,6 +88,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     borderLeftWidth: 4,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
     gap: 10,
     overflow: 'hidden',
   },
