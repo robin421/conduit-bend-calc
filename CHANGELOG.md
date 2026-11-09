@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.10.1 — Material 3 Android UI Polish & 16 KB Page Verification (T76-T77)
+
+### Android UI/UX Refinements (Material 3)
+- Navigation: Standard 80dp Material 3 bottom navigation bar with active accent pill indicator.
+- Inputs: 2dp active focus borders, high-contrast cursor and selection colors, and stateful focus tracking on Imperial and Decimal input fields.
+- Cards & Hierarchy: Standardized Card containers across all electrician and conduit calculators (Fill, Voltage Drop, Wire Size).
+- Borders: Crisp 1dp contour borders on Android for elevated contrast and readability.
+
+### Fastlane & Distribution
+- Fixed Fastlane bundle resolution to extract numerical version codes (`vc(\d+)`) reliably.
+- Verified 16 KB memory page size compliance across all native `.so` libraries.
+
+### Version
+- `versionName` 1.10.1, `versionCode` 10.
+
 ## v1.10.0 — Electrician Calculators: Conduit Fill, Voltage Drop, Wire Size (T74)
 
 ### New Offline Calculators

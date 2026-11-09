@@ -46,7 +46,9 @@ jobs:
           ')
           if [ -n "$BUILD_URL" ]; then
             echo "Downloading build artifact from $BUILD_URL..."
-            curl -fL "$BUILD_URL" -o dist/conduit-bend-calc-1.10.0-vc9.aab
+            PKG_VERSION=$(node -p "require('./package.json').version")
+            PKG_VC=$(node -p "require('./app.json').expo.android.versionCode")
+            curl -fL "$BUILD_URL" -o "dist/conduit-bend-calc-${PKG_VERSION}-vc${PKG_VC}.aab"
           else
             echo "Warning: no buildUrl found in eas-build-output.json"
           fi

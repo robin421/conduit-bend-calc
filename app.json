@@ -2,7 +2,7 @@
   "expo": {
     "name": "Conduit Bend Calc",
     "slug": "conduit-bend-calc",
-    "version": "1.10.0",
+    "version": "1.10.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "com.kaipu.conduitbendcalc",
-      "versionCode": 9,
+      "versionCode": 10,
       "googleServicesFile": "./google-services.json",
       "permissions": ["com.android.vending.BILLING"],
       "adaptiveIcon": {
