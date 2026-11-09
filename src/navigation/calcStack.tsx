@@ -34,7 +34,7 @@ export type CalcStackParamList = {
   GuidedCalibration: undefined;
   Calibration: undefined;
   Bender: { conduitTypeFilter?: ConduitType } | undefined;
-  Paywall: undefined;
+  Paywall: { triggerSource?: string } | undefined;
   Placeholder: { title: string };
 };
 

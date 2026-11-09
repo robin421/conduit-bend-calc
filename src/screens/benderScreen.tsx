@@ -51,7 +51,7 @@ export default function BenderScreen({ route, navigation }: Props) {
           customSpecs={customSpecs}
           onChange={handleChange}
           onCreateCustom={handleCreateCustom}
-          onUnlockPro={() => navigation.navigate('Paywall')}
+          onUnlockPro={() => navigation.navigate('Paywall', { triggerSource: 'bender_picker' })}
           conduitTypeFilter={conduitTypeFilter}
         />
       </Card>

@@ -1,6 +1,14 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import BigButton from '../components/bigButton';
@@ -12,6 +20,8 @@ import {
   useProAccess,
 } from '../lib/proStore';
 import { SKU_UNAVAILABLE_MESSAGE } from '../lib/iap';
+import { GOOGLE_PLAY_URL } from '../lib/homeContent';
+import { trackEvent } from '../lib/analytics';
 import { logFirebaseProPaywallViewed } from '../lib/firebase';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
@@ -30,7 +40,7 @@ const PRO_BENEFITS = [
   'Save multiple bender profiles',
 ];
 
-export default function PaywallScreen({ navigation }: Props) {
+export default function PaywallScreen({ route, navigation }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { access, productPrice, initialized, lastError, pendingPurchase, skuAvailability } =
@@ -39,6 +49,8 @@ export default function PaywallScreen({ navigation }: Props) {
   const [restoring, setRestoring] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  const triggerSource = route.params?.triggerSource ?? 'direct';
+
   // 购买成功（access 变 unlocked）后自动关闭付费墙。
   useEffect(() => {
     if (access === 'unlocked') {
@@ -46,10 +58,11 @@ export default function PaywallScreen({ navigation }: Props) {
     }
   }, [access, navigation]);
 
-  // 付费墙展示埋点（仅原生端 Firebase，web no-op）。
+  // 付费墙展示埋点（原生端 Firebase + Web 端 GA4）
   useEffect(() => {
-    logFirebaseProPaywallViewed();
-  }, []);
+    logFirebaseProPaywallViewed(triggerSource);
+    trackEvent('pro_paywall_viewed', { trigger_source: triggerSource });
+  }, [triggerSource]);
 
   // 挂载时若产品信息缺失（启动时离线等），刷新一次。
   useEffect(() => {
@@ -202,7 +215,31 @@ export default function PaywallScreen({ navigation }: Props) {
           </Text>
         ) : null}
 
-        {skuAvailability !== 'available' ? (
+        {Platform.OS === 'web' ? (
+          <>
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                textAlign: 'center',
+              }}
+            >
+              Pro bender calibration and full offline access are unlocked on the Android app.
+            </Text>
+            <BigButton
+              title="Get on Google Play to Unlock Pro"
+              variant="primary"
+              onPress={() => {
+                trackEvent('google_play_click', { source: 'paywall' });
+                if (typeof window !== 'undefined') {
+                  window.open(GOOGLE_PLAY_URL, '_blank', 'noopener,noreferrer');
+                } else {
+                  void Linking.openURL(GOOGLE_PLAY_URL);
+                }
+              }}
+            />
+          </>
+        ) : skuAvailability !== 'available' ? (
           <Text
             style={{
               color: theme.colors.textSecondary,
@@ -223,14 +260,16 @@ export default function PaywallScreen({ navigation }: Props) {
             }}
           />
         )}
-        <BigButton
-          title={restoring ? 'Restoring…' : 'Restore Purchase'}
-          variant="secondary"
-          disabled={busy}
-          onPress={() => {
-            void handleRestore();
-          }}
-        />
+        {Platform.OS !== 'web' ? (
+          <BigButton
+            title={restoring ? 'Restoring…' : 'Restore Purchase'}
+            variant="secondary"
+            disabled={busy}
+            onPress={() => {
+              void handleRestore();
+            }}
+          />
+        ) : null}
         <Pressable
           accessibilityRole="button"
           disabled={busy}

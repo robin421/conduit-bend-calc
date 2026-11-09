@@ -30,7 +30,7 @@ import {
 import type { ConduitType } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
-import { useCalculatorAnalytics } from '../lib/analytics';
+import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
@@ -178,9 +178,10 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
     };
   }, [angle, riseInches, riseText, result, rollInches, rollText, spec, unit]);
 
+  const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('rolling', historyEntry?.signature ?? null);
-  useFirebaseCalculationCompleted('rolling', historyEntry?.signature ?? null);
+  useCalculatorAnalytics('rolling', historyEntry?.signature ?? null, { unitSystem });
+  useFirebaseCalculationCompleted('rolling', historyEntry?.signature ?? null, { unitSystem });
 
   const handleClear = useCallback(() => {
     setMemory({ riseText: '', rollText: '', angle: DEFAULT_ANGLE });
@@ -305,11 +306,14 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
         profile={activeProfile}
         isPro={access === 'unlocked'}
         showCalibrateCta={result !== null}
-        onCalibrate={() =>
-          navigation.navigate(
-            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
-          )
-        }
+        onCalibrate={() => {
+          trackEvent('calibration_cta_click', { source: 'rolling_offset_result' });
+          if (access === 'unlocked') {
+            navigation.navigate('GuidedCalibration');
+          } else {
+            navigation.navigate('Paywall', { triggerSource: 'rolling_offset_calibration' });
+          }
+        }}
       />
 
       <ExpectedActualFeedback
@@ -323,7 +327,9 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
         result={feasibility}
         isPro={access === 'unlocked'}
         unit={unit}
-        onCheckFeasibility={() => navigation.navigate('Paywall')}
+        onCheckFeasibility={() =>
+          navigation.navigate('Paywall', { triggerSource: 'rolling_offset_feasibility' })
+        }
       />
 
       <WarningBar warnings={warnings} />

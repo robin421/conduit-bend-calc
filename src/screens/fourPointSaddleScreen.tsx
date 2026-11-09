@@ -32,7 +32,7 @@ import {
 import type { ConduitType } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
-import { useCalculatorAnalytics } from '../lib/analytics';
+import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
@@ -191,9 +191,10 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
     };
   }, [angle, heightInches, heightText, result, spec, unit, widthInches, widthText]);
 
+  const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('saddle4', historyEntry?.signature ?? null);
-  useFirebaseCalculationCompleted('saddle4', historyEntry?.signature ?? null);
+  useCalculatorAnalytics('saddle4', historyEntry?.signature ?? null, { unitSystem });
+  useFirebaseCalculationCompleted('saddle4', historyEntry?.signature ?? null, { unitSystem });
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', widthText: '', angle: DEFAULT_ANGLE });
@@ -295,11 +296,14 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         profile={activeProfile}
         isPro={access === 'unlocked'}
         showCalibrateCta={result !== null}
-        onCalibrate={() =>
-          navigation.navigate(
-            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
-          )
-        }
+        onCalibrate={() => {
+          trackEvent('calibration_cta_click', { source: 'four_point_saddle_result' });
+          if (access === 'unlocked') {
+            navigation.navigate('GuidedCalibration');
+          } else {
+            navigation.navigate('Paywall', { triggerSource: 'four_point_saddle_calibration' });
+          }
+        }}
       />
 
       <ExpectedActualFeedback
@@ -313,7 +317,9 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         result={feasibility}
         isPro={access === 'unlocked'}
         unit={unit}
-        onCheckFeasibility={() => navigation.navigate('Paywall')}
+        onCheckFeasibility={() =>
+          navigation.navigate('Paywall', { triggerSource: 'four_point_saddle_feasibility' })
+        }
       />
 
       <WarningBar warnings={warnings} />

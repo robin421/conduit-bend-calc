@@ -14,16 +14,20 @@ export function initFirebase(): void {}
 
 export function logFirebaseScreenView(_screenName: string): void {}
 
-export function logFirebaseCalculationCompleted(_bendType: CalculatorSlug): void {}
+export function logFirebaseCalculationCompleted(
+  _bendType: CalculatorSlug,
+  _options?: { unitSystem?: 'imperial' | 'metric' },
+): void {}
 
 export function logFirebaseUnitSystemChanged(
   _from: UnitSystemSlug,
   _to: UnitSystemSlug,
 ): void {}
 
-export function logFirebaseProPaywallViewed(): void {}
+export function logFirebaseProPaywallViewed(_triggerSource = 'direct'): void {}
 
 export function useFirebaseCalculationCompleted(
   _bendType: CalculatorSlug,
   _signature: string | null,
+  _options?: { unitSystem?: 'imperial' | 'metric' },
 ): void {}

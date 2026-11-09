@@ -10,6 +10,8 @@ import { RACEWAY_TYPES, TRADE_SIZES, WIRE_SIZES, wireSizeLabel } from '../consta
 import type { RacewayType, TradeSize, WireSize } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useCalculatorAnalytics } from '../lib/analytics';
+import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useTheme } from '../theme';
 
 const RACEWAY_LABEL: Record<RacewayType, string> = { EMT: 'EMT', IMC: 'IMC', RMC: 'Rigid', PVC40: 'PVC' };
@@ -31,6 +33,10 @@ export default function ConduitFillScreen() {
     () => calculateConduitFill(m.raceway, m.trade, m.wire, count !== null && !countError ? count : undefined),
     [m.raceway, m.trade, m.wire, count, countError],
   );
+
+  const signature = result ? `conduit_fill|${m.raceway}|${m.trade}|${m.wire}|${count ?? ''}` : null;
+  useCalculatorAnalytics('conduit_fill', signature);
+  useFirebaseCalculationCompleted('conduit_fill', signature);
 
   const warnings: LayoutWarning[] = [];
   if (result?.fits === false) {

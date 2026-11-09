@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
   createCustomSpec,
@@ -35,8 +35,13 @@ import {
 } from '../lib/profile';
 import type { ConduitType } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
-import { createHistoryId, useHistoryAutoSave } from '../lib/history';
-import { useCalculatorAnalytics } from '../lib/analytics';
+import {
+  createHistoryId,
+  formatHistoryTime,
+  loadHistory,
+  useHistoryAutoSave,
+} from '../lib/history';
+import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
@@ -162,9 +167,46 @@ export default function StubScreen({ route, navigation }: Props) {
     };
   }, [heightInches, heightText, markPoint, spec, unit]);
 
+  const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('stub', historyEntry?.signature ?? null);
-  useFirebaseCalculationCompleted('stub', historyEntry?.signature ?? null);
+  useCalculatorAnalytics('stub', historyEntry?.signature ?? null, { unitSystem });
+  useFirebaseCalculationCompleted('stub', historyEntry?.signature ?? null, { unitSystem });
+
+  const [recentBends, setRecentBends] = useState<HistoryEntry[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    void loadHistory()
+      .then((list) => {
+        if (active) {
+          const stubs = list.filter((item) => item.kind === 'stub').slice(0, 3);
+          setRecentBends(stubs);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [historyEntry?.signature]);
+
+  const handleRefillRecentBend = useCallback(
+    (entry: HistoryEntry) => {
+      if (entry.params?.heightText !== undefined) {
+        setHeightText(entry.params.heightText);
+      }
+      if (entry.params?.specKey) {
+        const resolved = resolveSpecKey(entry.params.specKey, customSpecs);
+        if (resolved) {
+          setSpec(resolved);
+          return;
+        }
+      }
+      if (entry.params?.selectedSize) {
+        setSpec(legacySizeToSpec(entry.params.selectedSize));
+      }
+    },
+    [customSpecs, setHeightText, setSpec],
+  );
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '' });
@@ -205,6 +247,38 @@ export default function StubScreen({ route, navigation }: Props) {
             onChange={handleConduitTypeChange}
           />
         </View>
+
+        <View style={{ marginTop: theme.spacing.sm }}>
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+              marginBottom: theme.spacing.xs,
+            }}
+          >
+            Quick EMT Size Presets
+          </Text>
+          <View style={{ flexDirection: 'row', gap: theme.spacing.xs }}>
+            {(['1/2', '3/4', '1'] as const).map((sz) => {
+              const isSelected =
+                spec.conduit.includes(`${sz}"`) && conduitType === 'EMT';
+              return (
+                <View key={sz} style={{ flex: 1 }}>
+                  <BigButton
+                    title={`${sz}" EMT`}
+                    size="selection"
+                    selected={isSelected}
+                    onPress={() => {
+                      setConduitType('EMT');
+                      setSpec(legacySizeToSpec(sz));
+                    }}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Target height"
@@ -214,6 +288,65 @@ export default function StubScreen({ route, navigation }: Props) {
             unit={unit}
             placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
           />
+          <View
+            style={{
+              marginTop: theme.spacing.xs,
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: 6,
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                marginRight: 2,
+              }}
+            >
+              Presets:
+            </Text>
+            {(unit === 'metric'
+              ? (['150', '250', '300', '450', '600'] as const)
+              : (['6', '10', '12', '18', '24'] as const)
+            ).map((h) => {
+              const isSelected =
+                heightText.trim() === h ||
+                heightText.trim() === `${h}"` ||
+                heightText.trim() === `${h} mm`;
+              return (
+                <Pressable
+                  key={h}
+                  accessibilityRole="button"
+                  onPress={() => setHeightText(h)}
+                  style={[
+                    styles.quickPresetChip,
+                    {
+                      backgroundColor: isSelected
+                        ? theme.colors.accent
+                        : theme.colors.card,
+                      borderColor: isSelected
+                        ? theme.colors.accent
+                        : theme.colors.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.quickPresetText,
+                      {
+                        color: isSelected
+                          ? theme.colors.onAccent
+                          : theme.colors.textPrimary,
+                      },
+                    ]}
+                  >
+                    {unit === 'metric' ? `${h}mm` : `${h}"`}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
       </Card>
 
@@ -232,15 +365,102 @@ export default function StubScreen({ route, navigation }: Props) {
         hint={hint}
       />
 
+      {recentBends.length > 0 ? (
+        <Card style={{ padding: theme.spacing.sm }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: theme.spacing.xs,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                fontWeight: theme.fontWeight.semibold,
+              }}
+            >
+              Recent 90° Bends (Tap to refill)
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => (navigation.getParent() as any)?.navigate('History')}
+            >
+              <Text
+                style={{
+                  color: theme.colors.accent,
+                  fontSize: theme.fontSize.secondary,
+                }}
+              >
+                View all →
+              </Text>
+            </Pressable>
+          </View>
+          <View style={{ gap: theme.spacing.xs }}>
+            {recentBends.map((item) => (
+              <Pressable
+                key={item.id}
+                accessibilityRole="button"
+                onPress={() => handleRefillRecentBend(item)}
+                style={[
+                  styles.recentBendItem,
+                  {
+                    backgroundColor: theme.colors.background,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      color: theme.colors.textPrimary,
+                      fontSize: theme.fontSize.body,
+                      fontWeight: theme.fontWeight.medium,
+                    }}
+                  >
+                    {item.inputSummary}
+                  </Text>
+                  <Text
+                    style={{
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.fontSize.secondary,
+                      fontVariant: ['tabular-nums'],
+                    }}
+                  >
+                    {formatHistoryTime(item.timestamp)}
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: theme.colors.accent,
+                    fontSize: theme.fontSize.body,
+                    fontWeight: theme.fontWeight.semibold,
+                    fontVariant: ['tabular-nums'],
+                  }}
+                >
+                  {item.resultSummary}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Card>
+      ) : null}
+
       <BenderStatusBanner
         profile={activeProfile}
         isPro={access === 'unlocked'}
         showCalibrateCta={markPoint !== null}
-        onCalibrate={() =>
-          navigation.navigate(
-            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
-          )
-        }
+        onCalibrate={() => {
+          trackEvent('calibration_cta_click', { source: 'stub_result' });
+          if (access === 'unlocked') {
+            navigation.navigate('GuidedCalibration');
+          } else {
+            navigation.navigate('Paywall', { triggerSource: 'stub_calibration' });
+          }
+        }}
       />
 
       <ExpectedActualFeedback
@@ -254,7 +474,9 @@ export default function StubScreen({ route, navigation }: Props) {
         result={feasibility}
         isPro={access === 'unlocked'}
         unit={unit}
-        onCheckFeasibility={() => navigation.navigate('Paywall')}
+        onCheckFeasibility={() =>
+          navigation.navigate('Paywall', { triggerSource: 'stub_feasibility' })
+        }
       />
       {markPoint !== null ? (
         <Text
@@ -280,5 +502,23 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 720,
     alignSelf: 'center',
+  },
+  quickPresetChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  quickPresetText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  recentBendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
   },
 });

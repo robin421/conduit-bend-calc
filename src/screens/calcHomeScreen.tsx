@@ -12,6 +12,7 @@ import {
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ProDownloadSheet from '../components/proDownloadSheet';
+import WebQuickCalculator from '../components/webQuickCalculator';
 import {
   FOUR_POINT_SADDLE_ICON,
   THREE_POINT_SADDLE_ICON,
@@ -79,7 +80,9 @@ export default function CalcHomeScreen({ navigation }: Props) {
       return;
     }
     if (entry.pro && access === 'locked') {
-      navigation.navigate('Paywall');
+      navigation.navigate('Paywall', {
+        triggerSource: `calc_home_${entry.key.toLowerCase()}`,
+      });
       return;
     }
     if (entry.key === 'Offset') {
@@ -151,6 +154,13 @@ export default function CalcHomeScreen({ navigation }: Props) {
           />
         </View>
       </View>
+
+      {Platform.OS === 'web' ? (
+        <WebQuickCalculator
+          onOpenStub={() => navigation.navigate('Stub')}
+          onOpenOffset={() => navigation.navigate('Offset')}
+        />
+      ) : null}
 
       {ENTRIES.map((entry) => (
         <Card

@@ -3,6 +3,9 @@ import { test } from 'node:test';
 
 import {
   dispatchAnalyticsEvent,
+  getAnalyticsPlatform,
+  isLocalDevEnvironment,
+  normalizeToolName,
   trackEvent,
   trackInternalLinkClick,
   trackSeoToolCalculate,
@@ -114,4 +117,26 @@ test('SEO 事件：事件名与 tool_name 参数口径正确', () => {
     ],
     ['event', 'internal_link_click', { from: 'stub-up', to: 'offset' }],
   ]);
+});
+
+test('normalizeToolName: 规范化所有弯管与电工工具 slug', () => {
+  assert.equal(normalizeToolName('stub'), 'stub');
+  assert.equal(normalizeToolName('offset'), 'offset');
+  assert.equal(normalizeToolName('saddle3'), 'three_point_saddle');
+  assert.equal(normalizeToolName('saddle4'), 'four_point_saddle');
+  assert.equal(normalizeToolName('rolling'), 'rolling_offset');
+  assert.equal(normalizeToolName('kicked90'), 'kicked_90');
+  assert.equal(normalizeToolName('conduit_fill'), 'conduit_fill');
+  assert.equal(normalizeToolName('voltage_drop'), 'voltage_drop');
+  assert.equal(normalizeToolName('wire_sizing'), 'wire_sizing');
+  assert.equal(normalizeToolName('shrink'), 'shrink');
+});
+
+test('getAnalyticsPlatform: 返回有效平台标识', () => {
+  const p = getAnalyticsPlatform();
+  assert.ok(p === 'web' || p === 'android' || p === 'ios');
+});
+
+test('isLocalDevEnvironment: Node 运行且无 localhost window 时为 false', () => {
+  assert.equal(isLocalDevEnvironment(), false);
 });

@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 
 import {
-  DOWNLOAD_BANNER_COPY,
+  detectClientDevice,
+  getDownloadBannerCopy,
   DOWNLOAD_BANNER_DISMISS_DAYS,
   DOWNLOAD_BANNER_DISMISS_KEY,
 } from '../lib/downloadBannerCopy';
@@ -107,11 +108,14 @@ export default function DownloadBanner() {
     setVisible(false);
   };
 
+  const device = detectClientDevice();
+  const bannerCopy = getDownloadBannerCopy(device);
+
   return (
     <>
       <View
         accessibilityRole="header"
-        accessibilityLabel="Download the Conduit Bend Calc app"
+        accessibilityLabel={bannerCopy.title}
         style={[styles.banner, { backgroundColor: theme.colors.accent }]}
       >
         <Image
@@ -124,34 +128,58 @@ export default function DownloadBanner() {
             numberOfLines={1}
             style={[styles.title, { color: theme.colors.onAccent }]}
           >
-            {DOWNLOAD_BANNER_COPY.title}
+            {bannerCopy.title}
           </Text>
           <Text
             numberOfLines={1}
             style={[styles.subtitle, { color: theme.colors.onAccent }]}
           >
-            {DOWNLOAD_BANNER_COPY.subtitle}
+            {bannerCopy.subtitle}
           </Text>
         </View>
-        <AnchorText
-          accessibilityRole="link"
-          accessibilityLabel="Get the Conduit Bend Calc app on Google Play"
-          href={GOOGLE_PLAY_URL}
-          hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
-          onPress={() => {
-            // gtag 同步 push 到 dataLayer，不阻塞 <a> 默认跳转。
-            trackEvent('google_play_click', { source: 'banner' });
-          }}
-          style={
-            [
+        {device === 'android' ? (
+          <AnchorText
+            accessibilityRole="link"
+            accessibilityLabel="Get the Conduit Bend Calc app on Google Play"
+            href={GOOGLE_PLAY_URL}
+            hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
+            onPress={() => {
+              // gtag 同步 push 到 dataLayer，不阻塞 <a> 默认跳转。
+              trackEvent('google_play_click', { source: 'banner' });
+            }}
+            style={
+              [
+                styles.getButton,
+                styles.getText,
+                { color: theme.colors.onAccent },
+              ] as StyleProp<TextStyle>
+            }
+          >
+            {bannerCopy.button}
+          </AnchorText>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Acknowledge offline notice"
+            onPress={() => {
+              trackEvent('offline_notice_ack', { device });
+              handleDismiss();
+            }}
+            style={[
               styles.getButton,
-              styles.getText,
-              { color: theme.colors.onAccent },
-            ] as StyleProp<TextStyle>
-          }
-        >
-          {DOWNLOAD_BANNER_COPY.button}
-        </AnchorText>
+              { backgroundColor: 'rgba(255,255,255,0.2)' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.getText,
+                { color: theme.colors.onAccent },
+              ]}
+            >
+              {bannerCopy.button}
+            </Text>
+          </Pressable>
+        )}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Dismiss download banner"

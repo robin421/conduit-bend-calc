@@ -1,0 +1,54 @@
+Stop wasting pipe on trial-and-error bends. Conduit Bender & EMT Pipe Calc is the fast, offline-first bending calculator built for commercial electricians, industrial electricians, and electrical apprentices.
+
+Calculate exact mark-to-mark distances, shrink allowances, and cut marks in seconds. Read every result in real-world tape-measure fractions down to 1/16"—no mental decimal conversions while standing on a ladder.
+
+----------------------------------------
+CALIBRATED FOR YOUR BENDER
+----------------------------------------
+Bender shoes vary between manufacturers. The app includes precision presets compatible with major hand benders:
+• Calibrated for Ideal® iron and aluminum benders
+• Compatible with Klein Tools® cast aluminum and steel series
+• Pre-configured for Greenlee® Site-Rite® series
+• Compatible with Milwaukee® and Gardner Bender models
+• Custom Bender Profiles (Pro): Dial in exact take-up, gain, and deduction values for worn shoes or hydraulic benders.
+
+----------------------------------------
+CORE BENDING CALCULATORS
+----------------------------------------
+• 90° Stub-Up: Enter desired stub height; automatically applies take-up deduction for the exact first mark. Single-thumb presets for 1/2", 3/4", and 1" EMT.
+• Offset Bends: Enter obstruction height and bend angle (10°, 15°, 22.5°, 30°, 45°, 60°). Calculates multiplier spacing and total pipe shrink instantly.
+• 3-Point Saddle: Clear round obstacles. Enter diameter/height and bend angle (45° center with 22.5° sides, or 60°/30°).
+• 4-Point Saddle: Clear rectangular ducts and wide obstructions with dual offset calculations.
+• Kicked 90° Bends: Combine a 90° bend with an offset kick in a single stick of pipe.
+• Rolling Offset: Calculate compound offsets across both rise and roll dimensions.
+
+----------------------------------------
+NEW: NEC CONDUIT FILL & WIRE SIZING
+----------------------------------------
+• NEC Annex C Conduit Fill: Instant maximum conductor capacity for EMT, IMC, and Rigid conduits (Table C.1).
+• 40% Fill Rule Compliance: Verify multi-wire raceway fill instantly to avoid NEC code violations.
+• Wire Ampacity & Sizing: Copper and aluminum conductor sizing based on NEC 2023 ratings.
+• Voltage Drop Calculator: Accurate single-phase and three-phase run calculations.
+
+----------------------------------------
+FIELD-READY FEATURES
+----------------------------------------
+• Tape Measure Fractions: True fractional inches (e.g. 14 3/8", 22 5/16") with 1/16" precision. Metric mode (mm/cm) supported.
+• Multi-Conduit Support: Handles EMT, IMC, and Rigid heavy-wall steel in 1/2", 3/4", 1", and 1-1/4" trade sizes.
+• Trade Reference Tables: Quick access to multipliers, shrink tables, and NEC reference charts.
+• Visual Bend Diagrams: Graphical guides showing bender hook and arrow orientation.
+• Recent Bends History: Reopen recent runs on the job site with one tap.
+
+----------------------------------------
+100% OFFLINE & PRIVACY-FIRST
+----------------------------------------
+• No login or account required.
+• Works 100% offline in electrical rooms, utility basements, and high-rise sites with zero signal.
+• No ads. Clean interface designed for rapid one-handed use with work gloves.
+
+Bend with confidence. Save scrap pipe. Master the conduit trade with Conduit Bender & EMT Pipe Calc.
+
+----------------------------------------
+TRADEMARK DISCLAIMER
+----------------------------------------
+Independent calculator tool; not affiliated with or endorsed by Ideal Industries, Klein Tools, Greenlee, or Milwaukee Electric Tool Corp. All brand names belong to their respective owners.

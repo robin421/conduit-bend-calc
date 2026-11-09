@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Upload the signed AAB to the production track
 
+### android metadata
+
+```sh
+[bundle exec] fastlane android metadata
+```
+
+Upload metadata, descriptions, and screenshots to Google Play
+
 ### android status
 
 ```sh

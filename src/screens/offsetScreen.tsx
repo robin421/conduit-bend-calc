@@ -30,7 +30,7 @@ import {
 import type { ConduitType } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { useHistoryAutoSave, createHistoryId } from '../lib/history';
-import { useCalculatorAnalytics } from '../lib/analytics';
+import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
@@ -156,9 +156,10 @@ export default function OffsetScreen({ route, navigation }: Props) {
     };
   }, [angle, heightInches, heightText, result, spec, unit]);
 
+  const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('offset', historyEntry?.signature ?? null);
-  useFirebaseCalculationCompleted('offset', historyEntry?.signature ?? null);
+  useCalculatorAnalytics('offset', historyEntry?.signature ?? null, { unitSystem });
+  useFirebaseCalculationCompleted('offset', historyEntry?.signature ?? null, { unitSystem });
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', angle: DEFAULT_ANGLE });
@@ -245,11 +246,14 @@ export default function OffsetScreen({ route, navigation }: Props) {
         profile={activeProfile}
         isPro={access === 'unlocked'}
         showCalibrateCta={result !== null}
-        onCalibrate={() =>
-          navigation.navigate(
-            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
-          )
-        }
+        onCalibrate={() => {
+          trackEvent('calibration_cta_click', { source: 'offset_result' });
+          if (access === 'unlocked') {
+            navigation.navigate('GuidedCalibration');
+          } else {
+            navigation.navigate('Paywall', { triggerSource: 'offset_calibration' });
+          }
+        }}
       />
 
       <ExpectedActualFeedback
@@ -263,7 +267,9 @@ export default function OffsetScreen({ route, navigation }: Props) {
         result={feasibility}
         isPro={access === 'unlocked'}
         unit={unit}
-        onCheckFeasibility={() => navigation.navigate('Paywall')}
+        onCheckFeasibility={() =>
+          navigation.navigate('Paywall', { triggerSource: 'offset_feasibility' })
+        }
       />
 
       {result ? (

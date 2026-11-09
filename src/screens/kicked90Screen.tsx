@@ -29,7 +29,7 @@ import {
 import type { ConduitType } from '../lib/profile';
 import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
-import { useCalculatorAnalytics } from '../lib/analytics';
+import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
@@ -167,9 +167,10 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     };
   }, [kickAngle, kickText, lengthInches, lengthText, result, spec, unit]);
 
+  const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('kicked90', historyEntry?.signature ?? null);
-  useFirebaseCalculationCompleted('kicked90', historyEntry?.signature ?? null);
+  useCalculatorAnalytics('kicked90', historyEntry?.signature ?? null, { unitSystem });
+  useFirebaseCalculationCompleted('kicked90', historyEntry?.signature ?? null, { unitSystem });
 
   const handleClear = useCallback(() => {
     setMemory({ kickText: '', lengthText: '' });
@@ -277,11 +278,14 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         profile={activeProfile}
         isPro={access === 'unlocked'}
         showCalibrateCta={result !== null}
-        onCalibrate={() =>
-          navigation.navigate(
-            access === 'unlocked' ? 'GuidedCalibration' : 'Paywall',
-          )
-        }
+        onCalibrate={() => {
+          trackEvent('calibration_cta_click', { source: 'kicked_90_result' });
+          if (access === 'unlocked') {
+            navigation.navigate('GuidedCalibration');
+          } else {
+            navigation.navigate('Paywall', { triggerSource: 'kicked_90_calibration' });
+          }
+        }}
       />
 
       <ExpectedActualFeedback
@@ -295,7 +299,9 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         result={feasibility}
         isPro={access === 'unlocked'}
         unit={unit}
-        onCheckFeasibility={() => navigation.navigate('Paywall')}
+        onCheckFeasibility={() =>
+          navigation.navigate('Paywall', { triggerSource: 'kicked_90_feasibility' })
+        }
       />
 
       <WarningBar warnings={warnings} />

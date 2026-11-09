@@ -10,6 +10,8 @@ import { CONTINUOUS_LOAD_FACTOR, TEMP_COLUMNS, wireSizeLabel } from '../constant
 import type { ConductorMetal, TempColumn } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useCalculatorAnalytics } from '../lib/analytics';
+import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useTheme } from '../theme';
 
 const COLUMN_CHOICES = ['auto', ...TEMP_COLUMNS] as const;
@@ -31,6 +33,10 @@ export default function WireSizeScreen() {
     if (amps === null || ampsError) return null;
     return calculateWireSize({ metal: m.metal, amps, continuous, column: m.column === 'auto' ? undefined : (m.column as TempColumn) });
   }, [amps, ampsError, m.metal, continuous, m.column]);
+
+  const signature = result ? `wire_sizing|${m.metal}|${amps}|${continuous}|${m.column}|${result.size}` : null;
+  useCalculatorAnalytics('wire_sizing', signature);
+  useFirebaseCalculationCompleted('wire_sizing', signature);
 
   const warnings: LayoutWarning[] = [];
   if (amps !== null && !ampsError && !result) {

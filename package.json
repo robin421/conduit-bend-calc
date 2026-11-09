@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "web:export": "expo export --platform web",
     "seo:tool-shells": "node scripts/gen-seo-tool-shells.ts dist https://bendcalc.wattflow.net",
+    "aso:generate": "python3 scripts/generate_store_assets.py",
     "typecheck": "tsc --noEmit",
     "test": "node --test \"src/**/*.test.ts\"",
     "postinstall": "node scripts/patchRnIapBilling8.js",

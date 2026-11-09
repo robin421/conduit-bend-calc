@@ -10,13 +10,13 @@
  * - Web 端由 firebase.web.ts（Metro 平台解析）顶替，本文件不会进入 web bundle。
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
 import type { FirebaseAnalyticsTypes } from '@react-native-firebase/analytics';
 import type { FirebaseCrashlyticsTypes } from '@react-native-firebase/crashlytics';
 
-import type { CalculatorSlug } from './analytics.ts';
+import { normalizeToolName, type CalculatorSlug } from './analytics.ts';
 
 /** 与 src/lib/units.ts 的 UnitSystem 对齐（此处只用于事件参数类型）。 */
 export type UnitSystemSlug = 'fractional' | 'decimal' | 'metric';
@@ -104,9 +104,19 @@ export function logFirebaseScreenView(screenName: string): void {
   }
 }
 
-/** calculation_completed：bend_type 复用现有 CalculatorSlug 常量。 */
-export function logFirebaseCalculationCompleted(bendType: CalculatorSlug): void {
-  logEvent('calculation_completed', { bend_type: bendType });
+/** calculation_completed：统一 tool_name / unit_system / platform 规范。 */
+export function logFirebaseCalculationCompleted(
+  bendType: CalculatorSlug,
+  options?: { unitSystem?: 'imperial' | 'metric' },
+): void {
+  const platform = Platform.OS === 'web' ? 'web' : (Platform.OS === 'android' ? 'android' : 'ios');
+  const unitSystem = options?.unitSystem ?? 'imperial';
+  logEvent('calculation_completed', {
+    bend_type: bendType,
+    tool_name: normalizeToolName(bendType),
+    unit_system: unitSystem,
+    platform,
+  });
 }
 
 /** unit_system_changed：记录切换前后的单位制。 */
@@ -114,26 +124,67 @@ export function logFirebaseUnitSystemChanged(from: UnitSystemSlug, to: UnitSyste
   logEvent('unit_system_changed', { from, to });
 }
 
-/** pro_paywall_viewed：Pro 解锁页展示时触发，不带参数。 */
-export function logFirebaseProPaywallViewed(): void {
-  logEvent('pro_paywall_viewed');
+/** pro_paywall_viewed：Pro 解锁页展示时触发，支持携带触发来源。 */
+export function logFirebaseProPaywallViewed(triggerSource = 'direct'): void {
+  logEvent('pro_paywall_viewed', { trigger_source: triggerSource });
 }
 
 /**
- * 计算屏统一埋点：signature 变化时发一次 calculation_completed。
+ * 计算屏统一埋点：signature 变化时经 1000ms 防抖发一次 calculation_completed。
+ * 组件卸载时若存在未上报计算立即 flush。
  * 与 analytics.ts 的 useCalculatorAnalytics 使用同一 signature 语义，
  * signature 只在本地做变化检测，从不随事件发送。
  */
 export function useFirebaseCalculationCompleted(
   bendType: CalculatorSlug,
   signature: string | null,
+  options?: { unitSystem?: 'imperial' | 'metric' },
 ): void {
   const lastSentRef = useRef<string | null>(null);
+  const pendingRef = useRef<{
+    signature: string;
+    bendType: CalculatorSlug;
+    unitSystem: 'imperial' | 'metric';
+  } | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const unitSystem = options?.unitSystem ?? 'imperial';
+
+  const flush = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    const pending = pendingRef.current;
+    if (pending && pending.signature && pending.signature !== lastSentRef.current) {
+      lastSentRef.current = pending.signature;
+      logFirebaseCalculationCompleted(pending.bendType, { unitSystem: pending.unitSystem });
+      pendingRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
-    if (signature === null || lastSentRef.current === signature) {
+    if (signature === null || signature === lastSentRef.current) {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      pendingRef.current = null;
       return;
     }
-    lastSentRef.current = signature;
-    logFirebaseCalculationCompleted(bendType);
-  }, [bendType, signature]);
+
+    pendingRef.current = { signature, bendType, unitSystem };
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      flush();
+    }, 1000);
+  }, [bendType, signature, unitSystem, flush]);
+
+  useEffect(() => {
+    return () => {
+      flush();
+    };
+  }, [flush]);
 }

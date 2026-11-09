@@ -5,18 +5,22 @@ import {
   Alert,
   FlatList,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
+import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import { trackEvent } from '../lib/analytics';
 import {
   clearHistory,
   formatHistoryTime,
   loadHistory,
 } from '../lib/history';
 import type { HistoryEntry } from '../lib/historyStore';
+import { useProAccess } from '../lib/proStore';
 import type { RootTabParamList } from '../navigation/rootTabs';
 import { useTheme } from '../theme';
 
@@ -25,7 +29,11 @@ type Props = BottomTabScreenProps<RootTabParamList, 'History'>;
 export default function HistoryScreen({ navigation }: Props) {
   const theme = useTheme();
   const isFocused = useIsFocused();
+  const { access } = useProAccess();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
+
+  const visibleEntries = access === 'unlocked' ? entries : entries.slice(0, 5);
+  const hasHiddenEntries = access === 'locked' && entries.length > 5;
 
   useEffect(() => {
     if (!isFocused) {
@@ -59,24 +67,65 @@ export default function HistoryScreen({ navigation }: Props) {
     ]);
   }, []);
 
+  const handleExport = useCallback(() => {
+    if (access === 'locked') {
+      trackEvent('pro_paywall_viewed', { trigger_source: 'history_export' });
+      navigation.navigate('CalcHome', {
+        screen: 'Paywall',
+        params: { triggerSource: 'history_export' },
+      });
+      return;
+    }
+    const exportText = entries
+      .map(
+        (e) =>
+          `[${formatHistoryTime(e.timestamp)}] ${e.title} - ${e.inputSummary} => ${e.resultSummary}`,
+      )
+      .join('\n');
+    Share.share({
+      title: 'Conduit Bend History Export',
+      message: exportText,
+    }).catch(() => undefined);
+  }, [access, entries, navigation]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () =>
         entries.length > 0 ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={handleClear}
-            hitSlop={8}
-            android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true }}
-            style={styles.headerButton}
-          >
-            <Text style={[styles.headerButtonText, { color: theme.colors.accent }]}>
-              Clear
-            </Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleExport}
+              hitSlop={8}
+              android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true }}
+              style={styles.headerButton}
+            >
+              <Text style={[styles.headerButtonText, { color: theme.colors.accent }]}>
+                Export
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleClear}
+              hitSlop={8}
+              android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true }}
+              style={styles.headerButton}
+            >
+              <Text style={[styles.headerButtonText, { color: theme.colors.textSecondary }]}>
+                Clear
+              </Text>
+            </Pressable>
+          </View>
         ) : null,
     });
-  }, [entries.length, handleClear, navigation, theme.colors.accent]);
+  }, [
+    entries.length,
+    handleClear,
+    handleExport,
+    navigation,
+    theme.colors.accent,
+    theme.colors.textSecondary,
+  ]);
 
   const handlePress = useCallback(
     (entry: HistoryEntry) => {
@@ -176,6 +225,55 @@ export default function HistoryScreen({ navigation }: Props) {
     [handlePress, theme],
   );
 
+  const renderFooter = useCallback(() => {
+    if (!hasHiddenEntries) {
+      return null;
+    }
+    return (
+      <Card style={styles.historyLimitCard}>
+        <View style={styles.historyLimitHeader}>
+          <Text
+            style={[
+              styles.historyLimitTitle,
+              {
+                color: theme.colors.textPrimary,
+                fontSize: theme.fontSize.body,
+                fontWeight: theme.fontWeight.semibold,
+              },
+            ]}
+          >
+            Viewing 5 of {entries.length} recent bends
+          </Text>
+          <Text
+            style={[
+              styles.historyLimitSubtitle,
+              {
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                marginTop: theme.spacing.xs,
+              },
+            ]}
+          >
+            Upgrade to Pro for unlimited bend history and export.
+          </Text>
+        </View>
+        <View style={{ marginTop: theme.spacing.md }}>
+          <BigButton
+            title="Unlock Unlimited History"
+            variant="primary"
+            onPress={() => {
+              trackEvent('pro_paywall_viewed', { trigger_source: 'history_limit' });
+              navigation.navigate('CalcHome', {
+                screen: 'Paywall',
+                params: { triggerSource: 'history_limit' },
+              });
+            }}
+          />
+        </View>
+      </Card>
+    );
+  }, [entries.length, hasHiddenEntries, navigation, theme]);
+
   if (entries.length === 0) {
     return (
       <View style={[styles.empty, { backgroundColor: theme.colors.background }]}>
@@ -224,9 +322,10 @@ export default function HistoryScreen({ navigation }: Props) {
         styles.listContent,
         { padding: theme.spacing.md, gap: theme.spacing.sm },
       ]}
-      data={entries}
+      data={visibleEntries}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
+      ListFooterComponent={renderFooter}
     />
   );
 }
@@ -247,8 +346,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   headerButton: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
     overflow: 'hidden',
@@ -256,6 +360,19 @@ const styles = StyleSheet.create({
   headerButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  historyLimitCard: {
+    marginTop: 8,
+    padding: 16,
+  },
+  historyLimitHeader: {
+    alignItems: 'flex-start',
+  },
+  historyLimitTitle: {
+    fontWeight: '700',
+  },
+  historyLimitSubtitle: {
+    lineHeight: 18,
   },
   empty: {
     flex: 1,

@@ -11,6 +11,8 @@ import { DC_RESISTANCE_OHM_PER_KFT, VOLTAGE_DROP_LIMITS, WIRE_SIZES, wireSizeLab
 import type { ConductorMetal, WireSize } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
 import { useScreenMemory } from '../lib/screenMemory';
+import { useCalculatorAnalytics } from '../lib/analytics';
+import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useUnitSystem } from '../lib/unitStore';
 import { useTheme } from '../theme';
 
@@ -45,6 +47,11 @@ export default function VoltageDropScreen() {
     if (amps === null || ampsError || lengthFt === null) return null;
     return calculateVoltageDrop({ metal: m.metal, size, amps, lengthFt, volts: m.volts, phase: m.phase });
   }, [amps, ampsError, lengthFt, m.metal, size, m.volts, m.phase]);
+
+  const signature = result ? `voltage_drop|${m.metal}|${size}|${amps}|${lengthFt}|${m.volts}|${m.phase}` : null;
+  const unitSystem = metric ? 'metric' : 'imperial';
+  useCalculatorAnalytics('voltage_drop', signature, { unitSystem });
+  useFirebaseCalculationCompleted('voltage_drop', signature, { unitSystem });
 
   const suggestion = useMemo(() => {
     if (!result || result.dropFraction <= limit || amps === null || lengthFt === null) return undefined;
