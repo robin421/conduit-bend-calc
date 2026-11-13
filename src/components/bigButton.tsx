@@ -1,4 +1,4 @@
-import { Platform, Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme';
 
@@ -12,6 +12,7 @@ interface BigButtonProps {
   size?: BigButtonSize;
   selected?: boolean;
   disabled?: boolean;
+  expanded?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -22,6 +23,7 @@ export default function BigButton({
   size = 'default',
   selected = false,
   disabled = false,
+  expanded,
   style,
 }: BigButtonProps) {
   const theme = useTheme();
@@ -31,17 +33,17 @@ export default function BigButton({
     resolvedVariant === 'primary'
       ? theme.colors.primary
       : resolvedVariant === 'accent'
-        ? theme.colors.accent
+        ? theme.colors.controlAccent
         : theme.colors.card;
 
   const textColor =
     resolvedVariant === 'primary'
       ? theme.colors.onPrimary
       : resolvedVariant === 'accent'
-        ? theme.colors.onAccent
+        ? theme.colors.onControlAccent
         : resolvedVariant === 'option'
           ? theme.colors.textPrimary
-          : theme.colors.primary;
+          : theme.colors.primaryText;
 
   const showHairline =
     resolvedVariant === 'secondary' || resolvedVariant === 'option';
@@ -49,22 +51,14 @@ export default function BigButton({
   const height =
     size === 'selection' ? theme.size.selectionButtonHeight : theme.size.buttonMinHeight;
 
-  const rippleColor =
-    resolvedVariant === 'primary'
-      ? 'rgba(255, 255, 255, 0.16)'
-      : resolvedVariant === 'accent'
-        ? 'rgba(0, 0, 0, 0.16)'
-        : theme.scheme === 'dark'
-          ? 'rgba(255, 255, 255, 0.08)'
-          : 'rgba(0, 0, 0, 0.08)';
-
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ selected, disabled, expanded }}
       disabled={disabled}
       onPress={onPress}
-      android_ripple={{ color: rippleColor }}
-      style={({ pressed }) => [
+      android_ripple={{ color: theme.colors.pressFeedback }}
+      style={[
         styles.button,
         {
           backgroundColor,
@@ -76,23 +70,30 @@ export default function BigButton({
               : StyleSheet.hairlineWidth
             : 0,
           borderColor: theme.colors.border,
-          opacity: disabled ? 0.4 : pressed && Platform.OS !== 'android' ? 0.85 : 1,
+          opacity: disabled ? 0.4 : 1,
         },
         style,
       ]}
     >
-      <Text
-        style={{
-          color: textColor,
-          fontSize: theme.fontSize.body,
-          fontWeight: theme.fontWeight.semibold,
-          fontVariant: ['tabular-nums'],
-          letterSpacing: 0.2,
-          includeFontPadding: false,
-        }}
-      >
-        {title}
-      </Text>
+      {({ pressed }) => (
+        <>
+          {pressed && !disabled && Platform.OS !== 'android' ? (
+            <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.colors.pressFeedback }]} />
+          ) : null}
+          <Text
+            style={{
+              color: textColor,
+              fontSize: theme.fontSize.body,
+              fontWeight: theme.fontWeight.semibold,
+              fontVariant: ['tabular-nums'],
+              letterSpacing: 0.2,
+              includeFontPadding: false,
+            }}
+          >
+            {title}
+          </Text>
+        </>
+      )}
     </Pressable>
   );
 }

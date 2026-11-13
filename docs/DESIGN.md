@@ -2,7 +2,7 @@
 
 ## 1. 信息架构
 底部 3 个 Tab：
-- **计算**（首页）：4 种弯管计算器入口 + 最近一次计算快捷入口
+- **计算**（首页）：继续上次计算 + 弯管 / 电气计算 / 我的弯管器三组入口
 - **速查表**：角度常数表 + 弯管器 take-up 表
 - **历史**：计算记录列表
 
@@ -11,11 +11,14 @@
 ### 2.1 计算首页
 - 顶部：WattFlow 品牌栏（`⚡` 电工橙 logo + "WattFlow" + "Conduit Bend Calc"），
   作为 native-stack 的 `headerTitle` 渲染在炭黑导航头内；旧的 "BendCalc" 标题已废弃
-- 4 张大卡片（垂直排列，每张 ≥72pt 高）：
+- 最近一次有效计算显示在顶部，点击恢复输入、单位和弯管器。首次使用不显示空卡片。
+- 计算器按「Conduit bending / Electrical calculators / My bender」分组，大卡片垂直排列（每张 ≥72pt 高）：
   - Offset Bend（偏移弯）— 图标：⌐
   - 90° Stub（直角弯）— 图标：∟
   - 3-Point Saddle（三点马鞍弯）— 图标：⋀⋀
   - 4-Point Saddle（四点马鞍弯）— 图标：⋀⋀⋀
+  - 弯管组另含 Rolling Offset 和 Kicked 90°；电气组含 Conduit Fill、Voltage Drop 和 Wire Size。
+  - 我的弯管器只保留 Dial In My Bender 入口，进入后选择 Quick Check / Full Fingerprint。
 - 每张卡片：左侧图标 + 名称 + 一句话说明，右侧 chevron
 - 点击进入对应计算器页面
 
@@ -28,6 +31,8 @@
   - "Shrink 回补"：24pt 白色数字
 - 大按钮"清空"（次级）——计算为实时，无需"计算"按钮
 - 空状态：未输入时结果区显示 "—"
+- 输入后立即显示结果和风险提示；示意图放在结果之后、默认折叠，通过 Show bend diagram 展开。
+- 先显示标记距离、测量起点和对齐基准，再显示校准推广。Stub 区分 arrow 和 hook front-edge，不统一写箭头。
 
 ### 2.3 Stub / Saddle 计算器页
 - 同 2.2 结构，输入项按需调整：
@@ -56,6 +61,8 @@
 - 文字：主 `#1A1A1A`，次 `#6B7280`
 - 成功绿 `#16A34A`，错误红 `#DC2626`
 - 派生可读色（对比度用）：浅底小字 `accentText #C2410C`；深色底主色文字 `primaryText`（深色模式 `#EDEDED`）
+- 选中 / 强调控件：`controlAccent #C2410C` 底色 + `onControlAccent #FFFFFF` 白字，深浅模式一致；品牌标识和结果强调继续使用品牌橙。
+- 按压反馈：`pressFeedback rgba(255,255,255,0.08)` 白色叠层 / Android 涟漪，不使用黑色涟漪；白字在正常和按压状态均达到 4.5:1。
 - 字体：系统字体（SF Pro / Roboto），数字用 Semibold 600
 - 结果数字：40pt；正文 16pt；次要 14pt
 - 圆角：8pt；**无阴影、无渐变**
@@ -65,6 +72,7 @@
 ## 5. 空/加载/错误态
 - 空状态：结果区显示 "—"，配灰色提示"输入参数查看结果"
 - 错误态：输入非法时输入框红框 + 红字提示，不清空已输入
+- 不可行的弯形对免费用户同样明确提示停止弯制；Pro 提供进一步分析和替代方案。
 - 无加载态（本地计算即时完成）
 
 ## 6. WattFlow 品牌与信息层级（T64）

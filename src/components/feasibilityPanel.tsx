@@ -58,17 +58,17 @@ export default function FeasibilityPanel({
       <View style={{ gap: theme.spacing.sm }}>
         <Text
           style={{
-            color: theme.colors.textSecondary,
+            color,
             fontSize: theme.fontSize.secondary,
             lineHeight: 20,
           }}
         >
           {result.status === 'impossible'
-            ? 'This bend may not be possible with standard geometry.'
-            : 'This bend may be difficult with standard geometry.'}
+            ? 'Do not bend this layout: the selected bender geometry does not fit. Change the dimensions or bender and check again.'
+            : 'Tight bend: check the selected bender and available straight length before bending.'}
         </Text>
         <BigButton
-          title="Check Bend Feasibility"
+          title="See Alternatives with Pro"
           variant="secondary"
           onPress={onCheckFeasibility}
         />

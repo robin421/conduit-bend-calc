@@ -25,6 +25,7 @@ import { trackEvent } from '../lib/analytics';
 import { logFirebaseProPaywallViewed } from '../lib/firebase';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
+import { HISTORY_LIMIT } from '../lib/historyStore';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'Paywall'>;
 
@@ -38,6 +39,7 @@ const PRO_BENEFITS = [
   'Catch impossible bends',
   'Reduce scrap and rework',
   'Save multiple bender profiles',
+  `View the latest ${HISTORY_LIMIT} bends and export`,
 ];
 
 export default function PaywallScreen({ route, navigation }: Props) {
@@ -139,6 +141,13 @@ export default function PaywallScreen({ route, navigation }: Props) {
         >
           Calibrate the app to your actual bender and catch risky bends before cutting
           conduit.
+        </Text>
+
+        <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.body, lineHeight: 22 }}>
+          Free calculators use standard bender values. Quick Check adjusts take-up
+          from one test bend and one finished-height measurement. Full Fingerprint
+          uses a scrap piece and two leg measurements to derive bend radius.
+          Have your bender, conduit and tape measure ready.
         </Text>
 
         <View style={{ gap: theme.spacing.sm }}>

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { ConduitType } from '../lib/profile';
 import { useTheme } from '../theme';
@@ -48,11 +48,7 @@ export default function ConduitTypeToggle({
       >
         {OPTIONS.map((option, index) => {
           const selected = option === value;
-          const rippleColor = selected
-            ? 'rgba(0, 0, 0, 0.15)'
-            : theme.scheme === 'dark'
-              ? 'rgba(255, 255, 255, 0.08)'
-              : 'rgba(0, 0, 0, 0.06)';
+          const rippleColor = theme.colors.pressFeedback;
 
           return (
             <Pressable
@@ -70,24 +66,31 @@ export default function ConduitTypeToggle({
                 },
                 {
                   backgroundColor: selected
-                    ? theme.colors.accent
+                    ? theme.colors.controlAccent
                     : theme.colors.card,
                 },
               ]}
             >
-              <Text
-                style={{
-                  color: selected
-                    ? theme.colors.onAccent
-                    : theme.colors.textPrimary,
-                  fontSize: theme.fontSize.body,
-                  fontWeight: theme.fontWeight.semibold,
-                  letterSpacing: 0.2,
-                  includeFontPadding: false,
-                }}
-              >
-                {OPTION_LABELS[option]}
-              </Text>
+              {({ pressed }) => (
+                <>
+                  {pressed && Platform.OS !== 'android' ? (
+                    <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.colors.pressFeedback }]} />
+                  ) : null}
+                  <Text
+                    style={{
+                      color: selected
+                        ? theme.colors.onControlAccent
+                        : theme.colors.textPrimary,
+                      fontSize: theme.fontSize.body,
+                      fontWeight: theme.fontWeight.semibold,
+                      letterSpacing: 0.2,
+                      includeFontPadding: false,
+                    }}
+                  >
+                    {OPTION_LABELS[option]}
+                  </Text>
+                </>
+              )}
             </Pressable>
           );
         })}
@@ -108,5 +111,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
+    overflow: 'hidden',
   },
 });

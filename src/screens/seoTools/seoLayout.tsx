@@ -26,6 +26,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import WattFlowBrandBar from '../../components/wattflowBrandBar';
 import CalculatorDrawer from '../../components/calculatorDrawer';
 import LanguageSwitcher from '../../components/languageSwitcher';
+import BigButton from '../../components/bigButton';
 import { useI18n } from '../../i18n';
 import {
   CALCULATOR_NAV,
@@ -533,7 +534,7 @@ export function SeoPresetRow({
               styles.presetButton,
               {
                 backgroundColor: selected
-                  ? theme.colors.accent
+                  ? theme.colors.controlAccent
                   : theme.colors.background,
                 borderColor: selected
                   ? theme.colors.accent
@@ -545,7 +546,7 @@ export function SeoPresetRow({
             <Text
               style={{
                 color: selected
-                  ? theme.colors.onAccent
+                  ? theme.colors.onControlAccent
                   : theme.colors.textPrimary,
                 fontSize: theme.fontSize.title,
                 fontWeight: theme.fontWeight.semibold,
@@ -558,7 +559,7 @@ export function SeoPresetRow({
               <Text
                 style={{
                   color: selected
-                    ? theme.colors.onAccent
+                    ? theme.colors.onControlAccent
                     : theme.colors.textSecondary,
                   fontSize: theme.fontSize.secondary,
                   fontVariant: ['tabular-nums'],
@@ -624,7 +625,7 @@ export function AngleSelector({
               styles.anglePresetButton,
               {
                 backgroundColor: selected
-                  ? theme.colors.accent
+                  ? theme.colors.controlAccent
                   : theme.colors.background,
                 borderColor: selected
                   ? theme.colors.accent
@@ -637,7 +638,7 @@ export function AngleSelector({
             <Text
               style={{
                 color: selected
-                  ? theme.colors.onAccent
+                  ? theme.colors.onControlAccent
                   : theme.colors.textPrimary,
                 fontSize: theme.fontSize.body,
                 fontWeight: theme.fontWeight.semibold,
@@ -650,7 +651,7 @@ export function AngleSelector({
               <Text
                 style={{
                   color: selected
-                    ? theme.colors.onAccent
+                    ? theme.colors.onControlAccent
                     : theme.colors.textSecondary,
                   fontSize: 11,
                   fontVariant: ['tabular-nums'],
@@ -674,7 +675,7 @@ export function AngleSelector({
               styles.angleButton,
               {
                 backgroundColor: selected
-                  ? theme.colors.accent
+                  ? theme.colors.controlAccent
                   : theme.colors.background,
                 borderColor: selected
                   ? theme.colors.accent
@@ -686,7 +687,7 @@ export function AngleSelector({
             <Text
               style={{
                 color: selected
-                  ? theme.colors.onAccent
+                  ? theme.colors.onControlAccent
                   : theme.colors.textPrimary,
                 fontSize: theme.fontSize.secondary,
                 fontWeight: theme.fontWeight.semibold,
@@ -903,31 +904,14 @@ export function SeoCalculateButton({
   onPress: () => void;
   label?: string;
 }) {
-  const theme = useTheme();
   const { t } = useI18n();
   return (
-    <Pressable
-      accessibilityRole="button"
+    <BigButton
+      title={label ?? t('common.calculate')}
+      variant="accent"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.calculateButton,
-        {
-          backgroundColor: theme.colors.accent,
-          borderRadius: theme.radius,
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}
-    >
-      <Text
-        style={{
-          color: theme.colors.onAccent,
-          fontSize: theme.fontSize.body,
-          fontWeight: theme.fontWeight.semibold,
-        }}
-      >
-        {label ?? t('common.calculate')}
-      </Text>
-    </Pressable>
+      style={styles.calculateButton}
+    />
   );
 }
 

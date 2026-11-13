@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
@@ -10,7 +11,7 @@ import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ConduitTypeToggle from '../components/conduitTypeToggle';
-import BendDiagram from '../components/bendDiagram';
+import BendGuide from '../components/bendGuide';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
@@ -31,6 +32,7 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
+import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
@@ -39,7 +41,6 @@ import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'Kicked90'>;
-
 
 /** 解析 kick 角：0 < κ < 90 的数字，非法返回 null。 */
 function parseKickAngle(text: string): number | null {
@@ -56,6 +57,7 @@ function parseKickAngle(text: string): number | null {
 
 export default function Kicked90Screen({ route, navigation }: Props) {
   const theme = useTheme();
+  const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('kicked90', {
     kickText: '',
@@ -63,13 +65,14 @@ export default function Kicked90Screen({ route, navigation }: Props) {
   });
   const { kickText, lengthText } = memory;
   const [lengthInches, setLengthInches] = useState<number | null>(null);
-  const { spec, setSpec } = useBenderSpec();
-  const { specs: customSpecs } = useCustomSpecs();
+  const { spec, setSpec, loaded: specLoaded } = useBenderSpec();
+  const { specs: customSpecs, ready: customSpecsReady } = useCustomSpecs();
   const { activeProfile } = useBenderProfiles();
   const { access } = useProAccess();
 
-  /** 屏幕级导体材质（本屏默认 EMT），约束弯管机规格选择。 */
-  const [conduitType, setConduitType] = useState<ConduitType>('EMT');
+  /** 材质跟随已保存的弯管器，约束本屏规格选择。 */
+  const [conduitType, setConduitType] = useState<ConduitType>(() => matchesConduitType(spec.conduit, 'Rigid') ? 'Rigid' : 'EMT');
+  const materialInitialized = useRef(false);
 
   const setKickText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, kickText: text })),
@@ -81,9 +84,20 @@ export default function Kicked90Screen({ route, navigation }: Props) {
   );
 
   const backfill = route.params?.backfill;
+  const appliedBackfill = useRef<typeof backfill>(undefined);
 
   // 材质与当前全局规格不一致时，自动切到该材质的第一个预设规格。
   useEffect(() => {
+    if (!focused) {
+      materialInitialized.current = false;
+      return;
+    }
+    if (!specLoaded) return;
+    if (!materialInitialized.current) {
+      materialInitialized.current = true;
+      setConduitType(matchesConduitType(spec.conduit, 'Rigid') ? 'Rigid' : 'EMT');
+      return;
+    }
     if (matchesConduitType(spec.conduit, conduitType)) {
       return;
     }
@@ -91,16 +105,17 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     if (next) {
       setSpec(next);
     }
-  }, [conduitType, spec, setSpec]);
+  }, [conduitType, spec, setSpec, specLoaded, focused]);
 
   const handleConduitTypeChange = useCallback((next: ConduitType) => {
     setConduitType(next);
   }, []);
 
   useEffect(() => {
-    if (!backfill) {
+    if (!focused || !backfill || !customSpecsReady || appliedBackfill.current === backfill) {
       return;
     }
+    appliedBackfill.current = backfill;
     if (backfill.kickText !== undefined) {
       setKickText(backfill.kickText);
     }
@@ -110,10 +125,11 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     if (backfill.specKey) {
       const resolved = resolveSpecKey(backfill.specKey, customSpecs);
       if (resolved) {
+        setConduitType(matchesConduitType(resolved.conduit, 'Rigid') ? 'Rigid' : 'EMT');
         setSpec(resolved);
       }
     }
-  }, [backfill, customSpecs]);
+  }, [backfill, customSpecs, customSpecsReady, focused]);
 
   const kickAngle = useMemo(() => parseKickAngle(kickText), [kickText]);
 
@@ -162,15 +178,17 @@ export default function Kicked90Screen({ route, navigation }: Props) {
       inputSummary: `kick ${kickText.trim()}° · straight ${lengthText.trim()}`,
       resultSummary: `Total gain ${formatLength(result.totalGain, unit)}`,
       timestamp: Date.now(),
-      params: { kickText, lengthText, specKey: specKey(spec) },
-      signature: `kicked90|${kickAngle}|${lengthInches}|${specKey(spec)}`,
+      params: { kickText, lengthText, specKey: specKey(spec), unit },
+      signature: `kicked90|${kickAngle}|${lengthInches}|${specKey(spec)}|${unit}`,
     };
   }, [kickAngle, kickText, lengthInches, lengthText, result, spec, unit]);
 
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
-  useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('kicked90', historyEntry?.signature ?? null, { unitSystem });
-  useFirebaseCalculationCompleted('kicked90', historyEntry?.signature ?? null, { unitSystem });
+  const activeSignature = focused ? historyEntry?.signature ?? null : null;
+  useHistoryAutoSave(historyEntry, 800, focused);
+  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  useCalculatorAnalytics('kicked90', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('kicked90', activeSignature, { unitSystem });
 
   const handleClear = useCallback(() => {
     setMemory({ kickText: '', lengthText: '' });
@@ -259,12 +277,6 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         </View>
       </Card>
 
-      {diagramInput ? (
-        <Card style={{ padding: theme.spacing.sm }}>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
-
       <ResultGroup
         hero={{
           label: 'Total gain (for conduit length)',
@@ -274,26 +286,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         hint={hint}
       />
 
-      <BenderStatusBanner
-        profile={activeProfile}
-        isPro={access === 'unlocked'}
-        showCalibrateCta={result !== null}
-        onCalibrate={() => {
-          trackEvent('calibration_cta_click', { source: 'kicked_90_result' });
-          if (access === 'unlocked') {
-            navigation.navigate('GuidedCalibration');
-          } else {
-            navigation.navigate('Paywall', { triggerSource: 'kicked_90_calibration' });
-          }
-        }}
-      />
-
-      <ExpectedActualFeedback
-        profile={activeProfile}
-        expectedInches={calibratedGain}
-        label="Total gain"
-        unit={unit}
-      />
+      <WarningBar warnings={warnings} />
 
       <FeasibilityPanel
         result={feasibility}
@@ -304,7 +297,9 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         }
       />
 
-      <WarningBar warnings={warnings} />
+      {diagramInput ? (
+        <BendGuide input={diagramInput} />
+      ) : null}
 
       {result ? (
         <Card style={{ gap: theme.spacing.md }}>
@@ -366,6 +361,26 @@ export default function Kicked90Screen({ route, navigation }: Props) {
           </Text>
         </Card>
       ) : null}
+
+      <BenderStatusBanner
+        profile={activeProfile}
+        isPro={access === 'unlocked'}
+        showCalibrateCta={result !== null}
+        onCalibrate={() => {
+          trackEvent('calibration_cta_click', { source: 'kicked_90_result' });
+          if (access === 'unlocked') {
+            navigation.navigate('GuidedCalibration');
+          } else {
+            navigation.navigate('Paywall', { triggerSource: 'kicked_90_calibration' });
+          }
+        }}
+      />
+      <ExpectedActualFeedback
+        profile={activeProfile}
+        expectedInches={calibratedGain}
+        label="Total gain"
+        unit={unit}
+      />
 
       <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>

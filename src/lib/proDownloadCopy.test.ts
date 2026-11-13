@@ -14,11 +14,12 @@ test('下载引导文案覆盖两个 Pro 校准入口', () => {
   }
 });
 
-test('Dial In My Bender 不 oversell：免费计算本身已是 trade-standard', () => {
+test('Dial In My Bender 说明免费基准和实际校准准备，不夸大差异', () => {
   const copy = PRO_DOWNLOAD_COPY.GuidedCalibration;
   assert.equal(copy.title, 'Dial In My Bender');
-  assert.match(copy.value, /trade-standard accurate/);
-  assert.match(copy.value, /second-order corrections/);
+  assert.match(copy.value, /Free calculators use standard bender values/);
+  assert.match(copy.value, /1 test bend and 1 finished-height measurement/);
+  assert.match(copy.value, /tape measure/);
 });
 
 test('Full Fingerprint 用 gain 法推导真实 R', () => {

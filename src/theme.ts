@@ -4,10 +4,14 @@ import {
   Theme as NavigationTheme,
 } from '@react-navigation/native';
 import { useColorScheme } from 'react-native';
+import { interactionColors } from './interactionColors';
 
 export type ColorSchemeName = 'light' | 'dark';
 
 export interface ThemeColors {
+  controlAccent: string;
+  onControlAccent: string;
+  pressFeedback: string;
   /** 主色：炭黑，顶栏 / 结果卡 / 主按钮 */
   primary: string;
   /** 主色用于文字/图标时的可读变体（深色模式自动转浅色） */
@@ -43,6 +47,7 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
+  ...interactionColors,
   primary: '#1A1A1A',
   primaryText: '#1A1A1A',
   accent: '#FF6B00',
@@ -63,6 +68,7 @@ export const lightColors: ThemeColors = {
 };
 
 export const darkColors: ThemeColors = {
+  ...interactionColors,
   // 深色底上炭黑不可读，主色抬升为 elevated charcoal 作表面色。
   primary: '#2E2E2E',
   /** 深色底上的主色文字/图标改用正文浅色 */

@@ -17,7 +17,7 @@ export const PRO_DOWNLOAD_COPY: Record<ProDownloadEntryKey, ProDownloadCopy> = {
   GuidedCalibration: {
     title: 'Dial In My Bender',
     value:
-      'Free calculators are already trade-standard accurate. Dialing in tightens second-order corrections (take-up, gain) to your exact bender — start with the 1-measurement quick check.',
+      'Free calculators use standard bender values. Match take-up to your own tool with 1 test bend and 1 finished-height measurement. Have your bender, scrap conduit and tape measure ready.',
   },
   Calibration: {
     title: 'Full Fingerprint',

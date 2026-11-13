@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../calculators/offset/offset';
@@ -10,7 +11,7 @@ import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ConduitTypeToggle from '../components/conduitTypeToggle';
-import BendDiagram from '../components/bendDiagram';
+import BendGuide from '../components/bendGuide';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
@@ -32,6 +33,7 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { useHistoryAutoSave, createHistoryId } from '../lib/history';
 import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
+import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
@@ -43,9 +45,9 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'Offset'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 30;
 
-
 export default function OffsetScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('offset', {
     heightText: '',
@@ -53,13 +55,14 @@ export default function OffsetScreen({ route, navigation }: Props) {
   });
   const { heightText, angle } = memory;
   const [heightInches, setHeightInches] = useState<number | null>(null);
-  const { spec, setSpec } = useBenderSpec();
-  const { specs: customSpecs } = useCustomSpecs();
+  const { spec, setSpec, loaded: specLoaded } = useBenderSpec();
+  const { specs: customSpecs, ready: customSpecsReady } = useCustomSpecs();
   const { activeProfile } = useBenderProfiles();
   const { access } = useProAccess();
 
-  /** 屏幕级导体材质（本屏默认 EMT），约束弯管机规格选择。 */
-  const [conduitType, setConduitType] = useState<ConduitType>('EMT');
+  /** 材质跟随已保存的弯管器，约束本屏规格选择。 */
+  const [conduitType, setConduitType] = useState<ConduitType>(() => matchesConduitType(spec.conduit, 'Rigid') ? 'Rigid' : 'EMT');
+  const materialInitialized = useRef(false);
 
   const setHeightText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, heightText: text })),
@@ -71,9 +74,20 @@ export default function OffsetScreen({ route, navigation }: Props) {
   );
 
   const backfill = route.params?.backfill;
+  const appliedBackfill = useRef<typeof backfill>(undefined);
 
   // 材质与当前全局规格不一致时，自动切到该材质的第一个预设规格。
   useEffect(() => {
+    if (!focused) {
+      materialInitialized.current = false;
+      return;
+    }
+    if (!specLoaded) return;
+    if (!materialInitialized.current) {
+      materialInitialized.current = true;
+      setConduitType(matchesConduitType(spec.conduit, 'Rigid') ? 'Rigid' : 'EMT');
+      return;
+    }
     if (matchesConduitType(spec.conduit, conduitType)) {
       return;
     }
@@ -81,16 +95,17 @@ export default function OffsetScreen({ route, navigation }: Props) {
     if (next) {
       setSpec(next);
     }
-  }, [conduitType, spec, setSpec]);
+  }, [conduitType, spec, setSpec, specLoaded, focused]);
 
   const handleConduitTypeChange = useCallback((next: ConduitType) => {
     setConduitType(next);
   }, []);
 
   useEffect(() => {
-    if (!backfill) {
+    if (!focused || !backfill || !customSpecsReady || appliedBackfill.current === backfill) {
       return;
     }
+    appliedBackfill.current = backfill;
     if (backfill.heightText !== undefined) {
       setHeightText(backfill.heightText);
     }
@@ -100,10 +115,11 @@ export default function OffsetScreen({ route, navigation }: Props) {
     if (backfill.specKey) {
       const resolved = resolveSpecKey(backfill.specKey, customSpecs);
       if (resolved) {
+        setConduitType(matchesConduitType(resolved.conduit, 'Rigid') ? 'Rigid' : 'EMT');
         setSpec(resolved);
       }
     }
-  }, [backfill, customSpecs]);
+  }, [backfill, customSpecs, customSpecsReady, focused]);
 
   const result = useMemo(() => {
     if (heightInches === null) {
@@ -151,15 +167,17 @@ export default function OffsetScreen({ route, navigation }: Props) {
       inputSummary: `${heightText.trim()} · ${angle}°`,
       resultSummary: `Spacing ${formatLength(result.distanceBetweenBends, unit)} · shrink ${formatLength(result.shrink, unit)}`,
       timestamp: Date.now(),
-      params: { heightText, angle, specKey: specKey(spec) },
-      signature: `offset|${heightInches}|${angle}`,
+      params: { heightText, angle, specKey: specKey(spec), unit },
+      signature: `offset|${heightInches}|${angle}|${specKey(spec)}|${unit}`,
     };
   }, [angle, heightInches, heightText, result, spec, unit]);
 
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
-  useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('offset', historyEntry?.signature ?? null, { unitSystem });
-  useFirebaseCalculationCompleted('offset', historyEntry?.signature ?? null, { unitSystem });
+  const activeSignature = focused ? historyEntry?.signature ?? null : null;
+  useHistoryAutoSave(historyEntry, 800, focused);
+  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  useCalculatorAnalytics('offset', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('offset', activeSignature, { unitSystem });
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', angle: DEFAULT_ANGLE });
@@ -230,17 +248,26 @@ export default function OffsetScreen({ route, navigation }: Props) {
         </View>
       </Card>
 
-      {diagramInput ? (
-        <Card style={{ padding: theme.spacing.sm }}>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
-
       <ResultGroup
         hero={{ label: 'Mark spacing', value: distance?.value, unit: distance?.unit }}
         rows={[{ label: 'Shrink', value: shrink?.value, unit: shrink?.unit }]}
         hint={!result ? 'Enter values to see results' : undefined}
       />
+
+      <WarningBar warnings={warnings} />
+
+      <FeasibilityPanel
+        result={feasibility}
+        isPro={access === 'unlocked'}
+        unit={unit}
+        onCheckFeasibility={() =>
+          navigation.navigate('Paywall', { triggerSource: 'offset_feasibility' })
+        }
+      />
+
+      {diagramInput ? (
+        <BendGuide input={diagramInput} summary={feasibility?.status !== 'impossible' && calibratedDistance !== null ? `Space the two marks ${formatLength(calibratedDistance, unit)} apart. Align each mark with the arrow and bend ${angle}° in opposite directions.` : undefined} />
+      ) : null}
 
       <BenderStatusBanner
         profile={activeProfile}
@@ -255,35 +282,12 @@ export default function OffsetScreen({ route, navigation }: Props) {
           }
         }}
       />
-
       <ExpectedActualFeedback
         profile={activeProfile}
         expectedInches={calibratedDistance}
         label="Mark spacing"
         unit={unit}
       />
-
-      <FeasibilityPanel
-        result={feasibility}
-        isPro={access === 'unlocked'}
-        unit={unit}
-        onCheckFeasibility={() =>
-          navigation.navigate('Paywall', { triggerSource: 'offset_feasibility' })
-        }
-      />
-
-      {result ? (
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-          }}
-        >
-          Mark both points with the arrow
-        </Text>
-      ) : null}
-
-      <WarningBar warnings={warnings} />
 
       <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
@@ -305,7 +309,6 @@ const styles = StyleSheet.create({
   angleButton: {
     flexBasis: '30%',
     flexGrow: 1,
-    height: 52,
-    minHeight: 52,
+    minHeight: 64,
   },
 });

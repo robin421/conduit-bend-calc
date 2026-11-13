@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   Platform,
   Pressable,
@@ -16,10 +17,14 @@ import WebQuickCalculator from '../components/webQuickCalculator';
 import {
   FOUR_POINT_SADDLE_ICON,
   THREE_POINT_SADDLE_ICON,
+  HISTORY_CALCULATOR_SCREENS,
 } from '../lib/homeContent';
+import { loadHistory, subscribeHistory } from '../lib/history';
+import type { HistoryEntry } from '../lib/historyStore';
 import type { ProDownloadEntryKey } from '../lib/proDownloadCopy';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
+import { openPlayStoreListing } from '../lib/inAppReview';
 import { useProAccess } from '../lib/proStore';
 import { useUnitSystem } from '../lib/unitStore';
 import { trackEvent } from '../lib/analytics';
@@ -33,29 +38,50 @@ interface CalculatorEntry {
   icon: string;
   name: string;
   description: string;
+  group: 'bending' | 'electrical' | 'bender';
   /** Pro 功能：未购买时点击进付费墙（仅校准类，计算器不再 gate）。 */
   pro?: boolean;
 }
 
 const ENTRIES: CalculatorEntry[] = [
-  { key: 'Offset', icon: '⌐', name: 'Offset Bend', description: 'Offset: mark spacing & shrink' },
-  { key: 'Stub', icon: '∟', name: '90° Stub', description: 'Stub-up: mark location' },
-  { key: 'ThreePointSaddle', icon: THREE_POINT_SADDLE_ICON, name: '3-Point Saddle', description: '3-point saddle' },
-  { key: 'FourPointSaddle', icon: FOUR_POINT_SADDLE_ICON, name: '4-Point Saddle', description: '4-point saddle' },
-  { key: 'RollingOffset', icon: '⤢', name: 'Rolling Offset', description: 'Rolling offset: rise & roll' },
-  { key: 'Kicked90', icon: '∠', name: 'Kicked 90°', description: 'Kicked 90°: 90° + kick combo' },
-  { key: 'ConduitFill', icon: '◍', name: 'Conduit Fill', description: 'How many THHN wires fit (NEC Ch. 9)' },
-  { key: 'VoltageDrop', icon: '⚡', name: 'Voltage Drop', description: 'Drop % and wire size for 3% / 5%' },
-  { key: 'WireSize', icon: '⌇', name: 'Wire Size', description: 'Minimum AWG from amps (NEC 310.16)' },
-  { key: 'GuidedCalibration', icon: '◎', name: 'Dial In My Bender', description: 'Quick check or full fingerprint — match the app to your bender', pro: true },
-  { key: 'Calibration', icon: '⌁', name: 'Full Fingerprint', description: "Gain method: derive your bender's true radius", pro: true },
+  { key: 'Offset', group: 'bending', icon: '⌐', name: 'Offset Bend', description: 'Move the run around an obstacle' },
+  { key: 'Stub', group: 'bending', icon: '∟', name: '90° Stub', description: 'Turn up to a measured height' },
+  { key: 'ThreePointSaddle', group: 'bending', icon: THREE_POINT_SADDLE_ICON, name: '3-Point Saddle', description: 'Cross a narrow obstacle with three bends' },
+  { key: 'FourPointSaddle', group: 'bending', icon: FOUR_POINT_SADDLE_ICON, name: '4-Point Saddle', description: 'Cross a wide obstacle with a flat top' },
+  { key: 'RollingOffset', group: 'bending', icon: '⤢', name: 'Rolling Offset', description: 'Move the run both up and sideways' },
+  { key: 'Kicked90', group: 'bending', icon: '∠', name: 'Kicked 90°', description: 'Combine a 90° bend with an offset' },
+  { key: 'ConduitFill', group: 'electrical', icon: '◍', name: 'Conduit Fill', description: 'How many THHN wires fit (NEC Ch. 9)' },
+  { key: 'VoltageDrop', group: 'electrical', icon: '⚡', name: 'Voltage Drop', description: 'Drop % and wire size for 3% / 5%' },
+  { key: 'WireSize', group: 'electrical', icon: '⌇', name: 'Wire Size', description: 'Minimum AWG from amps (NEC 310.16)' },
+  { key: 'GuidedCalibration', group: 'bender', icon: '◎', name: 'Dial In My Bender', description: 'Match take-up or bend radius to your actual bender', pro: true },
 ];
+
+const GROUPS = [
+  { key: 'bending', title: 'Conduit bending' },
+  { key: 'electrical', title: 'Electrical calculators' },
+  { key: 'bender', title: 'My bender' },
+] as const;
 
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
   const { unit, setUnit } = useUnitSystem();
   const { access } = useProAccess();
   const [sheetEntryKey, setSheetEntryKey] = useState<ProDownloadEntryKey | null>(null);
+  const [recent, setRecent] = useState<HistoryEntry | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    let updated = false;
+    const unsubscribe = subscribeHistory((entries) => {
+      updated = true;
+      if (active) setRecent(entries[0] ?? null);
+    });
+    void loadHistory().then((entries) => {
+      if (active && !updated) setRecent(entries[0] ?? null);
+    }).catch(() => undefined);
+    return () => { active = false; unsubscribe(); };
+  }, []));
 
   const handleUnitChange = (next: UnitSystem) => {
     if (next !== unit) {
@@ -121,6 +147,22 @@ export default function CalcHomeScreen({ navigation }: Props) {
           { padding: theme.spacing.md, gap: theme.spacing.md },
         ]}
       >
+      {recent ? (
+        <Card onPress={() => {
+          setUnit(recent.params.unit ?? 'fractional');
+          navigation.navigate(HISTORY_CALCULATOR_SCREENS[recent.kind], { backfill: recent.params });
+        }} accessibilityLabel={`Continue last calculation: ${recent.title}`} style={{ gap: theme.spacing.xs }}>
+          <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
+            Continue last calculation
+          </Text>
+          <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>
+            {recent.title} · {recent.inputSummary}
+          </Text>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary, fontVariant: ['tabular-nums'] }}>
+            {recent.resultSummary}
+          </Text>
+        </Card>
+      ) : null}
       <View style={styles.unitRow}>
         <Text
           style={{
@@ -156,74 +198,109 @@ export default function CalcHomeScreen({ navigation }: Props) {
       </View>
 
       {Platform.OS === 'web' ? (
+        <BigButton
+          title={quickOpen ? 'Hide quick calculator' : 'Open quick calculator'}
+          variant="secondary"
+          expanded={quickOpen}
+          onPress={() => setQuickOpen((open) => !open)}
+        />
+      ) : null}
+
+      {Platform.OS === 'web' && quickOpen ? (
         <WebQuickCalculator
           onOpenStub={() => navigation.navigate('Stub')}
           onOpenOffset={() => navigation.navigate('Offset')}
         />
       ) : null}
 
-      {ENTRIES.map((entry) => (
-        <Card
-          key={entry.key}
-          accessibilityRole="button"
-          onPress={() => handlePress(entry)}
-          style={styles.card}
-        >
-          <View
-            style={[
-              styles.accentBar,
-              {
-                backgroundColor: theme.colors.accent,
-                marginRight: theme.spacing.sm,
-              },
-            ]}
-          />
-          <Text
-            numberOfLines={1}
-            style={[styles.icon, { color: theme.colors.primaryText }]}
-          >
-            {entry.icon}
+      {GROUPS.map((group) => (
+        <View key={group.key} style={{ gap: theme.spacing.sm }}>
+          <Text accessibilityRole="header" style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
+            {group.title}
           </Text>
-          <View style={styles.textBlock}>
-            <View style={styles.nameRow}>
-              <Text
-                style={{
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.fontSize.body,
-                  fontWeight: theme.fontWeight.semibold,
-                  letterSpacing: 0.1,
-                }}
-              >
-                {entry.name}
-              </Text>
-              {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
-                <Text
-                  style={[
-                    styles.proPill,
-                    {
-                      backgroundColor: theme.colors.accent,
-                      color: theme.colors.onAccent,
-                      marginLeft: theme.spacing.xs,
-                    },
-                  ]}
-                >
-                  PRO
-                </Text>
-              ) : null}
-            </View>
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-                marginTop: theme.spacing.xs,
-              }}
+          {ENTRIES.filter((entry) => entry.group === group.key).map((entry) => (
+            <Card
+              key={entry.key}
+              accessibilityRole="button"
+              onPress={() => handlePress(entry)}
+              style={styles.card}
             >
-              {entry.description}
-            </Text>
-          </View>
-          <Text style={[styles.chevron, { color: theme.colors.accentText }]}>›</Text>
-        </Card>
+              <View
+                style={[
+                  styles.accentBar,
+                  {
+                    backgroundColor: theme.colors.accent,
+                    marginRight: theme.spacing.sm,
+                  },
+                ]}
+              />
+              <Text
+                numberOfLines={1}
+                style={[styles.icon, { color: theme.colors.primaryText }]}
+              >
+                {entry.icon}
+              </Text>
+              <View style={styles.textBlock}>
+                <View style={styles.nameRow}>
+                  <Text
+                    style={{
+                      color: theme.colors.textPrimary,
+                      fontSize: theme.fontSize.body,
+                      fontWeight: theme.fontWeight.semibold,
+                      letterSpacing: 0.1,
+                    }}
+                  >
+                    {entry.name}
+                  </Text>
+                  {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
+                    <Text
+                      style={[
+                        styles.proPill,
+                        {
+                          backgroundColor: theme.colors.accent,
+                          color: theme.colors.onAccent,
+                          marginLeft: theme.spacing.xs,
+                        },
+                      ]}
+                    >
+                      PRO
+                    </Text>
+                  ) : null}
+                </View>
+                <Text
+                  style={{
+                    color: theme.colors.textSecondary,
+                    fontSize: theme.fontSize.secondary,
+                    marginTop: theme.spacing.xs,
+                  }}
+                >
+                  {entry.description}
+                </Text>
+              </View>
+              <Text style={[styles.chevron, { color: theme.colors.accentText }]}>›</Text>
+            </Card>
+          ))}
+        </View>
       ))}
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Rate on Google Play"
+        onPress={() => {
+          void openPlayStoreListing();
+        }}
+        style={{ marginTop: theme.spacing.sm, paddingVertical: theme.spacing.sm }}
+      >
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            textAlign: 'center',
+            textDecorationLine: 'underline',
+          }}
+        >
+          Rate on Google Play
+        </Text>
+      </Pressable>
       </ScrollView>
       <ProDownloadSheet
         entryKey={sheetEntryKey}
@@ -275,6 +352,7 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   chevron: {
     fontSize: 24,

@@ -1,4 +1,5 @@
 import type { EmtTakeUpSize, OffsetAngle } from '../constants.ts';
+import type { UnitSystem } from './units.ts';
 
 /** 历史记录最多保留条数（PRD FR7 / 边界情况）。 */
 export const HISTORY_LIMIT = 20;
@@ -16,6 +17,8 @@ export type HistoryKind =
 
 /** 回填到计算器的原始输入参数。 */
 export interface HistoryParams {
+  /** 回填原始文本时恢复其单位，避免把公制数字按英寸重算。 */
+  unit?: UnitSystem;
   heightText?: string;
   widthText?: string;
   takeUpText?: string;
@@ -79,13 +82,17 @@ function isHistoryEntry(value: unknown): value is HistoryEntry {
   return (
     typeof entry.id === 'string' &&
     typeof entry.kind === 'string' &&
+    ['offset', 'stub', 'threePointSaddle', 'fourPointSaddle', 'rollingOffset', 'kicked90'].includes(entry.kind) &&
     typeof entry.title === 'string' &&
     typeof entry.inputSummary === 'string' &&
     typeof entry.resultSummary === 'string' &&
     typeof entry.timestamp === 'number' &&
     typeof entry.signature === 'string' &&
     typeof entry.params === 'object' &&
-    entry.params !== null
+    entry.params !== null &&
+    !Array.isArray(entry.params) &&
+    ((entry.params as HistoryParams).unit === undefined ||
+      ['fractional', 'decimal', 'metric'].includes((entry.params as HistoryParams).unit as string))
   );
 }
 
@@ -121,24 +128,36 @@ export interface HistoryStore {
  * 与当前最新一条 signature 相同的记录视为重复，不重复写入。
  */
 export function createHistoryStore(storage: HistoryStorage): HistoryStore {
-  async function load(): Promise<HistoryEntry[]> {
+  let writes: Promise<void> = Promise.resolve();
+  function mutate<T>(operation: () => Promise<T>): Promise<T> {
+    const result = writes.then(operation);
+    writes = result.then(() => undefined, () => undefined);
+    return result;
+  }
+
+  async function read(): Promise<HistoryEntry[]> {
     const raw = await storage.getItem(HISTORY_STORAGE_KEY);
     return parseHistory(raw);
   }
 
   return {
-    load,
-    async add(entry: HistoryEntry): Promise<HistoryEntry[]> {
-      const current = await load();
-      if (current[0]?.signature === entry.signature) {
-        return current;
-      }
-      const next = capHistory([entry, ...current]);
-      await storage.setItem(HISTORY_STORAGE_KEY, serializeHistory(next));
-      return next;
+    async load(): Promise<HistoryEntry[]> {
+      await writes;
+      return read();
     },
-    async clear(): Promise<void> {
-      await storage.removeItem(HISTORY_STORAGE_KEY);
+    add(entry: HistoryEntry): Promise<HistoryEntry[]> {
+      return mutate(async () => {
+        const current = await read();
+        if (current[0]?.signature === entry.signature) {
+          return current;
+        }
+        const next = capHistory([entry, ...current]);
+        await storage.setItem(HISTORY_STORAGE_KEY, serializeHistory(next));
+        return next;
+      });
+    },
+    clear(): Promise<void> {
+      return mutate(() => storage.removeItem(HISTORY_STORAGE_KEY));
     },
   };
 }

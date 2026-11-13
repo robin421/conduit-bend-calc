@@ -1,6 +1,17 @@
 /**
  * 计算首页的纯常量（不依赖 react-native，便于单测）。
  */
+import type { HistoryKind } from './historyStore.ts';
+
+/** 首页继续计算与历史回填共用的真实导航目标。 */
+export const HISTORY_CALCULATOR_SCREENS = {
+  offset: 'Offset',
+  stub: 'Stub',
+  threePointSaddle: 'ThreePointSaddle',
+  fourPointSaddle: 'FourPointSaddle',
+  rollingOffset: 'RollingOffset',
+  kicked90: 'Kicked90',
+} as const satisfies Record<HistoryKind, string>;
 
 /**
  * Home 卡片图标槽固定 48pt / 28pt 字号。

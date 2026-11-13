@@ -32,7 +32,7 @@ export default function LanguageSwitcher() {
                 borderRadius: theme.radius,
                 borderColor: selected ? theme.colors.accent : theme.colors.border,
                 backgroundColor: selected
-                  ? theme.colors.accent
+                  ? theme.colors.controlAccent
                   : theme.colors.background,
               },
             ]}
@@ -40,7 +40,7 @@ export default function LanguageSwitcher() {
             <Text
               style={{
                 color: selected
-                  ? theme.colors.onAccent
+                  ? theme.colors.onControlAccent
                   : theme.colors.textSecondary,
                 fontSize: theme.fontSize.secondary,
                 fontWeight: theme.fontWeight.semibold,

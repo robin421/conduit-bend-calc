@@ -129,7 +129,7 @@ export default function ProDownloadSheet({ entryKey, onClose }: ProDownloadSheet
                 fontSize: theme.fontSize.secondary,
               }}
             >
-              One-time $4.99 Pro unlock in the app
+              One-time Pro purchase in the app. See Google Play for your local price.
             </Text>
             <Pressable
               accessibilityRole="button"

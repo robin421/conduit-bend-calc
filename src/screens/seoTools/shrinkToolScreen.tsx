@@ -239,7 +239,7 @@ export default function ShrinkToolScreen() {
                       styles.modeButton,
                       {
                         backgroundColor: selected
-                          ? theme.colors.accent
+                          ? theme.colors.controlAccent
                           : theme.colors.background,
                         borderColor: selected
                           ? theme.colors.accent
@@ -251,7 +251,7 @@ export default function ShrinkToolScreen() {
                     <Text
                       style={{
                         color: selected
-                          ? theme.colors.onAccent
+                          ? theme.colors.onControlAccent
                           : theme.colors.textPrimary,
                         fontSize: theme.fontSize.secondary,
                         fontWeight: theme.fontWeight.semibold,

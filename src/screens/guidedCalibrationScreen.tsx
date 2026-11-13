@@ -187,8 +187,9 @@ function DialInChooser({
       ]}
     >
       <BodyText>
-        Free calculators are already trade-standard accurate. Dialing in tightens
-        second-order corrections (take-up, gain) to your exact bender.
+        Free calculators use standard bender values. Use a test bend to match
+        take-up or bend radius to your own tool. Have your bender, scrap conduit
+        and tape measure ready.
       </BodyText>
       <PathCard
         badge="Recommended · 1 measurement"
@@ -270,6 +271,7 @@ function QuickCheckWizard({
     measuredInches !== null ? formatMeasurement(measuredInches, unit) : undefined;
   const deductMeasurement = result ? formatMeasurement(result.actualDeduct, unit) : undefined;
   const markLabel = formatLength(TEST_BEND_MARK, unit);
+  const datumLabel = base.datum === 'hook' ? 'front of the hook' : 'arrow';
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
@@ -318,10 +320,9 @@ function QuickCheckWizard({
           <Card style={{ gap: theme.spacing.md }}>
             <StepHeading>Bend a 90° stub</StepHeading>
             <BodyText>
-              Line the bender arrow up with your mark, then bend a full 90° stub. Keep the
-              conduit seated in the bender.
+              {`Line the ${datumLabel} up with your mark, then bend a full 90° stub. Keep the conduit seated in the bender.`}
             </BodyText>
-            <DiagramBox>{'Arrow ▼\nEnd ─────●───── mark\n           90°'}</DiagramBox>
+            <DiagramBox>{`${datumLabel} ▼\nEnd ─────●───── mark\n           90°`}</DiagramBox>
           </Card>
         ) : null}
 

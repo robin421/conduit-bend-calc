@@ -19,7 +19,9 @@ import {
   clearHistory,
   formatHistoryTime,
   loadHistory,
+  HISTORY_LIMIT,
 } from '../lib/history';
+import { useUnitSystem } from '../lib/unitStore';
 import type { HistoryEntry } from '../lib/historyStore';
 import { useProAccess } from '../lib/proStore';
 import type { RootTabParamList } from '../navigation/rootTabs';
@@ -31,6 +33,7 @@ export default function HistoryScreen({ navigation }: Props) {
   const theme = useTheme();
   const isFocused = useIsFocused();
   const { access } = useProAccess();
+  const { setUnit } = useUnitSystem();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
 
   const visibleEntries = access === 'unlocked' ? entries : entries.slice(0, 5);
@@ -131,6 +134,7 @@ export default function HistoryScreen({ navigation }: Props) {
   const handlePress = useCallback(
     (entry: HistoryEntry) => {
       const backfill = entry.params;
+      setUnit(backfill.unit ?? 'fractional');
       switch (entry.kind) {
         case 'offset':
           navigation.navigate('CalcHome', {
@@ -170,7 +174,7 @@ export default function HistoryScreen({ navigation }: Props) {
           break;
       }
     },
-    [navigation],
+    [navigation, setUnit],
   );
 
   const renderItem = useCallback(
@@ -255,12 +259,12 @@ export default function HistoryScreen({ navigation }: Props) {
               },
             ]}
           >
-            Upgrade to Pro for unlimited bend history and export.
+            {`The latest ${HISTORY_LIMIT} bends are saved on this device. Pro shows all ${HISTORY_LIMIT} and enables export.`}
           </Text>
         </View>
         <View style={{ marginTop: theme.spacing.md }}>
           <BigButton
-            title="Unlock Unlimited History"
+            title={`Unlock ${HISTORY_LIMIT}-Bend History & Export`}
             variant="primary"
             onPress={() => {
               trackEvent('pro_paywall_viewed', { trigger_source: 'history_limit' });

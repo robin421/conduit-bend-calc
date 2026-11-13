@@ -26,6 +26,7 @@ export default function OptionRow<T extends string | number>({ label, options, v
           <View key={String(o)} style={{ width: basis, padding: theme.spacing.xs / 2 }}>
             <BigButton
               title={format ? format(o) : String(o)}
+              variant="option"
               size="selection"
               selected={o === value}
               onPress={() => onChange(o)}

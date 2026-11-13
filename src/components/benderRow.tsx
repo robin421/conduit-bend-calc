@@ -12,10 +12,7 @@ interface BenderRowProps {
 /** 计算器输入卡顶部的紧凑弯管机行：点击进入 Bender Setup。 */
 export default function BenderRow({ spec, onPress }: BenderRowProps) {
   const theme = useTheme();
-  const rippleColor =
-    theme.scheme === 'dark'
-      ? 'rgba(255, 255, 255, 0.08)'
-      : 'rgba(0, 0, 0, 0.06)';
+  const rippleColor = theme.colors.pressFeedback;
 
   return (
     <Pressable

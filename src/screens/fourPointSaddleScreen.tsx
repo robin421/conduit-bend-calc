@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { calculateFourPointSaddle } from '../calculators/saddle/saddle';
@@ -12,7 +13,7 @@ import BenderStatusBanner from '../components/benderStatusBanner';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ConduitTypeToggle from '../components/conduitTypeToggle';
-import BendDiagram from '../components/bendDiagram';
+import BendGuide from '../components/bendGuide';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
@@ -34,6 +35,7 @@ import { useCustomSpecs } from '../lib/customSpecs';
 import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
+import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement, type UnitSystem } from '../lib/units';
@@ -45,7 +47,6 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'FourPointSaddle'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 30;
 
-
 function formatFromCenter(value: number, unit: UnitSystem): string {
   if (value === 0) {
     return 'Center';
@@ -56,6 +57,7 @@ function formatFromCenter(value: number, unit: UnitSystem): string {
 
 export default function FourPointSaddleScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('fourPointSaddle', {
     heightText: '',
@@ -65,13 +67,14 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
   const { heightText, widthText, angle } = memory;
   const [heightInches, setHeightInches] = useState<number | null>(null);
   const [widthInches, setWidthInches] = useState<number | null>(null);
-  const { spec, setSpec } = useBenderSpec();
-  const { specs: customSpecs } = useCustomSpecs();
+  const { spec, setSpec, loaded: specLoaded } = useBenderSpec();
+  const { specs: customSpecs, ready: customSpecsReady } = useCustomSpecs();
   const { activeProfile } = useBenderProfiles();
   const { access } = useProAccess();
 
-  /** 屏幕级导体材质（本屏默认 EMT），约束弯管机规格选择。 */
-  const [conduitType, setConduitType] = useState<ConduitType>('EMT');
+  /** 材质跟随已保存的弯管器，约束本屏规格选择。 */
+  const [conduitType, setConduitType] = useState<ConduitType>(() => matchesConduitType(spec.conduit, 'Rigid') ? 'Rigid' : 'EMT');
+  const materialInitialized = useRef(false);
 
   const setHeightText = useCallback(
     (text: string) => setMemory((prev) => ({ ...prev, heightText: text })),
@@ -87,9 +90,20 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
   );
 
   const backfill = route.params?.backfill;
+  const appliedBackfill = useRef<typeof backfill>(undefined);
 
   // 材质与当前全局规格不一致时，自动切到该材质的第一个预设规格。
   useEffect(() => {
+    if (!focused) {
+      materialInitialized.current = false;
+      return;
+    }
+    if (!specLoaded) return;
+    if (!materialInitialized.current) {
+      materialInitialized.current = true;
+      setConduitType(matchesConduitType(spec.conduit, 'Rigid') ? 'Rigid' : 'EMT');
+      return;
+    }
     if (matchesConduitType(spec.conduit, conduitType)) {
       return;
     }
@@ -97,16 +111,17 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
     if (next) {
       setSpec(next);
     }
-  }, [conduitType, spec, setSpec]);
+  }, [conduitType, spec, setSpec, specLoaded, focused]);
 
   const handleConduitTypeChange = useCallback((next: ConduitType) => {
     setConduitType(next);
   }, []);
 
   useEffect(() => {
-    if (!backfill) {
+    if (!focused || !backfill || !customSpecsReady || appliedBackfill.current === backfill) {
       return;
     }
+    appliedBackfill.current = backfill;
     if (backfill.heightText !== undefined) {
       setHeightText(backfill.heightText);
     }
@@ -119,10 +134,11 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
     if (backfill.specKey) {
       const resolved = resolveSpecKey(backfill.specKey, customSpecs);
       if (resolved) {
+        setConduitType(matchesConduitType(resolved.conduit, 'Rigid') ? 'Rigid' : 'EMT');
         setSpec(resolved);
       }
     }
-  }, [backfill, customSpecs]);
+  }, [backfill, customSpecs, customSpecsReady, focused]);
 
   const result = useMemo(() => {
     if (heightInches === null || widthInches === null) {
@@ -186,15 +202,17 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
       inputSummary: `${heightText.trim()} · ${widthText.trim()} · ${angle}°`,
       resultSummary: `Spacing ${formatLength(result.markSpacingInches, unit)} · span ${formatLength(result.spanInches, unit)}`,
       timestamp: Date.now(),
-      params: { heightText, widthText, angle, specKey: specKey(spec) },
-      signature: `four-point-saddle|${heightInches}|${widthInches}|${angle}`,
+      params: { heightText, widthText, angle, specKey: specKey(spec), unit },
+      signature: `four-point-saddle|${heightInches}|${widthInches}|${angle}|${specKey(spec)}|${unit}`,
     };
   }, [angle, heightInches, heightText, result, spec, unit, widthInches, widthText]);
 
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
-  useHistoryAutoSave(historyEntry);
-  useCalculatorAnalytics('saddle4', historyEntry?.signature ?? null, { unitSystem });
-  useFirebaseCalculationCompleted('saddle4', historyEntry?.signature ?? null, { unitSystem });
+  const activeSignature = focused ? historyEntry?.signature ?? null : null;
+  useHistoryAutoSave(historyEntry, 800, focused);
+  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  useCalculatorAnalytics('saddle4', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('saddle4', activeSignature, { unitSystem });
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', widthText: '', angle: DEFAULT_ANGLE });
@@ -277,12 +295,6 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         </View>
       </Card>
 
-      {diagramInput ? (
-        <Card style={{ padding: theme.spacing.sm }}>
-          <BendDiagram input={diagramInput} />
-        </Card>
-      ) : null}
-
       <ResultGroup
         hero={{
           label: 'Bend spacing (edge ↔ bend)',
@@ -292,26 +304,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         hint={hint}
       />
 
-      <BenderStatusBanner
-        profile={activeProfile}
-        isPro={access === 'unlocked'}
-        showCalibrateCta={result !== null}
-        onCalibrate={() => {
-          trackEvent('calibration_cta_click', { source: 'four_point_saddle_result' });
-          if (access === 'unlocked') {
-            navigation.navigate('GuidedCalibration');
-          } else {
-            navigation.navigate('Paywall', { triggerSource: 'four_point_saddle_calibration' });
-          }
-        }}
-      />
-
-      <ExpectedActualFeedback
-        profile={activeProfile}
-        expectedInches={calibratedSpacing}
-        label="Bend spacing"
-        unit={unit}
-      />
+      <WarningBar warnings={warnings} />
 
       <FeasibilityPanel
         result={feasibility}
@@ -322,7 +315,9 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         }
       />
 
-      <WarningBar warnings={warnings} />
+      {diagramInput ? (
+        <BendGuide input={diagramInput} />
+      ) : null}
 
       {result ? (
         <Card style={{ gap: theme.spacing.md }}>
@@ -390,6 +385,26 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         </Card>
       ) : null}
 
+      <BenderStatusBanner
+        profile={activeProfile}
+        isPro={access === 'unlocked'}
+        showCalibrateCta={result !== null}
+        onCalibrate={() => {
+          trackEvent('calibration_cta_click', { source: 'four_point_saddle_result' });
+          if (access === 'unlocked') {
+            navigation.navigate('GuidedCalibration');
+          } else {
+            navigation.navigate('Paywall', { triggerSource: 'four_point_saddle_calibration' });
+          }
+        }}
+      />
+      <ExpectedActualFeedback
+        profile={activeProfile}
+        expectedInches={calibratedSpacing}
+        label="Bend spacing"
+        unit={unit}
+      />
+
       <BigButton title="Clear" variant="secondary" onPress={handleClear} />
     </ScrollView>
   );
@@ -410,8 +425,7 @@ const styles = StyleSheet.create({
   angleButton: {
     flexBasis: '30%',
     flexGrow: 1,
-    height: 52,
-    minHeight: 52,
+    minHeight: 64,
   },
   markRow: {
     width: '100%',

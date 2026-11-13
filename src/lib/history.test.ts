@@ -8,6 +8,8 @@ import {
   parseHistory,
 } from './historyStore.ts';
 import type { HistoryEntry, HistoryStorage } from './historyStore.ts';
+import { parseLength } from './units.ts';
+import { HISTORY_CALCULATOR_SCREENS } from './homeContent.ts';
 
 function makeEntry(index: number): HistoryEntry {
   return {
@@ -90,4 +92,40 @@ test('parseHistory: 损坏数据返回空数组且不抛异常', () => {
   assert.deepEqual(parseHistory('not-json'), []);
   assert.deepEqual(parseHistory('{"a":1}'), []);
   assert.deepEqual(parseHistory('[{"id":1}]'), []);
+});
+
+test('继续计算保留公制输入、弯管器与导航目标，不把 150 mm 当作 150 英寸', async () => {
+  const store = createHistoryStore(createMemoryStorage());
+  const entry = makeEntry(1);
+  entry.params = { heightText: '150', angle: 30, unit: 'metric', specKey: 'my-rigid-bender' };
+  await store.add(entry);
+  const [restored] = await store.load();
+  assert.equal(HISTORY_CALCULATOR_SCREENS[restored.kind], 'Offset');
+  assert.equal(restored.params.specKey, 'my-rigid-bender');
+  assert.equal(restored.params.unit, 'metric');
+  assert.equal(parseLength(restored.params.heightText!, restored.params.unit!), 150 / 25.4);
+});
+
+test('未知历史类型或损坏单位不会成为首页继续计算入口', () => {
+  const entry = makeEntry(1);
+  assert.deepEqual(parseHistory(JSON.stringify([{ ...entry, kind: 'unknown' }])), []);
+  assert.deepEqual(parseHistory(JSON.stringify([{ ...entry, params: { unit: 'unknown' } }])), []);
+  assert.deepEqual(parseHistory(JSON.stringify([{ ...entry, params: [] }])), []);
+  assert.equal(parseHistory(JSON.stringify([entry])).length, 1, '旧记录未存单位时仍兼容');
+});
+
+test('快速切换计算器时并发保存不丢记录，读取等待落盘完成', async () => {
+  const store = createHistoryStore(createMemoryStorage());
+  const first = store.add(makeEntry(1));
+  const second = store.add(makeEntry(2));
+  const restored = store.load();
+  await Promise.all([first, second]);
+  assert.deepEqual((await restored).map((entry) => entry.id), ['id-2', 'id-1']);
+});
+
+test('清空与紧接着的新计算按操作顺序处理', async () => {
+  const store = createHistoryStore(createMemoryStorage());
+  await store.add(makeEntry(1));
+  await Promise.all([store.clear(), store.add(makeEntry(2))]);
+  assert.deepEqual((await store.load()).map((entry) => entry.id), ['id-2']);
 });
