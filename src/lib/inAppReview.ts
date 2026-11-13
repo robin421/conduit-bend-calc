@@ -1,119 +1,53 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as StoreReview from 'expo-store-review';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { GOOGLE_PLAY_URL } from './homeContent.ts';
-import {
-  parseReviewState,
-  REVIEW_STORAGE_KEY,
-  serializeReviewState,
-  shouldRequestInAppReview,
-  withReviewRequested,
-  withSuccessfulCalc,
-  type InAppReviewState,
-} from './inAppReviewStore.ts';
-import type { FeasibilityStatus } from '../calculators/feasibility/feasibility.ts';
+import { GOOGLE_PLAY_URL } from './homeContent';
+import { createReviewCoordinator } from './reviewCoordinator';
+import { trackGrowthEvent } from './growth';
 
-const sessionSeenSignatures = new Set<string>();
-let memoryState: InAppReviewState | null = null;
-let loadPromise: Promise<InAppReviewState> | null = null;
+const coordinator = createReviewCoordinator(AsyncStorage, {
+  isAvailable: () => Platform.OS === 'android' ? StoreReview.isAvailableAsync() : Promise.resolve(false),
+  request: () => StoreReview.requestReview(),
+}, { onEvent: trackGrowthEvent });
+let suspended = false;
+export function suspendReviewForSession(): void { suspended = true; }
 
-async function loadState(): Promise<InAppReviewState> {
-  if (memoryState) return memoryState;
-  if (!loadPromise) {
-    loadPromise = (async () => {
-      try {
-        const raw = await AsyncStorage.getItem(REVIEW_STORAGE_KEY);
-        memoryState = parseReviewState(raw);
-      } catch {
-        memoryState = parseReviewState(null);
-      }
-      return memoryState;
-    })();
-  }
-  return loadPromise;
+/** 首次打开即记录起点；评分请求另外等待用户完成任务并返回首页。 */
+export function initInAppReview(): Promise<unknown> {
+  return Platform.OS === 'android' ? coordinator.initialize() : Promise.resolve();
 }
 
-async function saveState(state: InAppReviewState): Promise<void> {
-  memoryState = state;
-  try {
-    await AsyncStorage.setItem(REVIEW_STORAGE_KEY, serializeReviewState(state));
-  } catch {
-    // ignore — review is best-effort
-  }
+export function requestReviewWhenIdle(isIdle: () => boolean): Promise<unknown> {
+  return Platform.OS === 'android' ? coordinator.requestWhenIdle(() => !suspended && isIdle()) : Promise.resolve();
 }
 
-/**
- * After a successful calc with no blocking feasibility, count it and maybe
- * request the native review card. Same signature only counts once per process.
- */
-export async function noteSuccessfulCalcAndMaybeRequestReview(
-  signature: string,
-  feasibilityStatus: FeasibilityStatus | null | undefined,
-): Promise<boolean> {
-  if (!signature) return false;
-  if (feasibilityStatus === 'impossible') return false;
-
-  const isNew = !sessionSeenSignatures.has(signature);
-  sessionSeenSignatures.add(signature);
-
-  let state = await loadState();
-  if (isNew) {
-    state = withSuccessfulCalc(state, true);
-    await saveState(state);
-  }
-
-  if (!shouldRequestInAppReview(state)) return false;
-  if (Platform.OS === 'web') return false;
-
+/** 手动入口直接打开商店，不调用可能被限额的原生评分卡。 */
+export async function openPlayStoreListing(source = 'manual'): Promise<boolean> {
   try {
-    const available = await StoreReview.isAvailableAsync();
-    if (!available) return false;
-    await StoreReview.requestReview();
-    state = withReviewRequested(state);
-    await saveState(state);
+    await Linking.openURL(GOOGLE_PLAY_URL);
+    trackGrowthEvent('review_store_open', { source });
     return true;
-  } catch {
-    return false;
-  }
+  } catch { return false; }
 }
 
-/** Manual "Rate on Google Play" fallback — always opens the listing. */
-export async function openPlayStoreListing(): Promise<void> {
-  const url = StoreReview.storeUrl() ?? GOOGLE_PLAY_URL;
-  try {
-    await Linking.openURL(url);
-  } catch {
-    // ignore
-  }
-}
-
-/**
- * When `signature` appears for a non-impossible result, count a success and
- * possibly request review (debounced like history save).
- */
+/** 只有用户主动编辑后产生的稳定结果才计数；挂载、回填、单位切换不会计数。 */
 export function useReviewOnSuccessfulCalc(
   signature: string | null,
-  feasibilityStatus: FeasibilityStatus | null | undefined,
-  delayMs = 900,
-): void {
-  const last = useRef<string | null>(null);
-
+  feasibilityStatus: string | null | undefined,
+): (() => void) & { reset(): void } {
+  const dirty = useRef(false);
   useEffect(() => {
-    if (!signature || feasibilityStatus === 'impossible') return;
-    if (last.current === signature) return;
+    if (!signature) { dirty.current = false; return; }
+    if (!signature || !dirty.current || feasibilityStatus === 'impossible') return;
     const timer = setTimeout(() => {
-      last.current = signature;
-      void noteSuccessfulCalcAndMaybeRequestReview(signature, feasibilityStatus);
-    }, delayMs);
+      dirty.current = false;
+      if (Platform.OS === 'android') void coordinator.noteCalculation(signature, feasibilityStatus).catch(() => undefined);
+    }, 900);
     return () => clearTimeout(timer);
-  }, [signature, feasibilityStatus, delayMs]);
-}
-
-/** Test-only reset. */
-export function __resetInAppReviewForTests(): void {
-  memoryState = null;
-  loadPromise = null;
-  sessionSeenSignatures.clear();
+  }, [signature, feasibilityStatus]);
+  const mark = useCallback(() => { dirty.current = true; }, []);
+  const reset = useCallback(() => { dirty.current = false; }, []);
+  return Object.assign(mark, { reset });
 }

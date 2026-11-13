@@ -2,8 +2,10 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
+  AppState,
+  InteractionManager,
+  Keyboard,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,7 +14,7 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
-import ProDownloadSheet from '../components/proDownloadSheet';
+import RatingCard from '../components/ratingCard';
 import WebQuickCalculator from '../components/webQuickCalculator';
 import {
   FOUR_POINT_SADDLE_ICON,
@@ -21,11 +23,12 @@ import {
 } from '../lib/homeContent';
 import { loadHistory, subscribeHistory } from '../lib/history';
 import type { HistoryEntry } from '../lib/historyStore';
-import type { ProDownloadEntryKey } from '../lib/proDownloadCopy';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
-import { openPlayStoreListing } from '../lib/inAppReview';
-import { useProAccess } from '../lib/proStore';
+import { requestReviewWhenIdle } from '../lib/inAppReview';
+import { loadPendingProTask } from '../lib/pendingProIntent';
+import type { PendingProTask } from '../lib/pendingProTaskStore';
+import { getCurrentProState, useProAccess } from '../lib/proStore';
 import { useUnitSystem } from '../lib/unitStore';
 import { trackEvent } from '../lib/analytics';
 import { logFirebaseUnitSystemChanged } from '../lib/firebase';
@@ -65,10 +68,24 @@ const GROUPS = [
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
   const { unit, setUnit } = useUnitSystem();
-  const { access } = useProAccess();
-  const [sheetEntryKey, setSheetEntryKey] = useState<ProDownloadEntryKey | null>(null);
+  const { access, phase, pendingPurchase } = useProAccess();
+  const [pendingTask, setPendingTask] = useState<PendingProTask | null>(null);
   const [recent, setRecent] = useState<HistoryEntry | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    void loadPendingProTask().then((task) => {
+      if (active) setPendingTask(task);
+    });
+    const task = InteractionManager.runAfterInteractions(() => {
+      void requestReviewWhenIdle(() => active && navigation.isFocused()
+        && AppState.currentState === 'active' && !Keyboard.isVisible()
+        && getCurrentProState().phase === 'idle');
+    });
+    return () => { active = false; task.cancel(); };
+  }, [navigation, access, phase]));
+
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -100,14 +117,14 @@ export default function CalcHomeScreen({ navigation }: Props) {
             : 'advanced_calibration',
       });
     }
-    // Web 没有 IAP：Pro 入口点击弹出下载引导，导流到 Google Play。
+    // Web 没有 IAP：展示统一功能预览，再导流到 Google Play。
     if (entry.pro && Platform.OS === 'web') {
-      setSheetEntryKey(entry.key as ProDownloadEntryKey);
+      navigation.navigate('Paywall', { triggerSource: 'calc_home_guidedcalibration', intent: { kind: 'calibration' } });
       return;
     }
     if (entry.pro && access === 'locked') {
       navigation.navigate('Paywall', {
-        triggerSource: `calc_home_${entry.key.toLowerCase()}`,
+        triggerSource: `calc_home_${entry.key.toLowerCase()}`, intent: { kind: 'calibration' },
       });
       return;
     }
@@ -147,6 +164,17 @@ export default function CalcHomeScreen({ navigation }: Props) {
           { padding: theme.spacing.md, gap: theme.spacing.md },
         ]}
       >
+      {(pendingPurchase || phase === 'purchasing' || (access === 'unlocked' && pendingTask)) ? (
+        <Card style={{ gap: theme.spacing.sm }}>
+          <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>
+            {access === 'unlocked' ? 'Pro is ready — continue your task' : 'Your purchase is not complete yet'}
+          </Text>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
+            {access === 'unlocked' ? 'Your saved inputs are kept. Open your next step when ready.' : 'Keep using the free calculators while Google Play confirms payment.'}
+          </Text>
+          <BigButton title={access === 'unlocked' ? 'Continue with Pro' : 'Check purchase status'} variant="secondary" onPress={() => navigation.navigate('Paywall', { triggerSource: 'pending_resume', intent: pendingTask?.intent ?? { kind: 'calibration' }, pendingTaskId: pendingTask?.id })} />
+        </Card>
+      ) : null}
       {recent ? (
         <Card onPress={() => {
           setUnit(recent.params.unit ?? 'fractional');
@@ -215,6 +243,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
 
       {GROUPS.map((group) => (
         <View key={group.key} style={{ gap: theme.spacing.sm }}>
+          {group.key === 'bender' ? <RatingCard source="home" /> : null}
           <Text accessibilityRole="header" style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
             {group.title}
           </Text>
@@ -282,30 +311,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
           ))}
         </View>
       ))}
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel="Rate on Google Play"
-        onPress={() => {
-          void openPlayStoreListing();
-        }}
-        style={{ marginTop: theme.spacing.sm, paddingVertical: theme.spacing.sm }}
-      >
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-            textAlign: 'center',
-            textDecorationLine: 'underline',
-          }}
-        >
-          Rate on Google Play
-        </Text>
-      </Pressable>
       </ScrollView>
-      <ProDownloadSheet
-        entryKey={sheetEntryKey}
-        onClose={() => setSheetEntryKey(null)}
-      />
     </>
   );
 }

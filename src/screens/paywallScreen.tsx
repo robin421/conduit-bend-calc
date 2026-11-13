@@ -1,341 +1,106 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
-import {
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Linking, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import BigButton from '../components/bigButton';
-import {
-  buyPro,
-  clearProError,
-  refreshProIap,
-  restorePro,
-  useProAccess,
-} from '../lib/proStore';
-import { SKU_UNAVAILABLE_MESSAGE } from '../lib/iap';
+import ProPaywallView from '../components/proPaywallView';
+import { buyPro, clearProError, getCurrentProState, refreshProIap, restorePro, useProAccess } from '../lib/proStore';
 import { GOOGLE_PLAY_URL } from '../lib/homeContent';
 import { trackEvent } from '../lib/analytics';
+import { trackGrowthEvent } from '../lib/growth';
 import { logFirebaseProPaywallViewed } from '../lib/firebase';
+import { normalizeProSource, proIntentForSource, sceneForIntent, type ProScene } from '../lib/proFlow';
+import { beginPendingProTask, clearPendingProTask } from '../lib/pendingProIntent';
+import { continueProTask } from '../lib/proContinuation';
+import { useUnitSystem } from '../lib/unitStore';
+import { suspendReviewForSession } from '../lib/inAppReview';
+import { createProActionGuard, type ProAction } from '../lib/proActionGuard';
 import type { CalcStackParamList } from '../navigation/calcStack';
-import { useTheme } from '../theme';
-import { HISTORY_LIMIT } from '../lib/historyStore';
 
 type Props = NativeStackScreenProps<CalcStackParamList, 'Paywall'>;
 
-/**
- * Pro 权益：围绕 calibration / accuracy / waste reduction，
- * 不卖"更多计算器"（P0-6）。
- */
-const PRO_BENEFITS = [
-  'Calibrate your actual bender',
-  'Personalized bend measurements',
-  'Catch impossible bends',
-  'Reduce scrap and rework',
-  'Save multiple bender profiles',
-  `View the latest ${HISTORY_LIMIT} bends and export`,
-];
-
 export default function PaywallScreen({ route, navigation }: Props) {
-  const theme = useTheme();
+  const state = useProAccess();
   const insets = useSafeAreaInsets();
-  const { access, productPrice, initialized, lastError, pendingPurchase, skuAvailability } =
-    useProAccess();
-  const [buying, setBuying] = useState(false);
-  const [restoring, setRestoring] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { unit } = useUnitSystem();
+  const source = normalizeProSource(route.params?.triggerSource ?? 'direct');
+  const intent = route.params?.intent ?? proIntentForSource(source);
+  const [scene, setScene] = useState<ProScene>(() => sceneForIntent(intent));
+  const [actions, setActions] = useState<ReadonlySet<ProAction>>(new Set());
+  const [localError, setLocalError] = useState<string | null>(null);
+  const running = useRef(createProActionGuard());
+  const impressionRef = useRef(false);
+  const taskIdRef = useRef<string | undefined>(route.params?.pendingTaskId);
 
-  const triggerSource = route.params?.triggerSource ?? 'direct';
-
-  // 购买成功（access 变 unlocked）后自动关闭付费墙。
   useEffect(() => {
-    if (access === 'unlocked') {
-      navigation.goBack();
+    suspendReviewForSession();
+    if (!impressionRef.current) {
+      impressionRef.current = true;
+      logFirebaseProPaywallViewed(source);
+      trackEvent('pro_paywall_viewed', { trigger_source: source });
     }
-  }, [access, navigation]);
-
-  // 付费墙展示埋点（原生端 Firebase + Web 端 GA4）
-  useEffect(() => {
-    logFirebaseProPaywallViewed(triggerSource);
-    trackEvent('pro_paywall_viewed', { trigger_source: triggerSource });
-  }, [triggerSource]);
-
-  // 挂载时若产品信息缺失（启动时离线等），刷新一次。
-  useEffect(() => {
-    if (!initialized || productPrice == null) {
-      setRefreshing(true);
-      refreshProIap()
-        .catch(() => undefined)
-        .finally(() => setRefreshing(false));
+    if (Platform.OS !== 'web' && (!getCurrentProState().initialized || !getCurrentProState().productPrice)) {
+      void refreshProIap().catch(() => undefined);
     }
-    // 只在挂载时执行一次。
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [source]);
 
-  const busy = buying || restoring || refreshing;
-
-  async function handleBuy(): Promise<void> {
-    if (busy) {
-      return;
-    }
-    clearProError();
-    setBuying(true);
+  async function perform(kind: ProAction): Promise<void> {
+    if (!running.current.begin(kind)) return;
+    setActions(running.current.snapshot());
+    let failed = false;
+    setLocalError(null);
     try {
-      await buyPro();
-      // 购买结果经由购买更新监听送达；access 变 unlocked 后自动 goBack。
+      if (kind === 'continue') {
+        await continueProTask(navigation, intent, taskIdRef.current);
+      } else if (kind === 'buy' && Platform.OS === 'web') {
+        trackEvent('google_play_click', { source: 'pro_preview', scene });
+        await Linking.openURL(GOOGLE_PLAY_URL);
+      } else if (kind === 'buy') {
+        clearProError();
+        const { task, persisted } = beginPendingProTask(intent);
+        taskIdRef.current = task.id;
+        await persisted;
+        if (!navigation.isFocused()) { await clearPendingProTask(task.id); return; }
+        const result = await buyPro({ source, scene });
+        if (!result.ok && !getCurrentProState().pendingPurchase && getCurrentProState().access !== 'unlocked') await clearPendingProTask(task.id);
+      } else if (kind === 'restore') {
+        clearProError();
+        const { task, persisted } = beginPendingProTask(intent);
+        taskIdRef.current = task.id;
+        await persisted;
+        if (!navigation.isFocused()) { await clearPendingProTask(task.id); return; }
+        const result = await restorePro();
+        if (!result.found) await clearPendingProTask(task.id);
+      } else {
+        await refreshProIap();
+      }
+    } catch (error) {
+      failed = true;
+      setLocalError(error instanceof Error ? error.message : 'Unable to complete this action. Please try again.');
     } finally {
-      setBuying(false);
+      running.current.end(kind, failed);
+      setActions(running.current.snapshot());
     }
   }
 
-  async function handleRestore(): Promise<void> {
-    if (busy) {
-      return;
-    }
-    clearProError();
-    setRestoring(true);
-    try {
-      await restorePro();
-      // 找到购买记录 → access 变 unlocked → 自动 goBack；
-      // 无记录 → lastError 显示 "No previous purchase found."。
-    } finally {
-      setRestoring(false);
-    }
-  }
-
-  return (
-    <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.content,
-          {
-            paddingHorizontal: theme.spacing.lg,
-            paddingTop: theme.spacing.lg,
-            paddingBottom: theme.spacing.md,
-            gap: theme.spacing.md,
-          },
-        ]}
-      >
-        <Text
-          style={{
-            color: theme.colors.textPrimary,
-            fontSize: theme.fontSize.title,
-            fontWeight: theme.fontWeight.semibold,
-          }}
-        >
-          Bend It Right the First Time
-        </Text>
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.body,
-            lineHeight: 22,
-          }}
-        >
-          Calibrate the app to your actual bender and catch risky bends before cutting
-          conduit.
-        </Text>
-
-        <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.body, lineHeight: 22 }}>
-          Free calculators use standard bender values. Quick Check adjusts take-up
-          from one test bend and one finished-height measurement. Full Fingerprint
-          uses a scrap piece and two leg measurements to derive bend radius.
-          Have your bender, conduit and tape measure ready.
-        </Text>
-
-        <View style={{ gap: theme.spacing.sm }}>
-          {PRO_BENEFITS.map((benefit) => (
-            <View
-              key={benefit}
-              style={[
-                styles.featureRow,
-                {
-                  backgroundColor: theme.colors.card,
-                  borderColor: theme.colors.border,
-                  padding: theme.spacing.md,
-                  borderRadius: theme.radius,
-                },
-              ]}
-            >
-              <Text style={[styles.check, { color: theme.colors.success }]}>✓</Text>
-              <Text
-                style={{
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.fontSize.body,
-                  fontWeight: theme.fontWeight.semibold,
-                  flex: 1,
-                }}
-              >
-                {benefit}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-          }}
-        >
-          Pro Lifetime — one-time purchase, yours forever.
-        </Text>
-      </ScrollView>
-
-      <View
-        style={[
-          styles.footer,
-          {
-            borderTopColor: theme.colors.border,
-            backgroundColor: theme.colors.background,
-            paddingHorizontal: theme.spacing.lg,
-            paddingTop: theme.spacing.md,
-            paddingBottom: Math.max(insets.bottom, theme.spacing.md),
-            gap: theme.spacing.sm,
-          },
-        ]}
-      >
-        {pendingPurchase ? (
-          <Text
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.fontSize.secondary,
-            }}
-          >
-            Payment pending. Pro will unlock automatically once it completes.
-          </Text>
-        ) : null}
-
-        {lastError ? (
-          <Text
-            style={{
-              color: theme.colors.error,
-              fontSize: theme.fontSize.secondary,
-            }}
-          >
-            {lastError}
-          </Text>
-        ) : null}
-
-        {Platform.OS === 'web' ? (
-          <>
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-                textAlign: 'center',
-              }}
-            >
-              Pro bender calibration and full offline access are unlocked on the Android app.
-            </Text>
-            <BigButton
-              title="Get on Google Play to Unlock Pro"
-              variant="primary"
-              onPress={() => {
-                trackEvent('google_play_click', { source: 'paywall' });
-                if (typeof window !== 'undefined') {
-                  window.open(GOOGLE_PLAY_URL, '_blank', 'noopener,noreferrer');
-                } else {
-                  void Linking.openURL(GOOGLE_PLAY_URL);
-                }
-              }}
-            />
-          </>
-        ) : skuAvailability !== 'available' ? (
-          <Text
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.fontSize.secondary,
-            }}
-          >
-            {SKU_UNAVAILABLE_MESSAGE}
-          </Text>
-        ) : (
-          <BigButton
-            title={
-              buying ? 'Processing…' : productPrice ? `Unlock Pro Lifetime — ${productPrice}` : 'Unlock Pro Lifetime'
-            }
-            variant="primary"
-            disabled={busy}
-            onPress={() => {
-              void handleBuy();
-            }}
-          />
-        )}
-        {Platform.OS !== 'web' ? (
-          <BigButton
-            title={restoring ? 'Restoring…' : 'Restore Purchase'}
-            variant="secondary"
-            disabled={busy}
-            onPress={() => {
-              void handleRestore();
-            }}
-          />
-        ) : null}
-        <Pressable
-          accessibilityRole="button"
-          disabled={busy}
-          onPress={() => navigation.goBack()}
-          android_ripple={{ color: theme.colors.border }}
-          style={styles.notNow}
-        >
-          <Text
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.fontSize.body,
-              opacity: busy ? 0.4 : 1,
-            }}
-          >
-            Not now
-          </Text>
-        </Pressable>
-      </View>
-    </View>
-  );
+  return <ProPaywallView
+    scene={scene}
+    intent={intent}
+    unit={unit}
+    phase={actions.has('buy') && state.phase === 'idle' ? 'loading' : state.phase}
+    unlocked={Platform.OS !== 'web' && state.access === 'unlocked'}
+    available={state.skuAvailability === 'available'}
+    price={state.productPrice}
+    error={localError ?? state.lastError}
+    isWeb={Platform.OS === 'web'}
+    continuing={actions.has('continue')}
+    checking={actions.has('retry')}
+    bottomInset={insets.bottom}
+    onSceneChange={(next) => { setScene(next); trackGrowthEvent('pro_preview_changed', { scene: next, source }); }}
+    onBuy={() => { void perform('buy'); }}
+    onRestore={() => { void perform('restore'); }}
+    onRetry={() => { void perform('retry'); }}
+    onContinue={() => { void perform('continue'); }}
+    onClose={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('CalcHome')}
+  />;
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
-  footer: {
-    borderTopWidth: Platform.OS === 'android' ? 1 : StyleSheet.hairlineWidth,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
-  featureRow: {
-    borderWidth: Platform.OS === 'android' ? 1 : StyleSheet.hairlineWidth,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: 52,
-    overflow: 'hidden',
-  },
-  check: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  notNow: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-    overflow: 'hidden',
-  },
-});

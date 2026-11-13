@@ -10,7 +10,7 @@ import {
   type IapPurchaseError,
   type IapPurchaseInfo,
 } from './iap.ts';
-import { createProStore, type ProStore } from './proStore.ts';
+import { createProStore, PRO_PENDING_STORAGE_KEY, type ProStore } from './proStore.ts';
 
 function createMemoryStorage(): HistoryStorage & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -345,4 +345,181 @@ test('buy 时网关不可用 → 不可用文案且不抛异常', async () => {
   // fail-fast：sku 未知时直接拒绝，不走到 requestPurchase
   assert.equal(result.message, 'Purchase temporarily unavailable. Please check your connection and try again.');
   assert.equal(store.getAccess(), 'locked');
+});
+
+class DetailedGateway extends FakeGateway {
+  purchases: IapPurchaseInfo[] = [];
+  finishFailures = 0;
+  queries = 0;
+  queryOverride: (() => Promise<IapPurchaseInfo[]>) | null = null;
+  async getPurchases(): Promise<IapPurchaseInfo[]> {
+    this.queries++;
+    return this.queryOverride ? this.queryOverride() : this.purchases;
+  }
+  override async finishPurchase(purchase: IapPurchaseInfo): Promise<void> {
+    await super.finishPurchase(purchase);
+    if (this.finishFailures-- > 0) throw new Error('ack offline');
+  }
+}
+
+test('商店启动完成不等于购买完成，回调前禁止重复购买', async () => {
+  const gateway = new FakeGateway();
+  const { store } = createStore(gateway);
+  await store.init();
+  await store.buy();
+  assert.equal(store.snapshot().phase, 'purchasing');
+  assert.equal((await store.buy()).ok, false);
+  assert.equal(gateway.requestedSkus.length, 1);
+  gateway.emitError({ code: 'E_USER_CANCELLED', message: 'cancel' });
+  assert.equal(store.snapshot().phase, 'cancelled');
+  assert.equal(store.getAccess(), 'locked');
+});
+
+test('没有本地价格时不得发起购买', async () => {
+  const gateway = new FakeGateway({ product: { productId: PRO_SKU, localizedPrice: '' } });
+  const { store } = createStore(gateway);
+  await store.init();
+  assert.equal((await store.buy()).ok, false);
+  assert.deepEqual(gateway.requestedSkus, []);
+});
+
+test('商品查不到也能恢复已完成购买，并补确认交易', async () => {
+  const gateway = new DetailedGateway({ product: null });
+  gateway.purchases = [{ productId: PRO_SKU, purchaseToken: 'restored', isPending: false, isPurchased: true }];
+  const { store } = createStore(gateway);
+  await store.init();
+  assert.equal(store.getAccess(), 'unlocked');
+  assert.equal(gateway.finishedPurchases.length, 1);
+  await Promise.all([store.restore(), store.restore()]);
+  assert.equal(gateway.queries, 2, 'two restore calls share a single query');
+  assert.equal(gateway.finishedPurchases.length, 1, 'ack is idempotent');
+  assert.equal(store.snapshot().phase, 'restored');
+});
+
+test('PENDING 持久化、阻止购买，重启后只有 PURCHASED 才解锁', async () => {
+  const storage = createMemoryStorage();
+  const gateway = new DetailedGateway();
+  const { store } = createStore(gateway, storage);
+  await store.init();
+  gateway.purchases = [{ productId: PRO_SKU, purchaseToken: 'pending', isPending: true, isPurchased: false }];
+  gateway.emitPurchase(gateway.purchases[0]);
+  await tick();
+  assert.equal(storage.data.get(PRO_PENDING_STORAGE_KEY), 'true');
+  assert.equal((await store.buy()).ok, false);
+  const restarted = createStore(gateway, storage).store;
+  await restarted.init();
+  assert.equal(restarted.snapshot().phase, 'pending');
+  assert.equal(restarted.getAccess(), 'locked');
+  gateway.purchases = [{ ...gateway.purchases[0], isPending: false, isPurchased: true }];
+  await restarted.refresh();
+  assert.equal(restarted.getAccess(), 'unlocked');
+  assert.equal(restarted.snapshot().phase, 'purchased');
+  assert.equal(storage.data.get(PRO_PENDING_STORAGE_KEY), 'false');
+});
+
+test('未知购买状态不授予权益，deferred 错误显示待支付', async () => {
+  const gateway = new DetailedGateway();
+  gateway.purchases = [{ productId: PRO_SKU, isPending: false, isPurchased: false }];
+  const { store } = createStore(gateway);
+  await store.init();
+  assert.equal(store.getAccess(), 'locked');
+  assert.equal(gateway.finishedPurchases.length, 0);
+  gateway.emitError({ code: 'E_DEFERRED_PAYMENT', message: 'pending' });
+  await tick();
+  assert.equal(store.snapshot().phase, 'pending');
+  assert.equal((await store.buy()).ok, false);
+});
+
+test('确认失败可在前台刷新时重试，重复回调不重复确认', async () => {
+  const gateway = new DetailedGateway();
+  gateway.finishFailures = 1;
+  const { store } = createStore(gateway);
+  await store.init();
+  const purchase = { productId: PRO_SKU, purchaseToken: 'retry', isPending: false, isPurchased: true };
+  gateway.purchases = [purchase];
+  gateway.emitPurchase(purchase);
+  await tick();
+  assert.equal(store.getAccess(), 'unlocked');
+  assert.equal(gateway.finishedPurchases.length, 1);
+  await store.refresh();
+  gateway.emitPurchase(purchase);
+  gateway.emitPurchase(purchase);
+  await tick();
+  assert.equal(gateway.finishedPurchases.length, 2);
+});
+
+test('迟到的空查询不得清除新 PENDING，也不得重新允许购买', async () => {
+  const gateway = new DetailedGateway();
+  const { store } = createStore(gateway);
+  await store.init();
+  let release!: (purchases: IapPurchaseInfo[]) => void;
+  gateway.queryOverride = () => new Promise((resolve) => { release = resolve; });
+  const refresh = store.refresh();
+  await tick();
+  gateway.emitPurchase({ productId: PRO_SKU, purchaseToken: 'new', isPending: true, isPurchased: false });
+  release([]);
+  await refresh;
+  assert.equal(store.snapshot().phase, 'pending');
+  assert.equal(store.snapshot().pendingPurchase, true);
+  assert.equal((await store.buy()).ok, false);
+  assert.deepEqual(gateway.requestedSkus, []);
+});
+
+test('ALREADY_OWNED 的监听回调也能在购买请求期间恢复', async () => {
+  const gateway = new DetailedGateway();
+  const { store } = createStore(gateway);
+  await store.init();
+  gateway.requestPurchase = async () => {
+    gateway.purchases = [{ productId: PRO_SKU, purchaseToken: 'owned', isPending: false, isPurchased: true }];
+    gateway.emitError({ code: 'E_ALREADY_OWNED', message: 'owned' });
+  };
+  await store.buy();
+  await tick();
+  assert.equal(store.getAccess(), 'unlocked');
+  assert.equal(store.snapshot().phase, 'restored');
+});
+
+test('较新查询返回无交易后，旧 PENDING 查询不得重新锁定状态', async () => {
+  const gateway = new DetailedGateway();
+  const { store } = createStore(gateway);
+  await store.init();
+  let releaseOld!: (purchases: IapPurchaseInfo[]) => void;
+  let query = 0;
+  gateway.queryOverride = () => ++query === 1
+    ? new Promise((resolve) => { releaseOld = resolve; }) : Promise.resolve([]);
+  const restore = store.restore();
+  await tick();
+  await store.refresh();
+  releaseOld([{ productId: PRO_SKU, purchaseToken: 'old', isPending: true, isPurchased: false }]);
+  await restore;
+  assert.equal(store.snapshot().pendingPurchase, false);
+  assert.equal(store.snapshot().phase, 'idle');
+});
+
+test('空查询不能把已启动但尚未收到终态回调的购买解锁为可再次购买', async () => {
+  const gateway = new DetailedGateway();
+  const { store } = createStore(gateway);
+  await store.init();
+  await store.buy();
+  await store.refresh();
+  assert.equal(store.snapshot().phase, 'purchasing');
+  assert.equal((await store.buy()).ok, false);
+  assert.equal(gateway.requestedSkus.length, 1);
+});
+
+test('requestPurchase 仍挂起时，前台查询也能恢复已完成购买', async () => {
+  const gateway = new DetailedGateway();
+  let release!: () => void;
+  gateway.requestPurchase = () => new Promise((resolve) => { release = resolve; });
+  const { store } = createStore(gateway);
+  await store.init();
+  const buying = store.buy();
+  await tick();
+  gateway.purchases = [{ productId: PRO_SKU, purchaseToken: 'resumed', isPending: false, isPurchased: true }];
+  await store.refresh();
+  assert.equal(store.getAccess(), 'unlocked');
+  assert.equal(store.snapshot().phase, 'purchased');
+  release();
+  await buying;
+  assert.equal(store.getAccess(), 'unlocked');
 });

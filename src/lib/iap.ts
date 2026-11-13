@@ -82,6 +82,9 @@ export function serializeProEntitlement(entitlement: ProEntitlement): string {
 export interface IapPurchaseInfo {
   productId: string;
   purchaseToken?: string;
+  transactionId?: string;
+  /** 原生网关明确区分未知状态；旧测试网关可省略。 */
+  isPurchased?: boolean;
   /** true = 支付尚未完成（如 Android PENDING），此时不解锁。 */
   isPending: boolean;
 }
@@ -110,6 +113,8 @@ export interface IapGateway {
   finishPurchase(purchase: IapPurchaseInfo): Promise<void>;
   /** 返回当前用户已拥有的 SKU 列表（用于启动刷新与恢复购买）。 */
   getPurchasedSkus(): Promise<string[]>;
+  /** 包含待支付状态，供前台恢复与补确认使用。 */
+  getPurchases?(): Promise<IapPurchaseInfo[]>;
   onPurchaseUpdate(cb: (purchase: IapPurchaseInfo) => void): IapUnsubscribe;
   onPurchaseError(cb: (error: IapPurchaseError) => void): IapUnsubscribe;
 }

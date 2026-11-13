@@ -116,6 +116,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
       return;
     }
     appliedBackfill.current = backfill;
+    noteReviewInteraction.reset();
     if (backfill.kickText !== undefined) {
       setKickText(backfill.kickText);
     }
@@ -186,7 +187,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   const activeSignature = focused ? historyEntry?.signature ?? null : null;
   useHistoryAutoSave(historyEntry, 800, focused);
-  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('kicked90', activeSignature, { unitSystem });
   useFirebaseCalculationCompleted('kicked90', activeSignature, { unitSystem });
 
@@ -226,7 +227,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         <View style={{ marginTop: theme.spacing.sm }}>
           <ConduitTypeToggle
             value={conduitType}
-            onChange={handleConduitTypeChange}
+            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
           />
         </View>
         <View style={{ marginTop: theme.spacing.sm }}>
@@ -241,7 +242,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
           </Text>
           <TextInput
             value={kickText}
-            onChangeText={setKickText}
+            onChangeText={(text) => { noteReviewInteraction(); setKickText(text); }}
             placeholder="e.g. 15"
             placeholderTextColor={theme.colors.textSecondary}
             selectionColor={theme.colors.accent}
@@ -268,7 +269,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
             <ImperialInput
               label="Straight L between bends (tangent to tangent)"
               value={lengthText}
-              onChangeText={setLengthText}
+              onChangeText={(text) => { noteReviewInteraction(); setLengthText(text); }}
               onParsedChange={setLengthInches}
               unit={unit}
               placeholder={unit === 'metric' ? 'e.g. 250 mm' : 'e.g. 10"'}
@@ -293,7 +294,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         isPro={access === 'unlocked'}
         unit={unit}
         onCheckFeasibility={() =>
-          navigation.navigate('Paywall', { triggerSource: 'kicked_90_feasibility' })
+          navigation.navigate('Paywall', { triggerSource: 'kicked_90_feasibility', intent: { kind: 'feasibility', screen: 'Kicked90' } })
         }
       />
 
@@ -371,7 +372,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
           if (access === 'unlocked') {
             navigation.navigate('GuidedCalibration');
           } else {
-            navigation.navigate('Paywall', { triggerSource: 'kicked_90_calibration' });
+            navigation.navigate('Paywall', { triggerSource: 'kicked_90_calibration', intent: { kind: 'calibration' } });
           }
         }}
       />

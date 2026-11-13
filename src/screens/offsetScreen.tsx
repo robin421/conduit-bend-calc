@@ -106,6 +106,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
       return;
     }
     appliedBackfill.current = backfill;
+    noteReviewInteraction.reset();
     if (backfill.heightText !== undefined) {
       setHeightText(backfill.heightText);
     }
@@ -175,7 +176,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   const activeSignature = focused ? historyEntry?.signature ?? null : null;
   useHistoryAutoSave(historyEntry, 800, focused);
-  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('offset', activeSignature, { unitSystem });
   useFirebaseCalculationCompleted('offset', activeSignature, { unitSystem });
 
@@ -209,14 +210,14 @@ export default function OffsetScreen({ route, navigation }: Props) {
         <View style={{ marginTop: theme.spacing.sm }}>
           <ConduitTypeToggle
             value={conduitType}
-            onChange={handleConduitTypeChange}
+            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
           />
         </View>
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Obstacle height"
             value={heightText}
-            onChangeText={setHeightText}
+            onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
             onParsedChange={setHeightInches}
             unit={unit}
             placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
@@ -241,7 +242,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
               variant="option"
               size="selection"
               selected={angle === value}
-              onPress={() => setAngle(value)}
+              onPress={() => { noteReviewInteraction(); setAngle(value); }}
               style={styles.angleButton}
             />
           ))}
@@ -261,7 +262,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
         isPro={access === 'unlocked'}
         unit={unit}
         onCheckFeasibility={() =>
-          navigation.navigate('Paywall', { triggerSource: 'offset_feasibility' })
+          navigation.navigate('Paywall', { triggerSource: 'offset_feasibility', intent: { kind: 'feasibility', screen: 'Offset' } })
         }
       />
 
@@ -278,7 +279,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
           if (access === 'unlocked') {
             navigation.navigate('GuidedCalibration');
           } else {
-            navigation.navigate('Paywall', { triggerSource: 'offset_calibration' });
+            navigation.navigate('Paywall', { triggerSource: 'offset_calibration', intent: { kind: 'calibration' } });
           }
         }}
       />

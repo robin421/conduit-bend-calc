@@ -22,5 +22,5 @@ test('saddle 图标使用紧凑的 LOGICAL AND，而不是会溢出图标槽的 
 
 test('Google Play 徽章宽高比与链接保持有效', () => {
   assert.equal(GOOGLE_PLAY_BADGE_ASPECT_RATIO, 646 / 250);
-  assert.match(GOOGLE_PLAY_URL, /^https:\/\/play\.google\.com\//);
+  assert.equal(new URL(GOOGLE_PLAY_URL).searchParams.get('id'), 'com.robin421.conduitbendcalc');
 });

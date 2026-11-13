@@ -6,7 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { applyWebDocumentTitle, shouldApplyWebDocumentTitle } from './src/lib/documentTitle';
 import { initFirebase, logFirebaseScreenView } from './src/lib/firebase';
-import { initPro } from './src/lib/proInit';
+import { initPro, observeProResume } from './src/lib/proInit';
+import { initInAppReview } from './src/lib/inAppReview';
 import { registerServiceWorker } from './src/lib/serviceWorker';
 import DownloadBanner from './src/components/downloadBanner';
 import RootStack, { rootLinking, type RootStackParamList } from './src/navigation/rootStack';
@@ -20,6 +21,8 @@ export default function App() {
     // Pro 内购初始化：fire-and-forget，内部 fail-closed（未验证购买一律 locked），异常直接吞掉。
     // Web 端经 proInit.web.ts no-op，避免把 react-native-iap 打进首屏。
     initPro().catch(() => undefined);
+    void initInAppReview().catch(() => undefined);
+    const stopProResume = observeProResume();
     // Firebase 初始化：首屏渲染后执行，避免拖慢冷启动；dev 下 Crashlytics 关闭。
     initFirebase();
     // Web 端注册 service worker：首屏关键资源离线缓存（工地断网也能开）。
@@ -34,6 +37,7 @@ export default function App() {
     ) {
       applyWebDocumentTitle(true, document);
     }
+    return stopProResume;
   }, []);
   return (
     <SafeAreaProvider>

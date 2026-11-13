@@ -116,6 +116,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
       return;
     }
     appliedBackfill.current = backfill;
+    noteReviewInteraction.reset();
     if (backfill.heightText !== undefined) {
       setHeightText(backfill.heightText);
     }
@@ -188,7 +189,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   const activeSignature = focused ? historyEntry?.signature ?? null : null;
   useHistoryAutoSave(historyEntry, 800, focused);
-  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('saddle3', activeSignature, { unitSystem });
   useFirebaseCalculationCompleted('saddle3', activeSignature, { unitSystem });
 
@@ -227,14 +228,14 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
         <View style={{ marginTop: theme.spacing.sm }}>
           <ConduitTypeToggle
             value={conduitType}
-            onChange={handleConduitTypeChange}
+            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
           />
         </View>
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Obstacle height"
             value={heightText}
-            onChangeText={setHeightText}
+            onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
             onParsedChange={setHeightInches}
             unit={unit}
             placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
@@ -259,7 +260,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
               variant="option"
               size="selection"
               selected={angle === value}
-              onPress={() => setAngle(value)}
+              onPress={() => { noteReviewInteraction(); setAngle(value); }}
               style={styles.angleButton}
             />
           ))}
@@ -289,7 +290,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
         isPro={access === 'unlocked'}
         unit={unit}
         onCheckFeasibility={() =>
-          navigation.navigate('Paywall', { triggerSource: 'three_point_saddle_feasibility' })
+          navigation.navigate('Paywall', { triggerSource: 'three_point_saddle_feasibility', intent: { kind: 'feasibility', screen: 'ThreePointSaddle' } })
         }
       />
 
@@ -362,7 +363,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
           if (access === 'unlocked') {
             navigation.navigate('GuidedCalibration');
           } else {
-            navigation.navigate('Paywall', { triggerSource: 'three_point_saddle_calibration' });
+            navigation.navigate('Paywall', { triggerSource: 'three_point_saddle_calibration', intent: { kind: 'calibration' } });
           }
         }}
       />

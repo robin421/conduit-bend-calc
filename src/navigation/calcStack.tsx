@@ -19,6 +19,7 @@ import ThreePointSaddleScreen from '../screens/threePointSaddleScreen';
 import VoltageDropScreen from '../screens/voltageDropScreen';
 import WireSizeScreen from '../screens/wireSizeScreen';
 import { useTheme } from '../theme';
+import type { ProIntent } from '../lib/proFlow';
 
 export type CalcStackParamList = {
   CalcHome: undefined;
@@ -33,8 +34,8 @@ export type CalcStackParamList = {
   WireSize: undefined;
   GuidedCalibration: undefined;
   Calibration: undefined;
-  Bender: { conduitTypeFilter?: ConduitType } | undefined;
-  Paywall: { triggerSource?: string } | undefined;
+  Bender: { conduitTypeFilter?: ConduitType; createCustom?: boolean } | undefined;
+  Paywall: { triggerSource?: string; intent?: ProIntent; pendingTaskId?: string } | undefined;
   Placeholder: { title: string };
 };
 

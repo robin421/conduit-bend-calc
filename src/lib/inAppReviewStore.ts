@@ -37,18 +37,20 @@ export function parseReviewState(raw: string | null, now = Date.now()): InAppRev
     return { ...DEFAULT_REVIEW_STATE, firstSeenAt: now };
   }
   try {
-    const parsed = JSON.parse(raw) as Partial<InAppReviewState>;
+    const value: unknown = JSON.parse(raw);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return { ...DEFAULT_REVIEW_STATE, firstSeenAt: now };
+    const parsed = value as Partial<InAppReviewState>;
     return {
       firstSeenAt:
-        typeof parsed.firstSeenAt === 'number' && parsed.firstSeenAt > 0
-          ? parsed.firstSeenAt
+        typeof parsed.firstSeenAt === 'number' && Number.isFinite(parsed.firstSeenAt) && parsed.firstSeenAt > 0
+          ? Math.min(parsed.firstSeenAt, now)
           : now,
       successfulCalcCount:
-        typeof parsed.successfulCalcCount === 'number' && parsed.successfulCalcCount >= 0
+        typeof parsed.successfulCalcCount === 'number' && Number.isFinite(parsed.successfulCalcCount) && parsed.successfulCalcCount >= 0
           ? Math.floor(parsed.successfulCalcCount)
           : 0,
       lastRequestedAt:
-        typeof parsed.lastRequestedAt === 'number' && parsed.lastRequestedAt > 0
+        typeof parsed.lastRequestedAt === 'number' && Number.isFinite(parsed.lastRequestedAt) && parsed.lastRequestedAt > 0
           ? parsed.lastRequestedAt
           : null,
     };

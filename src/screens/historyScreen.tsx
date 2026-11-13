@@ -6,7 +6,6 @@ import {
   FlatList,
   Platform,
   Pressable,
-  Share,
   StyleSheet,
   Text,
   View,
@@ -14,7 +13,7 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
-import { trackEvent } from '../lib/analytics';
+import { exportRecentHistory } from '../lib/proContinuation';
 import {
   clearHistory,
   formatHistoryTime,
@@ -73,23 +72,15 @@ export default function HistoryScreen({ navigation }: Props) {
 
   const handleExport = useCallback(() => {
     if (access === 'locked') {
-      trackEvent('pro_paywall_viewed', { trigger_source: 'history_export' });
       navigation.navigate('CalcHome', {
         screen: 'Paywall',
-        params: { triggerSource: 'history_export' },
+        params: { triggerSource: 'history_export', intent: { kind: 'export' } },
       });
       return;
     }
-    const exportText = entries
-      .map(
-        (e) =>
-          `[${formatHistoryTime(e.timestamp)}] ${e.title} - ${e.inputSummary} => ${e.resultSummary}`,
-      )
-      .join('\n');
-    Share.share({
-      title: 'Conduit Bend History Export',
-      message: exportText,
-    }).catch(() => undefined);
+    void exportRecentHistory(() => navigation.isFocused()).catch((error) => {
+      if (navigation.isFocused()) Alert.alert('Could not export', error instanceof Error ? error.message : 'Please try again.');
+    });
   }, [access, entries, navigation]);
 
   useLayoutEffect(() => {
@@ -267,10 +258,9 @@ export default function HistoryScreen({ navigation }: Props) {
             title={`Unlock ${HISTORY_LIMIT}-Bend History & Export`}
             variant="primary"
             onPress={() => {
-              trackEvent('pro_paywall_viewed', { trigger_source: 'history_limit' });
               navigation.navigate('CalcHome', {
                 screen: 'Paywall',
-                params: { triggerSource: 'history_limit' },
+                params: { triggerSource: 'history_limit', intent: { kind: 'history' } },
               });
             }}
           />

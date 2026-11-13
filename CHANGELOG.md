@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — Rating and contextual Pro flow (T80)
+
+- Request Android reviews after meaningful use on an idle home screen; add visible, direct store rating entries.
+- Preview calibration, bend options and history/export before the one-time Pro purchase, with local pricing, FAQ and clear recovery states.
+- Continue the original task explicitly after purchase or restore; preserve pending task categories across restarts.
+- Harden transaction acknowledgment, pending ownership checks and concurrent task handling. Reuse existing Firebase/GA for categorical funnel events.
+- Correct the shared Google Play destination to the existing listing; native release configuration alignment and real Play validation remain outstanding.
+
 ## Unreleased — Field workflow and readable press states (T79)
 
 - Show bend results and risk warnings before optional, collapsed diagrams in all six bending calculators.

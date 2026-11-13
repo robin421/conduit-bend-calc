@@ -161,7 +161,7 @@ export function evaluateFeasibility(input: FeasibilityInput): FeasibilityResult 
     if (lower !== undefined) {
       alternateAngleDeg = lower;
       suggestions.push(
-        `Try ${lower}° instead of ${input.angleDeg}° — it needs less offset spacing.`,
+        `Try ${lower}° instead of ${input.angleDeg}° and recalculate to check bend clearance.`,
       );
     }
   }

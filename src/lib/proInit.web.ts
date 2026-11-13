@@ -9,3 +9,5 @@
 export function initPro(): Promise<void> {
   return Promise.resolve();
 }
+
+export function observeProResume(): () => void { return () => undefined; }

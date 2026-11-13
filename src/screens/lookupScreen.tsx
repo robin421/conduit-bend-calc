@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import Card from '../components/card';
+import RatingCard from '../components/ratingCard';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../constants';
 import { formatLength } from '../lib/units';
 import { useUnitSystem } from '../lib/unitStore';
@@ -168,6 +169,7 @@ export default function LookupScreen() {
           · 4-point: outer marks = half obstacle width + height × multiplier
         </Text>
       </Section>
+      <RatingCard source="reference" />
     </ScrollView>
   );
 }

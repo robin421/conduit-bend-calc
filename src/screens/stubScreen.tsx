@@ -110,6 +110,7 @@ export default function StubScreen({ route, navigation }: Props) {
       return;
     }
     appliedBackfill.current = backfill;
+    noteReviewInteraction.reset();
     if (backfill.heightText !== undefined) {
       setHeightText(backfill.heightText);
     }
@@ -187,7 +188,7 @@ export default function StubScreen({ route, navigation }: Props) {
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   const activeSignature = focused ? historyEntry?.signature ?? null : null;
   useHistoryAutoSave(historyEntry, 800, focused);
-  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('stub', activeSignature, { unitSystem });
   useFirebaseCalculationCompleted('stub', activeSignature, { unitSystem });
 
@@ -210,6 +211,7 @@ export default function StubScreen({ route, navigation }: Props) {
 
   const handleRefillRecentBend = useCallback(
     (entry: HistoryEntry) => {
+      noteReviewInteraction.reset();
       setUnit(entry.params.unit ?? 'fractional');
       if (entry.params?.heightText !== undefined) {
         setHeightText(entry.params.heightText);
@@ -226,7 +228,7 @@ export default function StubScreen({ route, navigation }: Props) {
         setSpec(legacySizeToSpec(entry.params.selectedSize));
       }
     },
-    [customSpecs, setHeightText, setSpec, setUnit],
+    [customSpecs, setHeightText, setSpec, setUnit, noteReviewInteraction],
   );
 
   const handleClear = useCallback(() => {
@@ -265,7 +267,7 @@ export default function StubScreen({ route, navigation }: Props) {
         <View style={{ marginTop: theme.spacing.sm }}>
           <ConduitTypeToggle
             value={conduitType}
-            onChange={handleConduitTypeChange}
+            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
           />
         </View>
 
@@ -304,7 +306,7 @@ export default function StubScreen({ route, navigation }: Props) {
           <ImperialInput
             label="Target height"
             value={heightText}
-            onChangeText={setHeightText}
+            onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
             onParsedChange={setHeightInches}
             unit={unit}
             placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
@@ -339,7 +341,7 @@ export default function StubScreen({ route, navigation }: Props) {
                 <Pressable
                   key={h}
                   accessibilityRole="button"
-                  onPress={() => setHeightText(h)}
+                  onPress={() => { noteReviewInteraction(); setHeightText(h); }}
                   style={[
                     styles.quickPresetChip,
                     {
@@ -387,7 +389,7 @@ export default function StubScreen({ route, navigation }: Props) {
         isPro={access === 'unlocked'}
         unit={unit}
         onCheckFeasibility={() =>
-          navigation.navigate('Paywall', { triggerSource: 'stub_feasibility' })
+          navigation.navigate('Paywall', { triggerSource: 'stub_feasibility', intent: { kind: 'feasibility', screen: 'Stub' } })
         }
       />
 
@@ -487,7 +489,7 @@ export default function StubScreen({ route, navigation }: Props) {
           if (access === 'unlocked') {
             navigation.navigate('GuidedCalibration');
           } else {
-            navigation.navigate('Paywall', { triggerSource: 'stub_calibration' });
+            navigation.navigate('Paywall', { triggerSource: 'stub_calibration', intent: { kind: 'calibration' } });
           }
         }}
       />

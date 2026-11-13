@@ -18,6 +18,7 @@ import BigButton from './bigButton';
 import { resolveCustomCreateMode } from './benderPickerGating';
 
 interface BenderPickerProps {
+  startCustom?: boolean;
   /** 当前选中的规格 */
   spec: BenderSpec;
   /** 已保存的 Custom 规格（最新在前） */
@@ -97,13 +98,14 @@ export default function BenderPicker({
   allowCustom = true,
   onUnlockPro,
   conduitTypeFilter,
+  startCustom = false,
 }: BenderPickerProps) {
   const theme = useTheme();
   const { access } = useProAccess();
   const createMode = resolveCustomCreateMode(access, onUnlockPro !== undefined);
-  const [activeBrand, setActiveBrand] = useState<BenderBrand>(spec.brand);
+  const [activeBrand, setActiveBrand] = useState<BenderBrand>(startCustom ? 'Custom' : spec.brand);
   /** 默认折叠为摘要行：选择器纵向太占空间，输入框应首屏可见 */
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(startCustom);
   const [customName, setCustomName] = useState('');
   const [customR, setCustomR] = useState('');
   const [customTakeUp, setCustomTakeUp] = useState('');
@@ -111,8 +113,8 @@ export default function BenderPicker({
 
   // 外部选中规格变化时（如历史回填），tab 跟随切换
   useEffect(() => {
-    setActiveBrand(spec.brand);
-  }, [spec.brand]);
+    if (!startCustom) setActiveBrand(spec.brand);
+  }, [spec.brand, startCustom]);
 
   const brand: BenderBrand = activeBrand;
   const presetBrands = brandsFor(conduitTypeFilter);

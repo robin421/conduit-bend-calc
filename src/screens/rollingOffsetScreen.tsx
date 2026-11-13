@@ -117,6 +117,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
       return;
     }
     appliedBackfill.current = backfill;
+    noteReviewInteraction.reset();
     if (backfill.riseText !== undefined) {
       setRiseText(backfill.riseText);
     }
@@ -197,7 +198,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
   const unitSystem = unit === 'metric' ? 'metric' : 'imperial';
   const activeSignature = focused ? historyEntry?.signature ?? null : null;
   useHistoryAutoSave(historyEntry, 800, focused);
-  useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('rolling', activeSignature, { unitSystem });
   useFirebaseCalculationCompleted('rolling', activeSignature, { unitSystem });
 
@@ -235,14 +236,14 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
         <View style={{ marginTop: theme.spacing.sm }}>
           <ConduitTypeToggle
             value={conduitType}
-            onChange={handleConduitTypeChange}
+            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
           />
         </View>
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
             label="Rise"
             value={riseText}
-            onChangeText={setRiseText}
+            onChangeText={(text) => { noteReviewInteraction(); setRiseText(text); }}
             onParsedChange={setRiseInches}
             unit={unit}
             placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
@@ -251,7 +252,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
             <ImperialInput
               label="Roll"
               value={rollText}
-              onChangeText={setRollText}
+              onChangeText={(text) => { noteReviewInteraction(); setRollText(text); }}
               onParsedChange={setRollInches}
               unit={unit}
               placeholder={unit === 'metric' ? 'e.g. 200 mm' : 'e.g. 8"'}
@@ -277,7 +278,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
               variant="option"
               size="selection"
               selected={angle === value}
-              onPress={() => setAngle(value)}
+              onPress={() => { noteReviewInteraction(); setAngle(value); }}
               style={styles.angleButton}
             />
           ))}
@@ -321,7 +322,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
         isPro={access === 'unlocked'}
         unit={unit}
         onCheckFeasibility={() =>
-          navigation.navigate('Paywall', { triggerSource: 'rolling_offset_feasibility' })
+          navigation.navigate('Paywall', { triggerSource: 'rolling_offset_feasibility', intent: { kind: 'feasibility', screen: 'RollingOffset' } })
         }
       />
 
@@ -382,7 +383,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
           if (access === 'unlocked') {
             navigation.navigate('GuidedCalibration');
           } else {
-            navigation.navigate('Paywall', { triggerSource: 'rolling_offset_calibration' });
+            navigation.navigate('Paywall', { triggerSource: 'rolling_offset_calibration', intent: { kind: 'calibration' } });
           }
         }}
       />

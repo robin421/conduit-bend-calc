@@ -4,8 +4,7 @@
  * 约定（见 docs/firebase-integration-brief.md）：
  * - 零打扰：初始化在首屏渲染后由 App 的 useEffect 调用，不阻塞冷启动。
  * - Crashlytics 仅在生产（非 __DEV__）启用，避免污染线上崩溃看板。
- * - 只埋 4 个事件：screen_view / calculation_completed / unit_system_changed /
- *   pro_paywall_viewed，参数不带任何 PII。
+ * - 基础事件及 T80 评分/付费分类事件见 docs/validation/t80/README.md，参数不带 PII。
  * - 所有调用 fire-and-forget，任何异常都吞掉，绝不影响业务逻辑。
  * - Web 端由 firebase.web.ts（Metro 平台解析）顶替，本文件不会进入 web bundle。
  */
@@ -17,6 +16,7 @@ import type { FirebaseAnalyticsTypes } from '@react-native-firebase/analytics';
 import type { FirebaseCrashlyticsTypes } from '@react-native-firebase/crashlytics';
 
 import { normalizeToolName, type CalculatorSlug } from './analytics.ts';
+import type { GrowthEvent, GrowthEventParams } from './growthEvents';
 
 /** 与 src/lib/units.ts 的 UnitSystem 对齐（此处只用于事件参数类型）。 */
 export type UnitSystemSlug = 'fractional' | 'decimal' | 'metric';
@@ -67,7 +67,7 @@ export function initFirebase(): void {
   initialized = true;
   try {
     const crashlytics = getCrashlytics();
-    void crashlytics?.setCrashlyticsCollectionEnabled(!__DEV__);
+    void crashlytics?.setCrashlyticsCollectionEnabled(!__DEV__).catch(() => undefined);
   } catch {
     // 初始化失败不影响业务。
   }
@@ -85,7 +85,7 @@ function logEvent(name: string, params?: Record<string, string>): void {
     if (!analytics) {
       return;
     }
-    void analytics.logEvent(name, params ?? {});
+    void analytics.logEvent(name, params ?? {}).catch(() => undefined);
   } catch {
     // 埋点永不抛异常。
   }
@@ -98,7 +98,7 @@ export function logFirebaseScreenView(screenName: string): void {
     if (!analytics) {
       return;
     }
-    void analytics.logScreenView({ screen_name: screenName, screen_class: screenName });
+    void analytics.logScreenView({ screen_name: screenName, screen_class: screenName }).catch(() => undefined);
   } catch {
     // 埋点永不抛异常。
   }
@@ -127,6 +127,10 @@ export function logFirebaseUnitSystemChanged(from: UnitSystemSlug, to: UnitSyste
 /** pro_paywall_viewed：Pro 解锁页展示时触发，支持携带触发来源。 */
 export function logFirebaseProPaywallViewed(triggerSource = 'direct'): void {
   logEvent('pro_paywall_viewed', { trigger_source: triggerSource });
+}
+
+export function logFirebaseGrowthEvent(name: GrowthEvent, params: GrowthEventParams): void {
+  logEvent(name, { ...params });
 }
 
 /**
