@@ -17,6 +17,7 @@ import type { FirebaseCrashlyticsTypes } from '@react-native-firebase/crashlytic
 
 import { normalizeToolName, type CalculatorSlug } from './analytics.ts';
 import type { GrowthEvent, GrowthEventParams } from './growthEvents';
+import { loadConfiguredFirebaseModule } from './firebaseModule';
 
 /** 与 src/lib/units.ts 的 UnitSystem 对齐（此处只用于事件参数类型）。 */
 export type UnitSystemSlug = 'fractional' | 'decimal' | 'metric';
@@ -32,7 +33,10 @@ function getAnalytics(): FirebaseAnalyticsTypes.Module | null {
     return null;
   }
   try {
-    const mod = require('@react-native-firebase/analytics');
+    const mod = loadConfiguredFirebaseModule(
+      () => require('@react-native-firebase/app').getApps(),
+      () => require('@react-native-firebase/analytics'),
+    );
     const factory = mod?.default;
     return typeof factory === 'function' ? (factory() as FirebaseAnalyticsTypes.Module) : null;
   } catch {
@@ -45,7 +49,10 @@ function getCrashlytics(): FirebaseCrashlyticsTypes.Module | null {
     return null;
   }
   try {
-    const mod = require('@react-native-firebase/crashlytics');
+    const mod = loadConfiguredFirebaseModule(
+      () => require('@react-native-firebase/app').getApps(),
+      () => require('@react-native-firebase/crashlytics'),
+    );
     const factory = mod?.default;
     return typeof factory === 'function'
       ? (factory() as FirebaseCrashlyticsTypes.Module)
