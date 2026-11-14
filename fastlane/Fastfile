@@ -1,7 +1,8 @@
 default_platform(:android)
 
-PACKAGE_NAME = "com.kaipu.conduitbendcalc"
+require "json"
 PROJECT_ROOT = File.expand_path("..", __dir__)
+PACKAGE_NAME = JSON.parse(File.read(File.join(PROJECT_ROOT, "app.json"))).fetch("expo").fetch("android").fetch("package")
 def resolve_latest_aab(dist_dir)
   aabs = Dir[File.join(dist_dir, "*.aab")].reject { |f| File.basename(f).start_with?("._") }
   return nil if aabs.empty?

@@ -1,5 +1,7 @@
-# Google Play app identity.
-package_name("com.kaipu.conduitbendcalc")
+# Google Play app identity: keep builds and uploads on the same applicationId.
+require "json"
+app_config = JSON.parse(File.read(File.expand_path("../app.json", __dir__)))
+package_name(app_config.fetch("expo").fetch("android").fetch("package"))
 
 # Service account JSON used by `upload_to_play_store`.
 # Default lives outside the repo; override with PLAY_JSON_KEY when needed.

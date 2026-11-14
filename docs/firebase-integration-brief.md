@@ -1,5 +1,7 @@
 # Firebase 集成设计 Brief — Conduit Bend Calc
 
+> T83 更正：以下为历史集成记录。正式 Play 应用包名为 `com.robin421.conduitbendcalc`，旧 `com.kaipu.conduitbendcalc` 客户端配置不能用于正式包。构建注入现会校验 Firebase 客户端与正式包名匹配；不得直接改 JSON 字段伪造注册。商品 `cbc_pro_lifetime` 已通过只读 Play API 确认为 ACTIVE，历史“购买链路休眠”的描述不再适用。
+
 > 写给代码 agent 的开工文档。读完再动手，不要问，回头 Jim 按四道门验收。
 
 ## 背景与目标

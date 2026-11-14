@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Correct Play application identity (T83)
+
+- Restore the registered Play applicationId com.robin421.conduitbendcalc. Read Fastlane upload identity from app.json and correct generated store links.
+- Reject mismatched Firebase Android clients during build injection rather than producing a package with an unrelated configuration.
+- Preserve the existing payment flow; local debug signing requires a matching package and a Google Play license-test account for purchase testing.
+
 ## Unreleased — Feedback tickets (T82)
 
 - Add the pinned feedback-hub Git submodule and initialize submodules in CI.

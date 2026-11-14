@@ -38,5 +38,24 @@ if [[ ! -s "$target" ]]; then
   exit 1
 fi
 
+# A Firebase client for another applicationId must never reach prebuild.
+if ! node <<'NODE'
+const fs = require('node:fs');
+try {
+  const packageName = JSON.parse(fs.readFileSync('app.json', 'utf8')).expo.android.package;
+  if (packageName !== 'com.robin421.conduitbendcalc') throw new Error();
+  const services = JSON.parse(fs.readFileSync('google-services.json', 'utf8'));
+  if (!Array.isArray(services.client) || !services.client.some(client =>
+    client?.client_info?.android_client_info?.package_name === packageName)) throw new Error();
+} catch {
+  console.error('ERROR: Play applicationId or Firebase Android client does not match com.robin421.conduitbendcalc.');
+  process.exit(1);
+}
+NODE
+then
+  rm -f "$target"
+  exit 1
+fi
+
 chmod 600 "$target"
 echo "google-services.json written from GOOGLE_SERVICES_JSON_B64."
