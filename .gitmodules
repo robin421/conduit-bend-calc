@@ -1,0 +1,3 @@
+[submodule "feedback-hub"]
+	path = feedback-hub
+	url = https://github.com/robin421/feedback-hub.git

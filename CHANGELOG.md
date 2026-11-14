@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Feedback tickets (T82)
+
+- Add the pinned feedback-hub Git submodule and initialize submodules in CI.
+- Add shared Send feedback entries on Home and Reference, opening the hosted form with product routing, app version, OS and language.
+- Explain public ticket visibility and provide retry feedback when the browser cannot open. Keep calculator inputs and private records out of feedback URLs.
+
 ## Unreleased — Rating and contextual Pro flow (T80)
 
 - Request Android reviews after meaningful use on an idle home screen; add visible, direct store rating entries.

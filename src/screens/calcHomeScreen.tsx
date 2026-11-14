@@ -15,6 +15,7 @@ import {
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import RatingCard from '../components/ratingCard';
+import FeedbackCard from '../components/feedbackCard';
 import WebQuickCalculator from '../components/webQuickCalculator';
 import {
   FOUR_POINT_SADDLE_ICON,
@@ -311,6 +312,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
           ))}
         </View>
       ))}
+      <FeedbackCard />
       </ScrollView>
     </>
   );
