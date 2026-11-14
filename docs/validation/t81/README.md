@@ -8,7 +8,7 @@
 - 仅构建 arm64-v8a、assembleRelease，一个 APK，使用本地 debug 签名，嵌入 JS bundle，不依赖 Metro 运行。
 - APK：`/Volumes/T7 Shield/Builds/WattFlow/WattFlow-Test-0184d16-arm64.apk`
 - SHA-256：`5b2a8d9da4d5ce3a7df4d07b8fd4565b4641d06edd543754385b51b9c7846e93`。安装后直接读取手机 base.apk 的 SHA-256，与该文件一致。
-- 手机原有商店版 `com.robin421.conduitbendcalc` 保留，未卸载、清数据或覆盖。
+- 本次未执行卸载或清数据，测试包与此前检测到的商店包 `com.robin421.conduitbendcalc` 包名不同。最终核对时手机仅列出测试包，未再检测到旧商店包；无法确认其消失原因，不将旧包仍在视为已验证结果。
 
 ## 构建与配置边界
 
