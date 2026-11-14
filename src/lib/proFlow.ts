@@ -11,9 +11,9 @@ export type ProScene = 'calibration' | 'feasibility' | 'history';
 export type PurchasePhase = 'idle' | 'loading' | 'purchasing' | 'pending' | 'restoring' | 'cancelled' | 'error' | 'purchased' | 'restored';
 
 export const PRO_SCENES: readonly { key: ProScene; label: string; title: string; description: string }[] = [
-  { key: 'calibration', label: 'My bender', title: 'Match the app to your actual bender', description: 'One test bend helps you use your own take-up instead of the standard value.' },
-  { key: 'feasibility', label: 'Bend options', title: 'Find a workable bend before cutting', description: 'See straight-length checks and available alternatives for your current layout.' },
-  { key: 'history', label: 'History & export', title: 'Keep recent bends ready for the next job', description: 'View your latest 20 bends and share a text copy with your crew.' },
+  { key: 'calibration', label: 'My bender', title: 'Dial in your own bender', description: 'One test bend helps you use your own take-up instead of the standard value.' },
+  { key: 'feasibility', label: 'Bend options', title: 'Plan your bend with confidence', description: 'See straight-length checks and available alternatives for your current layout.' },
+  { key: 'history', label: 'History & export', title: 'Keep your recent work handy', description: 'View your latest 20 bends and share a text copy with your crew.' },
 ];
 
 const SOURCE_SCREENS: Record<string, BendScreen> = {

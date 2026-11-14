@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { calibrateDeductFromStub } from '../calculators/calibration/calibration';
 import { defaultBenderSpec } from '../calculators/geometry/benderSpecs';
@@ -58,9 +58,9 @@ function ExamplePreview({ scene, unit }: { scene: ProScene; unit: UnitSystem }) 
   const sampleOffset = calculateOffset(3, 45, base.centerlineRadius)!;
   const risk = offsetFeasibility(sampleOffset.geometry.vertexSpacing, 45, base, unit);
   return (
-    <Card style={{ gap: theme.spacing.md, borderColor: theme.colors.controlAccent }}>
+    <Card style={{ gap: theme.spacing.md, borderColor: theme.colors.border }}>
       <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
-        Example preview · not your saved settings
+        Illustrative example · settings unchanged
       </Text>
       {scene === 'calibration' ? <>
         <Caption>{`A test bend marked at ${formatLength(TEST_BEND_MARK, unit)} finishes at ${formatLength(measured, unit)}.`}</Caption>
@@ -101,78 +101,122 @@ function ExamplePreview({ scene, unit }: { scene: ProScene; unit: UnitSystem }) 
   );
 }
 
-/** 实际付费页与独立状态预览共用；不含商店调用或授权写入。 */
+const BENEFITS = [
+  ['Personal calibration', 'Use your own take-up and bend radius.'],
+  ['Detailed bend checks', 'Check clearance and explore alternatives.'],
+  ['History & text export', `Keep your latest ${HISTORY_LIMIT} bends and share them.`],
+] as const;
+const SCENE_LABELS: Record<ProScene, string> = { calibration: 'Bender', feasibility: 'Bend checks', history: 'History' };
+
+function TextAction({ title, onPress, disabled = false, expanded }: { title: string; onPress(): void; disabled?: boolean; expanded?: boolean }) {
+  const theme = useTheme();
+  return <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled, expanded }} disabled={disabled} onPress={onPress}
+    android_ripple={{ color: theme.colors.pressFeedback }}
+    style={({ pressed }) => ({ minHeight: theme.size.buttonMinHeight, flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: theme.spacing.sm, borderRadius: theme.radius, overflow: 'hidden', opacity: disabled ? 0.4 : 1, backgroundColor: pressed && Platform.OS !== 'android' ? theme.colors.pressFeedback : 'transparent' })}>
+    <Text style={{ color: theme.colors.primaryText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.medium, textAlign: 'center' }}>{title}</Text>
+  </Pressable>;
+}
+
+/** 只负责展示：沿用购买状态和显式继续任务，不写授权或调用商店。 */
 export default function ProPaywallView(props: ProPaywallViewProps) {
   const theme = useTheme();
+  const { height, fontScale } = useWindowDimensions();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [exampleOpen, setExampleOpen] = useState(false);
   const copy = PRO_SCENES.find((item) => item.key === props.scene)!;
   const busy = purchaseBusy(props.phase);
   const disabled = busy || Boolean(props.continuing);
-  const statusText = props.phase === 'pending' ? 'Payment is pending. Pro will unlock when Google Play confirms completion. Do not purchase again.'
-    : props.phase === 'purchasing' ? 'Waiting for Google Play. You can return to the free calculators; we will check your purchase when you return.'
+  const waiting = props.phase === 'pending' || props.phase === 'purchasing';
+  const loading = props.phase === 'loading' || props.phase === 'restoring';
+  // 横屏、小高度或放大字体时，让操作区随整页滚动，避免固定区域吞掉内容。
+  const footerInScroll = height < 640 || fontScale > 1.2;
+  const statusText = props.phase === 'pending' ? 'Payment pending. Pro unlocks after Google Play confirms it. Please do not buy again.'
+    : props.phase === 'purchasing' ? 'Waiting for Google Play. You can keep using the free calculators.'
     : props.phase === 'restoring' ? 'Checking purchases for your store account…'
-    : props.phase === 'loading' ? 'Loading your local price and checking purchases…' : null;
-  return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <ScrollView contentContainerStyle={[styles.content, { gap: theme.spacing.md, padding: theme.spacing.md }]} keyboardShouldPersistTaps="handled">
-        <Caption>WattFlow Pro · Lifetime</Caption>
-        {props.unlocked ? <>
-          <Text accessibilityRole="header" style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.result, fontWeight: theme.fontWeight.semibold }}>
-            {props.phase === 'restored' ? 'Pro restored' : props.phase === 'purchased' ? 'Pro unlocked' : 'Your Pro is ready'}
+    : props.phase === 'loading' ? 'Checking your purchase and local price…' : null;
+  const footer = <View style={{ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.colors.border, backgroundColor: theme.colors.background, paddingHorizontal: theme.spacing.md, paddingTop: theme.spacing.sm, paddingBottom: Math.max(props.bottomInset ?? 0, theme.spacing.sm), gap: theme.spacing.sm }}>
+    {statusText && !props.unlocked ? <View accessibilityLiveRegion="polite" style={{ flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
+      {props.phase !== 'pending' ? <ActivityIndicator color={theme.colors.accentText} /> : null}
+      <View style={{ flex: 1 }}><Caption>{statusText}</Caption></View>
+    </View> : null}
+    {props.error ? <Text accessibilityLiveRegion="polite" style={{ color: props.phase === 'cancelled' ? theme.colors.textSecondary : theme.colors.error, fontSize: theme.fontSize.secondary, lineHeight: 20 }}>{props.error}</Text> : null}
+    {props.unlocked ? <BigButton title={props.continuing ? 'Opening your task…' : proContinueLabel(props.intent)} onPress={props.onContinue} disabled={Boolean(props.continuing)} variant="accent" />
+      : props.isWeb ? <><Caption>Pro is available in the Android app. Google Play shows your local price.</Caption><BigButton title="Get the Android app" variant="accent" onPress={props.onBuy} /></>
+      : waiting ? <BigButton title={props.checking ? 'Checking purchase…' : 'Check purchase status'} variant="secondary" disabled={props.checking} onPress={props.onRetry} />
+      : loading ? <BigButton title={props.phase === 'restoring' ? 'Restoring purchase…' : 'Loading price…'} variant="accent" disabled onPress={props.onBuy} />
+      : props.available && props.price ? <>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.sm }}>
+          <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold, fontVariant: ['tabular-nums'] }}>{props.price}</Text>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>One-time · No subscription</Text>
+        </View>
+        <BigButton title="Unlock Pro Lifetime" variant="accent" onPress={props.onBuy} disabled={disabled} />
+      </> : <><Caption>Unable to load your store price. Free calculators are still available.</Caption><BigButton title="Retry store connection" variant="secondary" onPress={props.onRetry} disabled={disabled} /></>}
+    <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+      {!props.isWeb && !props.unlocked && !waiting ? <TextAction title="Restore purchase" onPress={props.onRestore} disabled={disabled} /> : null}
+      <TextAction title={props.unlocked ? 'Back to calculators' : waiting ? 'Continue with Free' : 'Not now'} onPress={props.onClose} disabled={Boolean(props.continuing)} />
+    </View>
+  </View>;
+
+  return <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+      <View style={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.lg }, props.unlocked && !footerInScroll ? { flexGrow: 1, justifyContent: 'center' } : null]}>
+        <View style={{ gap: theme.spacing.sm }}>
+          <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>PRO · LIFETIME ACCESS</Text>
+          <Text accessibilityRole="header" style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, lineHeight: 30, fontWeight: theme.fontWeight.semibold }}>
+            {props.unlocked ? props.phase === 'restored' ? 'Your Pro is restored' : 'Your Pro is ready' : copy.title}
           </Text>
-          <Caption>Your calculators and saved inputs are ready. Continue the task you came here to do.</Caption>
-          <Card style={{ gap: theme.spacing.md }}>
-            <Text style={{ color: theme.colors.success, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>Ready to use on this device</Text>
-            <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold }}>{proContinueLabel(props.intent)}</Text>
-            <Caption>{props.intent.kind === 'calibration' || props.intent.kind === 'bender' ? 'Have your bender, scrap conduit and tape measure ready. Your existing bender settings stay as they are until you save.' : 'Your original calculation or recent history is kept. Continue when you are ready.'}</Caption>
-          </Card>
-        </> : <>
-          <View style={styles.sceneRow}>
-            {PRO_SCENES.map((item) => <BigButton key={item.key} title={item.label} variant="option" size="selection" selected={item.key === props.scene} onPress={() => props.onSceneChange(item.key)} style={{ flex: 1 }} />)}
+          <Caption>{props.unlocked ? 'Your inputs and saved settings are ready. Continue when you are.' : 'A personal setup for your bender, with more confidence on every job.'}</Caption>
+        </View>
+        {props.unlocked ? <View style={{ gap: theme.spacing.sm, paddingVertical: theme.spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
+            <Text accessible={false} importantForAccessibility="no-hide-descendants" style={{ color: theme.colors.success, fontSize: theme.fontSize.title }}>✓</Text>
+            <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>Ready to use on this device</Text>
           </View>
-          <Text accessibilityRole="header" style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold, lineHeight: 30 }}>{copy.title}</Text>
-          <Caption>{copy.description}</Caption>
-          <ExamplePreview scene={props.scene} unit={props.unit ?? 'fractional'} />
-          <View style={{ gap: theme.spacing.sm }}>
-            <Text accessibilityRole="header" style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>What changes with Pro</Text>
-            <Caption>Free: nine calculators, standard values, diagrams and risk warnings.</Caption>
-            <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, lineHeight: 22 }}>Pro: personal bender calibration, saved bender profiles, detailed bend options, and recent-history export.</Text>
+          <Caption>{props.intent.kind === 'calibration' || props.intent.kind === 'bender' ? 'Have your bender, scrap conduit and tape measure ready. Settings change only when you save.' : 'Your original calculation and recent history are kept.'}</Caption>
+        </View> : <>
+          <View style={{ gap: theme.spacing.md }}>
+            {BENEFITS.map(([title, description]) => <View key={title} style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+              <Text accessible={false} importantForAccessibility="no-hide-descendants" style={{ color: theme.colors.accentText, fontSize: theme.fontSize.body, lineHeight: 24 }}>✓</Text>
+              <View style={{ flex: 1, gap: theme.spacing.xs }}>
+                <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, lineHeight: 24, fontWeight: theme.fontWeight.semibold }}>{title}</Text>
+                <Caption>{description}</Caption>
+              </View>
+            </View>)}
+            <Caption>All nine calculators and safety warnings stay free.</Caption>
           </View>
-          <View style={{ gap: theme.spacing.xs }}>
+          <View style={{ borderTopWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border }}>
+            <TextAction title={exampleOpen ? 'Hide example −' : 'See Pro in practice +'} expanded={exampleOpen} onPress={() => setExampleOpen(!exampleOpen)} />
+            {exampleOpen ? <View style={{ gap: theme.spacing.md }}>
+              <View style={{ flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.colors.border }}>
+                {PRO_SCENES.map((item) => <Pressable key={item.key} accessibilityRole="button" accessibilityState={{ selected: item.key === props.scene }} accessibilityLabel={`${SCENE_LABELS[item.key]} example`}
+                  onPress={() => props.onSceneChange(item.key)} android_ripple={{ color: theme.colors.pressFeedback }}
+                  style={({ pressed }) => ({ flex: 1, minWidth: 0, minHeight: theme.size.buttonMinHeight, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.xs, borderBottomWidth: 2, borderBottomColor: item.key === props.scene ? theme.colors.accentText : 'transparent', backgroundColor: pressed && Platform.OS !== 'android' ? theme.colors.pressFeedback : 'transparent' })}>
+                  <Text style={{ fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold, textAlign: 'center', color: item.key === props.scene ? theme.colors.accentText : theme.colors.textSecondary }}>{SCENE_LABELS[item.key]}</Text>
+                </Pressable>)}
+              </View>
+              <ExamplePreview scene={props.scene} unit={props.unit ?? 'fractional'} />
+            </View> : null}
+          </View>
+          <View>
+            <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>Good to know</Text>
             {FAQ.map(([question, answer], index) => <View key={question}>
-              <Pressable accessibilityRole="button" accessibilityState={{ expanded: openFaq === index }} onPress={() => setOpenFaq(openFaq === index ? null : index)} android_ripple={{ color: theme.colors.pressFeedback }} style={{ minHeight: 56, justifyContent: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.colors.border }}>
-                <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>{question} {openFaq === index ? '−' : '+'}</Text>
+              <Pressable accessibilityRole="button" accessibilityState={{ expanded: openFaq === index }} onPress={() => setOpenFaq(openFaq === index ? null : index)} android_ripple={{ color: theme.colors.pressFeedback }} style={{ minHeight: theme.size.buttonMinHeight, justifyContent: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.colors.border, paddingVertical: theme.spacing.sm }}>
+                <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.secondary }}>{question} {openFaq === index ? '−' : '+'}</Text>
               </Pressable>
               {openFaq === index ? <View style={{ paddingVertical: theme.spacing.sm }}><Caption>{answer}</Caption></View> : null}
             </View>)}
           </View>
         </>}
-      </ScrollView>
-      <View style={[styles.footer, { backgroundColor: theme.colors.background, borderTopColor: theme.colors.border, padding: theme.spacing.md, paddingBottom: Math.max(props.bottomInset ?? 0, theme.spacing.md), gap: theme.spacing.sm }]}>
-        {statusText && !props.unlocked ? <View accessibilityLiveRegion="polite" style={{ flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
-          {props.phase !== 'pending' ? <ActivityIndicator color={theme.colors.accentText} /> : null}<View style={{ flex: 1 }}><Caption>{statusText}</Caption></View>
-        </View> : null}
-        {props.error ? <Text accessibilityLiveRegion="polite" style={{ color: props.phase === 'cancelled' ? theme.colors.textSecondary : theme.colors.error, fontSize: theme.fontSize.secondary, lineHeight: 20 }}>{props.error}</Text> : null}
-        {props.unlocked ? <BigButton title={props.continuing ? 'Opening your task…' : proContinueLabel(props.intent)} onPress={props.onContinue} disabled={Boolean(props.continuing)} variant="accent" />
-          : props.isWeb ? <><Caption>Pro is available in the Android app. See Google Play for your local one-time price.</Caption><BigButton title="Get the Android app" variant="accent" onPress={props.onBuy} /></>
-          : props.phase === 'pending' || props.phase === 'purchasing' ? <BigButton title={props.checking ? 'Checking purchase…' : 'Check purchase status'} variant="secondary" disabled={props.checking} onPress={props.onRetry} />
-          : props.available && props.price ? <>
-            <Text style={{ color: theme.colors.textPrimary, textAlign: 'center', fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold, fontVariant: ['tabular-nums'] }}>{props.price}</Text>
-            <Text style={{ color: theme.colors.textSecondary, textAlign: 'center', fontSize: theme.fontSize.secondary }}>One-time purchase · No subscription</Text>
-            <BigButton title="Unlock Pro Lifetime" variant="accent" onPress={props.onBuy} disabled={disabled} />
-          </> : props.phase === 'loading' ? null : <><Caption>Purchase is temporarily unavailable. Retry to load your store price. Your free calculators still work.</Caption><BigButton title="Retry store connection" variant="secondary" onPress={props.onRetry} disabled={disabled} /></>}
-        {!props.isWeb && !props.unlocked && !['pending', 'purchasing'].includes(props.phase) ? <BigButton title={props.phase === 'restoring' ? 'Restoring purchase…' : 'Restore purchase'} variant="secondary" onPress={props.onRestore} disabled={disabled} /> : null}
-        <Pressable accessibilityRole="button" disabled={Boolean(props.continuing)} onPress={props.onClose} android_ripple={{ color: theme.colors.pressFeedback }} style={{ minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: theme.colors.primaryText, fontSize: theme.fontSize.body }}>{props.unlocked ? 'Back to calculators' : props.phase === 'pending' || props.phase === 'purchasing' ? 'Continue with free calculators' : 'Not now — keep using Free'}</Text>
-        </Pressable>
       </View>
-    </View>
-  );
+      {footerInScroll ? <View style={styles.footer}>{footer}</View> : null}
+    </ScrollView>
+    {!footerInScroll ? <View style={styles.footer}>{footer}</View> : null}
+  </View>;
 }
 
 const styles = StyleSheet.create({
-  content: { flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-  footer: { width: '100%', maxWidth: 720, alignSelf: 'center', borderTopWidth: StyleSheet.hairlineWidth },
-  sceneRow: { flexDirection: 'row', gap: 8 },
+  scroll: { flexGrow: 1 },
+  content: { width: '100%', maxWidth: 600, alignSelf: 'center' },
+  footer: { width: '100%', maxWidth: 600, alignSelf: 'center' },
   comparison: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
 });

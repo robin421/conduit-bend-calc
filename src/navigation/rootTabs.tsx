@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import type { NavigatorScreenParams } from '@react-navigation/native';
+import { getFocusedRouteNameFromRoute, type NavigatorScreenParams } from '@react-navigation/native';
 import { Platform, Text, View } from 'react-native';
 
 import HistoryScreen from '../screens/historyScreen';
@@ -102,7 +102,9 @@ export default function RootTabs() {
       <Tab.Screen
         name="CalcHome"
         component={CalcStack}
-        options={{ title: 'Calculate', headerShown: false, tabBarIcon: tabIcon('⌐', theme) }}
+        options={({ route }) => ({ title: 'Calculate', headerShown: false, tabBarIcon: tabIcon('⌐', theme),
+          ...(getFocusedRouteNameFromRoute(route) === 'Paywall' ? { tabBarStyle: { display: 'none' as const } } : {}),
+        })}
         listeners={({ navigation }) => ({
           tabPress: (event) => handleCalcTabPress(navigation, event),
         })}

@@ -5,6 +5,7 @@ import ProPaywallView from '../src/components/proPaywallView';
 import { createProActionGuard } from '../src/lib/proActionGuard';
 import { sceneForIntent, type ProIntent, type ProScene, type PurchasePhase } from '../src/lib/proFlow';
 import { useTheme } from '../src/theme';
+import { PRODUCT_NAME } from '../src/seo/brand';
 
 const states = ['ready', 'loading', 'purchasing', 'pending', 'purchased', 'restored', 'cancelled', 'unavailable', 'error'] as const;
 type PreviewState = typeof states[number];
@@ -26,7 +27,7 @@ function Preview() {
   const phase: PurchasePhase = state === 'ready' || state === 'unavailable' ? 'idle' : state;
   return <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
     <View style={{ padding: 4, gap: 4, backgroundColor: theme.colors.primary }}>
-      <Text style={{ color: theme.colors.onPrimary, fontSize: 14 }}>Preview · simulated store · no purchase {message}</Text>
+      <Text style={{ color: theme.colors.onPrimary, fontSize: 14 }}>{PRODUCT_NAME} · preview (no purchase) {message}</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <select aria-label="Preview state" value={state} onChange={(event) => { setState(event.target.value as PreviewState); setMessage(''); guard.current = createProActionGuard(); }} style={{ minHeight: 36, flex: 1 }}>
           {states.map((value) => <option key={value} value={value}>{value}</option>)}

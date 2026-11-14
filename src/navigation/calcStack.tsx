@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import WattFlowBrandBar from '../components/wattflowBrandBar';
+import { PRODUCT_NAME } from '../seo/brand';
 import type { HistoryParams } from '../lib/historyStore';
 import type { ConduitType } from '../lib/profile';
 import BenderScreen from '../screens/benderScreen';
@@ -111,7 +112,7 @@ export default function CalcStack() {
       <Stack.Screen
         name="Paywall"
         component={PaywallScreen}
-        options={{ title: 'Conduit Bend Calc Pro', presentation: 'modal' }}
+        options={{ title: PRODUCT_NAME, presentation: 'modal' }}
       />
       <Stack.Screen
         name="Placeholder"

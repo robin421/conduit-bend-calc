@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Refined Pro page (T84)
+
+- Keep the product name Conduit Bend Calc in navigation and app identity.
+- Lead with three clear benefits; fold examples behind a preview control and replace oversized scene buttons with compact text navigation.
+- Compact the purchase area, hide calculator tabs during the offer, and restore navigation when leaving. Support scrolling actions on short screens or larger font settings.
+- Preserve all existing purchase, pending, restore and continuation behavior.
+
 ## Unreleased — Correct Play application identity (T83)
 
 - Restore the registered Play applicationId com.robin421.conduitbendcalc. Read Fastlane upload identity from app.json and correct generated store links.
