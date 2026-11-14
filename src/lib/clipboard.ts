@@ -7,11 +7,15 @@
  * - 任何异常吞掉，返回是否成功，绝不抛。
  */
 
-export async function copyToClipboard(text: string): Promise<boolean> {
-  if (typeof text !== 'string' || text === '') {
-    return false;
-  }
+import type { GrowthEvent, GrowthEventParams } from './growthEvents.ts';
 
+export interface CopyToClipboardOptions {
+  source?: string;
+  toolName?: string;
+  onEvent?: (name: GrowthEvent, params: GrowthEventParams) => void;
+}
+
+async function writeTextToClipboard(text: string): Promise<boolean> {
   // Web：异步 Clipboard API。
   try {
     const nav = typeof navigator === 'undefined' ? undefined : navigator;
@@ -58,4 +62,31 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 
   return false;
+}
+
+export async function copyToClipboard(
+  text: string,
+  options?: CopyToClipboardOptions,
+): Promise<boolean> {
+  if (typeof text !== 'string' || text === '') {
+    return false;
+  }
+
+  const ok = await writeTextToClipboard(text);
+  if (ok) {
+    const params: GrowthEventParams = {
+      source: options?.source ?? 'clipboard',
+      ...(options?.toolName ? { tool_name: options.toolName } : {}),
+    };
+    try {
+      if (options?.onEvent) {
+        options.onEvent('result_copied', params);
+      } else {
+        (require('./growth') as typeof import('./growth')).trackGrowthEvent('result_copied', params);
+      }
+    } catch {
+      // 埋点不影响复制结果。
+    }
+  }
+  return ok;
 }

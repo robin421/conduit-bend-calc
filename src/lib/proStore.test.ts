@@ -523,3 +523,44 @@ test('requestPurchase 仍挂起时，前台查询也能恢复已完成购买', a
   await buying;
   assert.equal(store.getAccess(), 'unlocked');
 });
+
+test('restore 埋点：触发 pro_restore_started 与对应 outcome 的 pro_restore_result', async () => {
+  const events: Array<{ name: string; params: Record<string, unknown> }> = [];
+  const gatewayFound = new FakeGateway({ purchasedSkus: [PRO_SKU] });
+  const storeFound = createProStore(createMemoryStorage(), () => Promise.resolve(gatewayFound), {
+    onEvent: (name, params) => { events.push({ name, params: { ...params } }); },
+  });
+  await storeFound.init();
+  await storeFound.restore();
+  assert.deepEqual(
+    events.filter((e) => e.name === 'pro_restore_started' || e.name === 'pro_restore_result'),
+    [
+      { name: 'pro_restore_started', params: {} },
+      { name: 'pro_restore_result', params: { outcome: 'found' } },
+    ],
+  );
+
+  events.length = 0;
+  const gatewayNotFound = new FakeGateway({ purchasedSkus: [] });
+  const storeNotFound = createProStore(createMemoryStorage(), () => Promise.resolve(gatewayNotFound), {
+    onEvent: (name, params) => { events.push({ name, params: { ...params } }); },
+  });
+  await storeNotFound.init();
+  await storeNotFound.restore();
+  assert.deepEqual(events, [
+    { name: 'pro_restore_started', params: {} },
+    { name: 'pro_restore_result', params: { outcome: 'not_found' } },
+  ]);
+
+  events.length = 0;
+  const gatewayFailed = new FakeGateway({ purchasesThrows: true });
+  const storeFailed = createProStore(createMemoryStorage(), () => Promise.resolve(gatewayFailed), {
+    onEvent: (name, params) => { events.push({ name, params: { ...params } as Record<string, unknown> }); },
+  });
+  await storeFailed.init();
+  await storeFailed.restore();
+  assert.deepEqual(events, [
+    { name: 'pro_restore_started', params: {} },
+    { name: 'pro_restore_result', params: { outcome: 'failed' } },
+  ]);
+});

@@ -17,6 +17,7 @@ import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import type { BenderSpec } from '../constants';
 import { saveBenderSpec } from '../lib/benderSpecStore';
+import { trackGrowthEvent } from '../lib/growth';
 import { formatLength } from '../lib/units';
 import { useUnitSystem } from '../lib/unitStore';
 import { useCustomSpecs } from '../lib/customSpecs';
@@ -134,6 +135,7 @@ export default function CalibrationScreen() {
       .then(() => {
         saveBenderSpec(built);
         setSpec(built);
+        trackGrowthEvent('bender_calibrated', { source: 'manual' });
         setSavedMessage(
           `Saved "${displaySpecName(built)}": R=${formatLength(built.centerlineRadius, unit)}, take-up=${formatLength(built.takeUp, unit)} — now selected as the bender for all calculators and available in every bender picker.`,
         );

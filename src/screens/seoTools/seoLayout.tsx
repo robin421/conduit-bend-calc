@@ -835,7 +835,7 @@ export function SeoCopyButton({
   );
 
   const handlePress = useCallback(async () => {
-    const ok = await copyToClipboard(text);
+    const ok = await copyToClipboard(text, { source: 'seo_tool', toolName });
     trackSeoToolCopy(toolName, ok);
     setStatus(ok ? 'copied' : 'failed');
     if (timerRef.current) {

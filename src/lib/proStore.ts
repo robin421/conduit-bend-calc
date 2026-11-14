@@ -114,8 +114,11 @@ export function createProStore(
   let queryGeneration = 0;
   let checkoutContext: GrowthEventParams = {};
 
+  function emitEvent(name: GrowthEvent, params: GrowthEventParams): void {
+    try { options.onEvent?.(name, params); } catch { /* telemetry is best-effort */ }
+  }
   function emit(outcome: string): void {
-    try { options.onEvent?.('pro_purchase_result', { ...checkoutContext, outcome }); } catch { /* telemetry is best-effort */ }
+    emitEvent('pro_purchase_result', { ...checkoutContext, outcome });
   }
   function setPatch(patch: Partial<InternalState>): void {
     state = { ...state, ...patch };
@@ -285,19 +288,26 @@ export function createProStore(
   async function restoreOperation(): Promise<RestoreResult> {
     if (loadPromise) await loadPromise;
     setPatch({ phase: 'restoring', lastError: null });
+    emitEvent('pro_restore_started', {});
     try {
       const gw = activeGateway ?? await gatewayProvider();
       activeGateway = gw;
       await gw.init();
       registerListeners(gw);
       const found = await queryPurchases(gw, 'restore');
-      if (found) { emit('restored'); return { ok: true, found: true, message: null }; }
+      if (found) {
+        emit('restored');
+        emitEvent('pro_restore_result', { outcome: 'found' });
+        return { ok: true, found: true, message: null };
+      }
       const message = state.pendingPurchase ? 'Payment pending. Complete payment before restoring Pro.' : NO_PREVIOUS_PURCHASE_MESSAGE;
       setPatch({ phase: state.pendingPurchase ? 'pending' : 'idle', lastError: message });
+      emitEvent('pro_restore_result', { outcome: 'not_found' });
       return { ok: true, found: false, message };
     } catch {
       const message = purchaseErrorMessage('E_NETWORK_ERROR');
       setPatch({ phase: state.pendingPurchase ? 'pending' : 'error', lastError: message });
+      emitEvent('pro_restore_result', { outcome: 'failed' });
       return { ok: false, found: false, message };
     }
   }

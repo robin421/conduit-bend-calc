@@ -30,6 +30,7 @@ import {
   useBenderProfiles,
 } from '../lib/benderProfileStore';
 import { displayProfileName } from '../lib/profile';
+import { trackGrowthEvent } from '../lib/growth';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
 import type { CalcStackParamList } from '../navigation/calcStack';
@@ -264,6 +265,7 @@ function QuickCheckWizard({
     }
     upsertProfile(profile);
     setActiveProfile(profile.id);
+    trackGrowthEvent('bender_calibrated', { source: 'guided' });
     navigation.goBack();
   }, [base, canSave, name, navigation, result]);
 

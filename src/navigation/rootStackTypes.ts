@@ -12,4 +12,5 @@ export type RootStackParamList = {
   SeoSaddle4: undefined;
   SeoShrink: undefined;
   SeoStubUp: undefined;
+  Feedback: undefined;
 };

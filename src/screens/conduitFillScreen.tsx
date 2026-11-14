@@ -13,6 +13,7 @@ import type { LayoutWarning } from '../calculators/warnings/warnings';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
+import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
 import { useTheme } from '../theme';
 
 const RACEWAY_LABEL: Record<RacewayType, string> = { EMT: 'EMT', IMC: 'IMC', RMC: 'Rigid', PVC40: 'PVC' };
@@ -36,6 +37,8 @@ export default function ConduitFillScreen() {
   );
 
   const signature = result ? `conduit_fill|${m.raceway}|${m.trade}|${m.wire}|${count ?? ''}` : null;
+  const fillStatus = result && (result.fits === false || result.maxConductors === 0) ? 'impossible' : 'ok';
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(signature, fillStatus);
   useCalculatorAnalytics('conduit_fill', signature);
   useFirebaseCalculationCompleted('conduit_fill', signature);
 
@@ -67,13 +70,13 @@ export default function ConduitFillScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-        <OptionRow label="Raceway" options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => setM((p) => ({ ...p, raceway }))} />
-        <OptionRow label="Trade size (in)" options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => setM((p) => ({ ...p, trade }))} />
-        <OptionRow label="Wire (THHN / THWN-2)" options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => setM((p) => ({ ...p, wire }))} />
+        <OptionRow label="Raceway" options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => { noteReviewInteraction(); setM((p) => ({ ...p, raceway })); }} />
+        <OptionRow label="Trade size (in)" options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => { noteReviewInteraction(); setM((p) => ({ ...p, trade })); }} />
+        <OptionRow label="Wire (THHN / THWN-2)" options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => { noteReviewInteraction(); setM((p) => ({ ...p, wire })); }} />
         <NumberField
           label="Number of wires (optional)"
           value={m.countText}
-          onChangeText={(countText) => setM((p) => ({ ...p, countText }))}
+          onChangeText={(countText) => { noteReviewInteraction(); setM((p) => ({ ...p, countText })); }}
           placeholder="e.g. 9"
           integer
           error={countError}

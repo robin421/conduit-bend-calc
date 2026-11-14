@@ -38,6 +38,12 @@ export function loadHistory(): Promise<HistoryEntry[]> {
 export async function saveHistory(entry: HistoryEntry): Promise<HistoryEntry[]> {
   const entries = await store.add(entry);
   for (const listener of listeners) listener(entries);
+  try {
+    (require('./growth') as typeof import('./growth')).trackGrowthEvent('history_saved', {
+      bend_type: entry.kind,
+      unit_system: entry.params.unit === 'metric' ? 'metric' : 'imperial',
+    });
+  } catch { /* best-effort */ }
   return entries;
 }
 

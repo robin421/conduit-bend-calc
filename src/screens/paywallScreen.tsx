@@ -101,6 +101,12 @@ export default function PaywallScreen({ route, navigation }: Props) {
     onRestore={() => { void perform('restore'); }}
     onRetry={() => { void perform('retry'); }}
     onContinue={() => { void perform('continue'); }}
-    onClose={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('CalcHome')}
+    onClose={() => {
+      if (state.access !== 'unlocked') {
+        trackGrowthEvent('pro_paywall_dismissed', { source, scene });
+      }
+      if (navigation.canGoBack()) navigation.goBack();
+      else navigation.navigate('CalcHome');
+    }}
   />;
 }

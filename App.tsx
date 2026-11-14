@@ -4,11 +4,13 @@ import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { initAmplitude, logAmplitudeScreenView } from './src/lib/amplitude';
 import { applyWebDocumentTitle, shouldApplyWebDocumentTitle } from './src/lib/documentTitle';
 import { initFirebase, logFirebaseScreenView } from './src/lib/firebase';
 import { initPro, observeProResume } from './src/lib/proInit';
 import { initInAppReview } from './src/lib/inAppReview';
 import { registerServiceWorker } from './src/lib/serviceWorker';
+import AppToastHost from './src/components/appToastHost';
 import DownloadBanner from './src/components/downloadBanner';
 import RootStack, { rootLinking, type RootStackParamList } from './src/navigation/rootStack';
 import { getNavigationTheme, useTheme } from './src/theme';
@@ -23,8 +25,9 @@ export default function App() {
     initPro().catch(() => undefined);
     void initInAppReview().catch(() => undefined);
     const stopProResume = observeProResume();
-    // Firebase 初始化：首屏渲染后执行，避免拖慢冷启动；dev 下 Crashlytics 关闭。
+    // Firebase 与 Amplitude 初始化：首屏渲染后执行，避免拖慢冷启动；dev 下 Crashlytics 关闭。
     initFirebase();
+    void initAmplitude().catch(() => undefined);
     // Web 端注册 service worker：首屏关键资源离线缓存（工地断网也能开）。
     registerServiceWorker(Platform.OS === 'web');
     // Web 端固定 SEO 标题；Native 端不受影响。
@@ -52,6 +55,7 @@ export default function App() {
           currentRouteRef.current = navigationRef.getCurrentRoute()?.name;
           if (currentRouteRef.current) {
             logFirebaseScreenView(currentRouteRef.current);
+            logAmplitudeScreenView(currentRouteRef.current);
           }
         }}
         onStateChange={() => {
@@ -59,11 +63,13 @@ export default function App() {
           if (next && next !== currentRouteRef.current) {
             currentRouteRef.current = next;
             logFirebaseScreenView(next);
+            logAmplitudeScreenView(next);
           }
         }}
       >
         <RootStack />
       </NavigationContainer>
+      <AppToastHost />
       <StatusBar style="light" translucent={false} />
     </SafeAreaProvider>
   );

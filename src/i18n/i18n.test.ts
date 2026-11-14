@@ -157,3 +157,16 @@ test('英文基准里 offset / conduit 术语不被误改', () => {
   assert.equal(en['nav.offset'], 'Offset');
   assert.match(en['brand.footer'], /WattFlow/);
 });
+
+test('feedback.* 词条在 en / es 中完整且支持插值', () => {
+  assert.equal(translate('en', 'feedback.sendButton'), 'Send feedback');
+  assert.equal(translate('es', 'feedback.sendButton'), 'Enviar comentarios');
+  assert.equal(
+    translate('en', 'feedback.minCharsHint', { min: 10 }),
+    'Minimum 10 characters',
+  );
+  assert.equal(
+    translate('es', 'feedback.errorTooLong', { max: 1000 }),
+    'El comentario debe tener 1000 caracteres o menos.',
+  );
+});

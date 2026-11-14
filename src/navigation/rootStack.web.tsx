@@ -104,6 +104,9 @@ const ShrinkToolScreen = lazyScreen(
 const StubUpToolScreen = lazyScreen(
   () => import('../screens/seoTools/stubUpToolScreen'),
 );
+const FeedbackScreen = lazyScreen(
+  () => import('../screens/feedbackScreen'),
+);
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -122,6 +125,7 @@ export default function RootStack() {
       <Stack.Screen name="SeoSaddle4" component={FourPointSaddleToolScreen} />
       <Stack.Screen name="SeoShrink" component={ShrinkToolScreen} />
       <Stack.Screen name="SeoStubUp" component={StubUpToolScreen} />
+      <Stack.Screen name="Feedback" component={FeedbackScreen} />
     </Stack.Navigator>
   );
 }

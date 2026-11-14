@@ -9,15 +9,16 @@
  * - Web 端由 firebase.web.ts（Metro 平台解析）顶替，本文件不会进入 web bundle。
  */
 
-import { useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
 import type { FirebaseAnalyticsTypes } from '@react-native-firebase/analytics';
 import type { FirebaseCrashlyticsTypes } from '@react-native-firebase/crashlytics';
 
+import { logAmplitudeEvent, trackAmplitudeActivationIfNeeded } from './amplitude';
 import { normalizeToolName, type CalculatorSlug } from './analytics.ts';
 import type { GrowthEvent, GrowthEventParams } from './growthEvents';
 import { loadConfiguredFirebaseModule } from './firebaseModule';
+import { useDebouncedCalculationCompleted } from './useDebouncedCalculationCompleted';
 
 /** 与 src/lib/units.ts 的 UnitSystem 对齐（此处只用于事件参数类型）。 */
 export type UnitSystemSlug = 'fractional' | 'decimal' | 'metric';
@@ -118,9 +119,17 @@ export function logFirebaseCalculationCompleted(
 ): void {
   const platform = Platform.OS === 'web' ? 'web' : (Platform.OS === 'android' ? 'android' : 'ios');
   const unitSystem = options?.unitSystem ?? 'imperial';
-  logEvent('calculation_completed', {
+  const toolName = normalizeToolName(bendType);
+  const props = {
     bend_type: bendType,
-    tool_name: normalizeToolName(bendType),
+    tool_name: toolName,
+    unit_system: unitSystem,
+    platform,
+  };
+  logEvent('calculation_completed', props);
+  logAmplitudeEvent('calculation_completed', props);
+  trackAmplitudeActivationIfNeeded({
+    tool_name: toolName,
     unit_system: unitSystem,
     platform,
   });
@@ -129,11 +138,13 @@ export function logFirebaseCalculationCompleted(
 /** unit_system_changed：记录切换前后的单位制。 */
 export function logFirebaseUnitSystemChanged(from: UnitSystemSlug, to: UnitSystemSlug): void {
   logEvent('unit_system_changed', { from, to });
+  logAmplitudeEvent('unit_system_changed', { from, to });
 }
 
 /** pro_paywall_viewed：Pro 解锁页展示时触发，支持携带触发来源。 */
 export function logFirebaseProPaywallViewed(triggerSource = 'direct'): void {
   logEvent('pro_paywall_viewed', { trigger_source: triggerSource });
+  logAmplitudeEvent('pro_paywall_viewed', { trigger_source: triggerSource });
 }
 
 export function logFirebaseGrowthEvent(name: GrowthEvent, params: GrowthEventParams): void {
@@ -151,51 +162,6 @@ export function useFirebaseCalculationCompleted(
   signature: string | null,
   options?: { unitSystem?: 'imperial' | 'metric' },
 ): void {
-  const lastSentRef = useRef<string | null>(null);
-  const pendingRef = useRef<{
-    signature: string;
-    bendType: CalculatorSlug;
-    unitSystem: 'imperial' | 'metric';
-  } | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unitSystem = options?.unitSystem ?? 'imperial';
-
-  const flush = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    const pending = pendingRef.current;
-    if (pending && pending.signature && pending.signature !== lastSentRef.current) {
-      lastSentRef.current = pending.signature;
-      logFirebaseCalculationCompleted(pending.bendType, { unitSystem: pending.unitSystem });
-      pendingRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (signature === null || signature === lastSentRef.current) {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      pendingRef.current = null;
-      return;
-    }
-
-    pendingRef.current = { signature, bendType, unitSystem };
-
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    timerRef.current = setTimeout(() => {
-      flush();
-    }, 1000);
-  }, [bendType, signature, unitSystem, flush]);
-
-  useEffect(() => {
-    return () => {
-      flush();
-    };
-  }, [flush]);
+  useDebouncedCalculationCompleted(bendType, signature, unitSystem, logFirebaseCalculationCompleted);
 }

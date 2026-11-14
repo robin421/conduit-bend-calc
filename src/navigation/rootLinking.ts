@@ -26,6 +26,7 @@ export const rootLinking: LinkingOptions<RootStackParamList> = {
       SeoSaddle4: '4-point-saddle',
       SeoShrink: 'shrink',
       SeoStubUp: 'stub-up',
+      Feedback: 'feedback',
     },
   },
 };

@@ -108,6 +108,55 @@ export const en = {
   'stub.takeUpHint': '{takeUp}" take-up',
   'stub.whatTitle': 'What is a stub-up?',
   'stub.chartTitle': 'Take-up chart (hand benders, EMT)',
+
+  // feedback
+  'feedback.cardTitle': 'Report a problem or suggest an improvement',
+  'feedback.cardBody':
+    'Open our in-app feedback form. App version, system and language are included. No calculations or payment details are sent. Individual replies are not guaranteed.',
+  'feedback.sendButton': 'Send feedback',
+  'feedback.openingButton': 'Opening feedback…',
+  'feedback.openError':
+    'Could not open the feedback form. Check your connection and try again. Your calculations are kept.',
+  'feedback.title': 'Feedback',
+  'feedback.back': 'Back',
+  'feedback.subtitle':
+    'Send a ticket directly to our engineering queue. Individual replies are not guaranteed.',
+  'feedback.categoryLabel': 'Category',
+  'feedback.catBug': 'Bug report',
+  'feedback.catFeature': 'Feature request',
+  'feedback.catFormula': 'Bender / Formula',
+  'feedback.catOther': 'Other',
+  'feedback.contentLabel': 'Details',
+  'feedback.contentPlaceholder':
+    'Describe what happened, what you expected, or what would help on the job…',
+  'feedback.minCharsHint': 'Minimum {min} characters',
+  'feedback.charCount': '{count} / {max}',
+  'feedback.errorInvalidCategory': 'Please select a category.',
+  'feedback.errorTooShort': 'Please enter at least {min} characters.',
+  'feedback.errorTooLong': 'Feedback must be {max} characters or fewer.',
+  'feedback.emailLabel': 'Email (Optional)',
+  'feedback.emailPlaceholder': 'name@example.com',
+  'feedback.diagnosticsTitle': 'Included diagnostics',
+  'feedback.diagnosticsProduct': 'Product',
+  'feedback.diagnosticsVersion': 'App Version',
+  'feedback.diagnosticsOs': 'OS',
+  'feedback.diagnosticsLang': 'Language',
+  'feedback.diagnosticsNote':
+    'No calculations, history, or payment details are included.',
+  'feedback.submitButton': 'Submit feedback',
+  'feedback.submittingButton': 'Submitting…',
+  'feedback.submitErrorTitle': 'Could not send feedback',
+  'feedback.submitErrorTimeout':
+    'Request timed out. Check your connection and try again.',
+  'feedback.submitErrorNetwork':
+    'Network error. Check your connection and try again.',
+  'feedback.retryButton': 'Retry',
+  'feedback.successTitle': 'Feedback received',
+  'feedback.successBody':
+    'Your ticket has been added to our engineering queue. Thank you for helping improve Conduit Bend Calc.',
+  'feedback.ticketIdLabel': 'Ticket ID',
+  'feedback.doneButton': 'Done / Back',
+  'feedback.submitAnotherButton': 'Submit another',
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -210,6 +259,55 @@ export const es: Record<TranslationKey, string> = {
   'stub.takeUpHint': 'recogida de {takeUp}"',
   'stub.whatTitle': '¿Qué es una subida de 90°?',
   'stub.chartTitle': 'Tabla de recogida (dobladores manuales, EMT)',
+
+  // feedback
+  'feedback.cardTitle': 'Reportar un problema o sugerir una mejora',
+  'feedback.cardBody':
+    'Abre nuestro formulario de comentarios en la app. Se incluyen la versión, el sistema y el idioma. No se envían cálculos ni datos de pago. No se garantizan respuestas individuales.',
+  'feedback.sendButton': 'Enviar comentarios',
+  'feedback.openingButton': 'Abriendo formulario…',
+  'feedback.openError':
+    'No se pudo abrir el formulario de comentarios. Revisa tu conexión e inténtalo de nuevo. Tus cálculos se conservan.',
+  'feedback.title': 'Comentarios',
+  'feedback.back': 'Atrás',
+  'feedback.subtitle':
+    'Envía un ticket directamente a nuestra cola de desarrollo. No se garantizan respuestas individuales.',
+  'feedback.categoryLabel': 'Categoría',
+  'feedback.catBug': 'Reporte de error',
+  'feedback.catFeature': 'Sugerencia',
+  'feedback.catFormula': 'Dobladora / Fórmula',
+  'feedback.catOther': 'Otro',
+  'feedback.contentLabel': 'Detalles',
+  'feedback.contentPlaceholder':
+    'Describe qué ocurrió, qué esperabas o qué te ayudaría en obra…',
+  'feedback.minCharsHint': 'Mínimo {min} caracteres',
+  'feedback.charCount': '{count} / {max}',
+  'feedback.errorInvalidCategory': 'Por favor selecciona una categoría.',
+  'feedback.errorTooShort': 'Ingresa al menos {min} caracteres.',
+  'feedback.errorTooLong': 'El comentario debe tener {max} caracteres o menos.',
+  'feedback.emailLabel': 'Correo electrónico (Opcional)',
+  'feedback.emailPlaceholder': 'nombre@ejemplo.com',
+  'feedback.diagnosticsTitle': 'Diagnóstico incluido',
+  'feedback.diagnosticsProduct': 'Producto',
+  'feedback.diagnosticsVersion': 'Versión de la app',
+  'feedback.diagnosticsOs': 'Sistema',
+  'feedback.diagnosticsLang': 'Idioma',
+  'feedback.diagnosticsNote':
+    'No se incluyen cálculos, historial ni datos de pago.',
+  'feedback.submitButton': 'Enviar comentarios',
+  'feedback.submittingButton': 'Enviando…',
+  'feedback.submitErrorTitle': 'No se pudo enviar el comentario',
+  'feedback.submitErrorTimeout':
+    'Tiempo de espera agotado. Revisa tu conexión e inténtalo de nuevo.',
+  'feedback.submitErrorNetwork':
+    'Error de red. Revisa tu conexión e inténtalo de nuevo.',
+  'feedback.retryButton': 'Reintentar',
+  'feedback.successTitle': 'Comentarios recibidos',
+  'feedback.successBody':
+    'Tu ticket se agregó a nuestra cola de desarrollo. Gracias por ayudar a mejorar Conduit Bend Calc.',
+  'feedback.ticketIdLabel': 'ID de ticket',
+  'feedback.doneButton': 'Listo / Volver',
+  'feedback.submitAnotherButton': 'Enviar otro',
 };
 
 export const DICTIONARIES: Record<Lang, Record<TranslationKey, string>> = {

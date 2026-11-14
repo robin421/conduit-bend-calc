@@ -1,4 +1,4 @@
-import { Platform, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme';
 
@@ -12,6 +12,7 @@ interface BigButtonProps {
   size?: BigButtonSize;
   selected?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   expanded?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -23,10 +24,12 @@ export default function BigButton({
   size = 'default',
   selected = false,
   disabled = false,
+  loading = false,
   expanded,
   style,
 }: BigButtonProps) {
   const theme = useTheme();
+  const isDisabled = disabled || loading;
   const resolvedVariant: BigButtonVariant = selected ? 'accent' : variant;
 
   const backgroundColor =
@@ -54,8 +57,8 @@ export default function BigButton({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected, disabled, expanded }}
-      disabled={disabled}
+      accessibilityState={{ selected, disabled: isDisabled, busy: loading, expanded }}
+      disabled={isDisabled}
       onPress={onPress}
       android_ripple={{ color: theme.colors.pressFeedback }}
       style={[
@@ -70,28 +73,31 @@ export default function BigButton({
               : StyleSheet.hairlineWidth
             : 0,
           borderColor: theme.colors.border,
-          opacity: disabled ? 0.4 : 1,
+          opacity: loading ? 0.85 : disabled ? 0.4 : 1,
         },
         style,
       ]}
     >
       {({ pressed }) => (
         <>
-          {pressed && !disabled && Platform.OS !== 'android' ? (
+          {pressed && !isDisabled && Platform.OS !== 'android' ? (
             <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.colors.pressFeedback }]} />
           ) : null}
-          <Text
-            style={{
-              color: textColor,
-              fontSize: theme.fontSize.body,
-              fontWeight: theme.fontWeight.semibold,
-              fontVariant: ['tabular-nums'],
-              letterSpacing: 0.2,
-              includeFontPadding: false,
-            }}
-          >
-            {title}
-          </Text>
+          <View style={styles.content}>
+            {loading ? <ActivityIndicator size="small" color={textColor} /> : null}
+            <Text
+              style={{
+                color: textColor,
+                fontSize: theme.fontSize.body,
+                fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
+                letterSpacing: 0.2,
+                includeFontPadding: false,
+              }}
+            >
+              {title}
+            </Text>
+          </View>
         </>
       )}
     </Pressable>
@@ -104,5 +110,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
     overflow: 'hidden',
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
 });

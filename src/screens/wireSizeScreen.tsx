@@ -13,6 +13,7 @@ import type { LayoutWarning } from '../calculators/warnings/warnings';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
+import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
 import { useTheme } from '../theme';
 
 const COLUMN_CHOICES = ['auto', ...TEMP_COLUMNS] as const;
@@ -36,6 +37,7 @@ export default function WireSizeScreen() {
   }, [amps, ampsError, m.metal, continuous, m.column]);
 
   const signature = result ? `wire_sizing|${m.metal}|${amps}|${continuous}|${m.column}|${result.size}` : null;
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(signature, result ? 'ok' : undefined);
   useCalculatorAnalytics('wire_sizing', signature);
   useFirebaseCalculationCompleted('wire_sizing', signature);
 
@@ -59,10 +61,10 @@ export default function WireSizeScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => setM((p) => ({ ...p, ampsText }))} placeholder="e.g. 20" error={ampsError} />
-        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => setM((p) => ({ ...p, metal }))} />
-        <OptionRow label="Continuous load (3 h or more)" options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? 'Yes, ×125%' : 'No')} onChange={(c) => setM((p) => ({ ...p, continuous: c }))} />
-        <OptionRow label="Termination rating" options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => setM((p) => ({ ...p, column }))} />
+        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 20" error={ampsError} />
+        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
+        <OptionRow label="Continuous load (3 h or more)" options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? 'Yes, ×125%' : 'No')} onChange={(c) => { noteReviewInteraction(); setM((p) => ({ ...p, continuous: c })); }} />
+        <OptionRow label="Termination rating" options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => { noteReviewInteraction(); setM((p) => ({ ...p, column })) }} />
       </Card>
       <ResultGroup
         hero={{ label: 'Minimum wire size', value: result ? wireSizeLabel(result.size) : undefined }}

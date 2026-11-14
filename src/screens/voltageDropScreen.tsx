@@ -14,6 +14,7 @@ import type { LayoutWarning } from '../calculators/warnings/warnings';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
+import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
 import { useUnitSystem } from '../lib/unitStore';
 import { useTheme } from '../theme';
 
@@ -51,6 +52,7 @@ export default function VoltageDropScreen() {
 
   const signature = result ? `voltage_drop|${m.metal}|${size}|${amps}|${lengthFt}|${m.volts}|${m.phase}` : null;
   const unitSystem = metric ? 'metric' : 'imperial';
+  const noteReviewInteraction = useReviewOnSuccessfulCalc(signature, result ? 'ok' : undefined);
   useCalculatorAnalytics('voltage_drop', signature, { unitSystem });
   useFirebaseCalculationCompleted('voltage_drop', signature, { unitSystem });
 
@@ -76,13 +78,13 @@ export default function VoltageDropScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => setM((p) => ({ ...p, metal }))} />
-        <OptionRow label="System" options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? 'Single-phase' : 'Three-phase')} onChange={(phase) => setM((p) => ({ ...p, phase }))} />
-        <OptionRow label="Voltage (V)" options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => setM((p) => ({ ...p, volts }))} />
-        <OptionRow label="Wire size" options={sizes} value={size} perRow={6} onChange={(s) => setM((p) => ({ ...p, size: s }))} />
-        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => setM((p) => ({ ...p, ampsText }))} placeholder="e.g. 16" error={ampsError} />
-        <NumberField label="One-way length" unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => setM((p) => ({ ...p, lengthText }))} placeholder={metric ? 'e.g. 30' : 'e.g. 100'} error={lengthError} />
-        <OptionRow label="Limit" options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? 'Branch 3%' : 'Feeder + branch 5%')} onChange={(l) => setM((p) => ({ ...p, limit: l }))} />
+        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
+        <OptionRow label="System" options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? 'Single-phase' : 'Three-phase')} onChange={(phase) => { noteReviewInteraction(); setM((p) => ({ ...p, phase })); }} />
+        <OptionRow label="Voltage (V)" options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => { noteReviewInteraction(); setM((p) => ({ ...p, volts })); }} />
+        <OptionRow label="Wire size" options={sizes} value={size} perRow={6} onChange={(s) => { noteReviewInteraction(); setM((p) => ({ ...p, size: s })); }} />
+        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 16" error={ampsError} />
+        <NumberField label="One-way length" unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => { noteReviewInteraction(); setM((p) => ({ ...p, lengthText })); }} placeholder={metric ? 'e.g. 30' : 'e.g. 100'} error={lengthError} />
+        <OptionRow label="Limit" options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? 'Branch 3%' : 'Feeder + branch 5%')} onChange={(l) => { noteReviewInteraction(); setM((p) => ({ ...p, limit: l })); }} />
       </Card>
       <ResultGroup
         hero={{ label: 'Voltage drop', value: result ? (result.dropFraction * 100).toFixed(2) : undefined, unit: '%' }}
