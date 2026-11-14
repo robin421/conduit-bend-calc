@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import WattFlowBrandBar from '../components/wattflowBrandBar';
+import AppBrandBar from '../components/appBrandBar';
 import { PRODUCT_NAME } from '../seo/brand';
 import type { HistoryParams } from '../lib/historyStore';
 import type { ConduitType } from '../lib/profile';
@@ -61,8 +61,8 @@ export default function CalcStack() {
         name="CalcHome"
         component={CalcHomeScreen}
         options={{
-          title: 'WattFlow',
-          headerTitle: () => <WattFlowBrandBar tone="header" />,
+          title: PRODUCT_NAME,
+          headerTitle: () => <AppBrandBar tone="header" />,
         }}
       />
       <Stack.Screen name="Offset" component={OffsetScreen} options={{ title: 'Offset Bend' }} />

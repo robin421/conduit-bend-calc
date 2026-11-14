@@ -5,6 +5,7 @@ import {
 } from '@react-navigation/native';
 import { useColorScheme } from 'react-native';
 import { interactionColors } from './interactionColors';
+import { brandPalette } from './brandPalette';
 
 export type ColorSchemeName = 'light' | 'dark';
 
@@ -12,13 +13,15 @@ export interface ThemeColors {
   controlAccent: string;
   onControlAccent: string;
   pressFeedback: string;
-  /** 主色：炭黑，顶栏 / 结果卡 / 主按钮 */
+  /** 文本选中底色，半透明黄以保留深浅模式的文字可读性。 */
+  selection: string;
+  /** 主色：图标深蓝，顶栏 / 结果卡 / 主按钮 */
   primary: string;
   /** 主色用于文字/图标时的可读变体（深色模式自动转浅色） */
   primaryText: string;
-  /** 强调色：电工橙，选中态 / CTA / 关键数字单位 */
+  /** 强调色：图标黄色，选中态 / CTA / 关键数字单位 */
   accent: string;
-  /** 强调色用于浅底小字号文字时的加深变体，保证 WCAG AA 对比度 */
+  /** 强调色用于浅底小字号文字时的深金变体，保证 WCAG AA 对比度 */
   accentText: string;
   /** 页面背景 */
   background: string;
@@ -42,52 +45,50 @@ export interface ThemeColors {
   resultText: string;
   /** 结果卡标签文字 */
   resultLabel: string;
-  /** 橙底上的文字 */
+  /** 黄底上的深蓝文字 */
   onAccent: string;
 }
 
 export const lightColors: ThemeColors = {
   ...interactionColors,
-  primary: '#1A1A1A',
-  primaryText: '#1A1A1A',
-  accent: '#FF6B00',
-  // #FF6B00 在浅底小字号仅 ~2.9:1，加深到 #C2410C（~5.2:1）用于文字/图标。
-  accentText: '#C2410C',
-  background: '#FFFFFF',
-  card: '#F8F9FA',
-  textPrimary: '#1A1A1A',
-  textSecondary: '#6B7280',
+  selection: `${brandPalette.yellow}59`,
+  primary: brandPalette.navy,
+  primaryText: brandPalette.navy,
+  accent: brandPalette.yellow,
+  accentText: brandPalette.goldText,
+  background: '#F5F8FB',
+  card: '#FFFFFF',
+  textPrimary: brandPalette.navy,
+  textSecondary: '#52677B',
   onPrimary: '#FFFFFF',
   success: '#16A34A',
   error: '#DC2626',
-  border: '#E5E7EB',
-  resultBackground: '#1A1A1A',
+  border: '#D9E2EB',
+  resultBackground: brandPalette.navy,
   resultText: '#FFFFFF',
-  resultLabel: '#B8BEC6',
-  onAccent: '#1A1A1A',
+  resultLabel: '#BED0DF',
+  onAccent: brandPalette.navy,
 };
 
 export const darkColors: ThemeColors = {
   ...interactionColors,
-  // 深色底上炭黑不可读，主色抬升为 elevated charcoal 作表面色。
-  primary: '#2E2E2E',
-  /** 深色底上的主色文字/图标改用正文浅色 */
-  primaryText: '#EDEDED',
-  /** 电工橙在深底上略提亮，减少眩光 */
-  accent: '#FF8533',
-  accentText: '#FF8533',
-  background: '#121212',
-  card: '#1E1E1E',
-  textPrimary: '#EDEDED',
-  textSecondary: '#9CA3AF',
+  selection: `${brandPalette.yellow}40`,
+  primary: brandPalette.navy,
+  primaryText: '#F3F6FA',
+  accent: brandPalette.yellow,
+  accentText: brandPalette.yellow,
+  background: '#091D30',
+  card: '#15334F',
+  textPrimary: '#F3F6FA',
+  textSecondary: '#AEC0D1',
   onPrimary: '#FFFFFF',
   success: '#4ADE80',
   error: '#F87171',
-  border: '#2D2D2D',
-  resultBackground: '#1A1A1A',
+  border: '#2B4862',
+  resultBackground: brandPalette.navy,
   resultText: '#FFFFFF',
-  resultLabel: '#B8BEC6',
-  onAccent: '#1A1A1A',
+  resultLabel: '#BED0DF',
+  onAccent: brandPalette.navy,
 };
 
 /** 圆角 8pt */

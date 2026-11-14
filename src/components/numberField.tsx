@@ -24,7 +24,7 @@ export default function NumberField({ label, value, onChangeText, unit, placehol
   const activeBorderColor = error
     ? theme.colors.error
     : focused
-      ? theme.colors.accent
+      ? theme.colors.accentText
       : theme.colors.border;
 
   return (
@@ -55,8 +55,8 @@ export default function NumberField({ label, value, onChangeText, unit, placehol
           onChangeText={(t) => onChangeText(integer ? t.replace(/[^0-9]/g, '') : t.replace(/[^0-9.]/g, ''))}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          selectionColor={theme.colors.accent}
-          cursorColor={theme.colors.accent}
+          selectionColor={theme.colors.selection}
+          cursorColor={theme.colors.accentText}
           keyboardType={integer ? 'number-pad' : 'decimal-pad'}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.textSecondary}

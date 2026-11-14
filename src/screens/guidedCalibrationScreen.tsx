@@ -366,8 +366,8 @@ function QuickCheckWizard({
               onChangeText={setName}
               placeholder={namePlaceholder(base)}
               placeholderTextColor={theme.colors.textSecondary}
-              selectionColor={theme.colors.accent}
-              cursorColor={theme.colors.accent}
+              selectionColor={theme.colors.selection}
+              cursorColor={theme.colors.accentText}
               autoCapitalize="words"
               autoCorrect={false}
               style={[

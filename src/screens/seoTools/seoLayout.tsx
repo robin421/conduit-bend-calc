@@ -23,7 +23,7 @@ import {
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import WattFlowBrandBar from '../../components/wattflowBrandBar';
+import AppBrandBar from '../../components/appBrandBar';
 import CalculatorDrawer from '../../components/calculatorDrawer';
 import LanguageSwitcher from '../../components/languageSwitcher';
 import BigButton from '../../components/bigButton';
@@ -107,7 +107,7 @@ export function SeoPage({
         // 抽屉打开时禁止背景滚动（Web 端另有 body overflow 兜底）。
         scrollEnabled={!drawerOpen}
       >
-        <WattFlowBrandBar
+        <AppBrandBar
           onMenuPress={
             activeTool && mobileNav ? () => setDrawerOpen(true) : undefined
           }
@@ -155,7 +155,7 @@ export function SeoFooter() {
  * 计算器切换条（仅桌面端 >=600pt 渲染）：把所有工具页串成一个整体。
  * - 平铺换行；当前页橙色下划线 + 深橙文字，其余灰色；
  * - Web 端渲染真实 <a href> 可抓取。
- * - 移动端（<600pt）改用 WattFlowBrandBar 的汉堡按钮 + CalculatorDrawer。
+ * - 移动端（<600pt）改用 AppBrandBar 的汉堡按钮 + CalculatorDrawer。
  */
 export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
   const theme = useTheme();
@@ -168,8 +168,8 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
     const text = (
       <Text
         style={{
-          // 选中态：文字用 accentText（浅色 #C2410C，白底小字号对比度达标）；
-          // 下划线仍保持品牌橙 theme.colors.accent。未选中：灰色。
+          // 选中态：文字用 accentText（浅色深金，白底小字号对比度达标）；
+          // 下划线仍保持图标黄 theme.colors.accent。未选中：灰色。
           color: active ? theme.colors.accentText : theme.colors.textSecondary,
           fontSize: theme.fontSize.secondary,
           fontWeight: active
@@ -537,7 +537,7 @@ export function SeoPresetRow({
                   ? theme.colors.controlAccent
                   : theme.colors.background,
                 borderColor: selected
-                  ? theme.colors.accent
+                  ? theme.colors.accentText
                   : theme.colors.border,
                 borderRadius: theme.radius,
               },
@@ -628,7 +628,7 @@ export function AngleSelector({
                   ? theme.colors.controlAccent
                   : theme.colors.background,
                 borderColor: selected
-                  ? theme.colors.accent
+                  ? theme.colors.accentText
                   : theme.colors.border,
                 borderWidth: selected ? 1.5 : StyleSheet.hairlineWidth,
                 borderRadius: theme.radius,
@@ -678,7 +678,7 @@ export function AngleSelector({
                   ? theme.colors.controlAccent
                   : theme.colors.background,
                 borderColor: selected
-                  ? theme.colors.accent
+                  ? theme.colors.accentText
                   : theme.colors.border,
                 borderRadius: theme.radius,
               },

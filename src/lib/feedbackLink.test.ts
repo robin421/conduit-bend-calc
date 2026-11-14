@@ -6,6 +6,7 @@ test('反馈产品路由稳定，不受安装包名变化影响；只传环境�
   const url = new URL(buildFeedbackUrl({ version: '1.10.1-t81-0184d16', platform: 'android', osVersion: 35, language: 'zh-CN' }));
   assert.equal(url.origin, 'https://feedback-hub.robin421.workers.dev');
   assert.equal(url.searchParams.get('pkg'), 'conduit');
+  assert.equal(url.searchParams.get('title'), 'Conduit Bend Calc');
   assert.equal(url.searchParams.get('ver'), '1.10.1-t81-0184d16');
   assert.equal(url.searchParams.get('os'), 'Android API 35');
   assert.equal(url.searchParams.get('lang'), 'zh');
@@ -37,6 +38,6 @@ test('固定子模块契约：conduit 发往本项目，生成的 URL 能渲染�
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.ok(html.includes('name="website_url"'));
-  assert.ok(html.includes('WattFlow · Conduit Bend Calc'));
+  assert.ok(html.includes('Conduit Bend Calc'));
   assert.ok(html.includes('lang="zh-TW"'));
 });

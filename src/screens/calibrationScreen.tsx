@@ -288,8 +288,8 @@ export default function CalibrationScreen() {
           onChangeText={setName}
           placeholder="Name it, e.g. My Ideal (field-tested)"
           placeholderTextColor={theme.colors.textSecondary}
-          selectionColor={theme.colors.accent}
-          cursorColor={theme.colors.accent}
+          selectionColor={theme.colors.selection}
+          cursorColor={theme.colors.accentText}
           autoCapitalize="none"
           autoCorrect={false}
           style={[

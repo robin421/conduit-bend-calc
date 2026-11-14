@@ -10,13 +10,13 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0F2B46"
     },
     "ios": {
       "supportsTablet": true
     },
     "androidStatusBar": {
-      "backgroundColor": "#1A1A1A",
+      "backgroundColor": "#0F2B46",
       "barStyle": "light-content",
       "translucent": false
     },
@@ -27,7 +27,7 @@
       "permissions": ["com.android.vending.BILLING"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1A1A1A"
+        "backgroundColor": "#0F2B46"
       }
     },
     "plugins": [

@@ -36,3 +36,5 @@ GitHub Actions checkout 已启用 recursive submodules，确保固定契约测�
 - 浏览器验收：点击首页 Send feedback，成功在新标签页打开线上表单，标题为 WattFlow · Conduit Bend Calc，产品 conduit、版本 1.10.1、环境 Web、语言 zh 正确；Reference 入口在 390×844 下可见，表单移动布局正常。
 - 截图位于 `docs/validation/t82/`。仅检查线上表单，未提交真实反馈或创建测试工单。
 - 本次没有重新构建或更新手机 APK；手机上此前安装的 0184d16 测试包还不包含 T82 入口。原生打开行为需下一次安装包更新后实机验收。
+
+T85：可见表单标题统一为 Conduit Bend Calc，不再附加公司字标；路由与环境信息字段保持不变。

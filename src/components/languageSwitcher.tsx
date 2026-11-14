@@ -30,7 +30,7 @@ export default function LanguageSwitcher() {
               styles.button,
               {
                 borderRadius: theme.radius,
-                borderColor: selected ? theme.colors.accent : theme.colors.border,
+                borderColor: selected ? theme.colors.accentText : theme.colors.border,
                 backgroundColor: selected
                   ? theme.colors.controlAccent
                   : theme.colors.background,

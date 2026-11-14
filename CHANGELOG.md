@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — App icon and navy/yellow theme (T85)
+
+- Replace the WattFlow header wordmark with the actual app icon and Conduit Bend Calc.
+- Align light/dark navigation, surfaces, controls, results and launch colors with the existing navy/yellow app icon.
+- Preserve white press feedback and use contrast-safe navy text on yellow buttons, with darker gold text/focus indicators on light surfaces.
+
 ## Unreleased — Refined Pro page (T84)
 
 - Keep the product name Conduit Bend Calc in navigation and app identity.

@@ -29,7 +29,7 @@ import {
   type CalculatorNavItem,
 } from '../seo/calculatorNav';
 import { useTheme } from '../theme';
-import WattFlowBrandBar from './wattflowBrandBar';
+import AppBrandBar from './appBrandBar';
 
 /** react-native-web 的 Text 支持 href（渲染为 <a>）；RN 类型未收录，做一次断言。 */
 const AnchorText = Text as unknown as ComponentType<
@@ -183,7 +183,7 @@ export default function CalculatorDrawer({
             ]}
           >
             <View style={styles.brand}>
-              <WattFlowBrandBar />
+              <AppBrandBar />
             </View>
             <Pressable
               accessibilityRole="button"

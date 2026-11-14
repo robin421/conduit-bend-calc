@@ -12,12 +12,12 @@ import {
 } from './brand.ts';
 import { SEO_TOOL_PAGES } from './toolPages.ts';
 
-test('WattFlow 品牌常量非空且电工橙一致', () => {
+test('产品名固定且品牌强调色与应用图标一致', () => {
   assert.equal(WATTFLOW_NAME, 'WattFlow');
   assert.equal(WATTFLOW_LOGO, '⚡');
   assert.equal(PRODUCT_NAME, 'Conduit Bend Calc');
-  assert.equal(BRAND_COLOR, '#FF6B00');
-  assert.match(BRAND_FOOTER, /WattFlow/);
+  assert.equal(BRAND_COLOR, '#F4C317');
+  assert.match(BRAND_FOOTER, /field crews/);
 });
 
 test('withBrandTitle 追加统一后缀', () => {

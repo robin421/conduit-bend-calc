@@ -316,8 +316,8 @@ export default function BenderPicker({
             onChangeText={setCustomName}
             placeholder="Name, e.g. My bender (field-tested)"
             placeholderTextColor={theme.colors.textSecondary}
-            selectionColor={theme.colors.accent}
-            cursorColor={theme.colors.accent}
+            selectionColor={theme.colors.selection}
+            cursorColor={theme.colors.accentText}
             autoCapitalize="none"
             autoCorrect={false}
             style={[
@@ -339,8 +339,8 @@ export default function BenderPicker({
               onChangeText={setCustomR}
               placeholder="R (inches)"
               placeholderTextColor={theme.colors.textSecondary}
-              selectionColor={theme.colors.accent}
-              cursorColor={theme.colors.accent}
+              selectionColor={theme.colors.selection}
+              cursorColor={theme.colors.accentText}
               keyboardType="decimal-pad"
               autoCapitalize="none"
               autoCorrect={false}
@@ -363,8 +363,8 @@ export default function BenderPicker({
               onChangeText={setCustomTakeUp}
               placeholder="take-up (inches)"
               placeholderTextColor={theme.colors.textSecondary}
-              selectionColor={theme.colors.accent}
-              cursorColor={theme.colors.accent}
+              selectionColor={theme.colors.selection}
+              cursorColor={theme.colors.accentText}
               keyboardType="decimal-pad"
               autoCapitalize="none"
               autoCorrect={false}

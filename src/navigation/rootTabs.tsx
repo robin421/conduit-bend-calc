@@ -20,11 +20,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 function tabIcon(glyph: string, theme: Theme) {
   return function TabIcon({ color, focused }: { color: string; focused: boolean }) {
     if (Platform.OS === 'android') {
-      const pillBg = focused
-        ? theme.scheme === 'dark'
-          ? 'rgba(255, 133, 51, 0.22)'
-          : 'rgba(255, 107, 0, 0.12)'
-        : 'transparent';
+      const pillBg = focused ? theme.colors.controlAccent : 'transparent';
 
       return (
         <View
@@ -40,7 +36,7 @@ function tabIcon(glyph: string, theme: Theme) {
         >
           <Text
             style={{
-              color,
+              color: focused ? theme.colors.onControlAccent : color,
               fontSize: 20,
               lineHeight: 22,
               textAlign: 'center',

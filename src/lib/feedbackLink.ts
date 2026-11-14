@@ -1,4 +1,4 @@
-import { PRODUCT_NAME, WATTFLOW_NAME } from '../seo/brand.ts';
+import { PRODUCT_NAME } from '../seo/brand.ts';
 
 /** Feedback Hub 的仓库路由标识；不是 Android applicationId。 */
 export const FEEDBACK_PRODUCT = 'conduit';
@@ -31,7 +31,7 @@ export function buildFeedbackUrl(environment: FeedbackEnvironment): string {
     ver: version,
     os,
     lang: feedbackLanguage(environment.language),
-    title: `${WATTFLOW_NAME} · ${PRODUCT_NAME}`,
+    title: PRODUCT_NAME,
   };
   return FEEDBACK_BASE_URL + '?' + Object.entries(params)
     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');

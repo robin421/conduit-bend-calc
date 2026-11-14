@@ -1,6 +1,8 @@
-/** 白字控件使用加深橙色；品牌橙继续用于标识和结果强调。 */
+import { brandPalette } from './brandPalette.ts';
+
+/** 图标黄配深蓝字，保留白色按压反馈。 */
 export const interactionColors = {
-  controlAccent: '#C2410C',
-  onControlAccent: '#FFFFFF',
+  controlAccent: brandPalette.yellow,
+  onControlAccent: brandPalette.navy,
   pressFeedback: 'rgba(255, 255, 255, 0.08)',
 } as const;

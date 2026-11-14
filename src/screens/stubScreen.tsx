@@ -349,7 +349,7 @@ export default function StubScreen({ route, navigation }: Props) {
                         ? theme.colors.controlAccent
                         : theme.colors.card,
                       borderColor: isSelected
-                        ? theme.colors.accent
+                        ? theme.colors.accentText
                         : theme.colors.border,
                     },
                   ]}
@@ -422,7 +422,7 @@ export default function StubScreen({ route, navigation }: Props) {
             >
               <Text
                 style={{
-                  color: theme.colors.accent,
+                  color: theme.colors.accentText,
                   fontSize: theme.fontSize.secondary,
                 }}
               >
@@ -466,7 +466,7 @@ export default function StubScreen({ route, navigation }: Props) {
                 </View>
                 <Text
                   style={{
-                    color: theme.colors.accent,
+                    color: theme.colors.accentText,
                     fontSize: theme.fontSize.body,
                     fontWeight: theme.fontWeight.semibold,
                     fontVariant: ['tabular-nums'],

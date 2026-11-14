@@ -415,11 +415,11 @@ export default function ImperialInput({
             onBlur={handleFractionalBlur}
             placeholder={resolvedPlaceholder}
             placeholderTextColor={theme.colors.textSecondary}
-            selectionColor={theme.colors.accent}
-            cursorColor={theme.colors.accent}
+            selectionColor={theme.colors.selection}
+            cursorColor={theme.colors.accentText}
             accessibilityLabel={`${label} inches`}
             isError={Boolean(error)}
-            accentColor={theme.colors.accent}
+            accentColor={theme.colors.accentText}
             defaultBorderColor={borderColor}
             style={[styles.input, styles.fractionWhole, fractionInputStyle]}
           />
@@ -429,11 +429,11 @@ export default function ImperialInput({
             onBlur={handleFractionalBlur}
             placeholder="0"
             placeholderTextColor={theme.colors.textSecondary}
-            selectionColor={theme.colors.accent}
-            cursorColor={theme.colors.accent}
+            selectionColor={theme.colors.selection}
+            cursorColor={theme.colors.accentText}
             accessibilityLabel={`${label} numerator`}
             isError={Boolean(error)}
-            accentColor={theme.colors.accent}
+            accentColor={theme.colors.accentText}
             defaultBorderColor={borderColor}
             style={[styles.input, styles.fractionPart, fractionInputStyle, styles.centeredText]}
           />
@@ -454,11 +454,11 @@ export default function ImperialInput({
             onBlur={handleFractionalBlur}
             placeholder="16"
             placeholderTextColor={theme.colors.textSecondary}
-            selectionColor={theme.colors.accent}
-            cursorColor={theme.colors.accent}
+            selectionColor={theme.colors.selection}
+            cursorColor={theme.colors.accentText}
             accessibilityLabel={`${label} denominator`}
             isError={Boolean(error)}
-            accentColor={theme.colors.accent}
+            accentColor={theme.colors.accentText}
             defaultBorderColor={borderColor}
             style={[styles.input, styles.fractionPart, fractionInputStyle, styles.centeredText]}
           />
@@ -474,8 +474,8 @@ export default function ImperialInput({
           }}
           placeholder={resolvedPlaceholder}
           placeholderTextColor={theme.colors.textSecondary}
-          selectionColor={theme.colors.accent}
-          cursorColor={theme.colors.accent}
+          selectionColor={theme.colors.selection}
+          cursorColor={theme.colors.accentText}
           keyboardType={resolvedKeyboardType}
           inputMode={resolvedInputMode}
           autoCapitalize="none"
@@ -487,7 +487,7 @@ export default function ImperialInput({
               borderColor: error
                 ? theme.colors.error
                 : standardFocused
-                  ? theme.colors.accent
+                  ? theme.colors.accentText
                   : theme.colors.border,
               borderWidth: error || standardFocused ? 2 : 1,
             },

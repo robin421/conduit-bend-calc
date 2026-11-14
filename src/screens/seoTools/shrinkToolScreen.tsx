@@ -242,7 +242,7 @@ export default function ShrinkToolScreen() {
                           ? theme.colors.controlAccent
                           : theme.colors.background,
                         borderColor: selected
-                          ? theme.colors.accent
+                          ? theme.colors.accentText
                           : theme.colors.border,
                         borderRadius: theme.radius,
                       },

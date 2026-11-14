@@ -245,8 +245,8 @@ export default function Kicked90Screen({ route, navigation }: Props) {
             onChangeText={(text) => { noteReviewInteraction(); setKickText(text); }}
             placeholder="e.g. 15"
             placeholderTextColor={theme.colors.textSecondary}
-            selectionColor={theme.colors.accent}
-            cursorColor={theme.colors.accent}
+            selectionColor={theme.colors.selection}
+            cursorColor={theme.colors.accentText}
             keyboardType="decimal-pad"
             autoCapitalize="none"
             autoCorrect={false}
