@@ -22,4 +22,15 @@ app.json 恢复正式包名，Fastlane Appfile/Fastfile 从 app.json 读取同�
 
 EAS 当前未登录，本地缺少 google-services.json；尚不能核对远端 Firebase 配置与生产签名。生产 Firebase 配置必须对应已注册的正式包名，不能把旧文件里的包名直接替换成新包名。
 
-下一步验收：用正确包名的本地许可测试包查询真实商品价格，尝试打开 Google Play 购买页。看到许可测试支付方式后，才可确认测试购买环境可用；本任务不自动确认付款，不制造本地价格或假解锁。
+验收标准：用正确包名的本地许可测试包查询真实商品价格，打开 Google Play 购买页并看到许可测试支付方式。本任务不自动确认付款，不制造本地价格或假解锁；实际结果见下。
+
+## 真机验收结果
+
+- 已从已合入 main 的 `192bd49` 构建并安装 `WattFlow Play Test 192bd49`，包名 `com.robin421.conduitbendcalc`，版本 `1.10.1-t83-192bd49` / versionCode 10，仅 arm64-v8a。
+- 187 个应用源码文件逐文件哈希与提交一致。构建副本只调整测试显示名、版本标签、关闭 OTA，并因缺少本地配置而去掉 Firebase 配置插件；生产配置中的 Firebase 插件保留。未伪造 Firebase 注册或价格。
+- APK：`/Volumes/T7 Shield/Builds/WattFlow/WattFlow-Play-Test-192bd49-arm64.apk`。SHA-256：`0a3848282d06944cfd7754b79b0915316df24429c850ad7eb93a359b45b79744`，手机已安装 base.apk 的哈希完全一致。
+- 本地证书仍为 Android Debug（SHA-256 `fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c`），没有把它标为生产签名。
+- 真机商店返回本地价格 `₩7,500`，Unlock Pro Lifetime 可用；截图见 `validation/t83/01-real-store-price.png`。
+- 点击解锁后，焦点进入 `com.android.vending` 的购买 Activity，显示正式商品 Conduit Bend Calc Pro、同价 `₩7,500`，支付方式“测试卡，一律批准”，并明确显示“这是测试订单，我们不会向您收取任何费用”。这验证当前同包名 Debug 包已满足许可测试条件，购买弹窗已留给用户操作。
+- 未点击“一键购买”，没有代用户确认订单；完成交易、解锁和恢复的实际终态仍需用户完成测试，不能将仅打开购买弹窗称为完成购买。
+- 类型检查、372 项项目测试、Fastlane Ruby 语法和运行时包名读取、注入脚本语法均通过。没有发布、推送或变更线上商品，没有卸载或清空旧测试包的数据。
