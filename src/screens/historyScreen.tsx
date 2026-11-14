@@ -92,7 +92,7 @@ export default function HistoryScreen({ navigation }: Props) {
               accessibilityRole="button"
               onPress={handleExport}
               hitSlop={8}
-              android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true }}
+              android_ripple={{ color: theme.colors.pressFeedback, borderless: true }}
               style={styles.headerButton}
             >
               <Text style={[styles.headerButtonText, { color: theme.colors.accent }]}>
@@ -103,7 +103,7 @@ export default function HistoryScreen({ navigation }: Props) {
               accessibilityRole="button"
               onPress={handleClear}
               hitSlop={8}
-              android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true }}
+              android_ripple={{ color: theme.colors.pressFeedback, borderless: true }}
               style={styles.headerButton}
             >
               <Text style={[styles.headerButtonText, { color: theme.colors.textSecondary }]}>
@@ -119,6 +119,7 @@ export default function HistoryScreen({ navigation }: Props) {
     handleExport,
     navigation,
     theme.colors.accent,
+    theme.colors.pressFeedback,
     theme.colors.textSecondary,
   ]);
 

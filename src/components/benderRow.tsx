@@ -25,7 +25,7 @@ export default function BenderRow({ spec, onPress }: BenderRowProps) {
         {
           borderRadius: theme.radius,
           paddingHorizontal: theme.spacing.xs,
-          opacity: pressed && Platform.OS !== 'android' ? 0.7 : 1,
+          opacity: pressed && Platform.OS !== 'android' ? 0.96 : 1,
         },
       ]}
     >

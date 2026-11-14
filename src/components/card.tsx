@@ -59,7 +59,7 @@ export default function Card({
         style={({ pressed }) => [
           cardStyle,
           {
-            opacity: disabled ? 0.4 : pressed && Platform.OS !== 'android' ? 0.88 : 1,
+            opacity: disabled ? 0.4 : pressed && Platform.OS !== 'android' ? 0.96 : 1,
           },
         ]}
       >

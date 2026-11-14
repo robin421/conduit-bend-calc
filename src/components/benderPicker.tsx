@@ -200,7 +200,7 @@ export default function BenderPicker({
           styles.summaryRow,
           {
             borderRadius: theme.radius,
-            opacity: pressed && Platform.OS !== 'android' ? 0.75 : 1,
+            opacity: pressed && Platform.OS !== 'android' ? 0.96 : 1,
           },
         ]}
       >

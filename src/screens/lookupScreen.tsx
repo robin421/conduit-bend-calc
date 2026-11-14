@@ -31,7 +31,7 @@ function Section({
         style={({ pressed }) => [
           styles.sectionHeader,
           {
-            opacity: pressed && Platform.OS !== 'android' ? 0.75 : 1,
+            opacity: pressed && Platform.OS !== 'android' ? 0.96 : 1,
           },
         ]}
       >

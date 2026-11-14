@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — Subtle press feedback (T86)
+
+- Reduce white press feedback opacity from 8% to 4%, including history header actions.
+- Keep card and row text readable during presses by reducing non-Android opacity changes to 4%.
+
 ## Unreleased — App icon and navy/yellow theme (T85)
 
 - Replace the WattFlow header wordmark with the actual app icon and Conduit Bend Calc.
