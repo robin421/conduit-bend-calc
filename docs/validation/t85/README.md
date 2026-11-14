@@ -15,3 +15,11 @@
 - Web 生产导出通过，390×844 深浅色首页检查真实图标和产品名，未显示公司字标；计算器选中、输入和结果区域使用统一蓝黄主题。
 - 图标资源请求成功，返回来源标题为 Conduit Bend Calc；用 6 in / 30° 检查 Offset 结果，仍为 1 ft 间距及 1½ in shrink。
 - 01/02 为实际 Web 首页，03 为实际 Web 计算器。原生安装与验收结果另附。
+
+## Android 真机验收
+
+- 源码提交 `e1d23af`，188 个源码文件逐一核对与构建副本一致；仅构建 arm64-v8a Release，构建成功。
+- vivo V2353DA 覆盖安装成功，应用名为 Conduit Bend Calc，包名 `com.robin421.conduitbendcalc`，版本 `1.10.1-t85-e1d23af` / versionCode 10。未卸载、清除数据或更换签名。
+- 实际首页显示原有应用图标与产品名，深蓝底、黄色选中项及导航一致；历史计算保留。04 为真机截图，滚动至单位区以避免记录用户历史参数。启动正常，当前进程未发现 ReactNativeJS 错误。
+- 安装后 base.apk 与保留 APK SHA-256 一致：`7e01067fc8fa390631e135c9faed80c9a1eb1d7cd69e9a5004025590cde58470`。产物保留于 `/Volumes/T7 Shield/Builds/WattFlow/Conduit-Bend-Calc-e1d23af-arm64.apk`。
+- 本地测试副本关闭 OTA、跳过缺失 google-services.json 对应的 Firebase 插件，生产配置未改动；本次未触发购买、未验证实际扣款、未推送或发布商店。
