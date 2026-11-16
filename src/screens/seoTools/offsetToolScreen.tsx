@@ -290,14 +290,13 @@ export default function OffsetToolScreen() {
               accessibilityRole="button"
               accessibilityState={{ expanded: startOpen }}
               onPress={() => setStartOpen((open) => !open)}
-              style={{ minHeight: 44, justifyContent: 'center' }}
+              style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}
             >
               <Text
                 style={{
                   color: theme.colors.primaryText,
                   fontSize: theme.fontSize.secondary,
                   fontWeight: theme.fontWeight.semibold,
-                  textDecorationLine: 'underline',
                 }}
               >
                 {startOpen ? t('offset.hideStart') : t('offset.addStart')}

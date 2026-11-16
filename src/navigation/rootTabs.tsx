@@ -5,7 +5,7 @@ import {
   type NavigationProp,
   type NavigatorScreenParams,
 } from '@react-navigation/native';
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import {
   Platform,
   Pressable,
@@ -17,6 +17,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AppBrandBar from '../components/appBrandBar';
+import {
+  CalculateIcon,
+  HistoryIcon,
+  ReferenceIcon,
+  type IconProps,
+} from '../components/toolIcons';
 import HistoryScreen from '../screens/historyScreen';
 import LookupScreen from '../screens/lookupScreen';
 import { isMobileNavViewport, workspaceMaxWidth } from '../seo/calculatorNav';
@@ -43,7 +49,7 @@ const DESKTOP_TAB_ITEMS: ReadonlyArray<{
   { key: 'History', label: 'History' },
 ];
 
-function tabIcon(glyph: string, theme: Theme) {
+function tabIcon(IconComponent: ComponentType<IconProps>, theme: Theme) {
   return function TabIcon({ color, focused }: { color: string; focused: boolean }) {
     if (Platform.OS === 'android') {
       const pillBg = focused ? theme.colors.controlAccent : 'transparent';
@@ -60,34 +66,15 @@ function tabIcon(glyph: string, theme: Theme) {
             marginBottom: 4,
           }}
         >
-          <Text
-            style={{
-              color: focused ? theme.colors.onControlAccent : color,
-              fontSize: 20,
-              lineHeight: 22,
-              textAlign: 'center',
-              includeFontPadding: false,
-            }}
-          >
-            {glyph}
-          </Text>
+          <IconComponent
+            size={20}
+            color={focused ? theme.colors.onControlAccent : color}
+          />
         </View>
       );
     }
 
-    return (
-      <Text
-        style={{
-          color,
-          fontSize: 22,
-          lineHeight: 24,
-          textAlign: 'center',
-          includeFontPadding: false,
-        }}
-      >
-        {glyph}
-      </Text>
-    );
+    return <IconComponent size={22} color={color} />;
   };
 }
 
@@ -148,20 +135,27 @@ export default function RootTabs() {
               height:
                 Platform.OS === 'android'
                   ? 80
-                  : 56 + (isWeb ? insets.bottom : 0),
+                  : isWeb
+                    ? 66 + insets.bottom
+                    : 56,
               paddingBottom:
                 Platform.OS === 'android'
                   ? 12
                   : Math.max(6, isWeb ? insets.bottom : 6),
-              paddingTop: Platform.OS === 'android' ? 10 : 6,
+              paddingTop: Platform.OS === 'android' ? 10 : isWeb ? 4 : 6,
             },
         tabBarItemStyle: isWeb
-          ? { justifyContent: 'center', alignItems: 'center' }
+          ? { justifyContent: 'center', alignItems: 'center', paddingVertical: 2, height: 54 }
+          : undefined,
+        tabBarIconStyle: isWeb
+          ? { width: 22, height: 22, marginTop: 0, marginBottom: 2 }
           : undefined,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
           letterSpacing: 0.3,
+          lineHeight: 14,
+          marginBottom: isWeb ? 2 : 0,
         },
         sceneStyle: { backgroundColor: theme.colors.background },
       }}
@@ -172,7 +166,7 @@ export default function RootTabs() {
         options={({ route }) => ({
           title: 'Calculate',
           headerShown: false,
-          tabBarIcon: tabIcon('⌐', theme),
+          tabBarIcon: tabIcon(CalculateIcon, theme),
           ...(getFocusedRouteNameFromRoute(route) === 'Paywall'
             ? { tabBarStyle: { display: 'none' as const } }
             : {}),
@@ -187,7 +181,7 @@ export default function RootTabs() {
         options={{
           title: 'Reference',
           headerShown: !desktopWebNav,
-          tabBarIcon: tabIcon('▦', theme),
+          tabBarIcon: tabIcon(ReferenceIcon, theme),
         }}
       />
       <Tab.Screen
@@ -196,7 +190,7 @@ export default function RootTabs() {
         options={{
           title: 'History',
           headerShown: !desktopWebNav,
-          tabBarIcon: tabIcon('↺', theme),
+          tabBarIcon: tabIcon(HistoryIcon, theme),
         }}
       />
     </Tab.Navigator>

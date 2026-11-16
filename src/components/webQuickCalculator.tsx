@@ -1,10 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../calculators/offset/offset';
 import { calculateStubUpMark } from '../calculators/geometry/geometry';
 import { defaultBenderSpec } from '../calculators/geometry/benderSpecs';
-import BigButton from './bigButton';
 import Card from './card';
 import ImperialInput from './imperialInput';
 import ResultGroup from './resultGroup';
@@ -98,26 +97,70 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
         <Text
           style={[
             styles.headerTitle,
-            { color: theme.colors.textPrimary, fontSize: theme.fontSize.title },
+            { color: theme.colors.textPrimary, fontSize: 18 },
           ]}
         >
           Instant Calculator
         </Text>
-        <View style={[styles.modeToggle, { gap: theme.spacing.xs }]}>
-          <BigButton
-            title="90° Stub"
-            size="selection"
-            selected={mode === 'stub'}
-            onPress={() => setMode('stub')}
-            style={styles.modeButton}
-          />
-          <BigButton
-            title="Offset"
-            size="selection"
-            selected={mode === 'offset'}
-            onPress={() => setMode('offset')}
-            style={styles.modeButton}
-          />
+        <View
+          style={[
+            styles.modeSegmentTrack,
+            {
+              backgroundColor: theme.scheme === 'dark' ? theme.colors.background : '#EAF0F6',
+              borderColor: theme.colors.border,
+              borderRadius: theme.radius,
+            },
+          ]}
+        >
+          {(
+            [
+              { key: 'stub', label: '90° Stub' },
+              { key: 'offset', label: 'Offset' },
+            ] as const
+          ).map((item) => {
+            const selected = mode === item.key;
+            return (
+              <Pressable
+                key={item.key}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => setMode(item.key)}
+                hitSlop={4}
+                style={(state) => {
+                  const { focused } = state as { focused?: boolean };
+                  return [
+                    styles.modeSegmentItem,
+                    selected
+                      ? {
+                          backgroundColor: theme.scheme === 'dark' ? theme.colors.primary : '#FFFFFF',
+                          borderColor: theme.scheme === 'dark' ? theme.colors.accent : '#C8D4E0',
+                        }
+                      : {
+                          backgroundColor: 'transparent',
+                          borderColor: 'transparent',
+                        },
+                    Platform.OS === 'web' && focused
+                      ? ({
+                          outlineStyle: 'solid',
+                          outlineWidth: 2,
+                          outlineColor: theme.colors.accentText,
+                        } as object)
+                      : null,
+                  ];
+                }}
+              >
+                <Text
+                  style={{
+                    color: selected ? theme.colors.textPrimary : theme.colors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: selected ? '600' : '500',
+                  }}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
@@ -128,16 +171,53 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
             <Text style={[styles.subLabel, { color: theme.colors.textSecondary }]}>
               EMT Size:
             </Text>
-            {(['1/2"', '3/4"', '1"'] as const).map((size) => (
-              <BigButton
-                key={size}
-                title={size}
-                size="selection"
-                selected={stubSize === size}
-                onPress={() => setStubSize(size)}
-                style={styles.sizeButton}
-              />
-            ))}
+            {(['1/2"', '3/4"', '1"'] as const).map((size) => {
+              const selected = stubSize === size;
+              return (
+                <Pressable
+                  key={size}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => setStubSize(size)}
+                  hitSlop={4}
+                  style={(state) => {
+                    const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };
+                    return [
+                      styles.sizeButton,
+                      {
+                        borderRadius: theme.radius,
+                        backgroundColor: selected
+                          ? theme.colors.primary
+                          : theme.colors.card,
+                        borderColor: selected
+                          ? theme.colors.primary
+                          : Platform.OS === 'web' && hovered
+                            ? theme.colors.textSecondary
+                            : theme.colors.border,
+                      },
+                      Platform.OS === 'web' && focused
+                        ? ({
+                            outlineStyle: 'solid',
+                            outlineWidth: 2,
+                            outlineColor: selected ? theme.colors.accent : theme.colors.accentText,
+                          } as object)
+                        : null,
+                    ];
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: selected ? theme.colors.onPrimary : theme.colors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: '600',
+                      fontVariant: ['tabular-nums'],
+                    }}
+                  >
+                    {size}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
 
           {/* 目标高度输入 */}
@@ -155,16 +235,59 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
             <Text style={[styles.subLabel, { color: theme.colors.textSecondary }]}>
               Presets:
             </Text>
-            {STUB_PRESETS_INCHES.map((val) => (
-              <BigButton
-                key={val}
-                title={unit === 'metric' ? `${Math.round(val * 25.4)}` : `${val}"`}
-                size="selection"
-                selected={stubHeightInches === val}
-                onPress={() => handlePresetStub(val)}
-                style={styles.presetButton}
-              />
-            ))}
+            {STUB_PRESETS_INCHES.map((val) => {
+              const selected = stubHeightInches === val;
+              return (
+                <Pressable
+                  key={val}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => handlePresetStub(val)}
+                  hitSlop={4}
+                  style={(state) => {
+                    const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };
+                    return [
+                      styles.presetTag,
+                      {
+                        borderRadius: theme.radius,
+                        backgroundColor: selected
+                          ? theme.scheme === 'dark'
+                            ? theme.colors.controlAccent
+                            : '#FFFBEB'
+                          : theme.colors.background,
+                        borderColor: selected
+                          ? theme.colors.accentText
+                          : Platform.OS === 'web' && hovered
+                            ? theme.colors.textSecondary
+                            : theme.colors.border,
+                      },
+                      Platform.OS === 'web' && focused
+                        ? ({
+                            outlineStyle: 'solid',
+                            outlineWidth: 2,
+                            outlineColor: theme.colors.accentText,
+                          } as object)
+                        : null,
+                    ];
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: selected
+                        ? theme.scheme === 'dark'
+                          ? theme.colors.onControlAccent
+                          : theme.colors.accentText
+                        : theme.colors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: selected ? '600' : '500',
+                      fontVariant: ['tabular-nums'],
+                    }}
+                  >
+                    {unit === 'metric' ? `${Math.round(val * 25.4)}` : `${val}"`}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
 
           {/* 结果呈现 */}
@@ -198,16 +321,59 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
             <Text style={[styles.subLabel, { color: theme.colors.textSecondary }]}>
               Bend Angle:
             </Text>
-            {OFFSET_ANGLES.map((ang) => (
-              <BigButton
-                key={ang}
-                title={`${ang}°`}
-                size="selection"
-                selected={offsetAngle === ang}
-                onPress={() => setOffsetAngle(ang)}
-                style={styles.presetButton}
-              />
-            ))}
+            {OFFSET_ANGLES.map((ang) => {
+              const selected = offsetAngle === ang;
+              return (
+                <Pressable
+                  key={ang}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => setOffsetAngle(ang)}
+                  hitSlop={4}
+                  style={(state) => {
+                    const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };
+                    return [
+                      styles.presetTag,
+                      {
+                        borderRadius: theme.radius,
+                        backgroundColor: selected
+                          ? theme.scheme === 'dark'
+                            ? theme.colors.controlAccent
+                            : '#FFFBEB'
+                          : theme.colors.background,
+                        borderColor: selected
+                          ? theme.colors.accentText
+                          : Platform.OS === 'web' && hovered
+                            ? theme.colors.textSecondary
+                            : theme.colors.border,
+                      },
+                      Platform.OS === 'web' && focused
+                        ? ({
+                            outlineStyle: 'solid',
+                            outlineWidth: 2,
+                            outlineColor: theme.colors.accentText,
+                          } as object)
+                        : null,
+                    ];
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: selected
+                        ? theme.scheme === 'dark'
+                          ? theme.colors.onControlAccent
+                          : theme.colors.accentText
+                        : theme.colors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: selected ? '600' : '500',
+                      fontVariant: ['tabular-nums'],
+                    }}
+                  >
+                    {`${ang}°`}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
 
           {/* 偏移高度输入 */}
@@ -225,16 +391,59 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
             <Text style={[styles.subLabel, { color: theme.colors.textSecondary }]}>
               Presets:
             </Text>
-            {OFFSET_PRESETS_INCHES.map((val) => (
-              <BigButton
-                key={val}
-                title={unit === 'metric' ? `${Math.round(val * 25.4)}` : `${val}"`}
-                size="selection"
-                selected={offsetHeightInches === val}
-                onPress={() => handlePresetOffset(val)}
-                style={styles.presetButton}
-              />
-            ))}
+            {OFFSET_PRESETS_INCHES.map((val) => {
+              const selected = offsetHeightInches === val;
+              return (
+                <Pressable
+                  key={val}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => handlePresetOffset(val)}
+                  hitSlop={4}
+                  style={(state) => {
+                    const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };
+                    return [
+                      styles.presetTag,
+                      {
+                        borderRadius: theme.radius,
+                        backgroundColor: selected
+                          ? theme.scheme === 'dark'
+                            ? theme.colors.controlAccent
+                            : '#FFFBEB'
+                          : theme.colors.background,
+                        borderColor: selected
+                          ? theme.colors.accentText
+                          : Platform.OS === 'web' && hovered
+                            ? theme.colors.textSecondary
+                            : theme.colors.border,
+                      },
+                      Platform.OS === 'web' && focused
+                        ? ({
+                            outlineStyle: 'solid',
+                            outlineWidth: 2,
+                            outlineColor: theme.colors.accentText,
+                          } as object)
+                        : null,
+                    ];
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: selected
+                        ? theme.scheme === 'dark'
+                          ? theme.colors.onControlAccent
+                          : theme.colors.accentText
+                        : theme.colors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: selected ? '600' : '500',
+                      fontVariant: ['tabular-nums'],
+                    }}
+                  >
+                    {unit === 'metric' ? `${Math.round(val * 25.4)}` : `${val}"`}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
 
           {/* 结果呈现 */}
@@ -291,14 +500,21 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontWeight: '700',
   },
-  modeToggle: {
+  modeSegmentTrack: {
     flexDirection: 'row',
+    alignItems: 'center',
+    height: 36,
+    padding: 3,
+    borderWidth: 1,
   },
-  modeButton: {
-    minWidth: 80,
-    minHeight: 44,
-    paddingVertical: 6,
+  modeSegmentItem: {
+    minWidth: 74,
+    height: '100%',
     paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   presetRow: {
     flexDirection: 'row',
@@ -312,16 +528,20 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   sizeButton: {
-    minWidth: 54,
-    minHeight: 44,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    minWidth: 50,
+    height: 36,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  presetButton: {
-    minWidth: 46,
-    minHeight: 44,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+  presetTag: {
+    minWidth: 42,
+    height: 34,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   fullLink: {
     fontSize: 13,

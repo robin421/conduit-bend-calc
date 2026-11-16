@@ -27,7 +27,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBrandBar from '../../components/appBrandBar';
 import CalculatorDrawer from '../../components/calculatorDrawer';
 import LanguageSwitcher from '../../components/languageSwitcher';
-import BigButton from '../../components/bigButton';
+import { CopyIcon, MenuIcon } from '../../components/toolIcons';
 import { useI18n } from '../../i18n';
 import {
   CALCULATOR_NAV,
@@ -102,6 +102,7 @@ export function SeoPage({
   activeTool?: SeoToolKey;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   // 响应式断点：<600pt 汉堡 + 抽屉，>=600pt 横向切换条；>=1024pt 宽屏 1120px。
@@ -117,10 +118,60 @@ export function SeoPage({
     }
   }, [mobileNav, drawerOpen]);
 
+  const headerTopInset = Platform.OS === 'web' ? 0 : insets.top;
+  const headerHeight = (mobileNav ? 52 : 56) + headerTopInset;
+
   return (
     <View
       style={[styles.pageRoot, { backgroundColor: theme.colors.background }]}
     >
+      <View
+        style={[
+          styles.topHeaderBar,
+          {
+            backgroundColor: theme.colors.primary,
+            minHeight: headerHeight,
+            paddingTop: headerTopInset,
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.topHeaderInner,
+            {
+              maxWidth,
+              paddingHorizontal: wideDesktop ? 24 : theme.spacing.md,
+              height: mobileNav ? 52 : 56,
+            },
+          ]}
+        >
+          <AppBrandBar tone="header" />
+          <View style={styles.topHeaderRight}>
+            <LanguageSwitcher tone="header" />
+            {activeTool && mobileNav ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('brand.menuLabel')}
+                onPress={() => setDrawerOpen(true)}
+                hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                style={(state) => [
+                  styles.headerMenuButton,
+                  { borderRadius: theme.radius },
+                  webFocusHoverStyle(state, theme, {
+                    darkSurface: true,
+                    hoverBg: 'rgba(255,255,255,0.12)',
+                  }),
+                ]}
+              >
+                <MenuIcon size={20} color={theme.colors.onPrimary} />
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      </View>
+      {activeTool && !mobileNav ? (
+        <CalculatorSwitcher activeKey={activeTool} maxWidth={maxWidth} wideDesktop={wideDesktop} />
+      ) : null}
       <ScrollView
         style={{ backgroundColor: theme.colors.background }}
         contentContainerStyle={[
@@ -128,7 +179,7 @@ export function SeoPage({
           {
             maxWidth,
             paddingHorizontal: wideDesktop ? 24 : theme.spacing.sm,
-            paddingTop: theme.spacing.md + (Platform.OS === 'web' ? 0 : insets.top),
+            paddingTop: theme.spacing.md,
             paddingBottom: theme.spacing.xl,
             // 8pt 网格：区块之间 16pt 呼吸感（T66 移动端间距）。
             gap: theme.spacing.md,
@@ -138,14 +189,6 @@ export function SeoPage({
         // 抽屉打开时禁止背景滚动（Web 端另有 body overflow 兜底）。
         scrollEnabled={!drawerOpen}
       >
-        <AppBrandBar
-          onMenuPress={
-            activeTool && mobileNav ? () => setDrawerOpen(true) : undefined
-          }
-        />
-        {activeTool && !mobileNav ? (
-          <CalculatorSwitcher activeKey={activeTool} />
-        ) : null}
         {children}
         <SeoFooter />
       </ScrollView>
@@ -188,32 +231,34 @@ export function SeoFooter() {
  * - Web 端渲染真实 <a href> 可抓取。
  * - 移动端（<600pt）改用 AppBrandBar 的汉堡按钮 + CalculatorDrawer。
  */
-export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
+export function CalculatorSwitcher({
+  activeKey,
+  maxWidth = 720,
+  wideDesktop = false,
+}: {
+  activeKey: string;
+  maxWidth?: number;
+  wideDesktop?: boolean;
+}) {
   const theme = useTheme();
   const { t } = useI18n();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { width } = useWindowDimensions();
-  const wrap = width >= 600;
 
   const renderItem = (item: CalculatorNavItem, active: boolean) => {
     const text = (
       <Text
         style={{
-          // 选中态：文字用 accentText（浅色深金，白底小字号对比度达标）；
-          // 下划线仍保持图标黄 theme.colors.accent。未选中：灰色。
-          color: active ? theme.colors.accentText : theme.colors.textSecondary,
-          fontSize: theme.fontSize.secondary,
+          color: active ? theme.colors.textPrimary : theme.colors.textSecondary,
+          fontSize: 13,
           fontWeight: active
             ? theme.fontWeight.semibold
-            : theme.fontWeight.regular,
+            : theme.fontWeight.medium,
         }}
       >
         {t(item.labelKey)}
       </Text>
     );
 
-    // 选中下划线：绝对定位的 3px 橙条，不占布局、不用 border，
-    // 因此不会产生任何凹陷/内阴影观感。未选中项无下划线。
     const underline = active ? (
       <View
         style={[
@@ -223,9 +268,6 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
       />
     ) : null;
 
-    // 所有条目统一用同一个 flex 容器做垂直居中。之前 Web 未选中项直接把
-    // chip 样式挂在 <a>（RNW Text，display:inline→block）上，alignItems /
-    // justifyContent 失效、文字贴顶，导致选中项相对其他项“下沉”。
     if (active) {
       return (
         <View
@@ -270,18 +312,28 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
     renderItem(item, item.key === activeKey),
   );
 
-  if (wrap) {
-    return <View style={styles.switcherWrap}>{items}</View>;
-  }
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={{ marginHorizontal: -theme.spacing.sm }}
-      contentContainerStyle={styles.switcherContent}
+    <View
+      style={[
+        styles.subNavBar,
+        {
+          backgroundColor: theme.colors.card,
+          borderBottomColor: theme.colors.border,
+        },
+      ]}
     >
-      {items}
-    </ScrollView>
+      <View
+        style={[
+          styles.switcherWrap,
+          {
+            maxWidth,
+            paddingHorizontal: wideDesktop ? 24 : theme.spacing.md,
+          },
+        ]}
+      >
+        {items}
+      </View>
+    </View>
   );
 }
 
@@ -487,7 +539,16 @@ export function SeoUnitToggle({
   const theme = useTheme();
   const { t } = useI18n();
   return (
-    <View style={[styles.segment, { borderColor: theme.colors.border }]}>
+    <View
+      style={[
+        styles.segment,
+        {
+          backgroundColor: theme.scheme === 'dark' ? theme.colors.background : '#EAF0F6',
+          borderColor: theme.colors.border,
+          borderRadius: theme.radius,
+        },
+      ]}
+    >
       {UNIT_OPTIONS.map((option) => {
         const selected = option.key === value;
         return (
@@ -503,24 +564,29 @@ export function SeoUnitToggle({
             }}
             style={(state) => [
               styles.segmentItem,
-              {
-                backgroundColor: selected
-                  ? theme.colors.primary
-                  : theme.colors.card,
-              },
+              selected
+                ? {
+                    backgroundColor: theme.scheme === 'dark' ? theme.colors.primary : '#FFFFFF',
+                    borderColor: theme.scheme === 'dark' ? theme.colors.accent : '#C8D4E0',
+                  }
+                : {
+                    backgroundColor: 'transparent',
+                    borderColor: 'transparent',
+                  },
               webFocusHoverStyle(state, theme, {
-                darkSurface: selected,
-                hoverBg: selected ? theme.colors.primary : theme.colors.background,
+                darkSurface: selected && theme.scheme === 'dark',
               }),
             ]}
           >
             <Text
               style={{
                 color: selected
-                  ? theme.colors.onPrimary
-                  : theme.colors.textPrimary,
-                fontSize: theme.fontSize.secondary,
-                fontWeight: theme.fontWeight.semibold,
+                  ? theme.colors.textPrimary
+                  : theme.colors.textSecondary,
+                fontSize: 13,
+                fontWeight: selected
+                  ? theme.fontWeight.semibold
+                  : theme.fontWeight.medium,
               }}
             >
               {t(option.labelKey)}
@@ -633,7 +699,7 @@ export const DEFAULT_ANGLE_PRESETS: readonly SeoQuickPreset[] = (
 export function AngleSelector({
   value,
   onChange,
-  presets = DEFAULT_ANGLE_PRESETS,
+  presets: _presets = DEFAULT_ANGLE_PRESETS,
   toolName,
 }: {
   value: OffsetAngle;
@@ -642,107 +708,70 @@ export function AngleSelector({
   toolName: SeoToolName;
 }) {
   const theme = useTheme();
-  const presetAngles = new Set(presets.map((preset) => Number(preset.id)));
-  const remainingAngles = OFFSET_ANGLES.filter(
-    (angle) => !presetAngles.has(angle),
-  );
   return (
     <View style={styles.angleRow}>
-      {presets.map((preset) => {
-        const angle = Number(preset.id) as OffsetAngle;
+      {OFFSET_ANGLES.map((angle) => {
         const selected = angle === value;
-        return (
-          <Pressable
-            key={preset.id}
-            accessibilityRole="button"
-            accessibilityState={{ selected }}
-            accessibilityLabel={
-              preset.hint ? `${preset.label}, ${preset.hint}` : preset.label
-            }
-            onPress={() => {
-              trackSeoToolPreset(toolName, preset.id);
-              onChange(angle);
-            }}
-            style={(state) => [
-              styles.anglePresetButton,
-              {
-                backgroundColor: selected
-                  ? theme.colors.controlAccent
-                  : theme.colors.background,
-                borderColor: selected
-                  ? theme.colors.accentText
-                  : theme.colors.border,
-                borderWidth: selected ? 1.5 : StyleSheet.hairlineWidth,
-                borderRadius: theme.radius,
-              },
-              webFocusHoverStyle(state, theme, {
-                hoverBorder: selected ? theme.colors.accentText : theme.colors.textSecondary,
-              }),
-            ]}
-          >
-            <Text
-              style={{
-                color: selected
-                  ? theme.colors.onControlAccent
-                  : theme.colors.textPrimary,
-                fontSize: theme.fontSize.body,
-                fontWeight: theme.fontWeight.semibold,
-                fontVariant: ['tabular-nums'],
-              }}
-            >
-              {preset.label}
-            </Text>
-            {preset.hint ? (
-              <Text
-                style={{
-                  color: selected
-                    ? theme.colors.onControlAccent
-                    : theme.colors.textSecondary,
-                  fontSize: 11,
-                  fontVariant: ['tabular-nums'],
-                }}
-              >
-                {preset.hint}
-              </Text>
-            ) : null}
-          </Pressable>
-        );
-      })}
-      {remainingAngles.map((angle) => {
-        const selected = angle === value;
+        const multiplier = `× ${OFFSET_CONSTANTS[angle].multiplier.toFixed(1)}`;
         return (
           <Pressable
             key={angle}
             accessibilityRole="button"
             accessibilityState={{ selected }}
-            onPress={() => onChange(angle)}
+            accessibilityLabel={`${angle}°, ${multiplier}`}
+            onPress={() => {
+              trackSeoToolPreset(toolName, String(angle));
+              onChange(angle);
+            }}
             style={(state) => [
               styles.angleButton,
               {
                 backgroundColor: selected
-                  ? theme.colors.controlAccent
-                  : theme.colors.background,
+                  ? theme.scheme === 'dark'
+                    ? theme.colors.controlAccent
+                    : '#FFFBEB'
+                  : theme.colors.card,
                 borderColor: selected
-                  ? theme.colors.accentText
+                  ? theme.scheme === 'dark'
+                    ? theme.colors.accent
+                    : theme.colors.primary
                   : theme.colors.border,
+                borderWidth: selected ? 1.5 : 1,
                 borderRadius: theme.radius,
               },
               webFocusHoverStyle(state, theme, {
-                hoverBorder: selected ? theme.colors.accentText : theme.colors.textSecondary,
+                hoverBorder: selected
+                  ? theme.scheme === 'dark'
+                    ? theme.colors.accent
+                    : theme.colors.primary
+                  : theme.colors.textSecondary,
               }),
             ]}
           >
             <Text
               style={{
-                color: selected
+                color: selected && theme.scheme === 'dark'
                   ? theme.colors.onControlAccent
                   : theme.colors.textPrimary,
-                fontSize: theme.fontSize.secondary,
+                fontSize: 16,
                 fontWeight: theme.fontWeight.semibold,
                 fontVariant: ['tabular-nums'],
               }}
             >
               {angle}°
+            </Text>
+            <Text
+              style={{
+                color: selected
+                  ? theme.scheme === 'dark'
+                    ? theme.colors.onControlAccent
+                    : theme.colors.accentText
+                  : theme.colors.textSecondary,
+                fontSize: 11,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {multiplier}
             </Text>
           </Pressable>
         );
@@ -809,6 +838,8 @@ export function SeoResultCard({
   diagram?: ReactNode;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
+  const isEmpty = headlineValue === undefined || headlineValue === '';
   return (
     <View
       style={[
@@ -833,8 +864,19 @@ export function SeoResultCard({
           marginTop: 2,
         }}
       >
-        {headlineValue === undefined || headlineValue === '' ? '—' : headlineValue}
+        {isEmpty ? '—' : headlineValue}
       </Text>
+      {isEmpty ? (
+        <Text
+          style={{
+            color: '#94A3B8',
+            fontSize: 13,
+            marginTop: 2,
+          }}
+        >
+          {t('common.enterMeasurement')}
+        </Text>
+      ) : null}
       {rows.map((row) => (
         <SeoResultRow key={row.label} label={row.label} value={row.value} />
       ))}
@@ -903,15 +945,19 @@ export function SeoCopyButton({
           styles.secondaryButton,
           {
             backgroundColor: theme.colors.card,
-            borderColor: theme.colors.border,
+            borderColor: disabled ? theme.colors.border : theme.colors.primaryText,
+            borderWidth: disabled ? 1 : 1.5,
             borderRadius: theme.radius,
-            opacity: disabled ? 0.4 : state.pressed ? 0.85 : 1,
+            opacity: disabled ? 0.45 : state.pressed ? 0.85 : 1,
           },
-          webFocusHoverStyle(state, theme, {
-            hoverBorder: theme.colors.textSecondary,
-          }),
+          !disabled
+            ? webFocusHoverStyle(state, theme, {
+                hoverBg: theme.scheme === 'dark' ? theme.colors.card : '#FAFBFD',
+              })
+            : null,
         ]}
       >
+        <CopyIcon size={16} color={theme.colors.textPrimary} />
         <Text
           style={{
             color: theme.colors.textPrimary,
@@ -944,9 +990,7 @@ export function SeoCopyButton({
 }
 
 /**
- * 主「计算」按钮：大号电工橙，写死 56pt 高，戴手套也好按。
- * 它的存在让“输入 → 计算 → 结果”成为一条明确黄金路径，
- * 也避免边打字边弹结果、混淆“当前结果对应哪组输入”。
+ * 次级保存按钮：实时预览已承担即时计算，降级为轻量描边按钮用于写入历史与统计。
  */
 export function SeoCalculateButton({
   onPress,
@@ -955,14 +999,36 @@ export function SeoCalculateButton({
   onPress: () => void;
   label?: string;
 }) {
+  const theme = useTheme();
   const { t } = useI18n();
   return (
-    <BigButton
-      title={label ?? t('common.calculate')}
-      variant="accent"
+    <Pressable
+      accessibilityRole="button"
       onPress={onPress}
-      style={styles.calculateButton}
-    />
+      style={(state) => [
+        styles.calculateButton,
+        {
+          backgroundColor: theme.colors.background,
+          borderColor: theme.colors.border,
+          borderRadius: theme.radius,
+          opacity: state.pressed ? 0.85 : 1,
+        },
+        webFocusHoverStyle(state, theme, {
+          hoverBorder: theme.colors.primaryText,
+          hoverBg: theme.scheme === 'dark' ? theme.colors.card : '#EFF4F8',
+        }),
+      ]}
+    >
+      <Text
+        style={{
+          color: theme.colors.textPrimary,
+          fontSize: theme.fontSize.secondary,
+          fontWeight: theme.fontWeight.semibold,
+        }}
+      >
+        {label ?? t('common.saveToHistory')}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -1052,7 +1118,7 @@ export function SeoHistoryList({
             style={{
               color: theme.colors.textSecondary,
               fontSize: theme.fontSize.secondary,
-              textDecorationLine: 'underline',
+              fontWeight: theme.fontWeight.medium,
             }}
           >
             {t('common.clearHistory')}
@@ -1439,6 +1505,37 @@ const styles = StyleSheet.create({
   pageRoot: {
     flex: 1,
   },
+  topHeaderBar: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.12)',
+  },
+  topHeaderInner: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  topHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerMenuButton: {
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subNavBar: {
+    width: '100%',
+    height: 40,
+    borderBottomWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   page: {
     flexGrow: 1,
     width: '100%',
@@ -1451,44 +1548,34 @@ const styles = StyleSheet.create({
   },
   segment: {
     flexDirection: 'row',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 8,
-    overflow: 'hidden',
+    alignItems: 'center',
+    borderWidth: 1,
+    padding: 3,
+    height: 38,
     alignSelf: 'flex-start',
   },
   segmentItem: {
-    minHeight: 48,
-    paddingHorizontal: 14,
+    height: '100%',
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   angleRow: {
     flexDirection: 'row',
-    // 换行 + 3 列网格：6 个按钮不再依赖单行 minWidth。旧版单行 minWidth 合计
-    // 296pt + 5×8pt gap = 336pt，超过卡内 326pt（390pt 屏），末尾 60° 被裁。
     flexWrap: 'wrap',
     gap: 8,
   },
   angleButton: {
-    minHeight: 48,
+    height: 56,
+    minHeight: 56,
     minWidth: 48,
     flexGrow: 1,
     flexShrink: 1,
-    // 28% ≈ (100% - 2×8pt gap)/3，保证每行严格 3 个后换行；最后一行 grow 补满。
     flexBasis: '28%',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  anglePresetButton: {
-    minHeight: 64,
-    minWidth: 52,
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: '28%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
     gap: 2,
   },
   presetRow: {
@@ -1510,17 +1597,19 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   calculateButton: {
-    minHeight: 56,
+    minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
+    borderWidth: 1,
   },
   secondaryButton: {
     minHeight: 48,
+    flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    borderWidth: StyleSheet.hairlineWidth,
   },
   calcRow: {
     flexDirection: 'row',
@@ -1591,26 +1680,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switcherWrap: {
+    width: '100%',
+    height: '100%',
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 2,
-  },
-  switcherContent: {
-    flexDirection: 'row',
-    gap: 2,
-    paddingHorizontal: 8,
+    alignItems: 'stretch',
+    gap: 4,
   },
   switcherChip: {
-    minHeight: 44,
+    minHeight: 38,
     paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    // 扁平：无背景、无边框、无阴影；选中态仅靠下方绝对定位的橙条区分。
     position: 'relative',
   },
   switcherLink: {
-    minHeight: 44,
+    minHeight: 38,
     justifyContent: 'center',
     alignItems: 'center',
     display: 'flex' as unknown as TextStyle['display'],
@@ -1622,12 +1706,10 @@ const styles = StyleSheet.create({
   },
   switcherUnderline: {
     position: 'absolute',
-    left: 0,
-    right: 0,
+    left: 6,
+    right: 6,
     bottom: 0,
-    height: 3,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
+    height: 2,
   },
   workspace: {
     borderWidth: StyleSheet.hairlineWidth,

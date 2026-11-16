@@ -115,6 +115,7 @@ export default function DownloadBanner() {
   const bannerCopy = getDownloadBannerCopy(device);
   const mobile = isMobileNavViewport(width);
   const containerMaxWidth = workspaceMaxWidth(width);
+  const bannerBg = theme.scheme === 'dark' ? theme.colors.card : '#EFF4F8';
   const mobileTitle = device === 'android'
     ? 'Get Android Offline App'
     : device === 'ios'
@@ -126,33 +127,46 @@ export default function DownloadBanner() {
       <View
         accessibilityRole="header"
         accessibilityLabel={bannerCopy.title}
+        pointerEvents="box-none"
         style={[
           styles.banner,
           mobile
-            ? { backgroundColor: theme.colors.accent }
-            : {
-                backgroundColor: theme.colors.card,
+            ? {
+                backgroundColor: bannerBg,
                 borderBottomWidth: 1,
                 borderBottomColor: theme.colors.border,
+              }
+            : {
+                backgroundColor: 'transparent',
+                paddingHorizontal: 24,
               },
         ]}
       >
         <View
           style={[
             styles.inner,
-            !mobile ? { maxWidth: containerMaxWidth, paddingHorizontal: 16 } : null,
+            !mobile
+              ? {
+                  maxWidth: containerMaxWidth - 48,
+                  paddingHorizontal: 12,
+                  backgroundColor: bannerBg,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  borderRadius: theme.radius,
+                }
+              : null,
           ]}
         >
           <Image
             source={require('../../assets/icon.png')}
             resizeMode="cover"
-            style={[styles.appIcon as ImageStyle, { borderRadius: theme.radius }]}
+            style={[styles.appIcon as ImageStyle, { borderRadius: 6 }]}
           />
           <View style={styles.textBlock}>
             {mobile ? (
               <Text
                 numberOfLines={1}
-                style={[styles.title, { color: theme.colors.onAccent }]}
+                style={[styles.title, { color: theme.colors.textPrimary }]}
               >
                 {mobileTitle}
               </Text>
@@ -183,9 +197,11 @@ export default function DownloadBanner() {
                   styles.getButton,
                   styles.getText,
                   {
-                    backgroundColor: mobile ? '#FFFFFF' : theme.colors.accent,
-                    color: theme.colors.onAccent,
-                    borderRadius: theme.radius,
+                    backgroundColor: 'transparent',
+                    borderWidth: 1,
+                    borderColor: theme.colors.primaryText,
+                    color: theme.colors.primaryText,
+                    borderRadius: 999,
                   },
                 ] as StyleProp<TextStyle>
               }
@@ -200,18 +216,21 @@ export default function DownloadBanner() {
                 trackEvent('offline_notice_ack', { device });
                 handleDismiss();
               }}
+              hitSlop={6}
               style={[
                 styles.getButton,
                 {
-                  backgroundColor: mobile ? 'rgba(255,255,255,0.35)' : theme.colors.accent,
-                  borderRadius: theme.radius,
+                  backgroundColor: 'transparent',
+                  borderWidth: 1,
+                  borderColor: theme.colors.primaryText,
+                  borderRadius: 999,
                 },
               ]}
             >
               <Text
                 style={[
                   styles.getText,
-                  { color: theme.colors.onAccent },
+                  { color: theme.colors.primaryText },
                 ]}
               >
                 {bannerCopy.button}
@@ -227,7 +246,7 @@ export default function DownloadBanner() {
             <Text
               style={[
                 styles.closeText,
-                { color: mobile ? theme.colors.onAccent : theme.colors.textSecondary },
+                { color: theme.colors.textSecondary },
               ]}
             >
               ✕
@@ -264,29 +283,29 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   appIcon: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
   },
   textBlock: {
     flex: 1,
     minWidth: 0,
   },
   title: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   getButton: {
     minWidth: 44,
-    minHeight: 44,
+    minHeight: 30,
     paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
-    lineHeight: 44,
+    lineHeight: 28,
   },
   getText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '600',
   },
   closeButton: {
     minWidth: 44,

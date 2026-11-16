@@ -318,7 +318,12 @@ export default function ImperialInput({
     }
   }, [unit, value, onChangeText]);
 
-  const borderColor = error ? theme.colors.error : theme.colors.border;
+  const defaultInputBorder = error
+    ? theme.colors.error
+    : theme.scheme === 'dark'
+      ? theme.colors.border
+      : '#CBD5E1';
+  const borderColor = defaultInputBorder;
 
   const emit = (next: string) => {
     lastEmittedRef.current = next;
@@ -380,19 +385,25 @@ export default function ImperialInput({
     (metric ? 'numeric' : unit === 'decimal' ? 'decimal-pad' : 'numeric');
 
   const inputStyle = {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.card,
     borderColor,
     borderRadius: theme.radius,
     color: theme.colors.textPrimary,
-    fontSize: theme.fontSize.title,
+    fontSize: 20,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: Platform.OS === 'android' ? 8 : 12,
+    paddingVertical: Platform.OS === 'android' ? 6 : 8,
   };
 
   // 分数框更窄，横向内边距收紧到 sm，避免 3 框在 390px 屏幕上溢出。
   const fractionInputStyle = {
     ...inputStyle,
     paddingHorizontal: theme.spacing.sm,
+  };
+
+  const denominatorSlotStyle = {
+    ...fractionInputStyle,
+    backgroundColor: theme.scheme === 'dark' ? theme.colors.background : '#F1F5F9',
+    color: parts.denominator === '' ? theme.colors.textSecondary : theme.colors.textPrimary,
   };
 
   return (
@@ -469,7 +480,7 @@ export default function ImperialInput({
             isError={Boolean(error)}
             accentColor={theme.colors.accentText}
             defaultBorderColor={borderColor}
-            style={[styles.input, styles.fractionPart, fractionInputStyle, styles.centeredText]}
+            style={[styles.input, styles.fractionPart, denominatorSlotStyle, styles.centeredText]}
           />
         </View>
       ) : (
@@ -499,7 +510,7 @@ export default function ImperialInput({
                 ? theme.colors.error
                 : standardFocused
                   ? theme.colors.accentText
-                  : theme.colors.border,
+                  : borderColor,
               borderWidth: error || standardFocused ? 2 : 1,
             },
           ]}
@@ -523,7 +534,7 @@ export default function ImperialInput({
 
 const styles = StyleSheet.create({
   input: {
-    minHeight: 56,
+    minHeight: 48,
     borderWidth: 1,
     fontVariant: ['tabular-nums'],
   },

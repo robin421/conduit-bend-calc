@@ -20,6 +20,9 @@
 | T6 | Web SEO 全量构建、单测、类型检查与物理产物核验 | qa | T5 | DONE | QA 验收报告 + 完整 `dist/` 校验 | PASS（`tsc` 0 错、`393/393` 单测、`web:build-seo` 28 URL + 幂等性全过） |
 | T7 | Web 移动端 + PC 端 UI/交互全面适配（首页 + 4 工具页 + 23 静态页） | developer | T6 | DONE | `rootTabs.tsx`, `calcHomeScreen.tsx`, `seoLayout.tsx`, `gen-seo-pages.py` 等 17 个文件 | 已完成开发并同步主工作区 |
 | T8 | 双端适配 QA 验收（`tsc` + 单测 + 构建 + `ego-browser` 1440px/390px 实测） | qa | T7 | DONE | QA 验收报告（含双端实测） | PASS（`tsc` 0 错、`394/394` 单测、1440px/390px 首页+工具页+静态页实测全过） |
+| T9 | 首屏静态 SEO 外壳品牌同构 + Web 默认展示 Bend Diagram | developer | T8 | DONE | `bendGuide.tsx`, `inject-web-seo.py`, `gen-seo-tool-shells.ts` | 已部署上线并实测生效（commit `e1ccadd`） |
+| T10 | Web 端专业视觉质感重构（SVG 工程图标、统一深蓝顶栏、Segmented Control、降噪与表单精细化） | developer | T9 | DONE | `toolIcons.tsx`, `calcHomeScreen.tsx`, `webQuickCalculator.tsx`, `seoLayout.tsx`, `rootTabs.tsx`, `downloadBanner.tsx` 等 12 个文件 | 已完成开发并同步主工作区 |
+| T11 | 视觉重构 QA 验收（`tsc` + 单测 + 构建 + `ego-browser` 真实截图对比） | qa | T10 | DONE | QA 验收报告 + 真机截图核验 | PASS（`tsc` 0 错、`394/394` 单测、1440px/390px 截图核验全过，底部 Tab 裁切已修复） |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

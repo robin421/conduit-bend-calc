@@ -1,11 +1,12 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ComponentType } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   AppState,
   InteractionManager,
   Keyboard,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,16 +19,26 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import RatingCard from '../components/ratingCard';
 import FeedbackCard from '../components/feedbackCard';
+import {
+  BenderDialIcon,
+  ChevronRightIcon,
+  ConduitFillIcon,
+  FourPointSaddleIcon,
+  Kicked90Icon,
+  OffsetIcon,
+  RollingOffsetIcon,
+  StubIcon,
+  ThreePointSaddleIcon,
+  VoltageDropIcon,
+  WireSizeIcon,
+  type IconProps,
+} from '../components/toolIcons';
 import WebQuickCalculator from '../components/webQuickCalculator';
 import {
   isWideDesktopViewport,
   workspaceMaxWidth,
 } from '../seo/calculatorNav';
-import {
-  FOUR_POINT_SADDLE_ICON,
-  THREE_POINT_SADDLE_ICON,
-  HISTORY_CALCULATOR_SCREENS,
-} from '../lib/homeContent';
+import { HISTORY_CALCULATOR_SCREENS } from '../lib/homeContent';
 import { loadHistory, subscribeHistory } from '../lib/history';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
@@ -45,7 +56,7 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'CalcHome'>;
 
 interface CalculatorEntry {
   key: keyof CalcStackParamList;
-  icon: string;
+  Icon: ComponentType<IconProps>;
   name: string;
   description: string;
   group: 'bending' | 'electrical' | 'bender';
@@ -54,16 +65,16 @@ interface CalculatorEntry {
 }
 
 const ENTRIES: CalculatorEntry[] = [
-  { key: 'Offset', group: 'bending', icon: '⌐', name: 'Offset Bend', description: 'Move the run around an obstacle' },
-  { key: 'Stub', group: 'bending', icon: '∟', name: '90° Stub', description: 'Turn up to a measured height' },
-  { key: 'ThreePointSaddle', group: 'bending', icon: THREE_POINT_SADDLE_ICON, name: '3-Point Saddle', description: 'Cross a narrow obstacle with three bends' },
-  { key: 'FourPointSaddle', group: 'bending', icon: FOUR_POINT_SADDLE_ICON, name: '4-Point Saddle', description: 'Cross a wide obstacle with a flat top' },
-  { key: 'RollingOffset', group: 'bending', icon: '⤢', name: 'Rolling Offset', description: 'Move the run both up and sideways' },
-  { key: 'Kicked90', group: 'bending', icon: '∠', name: 'Kicked 90°', description: 'Combine a 90° bend with an offset' },
-  { key: 'ConduitFill', group: 'electrical', icon: '◍', name: 'Conduit Fill', description: 'How many THHN wires fit (NEC Ch. 9)' },
-  { key: 'VoltageDrop', group: 'electrical', icon: '⚡', name: 'Voltage Drop', description: 'Drop % and wire size for 3% / 5%' },
-  { key: 'WireSize', group: 'electrical', icon: '⌇', name: 'Wire Size', description: 'Minimum AWG from amps (NEC 310.16)' },
-  { key: 'GuidedCalibration', group: 'bender', icon: '◎', name: 'Dial In My Bender', description: 'Match take-up or bend radius to your actual bender', pro: true },
+  { key: 'Offset', group: 'bending', Icon: OffsetIcon, name: 'Offset Bend', description: 'Move the run around an obstacle' },
+  { key: 'Stub', group: 'bending', Icon: StubIcon, name: '90° Stub', description: 'Turn up to a measured height' },
+  { key: 'ThreePointSaddle', group: 'bending', Icon: ThreePointSaddleIcon, name: '3-Point Saddle', description: 'Cross a narrow obstacle with three bends' },
+  { key: 'FourPointSaddle', group: 'bending', Icon: FourPointSaddleIcon, name: '4-Point Saddle', description: 'Cross a wide obstacle with a flat top' },
+  { key: 'RollingOffset', group: 'bending', Icon: RollingOffsetIcon, name: 'Rolling Offset', description: 'Move the run both up and sideways' },
+  { key: 'Kicked90', group: 'bending', Icon: Kicked90Icon, name: 'Kicked 90°', description: 'Combine a 90° bend with an offset' },
+  { key: 'ConduitFill', group: 'electrical', Icon: ConduitFillIcon, name: 'Conduit Fill', description: 'How many THHN wires fit (NEC Ch. 9)' },
+  { key: 'VoltageDrop', group: 'electrical', Icon: VoltageDropIcon, name: 'Voltage Drop', description: 'Drop % and wire size for 3% / 5%' },
+  { key: 'WireSize', group: 'electrical', Icon: WireSizeIcon, name: 'Wire Size', description: 'Minimum AWG from amps (NEC 310.16)' },
+  { key: 'GuidedCalibration', group: 'bender', Icon: BenderDialIcon, name: 'Dial In My Bender', description: 'Match take-up or bend radius to your actual bender', pro: true },
 ];
 
 const GROUPS = [
@@ -200,32 +211,70 @@ export default function CalcHomeScreen({ navigation }: Props) {
           style={{
             color: theme.colors.textSecondary,
             fontSize: theme.fontSize.secondary,
+            fontWeight: theme.fontWeight.medium,
           }}
         >
           Units
         </Text>
-        <View style={[styles.unitToggle, { gap: theme.spacing.xs }]}>
-          <BigButton
-            title="Fraction"
-            size="selection"
-            selected={unit === 'fractional'}
-            onPress={() => handleUnitChange('fractional')}
-            style={styles.unitButton}
-          />
-          <BigButton
-            title="Decimal"
-            size="selection"
-            selected={unit === 'decimal'}
-            onPress={() => handleUnitChange('decimal')}
-            style={styles.unitButton}
-          />
-          <BigButton
-            title="Metric"
-            size="selection"
-            selected={unit === 'metric'}
-            onPress={() => handleUnitChange('metric')}
-            style={styles.unitButton}
-          />
+        <View
+          style={[
+            styles.unitSegmentTrack,
+            {
+              backgroundColor: theme.scheme === 'dark' ? theme.colors.card : '#EAF0F6',
+              borderColor: theme.colors.border,
+              borderRadius: theme.radius,
+            },
+          ]}
+        >
+          {(
+            [
+              { key: 'fractional', label: 'Fraction' },
+              { key: 'decimal', label: 'Decimal' },
+              { key: 'metric', label: 'Metric' },
+            ] as const
+          ).map((opt) => {
+            const selected = unit === opt.key;
+            return (
+              <Pressable
+                key={opt.key}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => handleUnitChange(opt.key)}
+                style={(state) => {
+                  const { focused } = state as { focused?: boolean };
+                  return [
+                    styles.unitSegmentItem,
+                    selected
+                      ? {
+                          backgroundColor: theme.scheme === 'dark' ? theme.colors.primary : '#FFFFFF',
+                          borderColor: theme.scheme === 'dark' ? theme.colors.accent : '#C8D4E0',
+                        }
+                      : {
+                          backgroundColor: 'transparent',
+                          borderColor: 'transparent',
+                        },
+                    Platform.OS === 'web' && focused
+                      ? ({
+                          outlineStyle: 'solid',
+                          outlineWidth: 2,
+                          outlineColor: theme.colors.accentText,
+                        } as object)
+                      : null,
+                  ];
+                }}
+              >
+                <Text
+                  style={{
+                    color: selected ? theme.colors.textPrimary : theme.colors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: selected ? theme.fontWeight.semibold : theme.fontWeight.medium,
+                  }}
+                >
+                  {opt.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
@@ -261,19 +310,16 @@ export default function CalcHomeScreen({ navigation }: Props) {
               >
                 <View
                   style={[
-                    styles.accentBar,
+                    styles.iconBox,
                     {
-                      backgroundColor: theme.colors.accent,
-                      marginRight: theme.spacing.sm,
+                      backgroundColor: theme.scheme === 'dark' ? theme.colors.background : '#EFF4F8',
+                      borderColor: theme.colors.border,
+                      borderRadius: theme.radius,
                     },
                   ]}
-                />
-                <Text
-                  numberOfLines={1}
-                  style={[styles.icon, { color: theme.colors.primaryText }]}
                 >
-                  {entry.icon}
-                </Text>
+                  <entry.Icon size={20} color={theme.colors.primaryText} />
+                </View>
                 <View style={styles.textBlock}>
                   <View style={styles.nameRow}>
                     <Text
@@ -311,7 +357,9 @@ export default function CalcHomeScreen({ navigation }: Props) {
                     {entry.description}
                   </Text>
                 </View>
-                <Text style={[styles.chevron, { color: theme.colors.accentText }]}>›</Text>
+                <View style={styles.chevronWrap}>
+                  <ChevronRightIcon size={18} color={theme.colors.textSecondary} />
+                </View>
               </Card>
             ))}
           </View>
@@ -374,6 +422,7 @@ const styles = StyleSheet.create({
   cardGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'stretch',
   },
   cardGridItem: {
     flexBasis: '48%',
@@ -396,38 +445,43 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     overflow: 'hidden',
   },
-  accentBar: {
-    width: 4,
-    height: 44,
-    flexShrink: 0,
-    borderRadius: 2,
-  },
-  icon: {
-    fontSize: 26,
-    width: 44,
-    textAlign: 'center',
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
     flexShrink: 0,
   },
   textBlock: {
     flex: 1,
-    paddingLeft: 4,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
   },
-  chevron: {
-    fontSize: 24,
+  chevronWrap: {
     marginLeft: 8,
+    flexShrink: 0,
   },
   unitRow: {
-    gap: 8,
+    gap: 6,
   },
-  unitToggle: {
+  unitSegmentTrack: {
     flexDirection: 'row',
+    alignItems: 'center',
+    height: 38,
+    padding: 3,
+    borderWidth: 1,
   },
-  unitButton: {
+  unitSegmentItem: {
     flex: 1,
+    height: '100%',
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

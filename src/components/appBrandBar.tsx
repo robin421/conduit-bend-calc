@@ -2,6 +2,7 @@ import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 import { PRODUCT_NAME } from '../seo/brand';
 import { useI18n } from '../i18n';
 import { useTheme } from '../theme';
+import { MenuIcon } from './toolIcons';
 
 /** 应用页头：复用真实图标与产品名，不用公司字标替代产品身份。 */
 export default function AppBrandBar({ tone = 'surface', onMenuPress }: {
@@ -11,8 +12,9 @@ export default function AppBrandBar({ tone = 'surface', onMenuPress }: {
   const theme = useTheme();
   const { t } = useI18n();
   const color = tone === 'header' ? theme.colors.onPrimary : theme.colors.textPrimary;
-  const iconSize = tone === 'header' ? 32 : 28;
+  const iconSize = 28;
   const focusOutlineColor = tone === 'header' ? theme.colors.accent : theme.colors.accentText;
+  const hoverBg = tone === 'header' ? 'rgba(255,255,255,0.12)' : theme.colors.border;
   return <View accessibilityRole="header" accessibilityLabel={PRODUCT_NAME} style={styles.bar}>
     {onMenuPress ? <Pressable accessibilityRole="button" accessibilityLabel={t('brand.menuLabel')} onPress={onMenuPress}
       hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }} android_ripple={{ color: theme.colors.pressFeedback }}
@@ -21,11 +23,11 @@ export default function AppBrandBar({ tone = 'surface', onMenuPress }: {
         return [
           styles.menuButton,
           { borderRadius: theme.radius },
-          Platform.OS === 'web' && hovered ? { backgroundColor: theme.colors.border } : null,
+          Platform.OS === 'web' && hovered ? { backgroundColor: hoverBg } : null,
           Platform.OS === 'web' && focused ? { outlineStyle: 'solid', outlineWidth: 2, outlineColor: focusOutlineColor } as object : null,
         ];
       }}>
-      <Text style={{ fontSize: 18, lineHeight: 22, color }}>☰</Text>
+      <MenuIcon size={20} color={color} />
     </Pressable> : null}
     <Image source={require('../../assets/icon.png')} accessible={false} accessibilityIgnoresInvertColors resizeMode="contain"
       style={{ width: iconSize, height: iconSize, borderRadius: theme.radius }} />

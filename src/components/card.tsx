@@ -56,12 +56,32 @@ export default function Card({
         disabled={disabled}
         onPress={onPress}
         android_ripple={{ color: rippleColor }}
-        style={({ pressed }) => [
-          cardStyle,
-          {
-            opacity: disabled ? 0.4 : pressed && Platform.OS !== 'android' ? 0.96 : 1,
-          },
-        ]}
+        style={(state) => {
+          const { pressed, hovered, focused } = state as {
+            pressed: boolean;
+            hovered?: boolean;
+            focused?: boolean;
+          };
+          return [
+            cardStyle,
+            {
+              opacity: disabled ? 0.4 : pressed && Platform.OS !== 'android' ? 0.96 : 1,
+            },
+            Platform.OS === 'web' && hovered && !disabled
+              ? {
+                  borderColor: theme.colors.primaryText,
+                  backgroundColor: theme.scheme === 'dark' ? theme.colors.card : '#FAFBFD',
+                }
+              : null,
+            Platform.OS === 'web' && focused
+              ? ({
+                  outlineStyle: 'solid',
+                  outlineWidth: 2,
+                  outlineColor: theme.colors.accentText,
+                } as object)
+              : null,
+          ];
+        }}
       >
         {children}
       </Pressable>
