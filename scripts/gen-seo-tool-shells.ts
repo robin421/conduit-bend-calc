@@ -240,13 +240,21 @@ function buildRelatedSectionHtml(page: (typeof SEO_TOOL_PAGES)[number]): string 
  */
 function buildStaticPageContentHtml(page: (typeof SEO_TOOL_PAGES)[number]): string {
   return [
-    '<article class="static-seo-document" style="max-width:800px;margin:2rem auto;padding:0 1rem;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#1a1a1a;">',
-    `  <h1>${escapeHtml(page.h1)}</h1>`,
-    `  <p class="tagline" style="font-size:1.1rem;color:#444;">${escapeHtml(page.tagline)}</p>`,
+    '<div class="static-seo-shell" style="min-height:100vh;background:#F5F8FB;color:#0F2B46;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.55;">',
+    '  <header style="background:#0F2B46;color:#FFFFFF;padding:14px 24px;border-bottom:3px solid #F4C317;">',
+    '    <div style="max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;">',
+    '      <strong style="font-size:18px;">Conduit Bend Calc</strong>',
+    '      <a href="/" style="color:#F4C317;font-size:13px;font-weight:600;text-decoration:none;">All Calculators</a>',
+    '    </div>',
+    '  </header>',
+    '  <article class="static-seo-document" style="max-width:800px;margin:24px auto;padding:24px;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;color:#0F2B46;">',
+    `    <h1 style="margin-top:0;">${escapeHtml(page.h1)}</h1>`,
+    `    <p class="tagline" style="font-size:1.05rem;color:#475569;">${escapeHtml(page.tagline)}</p>`,
     buildCheatSheetHtml(page.key),
     buildFaqsHtml(page.faqs),
     buildRelatedSectionHtml(page),
-    '</article>',
+    '  </article>',
+    '</div>',
   ].join('\n');
 }
 

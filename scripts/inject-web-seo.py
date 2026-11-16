@@ -164,30 +164,38 @@ SEO_BLOCK = f"""<title>{html.escape(TITLE)}</title>
 """
 
 HOME_STATIC_HTML = f"""<!-- static-seo-home-start -->
-<main class="static-seo-home" style="max-width:800px;margin:2rem auto;padding:0 1rem;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#1a1a1a;">
-  <h1>Conduit Bend Calc — Free Conduit Bending Calculator</h1>
-  <p>Free electrical conduit bending calculator for EMT, IMC, and Rigid conduit: offset bends, 90&deg; stub-ups, 3-point and 4-point saddles, rolling offsets, kicked 90s, shrink, and take-up in imperial inches or metric mm.</p>
-  <nav aria-label="Interactive bending calculators">
-    <h2>Interactive Calculators</h2>
-    <ul>
-      <li><a href="/offset/">Offset Bend Calculator</a> — Mark spacing and shrink for 10&deg;, 15&deg;, 22.5&deg;, 30&deg;, 45&deg;, and 60&deg; offsets.</li>
-      <li><a href="/4-point-saddle/">4-Point Saddle Calculator</a> — Four marks and total shrink over square obstacles and ductwork.</li>
-      <li><a href="/shrink/">Conduit Shrink Calculator</a> — Shrink per inch and total run allowance before cutting.</li>
-      <li><a href="/stub-up/">90&deg; Stub-Up Calculator</a> — Take-up deduct and mark placement for EMT, IMC, and Rigid conduit.</li>
-    </ul>
-  </nav>
-  <nav aria-label="Bending guides and charts">
-    <h2>Conduit Bending Guides &amp; Charts</h2>
-    <ul>
-      <li><a href="/conduit-bending-calculator/">Conduit Bending Calculator Guide</a></li>
-      <li><a href="/conduit-bending-chart/">Conduit Bending Multiplier &amp; Shrink Chart</a></li>
-      <li><a href="/conduit-bending-formula/">Conduit Bending Formulas</a></li>
-      <li><a href="/how-to-bend-emt-conduit/">How to Bend EMT Conduit</a></li>
-      <li><a href="/offset-multiplier-guide/">Offset Multiplier Guide</a></li>
-    </ul>
-  </nav>
-  <p><a href="{PLAY_URL}">Get Conduit Bend Calc on Google Play</a> for offline jobsite access and Pro bender calibration.</p>
-</main>
+<div class="static-seo-home" style="min-height:100vh;background:#F5F8FB;color:#0F2B46;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.5;">
+  <header style="background:#0F2B46;color:#FFFFFF;padding:14px 24px;border-bottom:3px solid #F4C317;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <strong style="font-size:18px;letter-spacing:0.2px;">Conduit Bend Calc</strong>
+      <span style="font-size:13px;color:#F4C317;font-weight:600;">EMT · IMC · Rigid Bending Calculator</span>
+    </div>
+  </header>
+  <main style="max-width:1120px;margin:0 auto;padding:24px;">
+    <h1 style="margin:0 0 8px;font-size:24px;line-height:1.25;color:#0F2B46;">Conduit Bend Calc — Free Conduit Bending Calculator</h1>
+    <p style="margin:0 0 20px;color:#475569;max-width:760px;">Free electrical conduit bending calculator for EMT, IMC, and Rigid conduit: offset bends, 90&deg; stub-ups, 3-point and 4-point saddles, rolling offsets, kicked 90s, shrink, and take-up in imperial inches or metric mm.</p>
+    <nav aria-label="Interactive bending calculators" style="margin-bottom:24px;">
+      <h2 style="font-size:16px;margin:0 0 12px;color:#0F2B46;">Interactive Calculators</h2>
+      <ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/offset/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Offset Bend Calculator</a><span style="font-size:13px;color:#475569;">Mark spacing and shrink for 10&deg;, 15&deg;, 22.5&deg;, 30&deg;, 45&deg;, and 60&deg; offsets.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/4-point-saddle/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">4-Point Saddle Calculator</a><span style="font-size:13px;color:#475569;">Four marks and total shrink over square obstacles and ductwork.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/shrink/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Conduit Shrink Calculator</a><span style="font-size:13px;color:#475569;">Shrink per inch and total run allowance before cutting.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/stub-up/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">90&deg; Stub-Up Calculator</a><span style="font-size:13px;color:#475569;">Take-up deduct and mark placement for EMT, IMC, and Rigid conduit.</span></li>
+      </ul>
+    </nav>
+    <nav aria-label="Bending guides and charts" style="margin-bottom:20px;">
+      <h2 style="font-size:16px;margin:0 0 10px;color:#0F2B46;">Conduit Bending Guides &amp; Charts</h2>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;">
+        <li><a href="/conduit-bending-calculator/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Conduit Bending Calculator Guide</a></li>
+        <li><a href="/conduit-bending-chart/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Conduit Bending Multiplier &amp; Shrink Chart</a></li>
+        <li><a href="/conduit-bending-formula/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Conduit Bending Formulas</a></li>
+        <li><a href="/how-to-bend-emt-conduit/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">How to Bend EMT Conduit</a></li>
+        <li><a href="/offset-multiplier-guide/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Offset Multiplier Guide</a></li>
+      </ul>
+    </nav>
+    <p style="margin:0;"><a href="{PLAY_URL}" style="display:inline-block;background:#F4C317;color:#0F2B46;font-weight:700;padding:10px 16px;border-radius:8px;text-decoration:none;">Get Conduit Bend Calc on Google Play</a></p>
+  </main>
+</div>
 <!-- static-seo-home-end -->"""
 
 index_path = f"{EXPORT_DIR}/index.html"
