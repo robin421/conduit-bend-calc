@@ -9,10 +9,12 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import { isWideDesktopViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { showAppToast } from '../lib/appToast';
 import { exportRecentHistory } from '../lib/proContinuation';
 import {
@@ -31,6 +33,9 @@ type Props = BottomTabScreenProps<RootTabParamList, 'History'>;
 
 export default function HistoryScreen({ navigation }: Props) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isWideWeb = Platform.OS === 'web' && isWideDesktopViewport(width);
+  const maxWidth = isWideWeb ? workspaceMaxWidth(width) : 720;
   const isFocused = useIsFocused();
   const { access } = useProAccess();
   const { setUnit } = useUnitSystem();
@@ -193,7 +198,7 @@ export default function HistoryScreen({ navigation }: Props) {
       <Card
         accessibilityRole="button"
         onPress={() => handlePress(item)}
-        style={styles.itemCard}
+        style={[styles.itemCard, isWideWeb ? styles.wideItemCard : null]}
       >
         <View style={styles.itemHeader}>
           <Text
@@ -238,7 +243,7 @@ export default function HistoryScreen({ navigation }: Props) {
         </Text>
       </Card>
     ),
-    [handlePress, theme],
+    [handlePress, isWideWeb, theme],
   );
 
   const renderFooter = useCallback(() => {
@@ -398,10 +403,17 @@ export default function HistoryScreen({ navigation }: Props) {
 
   return (
     <FlatList
+      key={isWideWeb ? 'wide-2' : 'narrow-1'}
+      numColumns={isWideWeb ? 2 : 1}
+      columnWrapperStyle={isWideWeb ? { gap: theme.spacing.sm } : undefined}
       style={{ backgroundColor: theme.colors.background }}
       contentContainerStyle={[
         styles.listContent,
-        { padding: theme.spacing.md, gap: theme.spacing.sm },
+        {
+          maxWidth,
+          padding: isWideWeb ? 24 : theme.spacing.md,
+          gap: theme.spacing.sm,
+        },
       ]}
       data={visibleEntries}
       keyExtractor={(item) => item.id}
@@ -422,6 +434,10 @@ const styles = StyleSheet.create({
   itemCard: {
     gap: 0,
     padding: 14,
+  },
+  wideItemCard: {
+    flex: 1,
+    minWidth: 0,
   },
   itemHeader: {
     flexDirection: 'row',

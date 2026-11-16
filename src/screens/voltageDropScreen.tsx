@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { Text } from 'react-native';
 
 import { calculateVoltageDrop, smallestSizeWithinDrop } from '../calculators/voltageDrop/voltageDrop';
 import type { Phase } from '../calculators/voltageDrop/voltageDrop';
@@ -8,6 +8,7 @@ import NumberField, { parseNumberInput } from '../components/numberField';
 import OptionRow from '../components/optionRow';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
+import WebCalcShell from '../components/webCalcShell';
 import { DC_RESISTANCE_OHM_PER_KFT, VOLTAGE_DROP_LIMITS, WIRE_SIZES, wireSizeLabel } from '../constants';
 import type { ConductorMetal, WireSize } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
@@ -71,21 +72,20 @@ export default function VoltageDropScreen() {
     });
   }
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.md }]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
-        <OptionRow label="System" options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? 'Single-phase' : 'Three-phase')} onChange={(phase) => { noteReviewInteraction(); setM((p) => ({ ...p, phase })); }} />
-        <OptionRow label="Voltage (V)" options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => { noteReviewInteraction(); setM((p) => ({ ...p, volts })); }} />
-        <OptionRow label="Wire size" options={sizes} value={size} perRow={6} onChange={(s) => { noteReviewInteraction(); setM((p) => ({ ...p, size: s })); }} />
-        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 16" error={ampsError} />
-        <NumberField label="One-way length" unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => { noteReviewInteraction(); setM((p) => ({ ...p, lengthText })); }} placeholder={metric ? 'e.g. 30' : 'e.g. 100'} error={lengthError} />
-        <OptionRow label="Limit" options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? 'Branch 3%' : 'Feeder + branch 5%')} onChange={(l) => { noteReviewInteraction(); setM((p) => ({ ...p, limit: l })); }} />
-      </Card>
+  const leftColumn = (
+    <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
+      <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
+      <OptionRow label="System" options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? 'Single-phase' : 'Three-phase')} onChange={(phase) => { noteReviewInteraction(); setM((p) => ({ ...p, phase })); }} />
+      <OptionRow label="Voltage (V)" options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => { noteReviewInteraction(); setM((p) => ({ ...p, volts })); }} />
+      <OptionRow label="Wire size" options={sizes} value={size} perRow={6} onChange={(s) => { noteReviewInteraction(); setM((p) => ({ ...p, size: s })); }} />
+      <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 16" error={ampsError} />
+      <NumberField label="One-way length" unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => { noteReviewInteraction(); setM((p) => ({ ...p, lengthText })); }} placeholder={metric ? 'e.g. 30' : 'e.g. 100'} error={lengthError} />
+      <OptionRow label="Limit" options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? 'Branch 3%' : 'Feeder + branch 5%')} onChange={(l) => { noteReviewInteraction(); setM((p) => ({ ...p, limit: l })); }} />
+    </Card>
+  );
+
+  const rightColumn = (
+    <>
       <ResultGroup
         hero={{ label: 'Voltage drop', value: result ? (result.dropFraction * 100).toFixed(2) : undefined, unit: '%' }}
         rows={
@@ -104,10 +104,15 @@ export default function VoltageDropScreen() {
         Reactance is ignored, so large AC conductors at low power factor read slightly low. 3% / 5% are
         recommendations (210.19(A) Informational Note), not requirements.
       </Text>
-    </ScrollView>
+    </>
+  );
+
+  return (
+    <WebCalcShell
+      title="Voltage Drop"
+      spacing="md"
+      left={leftColumn}
+      right={rightColumn}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  content: { flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-});

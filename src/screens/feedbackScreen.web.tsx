@@ -1,36 +1,34 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useMemo, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useMemo } from 'react';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
-import appConfig from '../../app.json';
-import BigButton from '../components/bigButton';
-import Card from '../components/card';
+import AppBrandBar from '../components/appBrandBar';
+import FeedbackScreenContent from '../components/feedbackScreenContent';
+import LanguageSwitcher from '../components/languageSwitcher';
 import { useI18n } from '../i18n';
-import { buildFeedbackUrl } from '../lib/feedbackLink';
 import { getFeedbackScreenCopy } from '../lib/feedbackScreenCopy';
 import type { RootStackParamList } from '../navigation/rootStackTypes';
+import { isWideDesktopViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { useTheme } from '../theme';
 
 export default function FeedbackScreen() {
   const theme = useTheme();
   const { lang } = useI18n();
+  const { width } = useWindowDimensions();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = useMemo(() => getFeedbackScreenCopy(lang), [lang]);
 
-  const [reloadKey, setReloadKey] = useState(0);
-  const [loadError, setLoadError] = useState(false);
-
-  const feedbackUrl = useMemo(
-    () =>
-      buildFeedbackUrl({
-        version: appConfig.expo.version,
-        platform: Platform.OS,
-        language: lang,
-      }),
-    [lang],
-  );
+  const wideDesktop = isWideDesktopViewport(width);
+  const barMaxWidth = workspaceMaxWidth(width);
+  const horizontalPad = wideDesktop ? 24 : theme.spacing.md;
 
   const handleBack = () => {
     if (navigation.canGoBack()) {
@@ -40,109 +38,124 @@ export default function FeedbackScreen() {
     }
   };
 
-  const handleRetry = () => {
-    setLoadError(false);
-    setReloadKey((prev) => prev + 1);
+  const handleHome = () => {
+    navigation.navigate('RootTabs');
   };
 
   return (
-    <SafeAreaView
-      edges={['top', 'bottom']}
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View
+        accessibilityRole="header"
+        style={[styles.brandBar, { backgroundColor: theme.colors.primary }]}
+      >
+        <View
+          style={[
+            styles.brandInner,
+            { maxWidth: barMaxWidth, paddingHorizontal: horizontalPad },
+          ]}
+        >
+          <Pressable
+            accessibilityRole="button"
+            onPress={handleHome}
+            style={(state) => {
+              const { focused } = state as { focused?: boolean };
+              return [
+                styles.brandTrigger,
+                Platform.OS === 'web' && focused
+                  ? ({
+                      outlineStyle: 'solid',
+                      outlineWidth: 2,
+                      outlineColor: theme.colors.accent,
+                    } as object)
+                  : null,
+              ];
+            }}
+          >
+            <AppBrandBar tone="header" />
+          </Pressable>
+          <LanguageSwitcher tone="header" />
+        </View>
+      </View>
+
       <View
         style={[
-          styles.header,
+          styles.breadcrumbBar,
           {
-            backgroundColor: theme.colors.primary,
+            backgroundColor: theme.colors.card,
             borderBottomColor: theme.colors.border,
-            paddingHorizontal: theme.spacing.sm,
           },
         ]}
       >
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={copy.backLabel}
-          onPress={handleBack}
-          style={({ pressed }) => [
-            styles.backButton,
-            pressed ? { backgroundColor: theme.colors.pressFeedback } : null,
-          ]}
-        >
-          <Text
-            style={[
-              styles.backText,
-              {
-                color: theme.colors.onPrimary,
-                fontSize: theme.fontSize.body,
-                fontWeight: theme.fontWeight.medium,
-              },
-            ]}
-          >
-            {'← '}
-            {copy.backLabel}
-          </Text>
-        </Pressable>
-        <Text
-          accessibilityRole="header"
-          numberOfLines={1}
+        <View
           style={[
-            styles.headerTitle,
-            {
-              color: theme.colors.onPrimary,
-              fontSize: theme.fontSize.body,
-              fontWeight: theme.fontWeight.semibold,
-            },
+            styles.breadcrumbInner,
+            { maxWidth: barMaxWidth, paddingHorizontal: horizontalPad },
           ]}
         >
-          {copy.title}
-        </Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      {loadError ? (
-        <View style={[styles.errorContainer, { padding: theme.spacing.md }]}>
-          <Card style={[styles.errorCard, { borderColor: theme.colors.error, gap: theme.spacing.sm }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={copy.backLabel}
+            onPress={handleBack}
+            style={(state) => {
+              const { hovered, focused } = state as {
+                hovered?: boolean;
+                focused?: boolean;
+              };
+              return [
+                styles.backLink,
+                { borderRadius: theme.radius },
+                Platform.OS === 'web' && hovered
+                  ? { backgroundColor: theme.colors.background }
+                  : null,
+                Platform.OS === 'web' && focused
+                  ? ({
+                      outlineStyle: 'solid',
+                      outlineWidth: 2,
+                      outlineColor: theme.colors.accentText,
+                    } as object)
+                  : null,
+              ];
+            }}
+          >
             <Text
-              accessibilityRole="alert"
               style={{
-                color: theme.colors.error,
-                fontSize: theme.fontSize.body,
+                color: theme.colors.primaryText,
+                fontSize: theme.fontSize.secondary,
                 fontWeight: theme.fontWeight.semibold,
               }}
             >
-              {copy.submitErrorTitle}
+              {'← '}
+              {copy.backLabel}
             </Text>
-            <Text
-              style={{
-                color: theme.colors.textPrimary,
-                fontSize: theme.fontSize.secondary,
-                lineHeight: 20,
-              }}
-            >
-              {copy.submitErrorNetwork}
-            </Text>
-            <BigButton title={copy.retryButton} variant="secondary" onPress={handleRetry} />
-          </Card>
-        </View>
-      ) : (
-        <View style={styles.frameWrapper}>
-          <iframe
-            key={reloadKey}
-            src={feedbackUrl}
+          </Pressable>
+          <Text
             style={{
-              flex: 1,
-              width: '100%',
-              height: '100%',
-              border: 'none',
-              minHeight: 560,
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
             }}
-            title="Send Feedback"
-            onError={() => setLoadError(true)}
-          />
+          >
+            /
+          </Text>
+          <Text
+            numberOfLines={1}
+            style={{
+              color: theme.colors.textPrimary,
+              fontSize: theme.fontSize.secondary,
+              fontWeight: theme.fontWeight.semibold,
+              flexShrink: 1,
+            }}
+          >
+            {copy.title}
+          </Text>
         </View>
-      )}
-    </SafeAreaView>
+      </View>
+
+      <FeedbackScreenContent
+        onBack={handleBack}
+        contentMaxWidth={680}
+        contentPadding={width >= 600 ? 24 : theme.spacing.md}
+      />
+    </View>
   );
 }
 
@@ -150,42 +163,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    height: 52,
+  brandBar: {
+    height: 56,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  brandInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    width: '100%',
+    alignSelf: 'center',
+    height: 56,
   },
-  backButton: {
-    minWidth: 72,
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
+  brandTrigger: {
     borderRadius: 6,
   },
-  backText: {
-    fontWeight: '500',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  headerSpacer: {
-    minWidth: 72,
-  },
-  errorContainer: {
-    flex: 1,
+  breadcrumbBar: {
+    height: 40,
+    width: '100%',
+    borderBottomWidth: 1,
     justifyContent: 'center',
+  },
+  breadcrumbInner: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  errorCard: {
+    gap: 8,
     width: '100%',
-    maxWidth: 480,
+    alignSelf: 'center',
+    height: 40,
   },
-  frameWrapper: {
-    flex: 1,
-    width: '100%',
-    minHeight: 560,
+  backLink: {
+    minHeight: 32,
+    paddingHorizontal: 8,
+    justifyContent: 'center',
   },
 });

@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { resolveSpecKey, specKey } from '../calculators/geometry/benderSpecs';
 import { calculateKicked90 } from '../calculators/kicked90/kicked90';
@@ -18,6 +18,7 @@ import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
+import WebCalcShell from '../components/webCalcShell';
 import { kicked90Feasibility } from '../calculators/feasibility/feasibility';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
@@ -208,76 +209,71 @@ export default function Kicked90Screen({ route, navigation }: Props) {
   const gainMeasurement =
     calibratedGain !== null ? formatMeasurement(calibratedGain, unit) : undefined;
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.sm, gap: theme.spacing.sm },
-      ]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Card style={{ padding: theme.spacing.sm }}>
-        <BenderRow
-          spec={spec}
-          onPress={() =>
-            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
-          }
+  const leftColumn = (
+    <Card style={{ padding: theme.spacing.sm }}>
+      <BenderRow
+        spec={spec}
+        onPress={() =>
+          navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+        }
+      />
+      <View style={{ marginTop: theme.spacing.sm }}>
+        <ConduitTypeToggle
+          value={conduitType}
+          onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
+        />
+      </View>
+      <View style={{ marginTop: theme.spacing.sm }}>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            marginBottom: theme.spacing.sm,
+          }}
+        >
+          Kick angle κ (degrees, typically 10–30)
+        </Text>
+        <TextInput
+          value={kickText}
+          onChangeText={(text) => { noteReviewInteraction(); setKickText(text); }}
+          placeholder="e.g. 15"
+          placeholderTextColor={theme.colors.textSecondary}
+          selectionColor={theme.colors.selection}
+          cursorColor={theme.colors.accentText}
+          keyboardType="decimal-pad"
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.colors.background,
+              borderColor: kickInvalid
+                ? theme.colors.error
+                : theme.colors.border,
+              borderRadius: theme.radius,
+              color: theme.colors.textPrimary,
+              fontSize: theme.fontSize.title,
+              paddingHorizontal: theme.spacing.md,
+              paddingVertical: Platform.OS === 'android' ? 8 : 12,
+            },
+          ]}
         />
         <View style={{ marginTop: theme.spacing.sm }}>
-          <ConduitTypeToggle
-            value={conduitType}
-            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
+          <ImperialInput
+            label="Straight L between bends (tangent to tangent)"
+            value={lengthText}
+            onChangeText={(text) => { noteReviewInteraction(); setLengthText(text); }}
+            onParsedChange={setLengthInches}
+            unit={unit}
+            placeholder={unit === 'metric' ? 'e.g. 250 mm' : 'e.g. 10"'}
           />
         </View>
-        <View style={{ marginTop: theme.spacing.sm }}>
-          <Text
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.fontSize.secondary,
-              marginBottom: theme.spacing.sm,
-            }}
-          >
-            Kick angle κ (degrees, typically 10–30)
-          </Text>
-          <TextInput
-            value={kickText}
-            onChangeText={(text) => { noteReviewInteraction(); setKickText(text); }}
-            placeholder="e.g. 15"
-            placeholderTextColor={theme.colors.textSecondary}
-            selectionColor={theme.colors.selection}
-            cursorColor={theme.colors.accentText}
-            keyboardType="decimal-pad"
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={[
-              styles.input,
-              {
-                backgroundColor: theme.colors.background,
-                borderColor: kickInvalid
-                  ? theme.colors.error
-                  : theme.colors.border,
-                borderRadius: theme.radius,
-                color: theme.colors.textPrimary,
-                fontSize: theme.fontSize.title,
-                paddingHorizontal: theme.spacing.md,
-                paddingVertical: Platform.OS === 'android' ? 8 : 12,
-              },
-            ]}
-          />
-          <View style={{ marginTop: theme.spacing.sm }}>
-            <ImperialInput
-              label="Straight L between bends (tangent to tangent)"
-              value={lengthText}
-              onChangeText={(text) => { noteReviewInteraction(); setLengthText(text); }}
-              onParsedChange={setLengthInches}
-              unit={unit}
-              placeholder={unit === 'metric' ? 'e.g. 250 mm' : 'e.g. 10"'}
-            />
-          </View>
-        </View>
-      </Card>
+      </View>
+    </Card>
+  );
 
+  const rightColumn = (
+    <>
       <ResultGroup
         hero={{
           label: 'Total gain (for conduit length)',
@@ -384,17 +380,13 @@ export default function Kicked90Screen({ route, navigation }: Props) {
       />
 
       <BigButton title="Clear" variant="secondary" onPress={handleClear} />
-    </ScrollView>
+    </>
   );
+
+  return <WebCalcShell title="Kicked 90°" left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
   input: {
     minHeight: 56,
     borderWidth: StyleSheet.hairlineWidth,

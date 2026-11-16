@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import Card from '../components/card';
 import RatingCard from '../components/ratingCard';
@@ -7,6 +7,7 @@ import FeedbackCard from '../components/feedbackCard';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../constants';
 import { formatLength } from '../lib/units';
 import { useUnitSystem } from '../lib/unitStore';
+import { isWideDesktopViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { Theme, useTheme } from '../theme';
 
 function Section({
@@ -113,66 +114,81 @@ function gcd(a: number, b: number): number {
 
 export default function LookupScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const { unit } = useUnitSystem();
+  const isWideWeb = Platform.OS === 'web' && isWideDesktopViewport(width);
+  const maxWidth = isWideWeb ? workspaceMaxWidth(width) : 720;
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        { maxWidth, padding: isWideWeb ? 24 : 16 },
+      ]}
     >
       <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Quick Reference</Text>
       <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
         Field constants · works fully offline
       </Text>
 
-      <Section title="Offset angle multipliers">
-        <TableHeader cols={['Angle', 'Multiplier', 'Shrink/in']} theme={theme} />
-        {OFFSET_ANGLES.map((angle, i) => {
-          const c = OFFSET_CONSTANTS[angle];
-          return (
-            <TableRow
-              key={angle}
-              cols={[`${angle}°`, c.multiplier.toFixed(1), formatShrink(c.shrinkPerInch)]}
-              theme={theme}
-              last={i === OFFSET_ANGLES.length - 1}
-            />
-          );
-        })}
-        <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
-          Spacing = obstacle height × multiplier; shrink = height × shrink/in
-        </Text>
-      </Section>
+      <View style={isWideWeb ? styles.wideGrid : undefined}>
+        <View style={isWideWeb ? styles.wideCell : undefined}>
+          <Section title="Offset angle multipliers">
+            <TableHeader cols={['Angle', 'Multiplier', 'Shrink/in']} theme={theme} />
+            {OFFSET_ANGLES.map((angle, i) => {
+              const c = OFFSET_CONSTANTS[angle];
+              return (
+                <TableRow
+                  key={angle}
+                  cols={[`${angle}°`, c.multiplier.toFixed(1), formatShrink(c.shrinkPerInch)]}
+                  theme={theme}
+                  last={i === OFFSET_ANGLES.length - 1}
+                />
+              );
+            })}
+            <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
+              Spacing = obstacle height × multiplier; shrink = height × shrink/in
+            </Text>
+          </Section>
+        </View>
 
-      <Section title="90° Stub Take-up (EMT)">
-        <TableHeader cols={['Size', 'Take-up']} theme={theme} />
-        {TAKE_UP_OPTIONS.map((opt, i) => (
-          <TableRow
-            key={opt.size}
-            cols={[opt.label, formatLength(opt.takeUpInches, unit)]}
-            theme={theme}
-            last={i === TAKE_UP_OPTIONS.length - 1}
-          />
-        ))}
-        <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
-          Mark = target height − take-up
-        </Text>
-      </Section>
+        <View style={isWideWeb ? styles.wideCell : undefined}>
+          <Section title="90° Stub Take-up (EMT)">
+            <TableHeader cols={['Size', 'Take-up']} theme={theme} />
+            {TAKE_UP_OPTIONS.map((opt, i) => (
+              <TableRow
+                key={opt.size}
+                cols={[opt.label, formatLength(opt.takeUpInches, unit)]}
+                theme={theme}
+                last={i === TAKE_UP_OPTIONS.length - 1}
+              />
+            ))}
+            <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
+              Mark = target height − take-up
+            </Text>
+          </Section>
+        </View>
 
-      <Section title="Saddle notes">
-        <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          4-point saddles reuse the multipliers above:
-        </Text>
-        <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          · 3-point: side spacing = height × multiplier of half the center
-          angle (45° center → 2.5)
-        </Text>
-        <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-          · 4-point: outer marks = half obstacle width + height × multiplier
-        </Text>
-      </Section>
-      <View style={{ gap: theme.spacing.md }}>
-        <RatingCard source="reference" />
-        <FeedbackCard />
+        <View style={isWideWeb ? styles.wideCell : undefined}>
+          <Section title="Saddle notes">
+            <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
+              4-point saddles reuse the multipliers above:
+            </Text>
+            <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
+              · 3-point: side spacing = height × multiplier of half the center
+              angle (45° center → 2.5)
+            </Text>
+            <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
+              · 4-point: outer marks = half obstacle width + height × multiplier
+            </Text>
+          </Section>
+        </View>
+
+        <View style={[isWideWeb ? styles.wideCell : undefined, { gap: theme.spacing.md }]}>
+          <RatingCard source="reference" />
+          <FeedbackCard />
+        </View>
       </View>
     </ScrollView>
   );
@@ -181,6 +197,8 @@ export default function LookupScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, paddingBottom: 32, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  wideGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' },
+  wideCell: { flexBasis: '48%', flexGrow: 1, minWidth: 320 },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 4 },
   subtitle: { fontSize: 14, marginBottom: 16 },
   section: { marginBottom: 12 },

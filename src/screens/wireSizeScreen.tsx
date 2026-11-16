@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { Text } from 'react-native';
 
 import { calculateWireSize, defaultTempColumn } from '../calculators/wireSize/wireSize';
 import Card from '../components/card';
@@ -7,6 +7,7 @@ import NumberField, { parseNumberInput } from '../components/numberField';
 import OptionRow from '../components/optionRow';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
+import WebCalcShell from '../components/webCalcShell';
 import { CONTINUOUS_LOAD_FACTOR, TEMP_COLUMNS, wireSizeLabel } from '../constants';
 import type { ConductorMetal, TempColumn } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
@@ -54,18 +55,17 @@ export default function WireSizeScreen() {
 
   const autoLabel = amps !== null && amps > 0 ? `Auto (${defaultTempColumn(continuous ? amps * CONTINUOUS_LOAD_FACTOR : amps)}°C)` : 'Auto';
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.md }]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-        <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 20" error={ampsError} />
-        <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
-        <OptionRow label="Continuous load (3 h or more)" options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? 'Yes, ×125%' : 'No')} onChange={(c) => { noteReviewInteraction(); setM((p) => ({ ...p, continuous: c })); }} />
-        <OptionRow label="Termination rating" options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => { noteReviewInteraction(); setM((p) => ({ ...p, column })) }} />
-      </Card>
+  const leftColumn = (
+    <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
+      <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 20" error={ampsError} />
+      <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
+      <OptionRow label="Continuous load (3 h or more)" options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? 'Yes, ×125%' : 'No')} onChange={(c) => { noteReviewInteraction(); setM((p) => ({ ...p, continuous: c })); }} />
+      <OptionRow label="Termination rating" options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => { noteReviewInteraction(); setM((p) => ({ ...p, column })) }} />
+    </Card>
+  );
+
+  const rightColumn = (
+    <>
       <ResultGroup
         hero={{ label: 'Minimum wire size', value: result ? wireSizeLabel(result.size) : undefined }}
         rows={
@@ -83,10 +83,15 @@ export default function WireSizeScreen() {
         NEC 2023 Table 310.16: up to three current-carrying conductors, 30°C ambient. More wires in the raceway or
         hotter ambient need correction and adjustment (310.15). Check voltage drop on long runs.
       </Text>
-    </ScrollView>
+    </>
+  );
+
+  return (
+    <WebCalcShell
+      title="Wire Size"
+      spacing="md"
+      left={leftColumn}
+      right={rightColumn}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  content: { flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-});

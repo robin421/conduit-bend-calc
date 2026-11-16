@@ -117,6 +117,7 @@ export default function RootStack() {
       initialRouteName="RootTabs"
       screenOptions={{
         headerShown: false,
+        animation: 'none',
         contentStyle: { backgroundColor: theme.colors.background },
       }}
     >

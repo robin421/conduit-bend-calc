@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { Text } from 'react-native';
 
 import { calculateConduitFill } from '../calculators/conduitFill/conduitFill';
 import Card from '../components/card';
@@ -7,6 +7,7 @@ import NumberField, { parseNumberInput } from '../components/numberField';
 import OptionRow from '../components/optionRow';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
+import WebCalcShell from '../components/webCalcShell';
 import { RACEWAY_TYPES, TRADE_SIZES, WIRE_SIZES, wireSizeLabel } from '../constants';
 import type { RacewayType, TradeSize, WireSize } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
@@ -63,25 +64,24 @@ export default function ConduitFillScreen() {
       ]
     : [];
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.md }]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-        <OptionRow label="Raceway" options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => { noteReviewInteraction(); setM((p) => ({ ...p, raceway })); }} />
-        <OptionRow label="Trade size (in)" options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => { noteReviewInteraction(); setM((p) => ({ ...p, trade })); }} />
-        <OptionRow label="Wire (THHN / THWN-2)" options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => { noteReviewInteraction(); setM((p) => ({ ...p, wire })); }} />
-        <NumberField
-          label="Number of wires (optional)"
-          value={m.countText}
-          onChangeText={(countText) => { noteReviewInteraction(); setM((p) => ({ ...p, countText })); }}
-          placeholder="e.g. 9"
-          integer
-          error={countError}
-        />
-      </Card>
+  const leftColumn = (
+    <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
+      <OptionRow label="Raceway" options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => { noteReviewInteraction(); setM((p) => ({ ...p, raceway })); }} />
+      <OptionRow label="Trade size (in)" options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => { noteReviewInteraction(); setM((p) => ({ ...p, trade })); }} />
+      <OptionRow label="Wire (THHN / THWN-2)" options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => { noteReviewInteraction(); setM((p) => ({ ...p, wire })); }} />
+      <NumberField
+        label="Number of wires (optional)"
+        value={m.countText}
+        onChangeText={(countText) => { noteReviewInteraction(); setM((p) => ({ ...p, countText })); }}
+        placeholder="e.g. 9"
+        integer
+        error={countError}
+      />
+    </Card>
+  );
+
+  const rightColumn = (
+    <>
       <ResultGroup
         hero={{ label: `Max ${wireSizeLabel(m.wire)} THHN in ${m.trade}" ${RACEWAY_LABEL[m.raceway]}`, value: result ? String(result.maxConductors) : undefined, unit: 'wires' }}
         rows={rows}
@@ -91,10 +91,15 @@ export default function ConduitFillScreen() {
         NEC 2023 Chapter 9 Tables 1, 4 and 5 (PVC = Schedule 40): 53% for one wire, 31% for two, 40% for three or more (Note 7 rounding).
         All wires the same size. Nipples under 24" may fill to 60%. Check the code edition your AHJ enforces.
       </Text>
-    </ScrollView>
+    </>
+  );
+
+  return (
+    <WebCalcShell
+      title="Conduit Fill"
+      spacing="md"
+      left={leftColumn}
+      right={rightColumn}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  content: { flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-});

@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../calculators/offset/offset';
 import { offsetWarnings } from '../calculators/warnings/warnings';
@@ -18,6 +18,7 @@ import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
+import WebCalcShell from '../components/webCalcShell';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { offsetFeasibility } from '../calculators/feasibility/feasibility';
 import { useBenderSpec } from '../lib/benderSpecStore';
@@ -191,64 +192,59 @@ export default function OffsetScreen({ route, navigation }: Props) {
   const distance = calibratedDistance !== null ? formatMeasurement(calibratedDistance, unit) : undefined;
   const shrink = result ? formatMeasurement(result.shrink, unit) : undefined;
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.sm, gap: theme.spacing.sm },
-      ]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Card style={{ padding: theme.spacing.sm }}>
-        <BenderRow
-          spec={spec}
-          onPress={() =>
-            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
-          }
+  const leftColumn = (
+    <Card style={{ padding: theme.spacing.sm }}>
+      <BenderRow
+        spec={spec}
+        onPress={() =>
+          navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+        }
+      />
+      <View style={{ marginTop: theme.spacing.sm }}>
+        <ConduitTypeToggle
+          value={conduitType}
+          onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
         />
-        <View style={{ marginTop: theme.spacing.sm }}>
-          <ConduitTypeToggle
-            value={conduitType}
-            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
-          />
-        </View>
-        <View style={{ marginTop: theme.spacing.sm }}>
-          <ImperialInput
-            label="Obstacle height"
-            value={heightText}
-            onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
-            onParsedChange={setHeightInches}
-            unit={unit}
-            placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
-          />
-        </View>
+      </View>
+      <View style={{ marginTop: theme.spacing.sm }}>
+        <ImperialInput
+          label="Obstacle height"
+          value={heightText}
+          onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
+          onParsedChange={setHeightInches}
+          unit={unit}
+          placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+        />
+      </View>
 
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-            marginTop: theme.spacing.sm,
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          Bend angle
-        </Text>
-        <View style={styles.angleRow}>
-          {OFFSET_ANGLES.map((value) => (
-            <BigButton
-              key={value}
-              title={`${value}°`}
-              variant="option"
-              size="selection"
-              selected={angle === value}
-              onPress={() => { noteReviewInteraction(); setAngle(value); }}
-              style={styles.angleButton}
-            />
-          ))}
-        </View>
-      </Card>
+      <Text
+        style={{
+          color: theme.colors.textSecondary,
+          fontSize: theme.fontSize.secondary,
+          marginTop: theme.spacing.sm,
+          marginBottom: theme.spacing.sm,
+        }}
+      >
+        Bend angle
+      </Text>
+      <View style={styles.angleRow}>
+        {OFFSET_ANGLES.map((value) => (
+          <BigButton
+            key={value}
+            title={`${value}°`}
+            variant="option"
+            size="selection"
+            selected={angle === value}
+            onPress={() => { noteReviewInteraction(); setAngle(value); }}
+            style={styles.angleButton}
+          />
+        ))}
+      </View>
+    </Card>
+  );
 
+  const rightColumn = (
+    <>
       <ResultGroup
         hero={{ label: 'Mark spacing', value: distance?.value, unit: distance?.unit }}
         rows={[{ label: 'Shrink', value: shrink?.value, unit: shrink?.unit }]}
@@ -291,17 +287,13 @@ export default function OffsetScreen({ route, navigation }: Props) {
       />
 
       <BigButton title="Clear" variant="secondary" onPress={handleClear} />
-    </ScrollView>
+    </>
   );
+
+  return <WebCalcShell title="Offset Bend" left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
   angleRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

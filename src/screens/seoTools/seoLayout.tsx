@@ -285,7 +285,20 @@ export function CalculatorSwitcher({
         <View key={item.key} style={styles.switcherChip}>
           <AnchorText
             href={item.path}
-            onPress={() => trackInternalLinkClick(activeKey, item.key)}
+            onPress={(event: unknown) => {
+              const e = event as {
+                preventDefault?: () => void;
+                metaKey?: boolean;
+                ctrlKey?: boolean;
+                shiftKey?: boolean;
+                altKey?: boolean;
+              } | null;
+              trackInternalLinkClick(activeKey, item.key);
+              if (e && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                e.preventDefault?.();
+                navigation.navigate(item.screen);
+              }
+            }}
             style={styles.switcherLink}
           >
             {text}
@@ -1427,7 +1440,24 @@ export function SeoLink({
 
   if (Platform.OS === 'web') {
     return (
-      <AnchorText href={path} style={linkStyle} onPress={handlePress}>
+      <AnchorText
+        href={path}
+        style={linkStyle}
+        onPress={(event: unknown) => {
+          const e = event as {
+            preventDefault?: () => void;
+            metaKey?: boolean;
+            ctrlKey?: boolean;
+            shiftKey?: boolean;
+            altKey?: boolean;
+          } | null;
+          handlePress();
+          if (e && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+            e.preventDefault?.();
+            navigation.navigate(screen);
+          }
+        }}
+      >
         {children}
       </AnchorText>
     );

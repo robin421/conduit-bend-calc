@@ -8,11 +8,14 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
+import WebCalcShell, { WebBreadcrumbBar } from '../components/webCalcShell';
+import { isWideDesktopViewport } from '../seo/calculatorNav';
 import {
   FIRST_GUIDED_STEP,
   TEST_BEND_MARK,
@@ -177,16 +180,9 @@ function DialInChooser({
   navigation: Props['navigation'];
   onStartQuick: () => void;
 }) {
-  const theme = useTheme();
   const { unit } = useUnitSystem();
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.md, gap: theme.spacing.md },
-      ]}
-    >
+    <WebCalcShell title="Dial In My Bender" spacing="md" singleColumnMaxWidth={960}>
       <BodyText>
         Free calculators use standard bender values. Use a test bend to match
         take-up or bend radius to your own tool. Have your bender, scrap conduit
@@ -205,7 +201,7 @@ function DialInChooser({
         buttonTitle="Start Full Fingerprint"
         onPress={() => navigation.navigate('Calibration')}
       />
-    </ScrollView>
+    </WebCalcShell>
   );
 }
 
@@ -218,6 +214,8 @@ function QuickCheckWizard({
   onExitQuick: () => void;
 }) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const wideWeb = Platform.OS === 'web' && isWideDesktopViewport(width);
   const { unit } = useUnitSystem();
   const { activeProfile } = useBenderProfiles();
   const [step, setStep] = useState<GuidedStep>(FIRST_GUIDED_STEP);
@@ -277,7 +275,16 @@ function QuickCheckWizard({
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
-      <View style={{ paddingHorizontal: theme.spacing.md, paddingTop: theme.spacing.md }}>
+      <WebBreadcrumbBar title="Dial In My Bender" />
+      <View
+        style={{
+          paddingHorizontal: wideWeb ? 24 : theme.spacing.md,
+          paddingTop: theme.spacing.md,
+          width: '100%',
+          maxWidth: wideWeb ? 960 : 720,
+          alignSelf: 'center',
+        }}
+      >
         <Text
           style={{
             color: theme.colors.textSecondary,
@@ -303,7 +310,7 @@ function QuickCheckWizard({
         style={styles.scroll}
         contentContainerStyle={[
           styles.content,
-          { padding: theme.spacing.md, gap: theme.spacing.md },
+          { maxWidth: wideWeb ? 960 : 720, padding: wideWeb ? 24 : theme.spacing.md, gap: theme.spacing.md },
         ]}
         keyboardShouldPersistTaps="handled"
       >

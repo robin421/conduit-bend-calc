@@ -1,9 +1,9 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
 
 import BenderPicker from '../components/benderPicker';
 import Card from '../components/card';
+import WebCalcShell from '../components/webCalcShell';
 import type { BenderSpec } from '../constants';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useCustomSpecs } from '../lib/customSpecs';
@@ -37,14 +37,7 @@ export default function BenderScreen({ route, navigation }: Props) {
   );
 
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.sm, gap: theme.spacing.sm },
-      ]}
-      keyboardShouldPersistTaps="handled"
-    >
+    <WebCalcShell title="Bender Setup" singleColumnMaxWidth={960}>
       <Card style={{ padding: theme.spacing.sm }}>
         <BenderPicker
           spec={spec}
@@ -56,15 +49,6 @@ export default function BenderScreen({ route, navigation }: Props) {
           startCustom={route.params?.createCustom}
         />
       </Card>
-    </ScrollView>
+    </WebCalcShell>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
-});

@@ -134,11 +134,22 @@ export default function CalculatorDrawer({
     outputRange: [-drawerWidth, 0],
   });
 
-  const handlePressItem = (item: CalculatorNavItem) => {
+  const handlePressItem = (item: CalculatorNavItem, event?: unknown) => {
+    const e = event as {
+      preventDefault?: () => void;
+      metaKey?: boolean;
+      ctrlKey?: boolean;
+      shiftKey?: boolean;
+      altKey?: boolean;
+    } | null;
     trackInternalLinkClick(activeKey, item.key);
     onClose();
-    // Web 端交给真实 <a href> 做 SPA 跳转；Native 端显式 navigate。
     if (Platform.OS !== 'web') {
+      navigation.navigate(item.screen);
+      return;
+    }
+    if (e && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault?.();
       navigation.navigate(item.screen);
     }
   };
@@ -245,7 +256,7 @@ export default function CalculatorDrawer({
                   <AnchorText
                     key={item.key}
                     href={item.path}
-                    onPress={() => handlePressItem(item)}
+                    onPress={(event: unknown) => handlePressItem(item, event)}
                     style={itemStyle}
                   >
                     {label}

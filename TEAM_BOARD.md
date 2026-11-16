@@ -25,6 +25,8 @@
 | T11 | 视觉重构 QA 验收（`tsc` + 单测 + 构建 + `ego-browser` 真实截图对比） | qa | T10 | DONE | QA 验收报告 + 真机截图核验 | PASS（`tsc` 0 错、`394/394` 单测、1440px/390px 截图核验全过，底部 Tab 裁切已修复） |
 | T12 | 产品功能缺陷修复（Feedback 崩溃、History Web Clear 失效/桌面入口缺失、Metric 单位换算与文案混算） | developer | T11 | DONE | `feedbackScreen.web.tsx`, `historyScreen.tsx`, `units.ts`, `webQuickCalculator.tsx`, `seoTools/*` 等 10 个文件 | 已完成修复并同步主工作区 |
 | T13 | 产品功能修复 QA 复验（`tsc` + 单测 + 构建 + `ego-browser` E2E 复验） | qa | T12 | DONE | QA 复验报告 | PASS（`tsc` 0 错、`395/395` 单测、Feedback iframe / History Clear / Metric 换算 E2E 复验全过） |
+| T14 | Web 页面跳转丝滑化 + 9 个计算器/Reference/History PC 端双栏宽屏适配 + Feedback 原生 UI 统一 | developer | T13 | DONE | `feedbackScreenContent.tsx`, `calcStack.tsx`, `webCalcShell.tsx`, 9 个计算器屏等 22 个文件 | 已完成开发并同步主工作区 |
+| T15 | T14 全量 QA 验收（`tsc` + 单测 + 构建 + `ego-browser` PC/Mobile 跳转与双栏截图验收） | qa | T14 | DONE | QA 验收报告 + 截图核验 | PASS（`tsc` 0 错、`395/395` 单测、9 计算器双栏/Reference/History/Feedback 原生 UI/无刷新跳转全过） |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

@@ -47,10 +47,13 @@ const Stack = createNativeStackNavigator<CalcStackParamList>();
 export default function CalcStack() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
-  const hideHomeHeader = Platform.OS === 'web' && !isMobileNavViewport(width);
+  const isWeb = Platform.OS === 'web';
+  const hideWebDesktopHeader = isWeb && !isMobileNavViewport(width);
   return (
     <Stack.Navigator
       screenOptions={{
+        headerShown: !hideWebDesktopHeader,
+        animation: isWeb ? 'none' : undefined,
         headerStyle: { backgroundColor: theme.colors.primary },
         headerTintColor: theme.colors.onPrimary,
         headerTitleAlign: 'left',
@@ -66,7 +69,7 @@ export default function CalcStack() {
         component={CalcHomeScreen}
         options={{
           title: PRODUCT_NAME,
-          headerShown: !hideHomeHeader,
+          headerShown: !hideWebDesktopHeader,
           headerTitle: () => <AppBrandBar tone="header" />,
         }}
       />

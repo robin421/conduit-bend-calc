@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   buildCalibratedSpec,
@@ -15,6 +15,7 @@ import BenderPicker from '../components/benderPicker';
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
+import WebCalcShell from '../components/webCalcShell';
 import type { BenderSpec } from '../constants';
 import { saveBenderSpec } from '../lib/benderSpecStore';
 import { trackGrowthEvent } from '../lib/growth';
@@ -160,14 +161,7 @@ export default function CalibrationScreen() {
   }, []);
 
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.md, gap: theme.spacing.md },
-      ]}
-      keyboardShouldPersistTaps="handled"
-    >
+    <WebCalcShell title="Full Fingerprint" spacing="md" singleColumnMaxWidth={960}>
       <Card style={{ gap: theme.spacing.sm }}>
         <Text
           style={{
@@ -326,17 +320,11 @@ export default function CalibrationScreen() {
       </Card>
 
       <BigButton title="Clear" variant="secondary" onPress={handleClear} />
-    </ScrollView>
+    </WebCalcShell>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

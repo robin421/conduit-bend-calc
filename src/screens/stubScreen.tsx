@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   createCustomSpec,
@@ -23,6 +23,7 @@ import BendGuide from '../components/bendGuide';
 import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
+import WebCalcShell from '../components/webCalcShell';
 import ImperialInput from '../components/imperialInput';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
@@ -248,131 +249,126 @@ export default function StubScreen({ route, navigation }: Props) {
   const markMeasurement =
     calibratedMark !== null ? formatMeasurement(calibratedMark, unit) : undefined;
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { padding: theme.spacing.sm, gap: theme.spacing.sm },
-      ]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Card style={{ padding: theme.spacing.sm }}>
-        <BenderRow
-          spec={spec}
-          onPress={() =>
-            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
-          }
+  const leftColumn = (
+    <Card style={{ padding: theme.spacing.sm }}>
+      <BenderRow
+        spec={spec}
+        onPress={() =>
+          navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+        }
+      />
+      <View style={{ marginTop: theme.spacing.sm }}>
+        <ConduitTypeToggle
+          value={conduitType}
+          onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
         />
-        <View style={{ marginTop: theme.spacing.sm }}>
-          <ConduitTypeToggle
-            value={conduitType}
-            onChange={(next) => { noteReviewInteraction(); handleConduitTypeChange(next); }}
-          />
-        </View>
+      </View>
 
-        <View style={{ marginTop: theme.spacing.sm }}>
+      <View style={{ marginTop: theme.spacing.sm }}>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            marginBottom: theme.spacing.xs,
+          }}
+        >
+          Quick EMT Size Presets
+        </Text>
+        <View style={{ flexDirection: 'row', gap: theme.spacing.xs }}>
+          {(['1/2', '3/4', '1'] as const).map((sz) => {
+            const isSelected =
+              spec.conduit.includes(`${sz}"`) && conduitType === 'EMT';
+            return (
+              <View key={sz} style={{ flex: 1 }}>
+                <BigButton
+                  title={`${sz}" EMT`}
+                  size="selection"
+                  selected={isSelected}
+                  onPress={() => {
+                    setConduitType('EMT');
+                    setSpec(legacySizeToSpec(sz));
+                  }}
+                />
+              </View>
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={{ marginTop: theme.spacing.sm }}>
+        <ImperialInput
+          label="Target height"
+          value={heightText}
+          onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
+          onParsedChange={setHeightInches}
+          unit={unit}
+          placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
+        />
+        <View
+          style={{
+            marginTop: theme.spacing.xs,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 6,
+            alignItems: 'center',
+          }}
+        >
           <Text
             style={{
               color: theme.colors.textSecondary,
               fontSize: theme.fontSize.secondary,
-              marginBottom: theme.spacing.xs,
+              marginRight: 2,
             }}
           >
-            Quick EMT Size Presets
+            Presets:
           </Text>
-          <View style={{ flexDirection: 'row', gap: theme.spacing.xs }}>
-            {(['1/2', '3/4', '1'] as const).map((sz) => {
-              const isSelected =
-                spec.conduit.includes(`${sz}"`) && conduitType === 'EMT';
-              return (
-                <View key={sz} style={{ flex: 1 }}>
-                  <BigButton
-                    title={`${sz}" EMT`}
-                    size="selection"
-                    selected={isSelected}
-                    onPress={() => {
-                      setConduitType('EMT');
-                      setSpec(legacySizeToSpec(sz));
-                    }}
-                  />
-                </View>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={{ marginTop: theme.spacing.sm }}>
-          <ImperialInput
-            label="Target height"
-            value={heightText}
-            onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
-            onParsedChange={setHeightInches}
-            unit={unit}
-            placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
-          />
-          <View
-            style={{
-              marginTop: theme.spacing.xs,
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: 6,
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSize.secondary,
-                marginRight: 2,
-              }}
-            >
-              Presets:
-            </Text>
-            {(unit === 'metric'
-              ? (['150', '250', '300', '450', '600'] as const)
-              : (['6', '10', '12', '18', '24'] as const)
-            ).map((h) => {
-              const isSelected =
-                heightText.trim() === h ||
-                heightText.trim() === `${h}"` ||
-                heightText.trim() === `${h} mm`;
-              return (
-                <Pressable
-                  key={h}
-                  accessibilityRole="button"
-                  onPress={() => { noteReviewInteraction(); setHeightText(h); }}
+          {(unit === 'metric'
+            ? (['150', '250', '300', '450', '600'] as const)
+            : (['6', '10', '12', '18', '24'] as const)
+          ).map((h) => {
+            const isSelected =
+              heightText.trim() === h ||
+              heightText.trim() === `${h}"` ||
+              heightText.trim() === `${h} mm`;
+            return (
+              <Pressable
+                key={h}
+                accessibilityRole="button"
+                onPress={() => { noteReviewInteraction(); setHeightText(h); }}
+                style={[
+                  styles.quickPresetChip,
+                  {
+                    backgroundColor: isSelected
+                      ? theme.colors.controlAccent
+                      : theme.colors.card,
+                    borderColor: isSelected
+                      ? theme.colors.accentText
+                      : theme.colors.border,
+                  },
+                ]}
+              >
+                <Text
                   style={[
-                    styles.quickPresetChip,
+                    styles.quickPresetText,
                     {
-                      backgroundColor: isSelected
-                        ? theme.colors.controlAccent
-                        : theme.colors.card,
-                      borderColor: isSelected
-                        ? theme.colors.accentText
-                        : theme.colors.border,
+                      color: isSelected
+                        ? theme.colors.onControlAccent
+                        : theme.colors.textPrimary,
                     },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.quickPresetText,
-                      {
-                        color: isSelected
-                          ? theme.colors.onControlAccent
-                          : theme.colors.textPrimary,
-                      },
-                    ]}
-                  >
-                    {unit === 'metric' ? `${h}mm` : `${h}"`}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+                  {unit === 'metric' ? `${h}mm` : `${h}"`}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
-      </Card>
+      </View>
+    </Card>
+  );
 
+  const rightColumn = (
+    <>
       <ResultGroup
         hero={{
           label: 'Mark location',
@@ -501,17 +497,13 @@ export default function StubScreen({ route, navigation }: Props) {
       />
 
       <BigButton title="Clear" variant="secondary" onPress={handleClear} />
-    </ScrollView>
+    </>
   );
+
+  return <WebCalcShell title="90° Stub" left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
   quickPresetChip: {
     minHeight: 48,
     minWidth: 48,
