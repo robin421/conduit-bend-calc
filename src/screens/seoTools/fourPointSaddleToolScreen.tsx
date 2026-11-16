@@ -29,7 +29,7 @@ import {
 } from '../../lib/analytics';
 import { buildSaddleCopyText } from '../../lib/copyResult';
 import { createSeoHistoryEntry, type SeoHistoryEntry } from '../../lib/seoHistory';
-import { parseLength } from '../../lib/units';
+import { convertLengthInputText, parseLength, type UnitSystem } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
 import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
@@ -82,6 +82,15 @@ export default function FourPointSaddleToolScreen() {
   const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
   const [committed, setCommitted] = useState<CommittedSaddle | null>(null);
   const { entries, loaded, add, clear } = useSeoHistory('saddle4');
+
+  const handleUnitChange = useCallback(
+    (nextUnit: UnitSystem) => {
+      setHeightText((prev) => convertLengthInputText(prev, unit, nextUnit));
+      setWidthText((prev) => convertLengthInputText(prev, unit, nextUnit));
+      setUnit(nextUnit);
+    },
+    [setUnit, unit],
+  );
 
   const calculate = useCallback(
     (override?: {
@@ -257,7 +266,7 @@ export default function FourPointSaddleToolScreen() {
               >
                 {t('common.units')}
               </Text>
-              <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
+              <SeoUnitToggle value={unit} onChange={handleUnitChange} toolName={TOOL_NAME} />
             </View>
 
             <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>

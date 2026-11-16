@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  convertLengthInputText,
+  formatInputValueForUnit,
   formatLength,
   formatMeasurement,
   formatMetric,
@@ -102,4 +104,16 @@ test('sanitizeInputForUnit: 非法残留直接清空', () => {
   assert.equal(sanitizeInputForUnit('2-1/2"', 'metric'), '');
   assert.equal(sanitizeInputForUnit('1 ft 2-1/2 in', 'metric'), '');
   assert.equal(sanitizeInputForUnit('1 ft 2-1/2 in', 'fractional'), '1 ft 2-1/2 in');
+});
+
+test('convertLengthInputText: inch ↔ metric 物理长度换算', () => {
+  assert.equal(convertLengthInputText('12', 'fractional', 'metric'), '305');
+  assert.equal(convertLengthInputText('6"', 'fractional', 'metric'), '152');
+  assert.equal(convertLengthInputText('6.5', 'decimal', 'metric'), '165');
+  assert.equal(convertLengthInputText('305', 'metric', 'fractional'), "1'");
+  assert.equal(convertLengthInputText('152', 'metric', 'fractional'), '6"');
+  assert.equal(convertLengthInputText('305', 'metric', 'decimal'), '12.01');
+  assert.equal(convertLengthInputText('', 'fractional', 'metric'), '');
+  assert.equal(convertLengthInputText('6"', 'fractional', 'fractional'), '6"');
+  assert.equal(formatInputValueForUnit(12, 'metric'), '305');
 });

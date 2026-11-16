@@ -129,3 +129,46 @@ export function formatMeasurement(inches: number, unit: UnitSystem): Measurement
   }
   return { value: formatImperial(inches), unit: '' };
 }
+
+/**
+ * 将内部英寸数格式化为适合输入框显示的文本。
+ * - metric：四舍五入为整数 mm 字符串（例如 12" → `305`）。
+ * - decimal：去尾零小数英寸（例如 `12`、`6.5`）。
+ * - fractional：规范化分数英寸（例如 `12"`、`6 1/2"`）。
+ */
+export function formatInputValueForUnit(inches: number, unit: UnitSystem): string {
+  if (!Number.isFinite(inches) || inches <= 0) {
+    return '';
+  }
+  if (unit === 'metric') {
+    const mm = inchesToMm(inches);
+    const rounded = Math.round(mm);
+    return String(rounded > 0 ? rounded : 1);
+  }
+  if (unit === 'decimal') {
+    return formatDecimalInches(inches);
+  }
+  const imperial = formatImperial(inches);
+  return imperial && imperial !== '0"' ? imperial : formatDecimalInches(inches);
+}
+
+/**
+ * 单位切换时将当前输入框中的合法数值从旧单位换算到新单位（inch ↔ mm）。
+ * - 空白输入或同单位切换原样返回。
+ * - 合法正数按实际物理长度换算。
+ * - 非法或非正数回退到 sanitizeInputForUnit。
+ */
+export function convertLengthInputText(
+  text: string,
+  fromUnit: UnitSystem,
+  toUnit: UnitSystem,
+): string {
+  if (typeof text !== 'string' || fromUnit === toUnit || text.trim() === '') {
+    return text;
+  }
+  const inches = parseLength(text, fromUnit);
+  if (inches === null || !Number.isFinite(inches) || inches <= 0) {
+    return sanitizeInputForUnit(text, toUnit);
+  }
+  return formatInputValueForUnit(inches, toUnit);
+}

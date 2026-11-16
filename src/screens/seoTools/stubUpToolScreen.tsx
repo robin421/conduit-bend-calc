@@ -32,7 +32,12 @@ import {
 } from '../../lib/analytics';
 import { buildStubCopyText } from '../../lib/copyResult';
 import { createSeoHistoryEntry, type SeoHistoryEntry } from '../../lib/seoHistory';
-import { parseLength } from '../../lib/units';
+import {
+  convertLengthInputText,
+  formatLength,
+  parseLength,
+  type UnitSystem,
+} from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
 import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
@@ -80,12 +85,22 @@ export default function StubUpToolScreen() {
   const sizePresets: readonly SeoQuickPreset[] = TAKE_UP_OPTIONS.map((option) => ({
     id: option.size,
     label: `${option.size}"`,
-    hint: t('stub.takeUpHint', { takeUp: option.takeUpInches }),
+    hint: t('stub.takeUpHintFormatted', {
+      takeUp: formatLength(option.takeUpInches, unit),
+    }),
   }));
   const [heightText, setHeightText] = useState('');
   const [size, setSize] = useState<EmtTakeUpSize>(DEFAULT_SIZE);
   const [committed, setCommitted] = useState<CommittedStub | null>(null);
   const { entries, loaded, add, clear } = useSeoHistory('stubUp');
+
+  const handleUnitChange = useCallback(
+    (nextUnit: UnitSystem) => {
+      setHeightText((prev) => convertLengthInputText(prev, unit, nextUnit));
+      setUnit(nextUnit);
+    },
+    [setUnit, unit],
+  );
 
   const option = useMemo(
     () => TAKE_UP_OPTIONS.find((entry) => entry.size === size) ?? TAKE_UP_OPTIONS[0],
@@ -238,7 +253,7 @@ export default function StubUpToolScreen() {
               >
                 {t('common.units')}
               </Text>
-              <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
+              <SeoUnitToggle value={unit} onChange={handleUnitChange} toolName={TOOL_NAME} />
             </View>
 
             <ImperialInput
@@ -281,7 +296,7 @@ export default function StubUpToolScreen() {
                       ? formatSeoLength(activeInput.heightInches, unit)
                       : '—',
                 },
-                { label: t('stub.takeUp'), value: `${displayTakeUp}"` },
+                { label: t('stub.takeUp'), value: formatLength(displayTakeUp, unit) },
               ]}
             />
             {tooShort ? (
@@ -291,7 +306,9 @@ export default function StubUpToolScreen() {
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                {t('stub.tooShort', { takeUp: displayTakeUp })}
+                {t('stub.tooShortFormatted', {
+                  takeUp: formatLength(displayTakeUp, unit),
+                })}
               </Text>
             ) : null}
             <SeoCopyButton

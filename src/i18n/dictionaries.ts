@@ -96,6 +96,7 @@ export const en = {
   'shrink.totalShrink': 'Total shrink (two offsets)',
   'shrink.shrink': 'Shrink',
   'shrink.perInch': 'Shrink per inch of height',
+  'shrink.perMetric': 'Shrink per 25.4 mm (1")',
   'shrink.lengthToAdd': 'Conduit length to add',
   'shrink.whatTitle': 'What is conduit shrink?',
   'shrink.chartTitle': 'Shrink chart',
@@ -107,7 +108,9 @@ export const en = {
   'stub.targetHeight': 'Target height',
   'stub.takeUp': 'Take-up',
   'stub.tooShort': 'Target height must be greater than the {takeUp}" take-up.',
+  'stub.tooShortFormatted': 'Target height must be greater than the {takeUp} take-up.',
   'stub.takeUpHint': '{takeUp}" take-up',
+  'stub.takeUpHintFormatted': '{takeUp} take-up',
   'stub.whatTitle': 'What is a stub-up?',
   'stub.chartTitle': 'Take-up chart (hand benders, EMT)',
 
@@ -248,6 +251,7 @@ export const es: Record<TranslationKey, string> = {
   'shrink.totalShrink': 'Contracción total (dos desplazamientos)',
   'shrink.shrink': 'Contracción',
   'shrink.perInch': 'Contracción por pulgada de altura',
+  'shrink.perMetric': 'Contracción por 25.4 mm (1")',
   'shrink.lengthToAdd': 'Longitud de conducto a agregar',
   'shrink.whatTitle': '¿Qué es la contracción del conducto?',
   'shrink.chartTitle': 'Tabla de contracción',
@@ -260,7 +264,10 @@ export const es: Record<TranslationKey, string> = {
   'stub.takeUp': 'Recogida',
   'stub.tooShort':
     'La altura objetivo debe ser mayor que la recogida de {takeUp}".',
+  'stub.tooShortFormatted':
+    'La altura objetivo debe ser mayor que la recogida de {takeUp}.',
   'stub.takeUpHint': 'recogida de {takeUp}"',
+  'stub.takeUpHintFormatted': 'recogida de {takeUp}',
   'stub.whatTitle': '¿Qué es una subida de 90°?',
   'stub.chartTitle': 'Tabla de recogida (dobladores manuales, EMT)',
 

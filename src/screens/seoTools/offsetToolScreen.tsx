@@ -37,7 +37,7 @@ import {
 } from '../../lib/analytics';
 import { buildOffsetCopyText } from '../../lib/copyResult';
 import { createSeoHistoryEntry, type SeoHistoryEntry } from '../../lib/seoHistory';
-import { parseLength } from '../../lib/units';
+import { convertLengthInputText, parseLength, type UnitSystem } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
 import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
@@ -91,6 +91,15 @@ export default function OffsetToolScreen() {
   const [angle, setAngle] = useState<OffsetAngle>(DEFAULT_ANGLE);
   const [committed, setCommitted] = useState<CommittedOffset | null>(null);
   const { entries, loaded, add, clear } = useSeoHistory('offset');
+
+  const handleUnitChange = useCallback(
+    (nextUnit: UnitSystem) => {
+      setRiseText((prev) => convertLengthInputText(prev, unit, nextUnit));
+      setStartText((prev) => convertLengthInputText(prev, unit, nextUnit));
+      setUnit(nextUnit);
+    },
+    [setUnit, unit],
+  );
 
   const calculate = useCallback(
     (override?: {
@@ -254,7 +263,7 @@ export default function OffsetToolScreen() {
               >
                 {t('common.units')}
               </Text>
-              <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
+              <SeoUnitToggle value={unit} onChange={handleUnitChange} toolName={TOOL_NAME} />
             </View>
 
             <ImperialInput

@@ -28,7 +28,7 @@ import {
 } from '../../lib/analytics';
 import { buildShrinkCopyText } from '../../lib/copyResult';
 import { createSeoHistoryEntry, type SeoHistoryEntry, type ShrinkMode } from '../../lib/seoHistory';
-import { parseLength } from '../../lib/units';
+import { convertLengthInputText, parseLength, type UnitSystem } from '../../lib/units';
 import { useUnitSystem } from '../../lib/unitStore';
 import { useSeoHistory } from '../../lib/useSeoHistory';
 import { getSeoToolPage, getSeoToolPageCopy } from '../../seo/toolPages';
@@ -86,6 +86,14 @@ export default function ShrinkToolScreen() {
   const [mode, setMode] = useState<ShrinkMode>('offset');
   const [committed, setCommitted] = useState<CommittedShrink | null>(null);
   const { entries, loaded, add, clear } = useSeoHistory('shrink');
+
+  const handleUnitChange = useCallback(
+    (nextUnit: UnitSystem) => {
+      setHeightText((prev) => convertLengthInputText(prev, unit, nextUnit));
+      setUnit(nextUnit);
+    },
+    [setUnit, unit],
+  );
 
   const calculate = useCallback(
     (override?: {
@@ -242,7 +250,7 @@ export default function ShrinkToolScreen() {
               >
                 {t('common.units')}
               </Text>
-              <SeoUnitToggle value={unit} onChange={setUnit} toolName={TOOL_NAME} />
+              <SeoUnitToggle value={unit} onChange={handleUnitChange} toolName={TOOL_NAME} />
             </View>
 
             <View style={styles.modeRow}>
@@ -323,7 +331,7 @@ export default function ShrinkToolScreen() {
               }
               rows={[
                 {
-                  label: t('shrink.perInch'),
+                  label: unit === 'metric' ? t('shrink.perMetric') : t('shrink.perInch'),
                   value: perInch !== null ? formatSeoLength(perInch, unit) : '—',
                 },
                 {

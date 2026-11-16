@@ -13,6 +13,7 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import { showAppToast } from '../lib/appToast';
 import { exportRecentHistory } from '../lib/proContinuation';
 import {
   clearHistory,
@@ -56,6 +57,18 @@ export default function HistoryScreen({ navigation }: Props) {
   }, [isFocused]);
 
   const handleClear = useCallback(() => {
+    if (Platform.OS === 'web') {
+      const confirmed =
+        typeof window !== 'undefined' && typeof window.confirm === 'function'
+          ? window.confirm('Delete all history entries?')
+          : true;
+      if (confirmed) {
+        void clearHistory()
+          .then(() => setEntries([]))
+          .catch(() => undefined);
+      }
+      return;
+    }
     Alert.alert('Clear history', 'Delete all history entries?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -79,7 +92,13 @@ export default function HistoryScreen({ navigation }: Props) {
       return;
     }
     void exportRecentHistory(() => navigation.isFocused()).catch((error) => {
-      if (navigation.isFocused()) Alert.alert('Could not export', error instanceof Error ? error.message : 'Please try again.');
+      if (!navigation.isFocused()) return;
+      const message = error instanceof Error ? error.message : 'Please try again.';
+      if (Platform.OS === 'web') {
+        showAppToast(`Could not export: ${message}`);
+      } else {
+        Alert.alert('Could not export', message);
+      }
     });
   }, [access, entries, navigation]);
 
@@ -270,6 +289,72 @@ export default function HistoryScreen({ navigation }: Props) {
     );
   }, [entries.length, hasHiddenEntries, navigation, theme]);
 
+  const renderHeader = useCallback(() => {
+    if (Platform.OS !== 'web' || entries.length === 0) {
+      return null;
+    }
+    return (
+      <Card style={styles.webToolbarCard}>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.fontSize.secondary,
+            fontWeight: theme.fontWeight.medium,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {`${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`}
+        </Text>
+        <View style={styles.webToolbarActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Export"
+            onPress={handleExport}
+            style={({ pressed }) => [
+              styles.webActionButton,
+              {
+                borderColor: theme.colors.border,
+                backgroundColor: pressed ? theme.colors.pressFeedback : theme.colors.background,
+                borderRadius: theme.radius,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.webActionButtonText,
+                { color: theme.colors.accentText },
+              ]}
+            >
+              Export
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Clear"
+            onPress={handleClear}
+            style={({ pressed }) => [
+              styles.webActionButton,
+              {
+                borderColor: theme.colors.border,
+                backgroundColor: pressed ? theme.colors.pressFeedback : theme.colors.background,
+                borderRadius: theme.radius,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.webActionButtonText,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
+              Clear
+            </Text>
+          </Pressable>
+        </View>
+      </Card>
+    );
+  }, [entries.length, handleClear, handleExport, theme]);
+
   if (entries.length === 0) {
     return (
       <View style={[styles.empty, { backgroundColor: theme.colors.background }]}>
@@ -321,6 +406,7 @@ export default function HistoryScreen({ navigation }: Props) {
       data={visibleEntries}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
+      ListHeaderComponent={renderHeader}
       ListFooterComponent={renderFooter}
     />
   );
@@ -355,6 +441,29 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+  webToolbarCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  webToolbarActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  webActionButton: {
+    minHeight: 44,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  webActionButtonText: {
+    fontSize: 15,
     fontWeight: '600',
   },
   historyLimitCard: {

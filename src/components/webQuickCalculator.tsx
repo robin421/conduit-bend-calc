@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../calculators/offset/offset';
@@ -10,7 +10,7 @@ import ResultGroup from './resultGroup';
 import type { OffsetAngle } from '../constants';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useUnitSystem } from '../lib/unitStore';
-import { formatLength, formatMeasurement } from '../lib/units';
+import { formatInputValueForUnit, formatLength, formatMeasurement } from '../lib/units';
 import { useTheme } from '../theme';
 
 interface Props {
@@ -35,13 +35,27 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
 
   // Stub State
   const [stubSize, setStubSize] = useState<'1/2"' | '3/4"' | '1"'>('1/2"');
-  const [stubHeightText, setStubHeightText] = useState('12');
+  const [stubHeightText, setStubHeightText] = useState(() => formatInputValueForUnit(12, unit));
   const [stubHeightInches, setStubHeightInches] = useState<number | null>(12);
 
   // Offset State
   const [offsetAngle, setOffsetAngle] = useState<OffsetAngle>(30);
-  const [offsetHeightText, setOffsetHeightText] = useState('6');
+  const [offsetHeightText, setOffsetHeightText] = useState(() => formatInputValueForUnit(6, unit));
   const [offsetHeightInches, setOffsetHeightInches] = useState<number | null>(6);
+
+  const prevUnitRef = useRef(unit);
+  useEffect(() => {
+    if (prevUnitRef.current === unit) {
+      return;
+    }
+    prevUnitRef.current = unit;
+    if (stubHeightInches !== null && stubHeightInches > 0) {
+      setStubHeightText(formatInputValueForUnit(stubHeightInches, unit));
+    }
+    if (offsetHeightInches !== null && offsetHeightInches > 0) {
+      setOffsetHeightText(formatInputValueForUnit(offsetHeightInches, unit));
+    }
+  }, [unit, stubHeightInches, offsetHeightInches]);
 
   // Stub Calculation
   const stubSpec = useMemo(() => {
@@ -293,7 +307,7 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
           {/* 结果呈现 */}
           <ResultGroup
             hero={{
-              label: `Mark Location (Take-up ${stubSpec.takeUp}")`,
+              label: `Mark Location (Take-up ${formatLength(stubSpec.takeUp, unit)})`,
               value: stubMarkMeasurement?.value,
               unit: stubMarkMeasurement?.unit,
             }}
