@@ -31,6 +31,7 @@ interface ImperialInputProps {
    * 调用方显式传了 keyboardType 时不覆盖，避免影响内部计算器屏。
    */
   inputMode?: 'numeric' | 'decimal' | 'text';
+  onSubmitEditing?: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -159,6 +160,7 @@ interface FractionBoxProps {
   value: string;
   onChangeText: (text: string) => void;
   onBlur: () => void;
+  onSubmitEditing?: () => void;
   placeholder: string;
   placeholderTextColor: string;
   selectionColor?: string;
@@ -180,6 +182,7 @@ function FractionBox({
   value,
   onChangeText,
   onBlur,
+  onSubmitEditing,
   placeholder,
   placeholderTextColor,
   selectionColor,
@@ -211,6 +214,8 @@ function FractionBox({
         setFocused(false);
         onBlur();
       }}
+      onSubmitEditing={onSubmitEditing}
+      returnKeyType="done"
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
       selectionColor={selectionColor}
@@ -244,6 +249,7 @@ export default function ImperialInput({
   unit = 'fractional',
   keyboardType,
   inputMode,
+  onSubmitEditing,
   style,
 }: ImperialInputProps) {
   const theme = useTheme();
@@ -413,6 +419,7 @@ export default function ImperialInput({
             value={parts.whole}
             onChangeText={(text) => updateFractionalPart('whole', text)}
             onBlur={handleFractionalBlur}
+            onSubmitEditing={onSubmitEditing}
             placeholder={resolvedPlaceholder}
             placeholderTextColor={theme.colors.textSecondary}
             selectionColor={theme.colors.selection}
@@ -427,6 +434,7 @@ export default function ImperialInput({
             value={parts.numerator}
             onChangeText={(text) => updateFractionalPart('numerator', text)}
             onBlur={handleFractionalBlur}
+            onSubmitEditing={onSubmitEditing}
             placeholder="0"
             placeholderTextColor={theme.colors.textSecondary}
             selectionColor={theme.colors.selection}
@@ -452,6 +460,7 @@ export default function ImperialInput({
             value={parts.denominator}
             onChangeText={(text) => updateFractionalPart('denominator', text)}
             onBlur={handleFractionalBlur}
+            onSubmitEditing={onSubmitEditing}
             placeholder="16"
             placeholderTextColor={theme.colors.textSecondary}
             selectionColor={theme.colors.selection}
@@ -472,6 +481,8 @@ export default function ImperialInput({
             setStandardFocused(false);
             handleBlur();
           }}
+          onSubmitEditing={onSubmitEditing}
+          returnKeyType="done"
           placeholder={resolvedPlaceholder}
           placeholderTextColor={theme.colors.textSecondary}
           selectionColor={theme.colors.selection}

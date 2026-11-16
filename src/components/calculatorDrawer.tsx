@@ -263,6 +263,53 @@ export default function CalculatorDrawer({
                 </Pressable>
               );
             })}
+            <View
+              style={[
+                styles.divider,
+                { backgroundColor: theme.colors.border },
+              ]}
+            />
+            {([
+              { key: 'Lookup', label: 'Reference' },
+              { key: 'History', label: 'History' },
+            ] as const).map((tab) => (
+              <Pressable
+                key={tab.key}
+                accessibilityRole="button"
+                onPress={() => {
+                  trackInternalLinkClick(activeKey, tab.key.toLowerCase());
+                  onClose();
+                  navigation.navigate('RootTabs', { screen: tab.key });
+                }}
+                style={(state) => {
+                  const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };
+                  return [
+                    styles.menuItem,
+                    {
+                      borderLeftColor: 'transparent',
+                      backgroundColor: Platform.OS === 'web' && hovered ? theme.colors.card : 'transparent',
+                    },
+                    Platform.OS === 'web' && focused
+                      ? ({
+                          outlineStyle: 'solid',
+                          outlineWidth: 2,
+                          outlineColor: theme.colors.accentText,
+                        } as object)
+                      : null,
+                  ];
+                }}
+              >
+                <Text
+                  style={{
+                    color: theme.colors.textPrimary,
+                    fontSize: theme.fontSize.body,
+                    fontWeight: theme.fontWeight.regular,
+                  }}
+                >
+                  {tab.label}
+                </Text>
+              </Pressable>
+            ))}
           </ScrollView>
         </Animated.View>
       </View>
@@ -294,8 +341,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   closeButton: {
-    width: 44,
-    height: 44,
+    minWidth: 48,
+    minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -305,6 +352,11 @@ const styles = StyleSheet.create({
   },
   menu: {
     paddingVertical: 4,
+  },
+  divider: {
+    height: 1,
+    marginVertical: 8,
+    marginHorizontal: 16,
   },
   menuItem: {
     minHeight: 48,

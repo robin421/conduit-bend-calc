@@ -1,6 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Platform, useWindowDimensions } from 'react-native';
 
 import AppBrandBar from '../components/appBrandBar';
+import { isMobileNavViewport } from '../seo/calculatorNav';
 import { PRODUCT_NAME } from '../seo/brand';
 import type { HistoryParams } from '../lib/historyStore';
 import type { ConduitType } from '../lib/profile';
@@ -44,6 +46,8 @@ const Stack = createNativeStackNavigator<CalcStackParamList>();
 
 export default function CalcStack() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const hideHomeHeader = Platform.OS === 'web' && !isMobileNavViewport(width);
   return (
     <Stack.Navigator
       screenOptions={{
@@ -62,6 +66,7 @@ export default function CalcStack() {
         component={CalcHomeScreen}
         options={{
           title: PRODUCT_NAME,
+          headerShown: !hideHomeHeader,
           headerTitle: () => <AppBrandBar tone="header" />,
         }}
       />

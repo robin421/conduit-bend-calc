@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { SEO_TOOL_SCREENS } from '../navigation/seoRoutes.ts';
 import {
   CALCULATOR_NAV,
+  DESKTOP_WIDE_BREAKPOINT,
   DRAWER_ANIMATION_MS,
   DRAWER_MAX_WIDTH,
   DRAWER_WIDTH_RATIO,
@@ -12,6 +13,8 @@ import {
   drawerWidthForViewport,
   isActiveCalculator,
   isMobileNavViewport,
+  isWideDesktopViewport,
+  workspaceMaxWidth,
 } from './calculatorNav.ts';
 import { SEO_TOOL_PAGES } from './toolPages.ts';
 
@@ -79,4 +82,20 @@ test('抽屉宽度：不超过 280pt，且不超过屏幕 85%', () => {
 
 test('抽屉动画时长 300ms', () => {
   assert.equal(DRAWER_ANIMATION_MS, 300);
+});
+
+test('宽屏工作区断点：>=1024pt 返回 true 且最大宽度 1120，否则 720', () => {
+  assert.equal(DESKTOP_WIDE_BREAKPOINT, 1024);
+  assert.equal(isWideDesktopViewport(390), false);
+  assert.equal(isWideDesktopViewport(600), false);
+  assert.equal(isWideDesktopViewport(1023), false);
+  assert.equal(isWideDesktopViewport(1024), true);
+  assert.equal(isWideDesktopViewport(1440), true);
+  assert.equal(isWideDesktopViewport(Number.NaN), false);
+
+  assert.equal(workspaceMaxWidth(390), 720);
+  assert.equal(workspaceMaxWidth(1023), 720);
+  assert.equal(workspaceMaxWidth(1024), 1120);
+  assert.equal(workspaceMaxWidth(1440), 1120);
+  assert.equal(workspaceMaxWidth(Number.NaN), 720);
 });

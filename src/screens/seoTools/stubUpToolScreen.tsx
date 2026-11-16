@@ -21,7 +21,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
 
 import ImperialInput from '../../components/imperialInput';
 import { TAKE_UP_OPTIONS } from '../../constants';
@@ -94,7 +94,10 @@ export default function StubUpToolScreen() {
   const takeUp = option.takeUpInches;
 
   const calculate = useCallback(
-    (override?: { size?: EmtTakeUpSize; heightText?: string }) => {
+    (override?: { size?: EmtTakeUpSize; heightText?: string; dismissKeyboard?: boolean }) => {
+      if (override?.dismissKeyboard) {
+        Keyboard.dismiss();
+      }
       const nextSize = override?.size ?? size;
       const height = parseLength(override?.heightText ?? heightText, unit);
       if (height === null || height <= 0) {
@@ -114,16 +117,37 @@ export default function StubUpToolScreen() {
     [calculate],
   );
 
+  const preview = useMemo<CommittedStub | null>(() => {
+    const height = parseLength(heightText, unit);
+    if (height === null || height <= 0) {
+      return null;
+    }
+    return { heightInches: height, size };
+  }, [heightText, size, unit]);
+
+  const activeInput = preview ?? committed;
+
+  const activeTakeUp =
+    activeInput === null
+      ? null
+      : (TAKE_UP_OPTIONS.find((entry) => entry.size === activeInput.size) ??
+          TAKE_UP_OPTIONS[0]).takeUpInches;
+  const mark =
+    activeInput === null || activeTakeUp === null
+      ? null
+      : activeInput.heightInches - activeTakeUp;
+  const tooShort = mark !== null && mark <= 0;
+
   const committedTakeUp =
     committed === null
       ? null
       : (TAKE_UP_OPTIONS.find((entry) => entry.size === committed.size) ??
           TAKE_UP_OPTIONS[0]).takeUpInches;
-  const mark =
+  const committedMark =
     committed === null || committedTakeUp === null
       ? null
       : committed.heightInches - committedTakeUp;
-  const tooShort = mark !== null && mark <= 0;
+  const committedTooShort = committedMark !== null && committedMark <= 0;
 
   const committedSignature = committed
     ? `${committed.heightInches}|${committed.size}`
@@ -133,16 +157,16 @@ export default function StubUpToolScreen() {
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
 
   useEffect(() => {
-    if (!committed || mark === null || committedTakeUp === null || !committedSignature) {
+    if (!committed || committedMark === null || committedTakeUp === null || !committedSignature) {
       return;
     }
     add(
       createSeoHistoryEntry({
         kind: 'stubUp',
         inputSummary: `${formatSeoLength(committed.heightInches, unit)} · ${committed.size}" EMT`,
-        summary: tooShort
+        summary: committedTooShort
           ? 'below minimum'
-          : `mark ${formatSeoLength(mark, unit)}`,
+          : `mark ${formatSeoLength(committedMark, unit)}`,
         params: {
           heightText,
           size: committed.size,
@@ -175,16 +199,16 @@ export default function StubUpToolScreen() {
   );
 
   const copyText =
-    mark !== null && !tooShort && committedTakeUp !== null
+    mark !== null && !tooShort && activeTakeUp !== null
       ? buildStubCopyText({
-          sizeLabel: `${committed?.size ?? DEFAULT_SIZE}" EMT`,
-          takeUp: committedTakeUp,
+          sizeLabel: `${activeInput?.size ?? DEFAULT_SIZE}" EMT`,
+          takeUp: activeTakeUp,
           mark,
           unit,
         })
       : '';
 
-  const displayTakeUp = committedTakeUp ?? takeUp;
+  const displayTakeUp = activeTakeUp ?? takeUp;
 
   return (
     <SeoPage activeTool={PAGE.key}>
@@ -221,6 +245,7 @@ export default function StubUpToolScreen() {
               label={t('stub.heightLabel')}
               value={heightText}
               onChangeText={setHeightText}
+              onSubmitEditing={() => calculate({ dismissKeyboard: true })}
               unit={unit}
               placeholder={
                 unit === 'metric'
@@ -237,7 +262,7 @@ export default function StubUpToolScreen() {
             />
 
             <View>
-              <SeoCalculateButton onPress={() => calculate()} />
+              <SeoCalculateButton onPress={() => calculate({ dismissKeyboard: true })} />
             </View>
           </SeoCard>
         }
@@ -252,8 +277,8 @@ export default function StubUpToolScreen() {
                 {
                   label: t('stub.targetHeight'),
                   value:
-                    committed !== null
-                      ? formatSeoLength(committed.heightInches, unit)
+                    activeInput !== null
+                      ? formatSeoLength(activeInput.heightInches, unit)
                       : '—',
                 },
                 { label: t('stub.takeUp'), value: `${displayTakeUp}"` },

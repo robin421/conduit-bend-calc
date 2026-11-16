@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
   type ImageStyle,
   type StyleProp,
   type TextStyle,
@@ -19,12 +20,13 @@ import {
   DOWNLOAD_BANNER_DISMISS_KEY,
 } from '../lib/downloadBannerCopy';
 import { GOOGLE_PLAY_URL } from '../lib/homeContent';
+import { isMobileNavViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { isSeoToolPath } from '../seo/toolPages';
 import { trackEvent } from '../lib/analytics';
 import { useTheme } from '../theme';
 
 /** Banner 固定高度；同值用作内容区占位，避免遮挡。 */
-export const DOWNLOAD_BANNER_HEIGHT = 60;
+export const DOWNLOAD_BANNER_HEIGHT = 48;
 
 /**
  * react-native-web 的 Text 支持 href / hrefAttrs（渲染为 <a>），
@@ -95,6 +97,7 @@ function isDismissedWithinWindow(): boolean {
  */
 export default function DownloadBanner() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const [visible, setVisible] = useState(
     () => Platform.OS === 'web' && !isDismissedWithinWindow() && !isSeoRoute(),
   );
@@ -110,86 +113,127 @@ export default function DownloadBanner() {
 
   const device = detectClientDevice();
   const bannerCopy = getDownloadBannerCopy(device);
+  const mobile = isMobileNavViewport(width);
+  const containerMaxWidth = workspaceMaxWidth(width);
+  const mobileTitle = device === 'android'
+    ? 'Get Android Offline App'
+    : device === 'ios'
+      ? 'Add to Home Screen'
+      : 'Bookmark for Offline';
 
   return (
     <>
       <View
         accessibilityRole="header"
         accessibilityLabel={bannerCopy.title}
-        style={[styles.banner, { backgroundColor: theme.colors.accent }]}
+        style={[
+          styles.banner,
+          mobile
+            ? { backgroundColor: theme.colors.accent }
+            : {
+                backgroundColor: theme.colors.card,
+                borderBottomWidth: 1,
+                borderBottomColor: theme.colors.border,
+              },
+        ]}
       >
-        <Image
-          source={require('../../assets/icon.png')}
-          resizeMode="cover"
-          style={styles.appIcon as ImageStyle}
-        />
-        <View style={styles.textBlock}>
-          <Text
-            numberOfLines={1}
-            style={[styles.title, { color: theme.colors.onAccent }]}
-          >
-            {bannerCopy.title}
-          </Text>
-          <Text
-            numberOfLines={1}
-            style={[styles.subtitle, { color: theme.colors.onAccent }]}
-          >
-            {bannerCopy.subtitle}
-          </Text>
-        </View>
-        {device === 'android' ? (
-          <AnchorText
-            accessibilityRole="link"
-            accessibilityLabel="Get the Conduit Bend Calc app on Google Play"
-            href={GOOGLE_PLAY_URL}
-            hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
-            onPress={() => {
-              // gtag 同步 push 到 dataLayer，不阻塞 <a> 默认跳转。
-              trackEvent('google_play_click', { source: 'banner' });
-            }}
-            style={
-              [
+        <View
+          style={[
+            styles.inner,
+            !mobile ? { maxWidth: containerMaxWidth, paddingHorizontal: 16 } : null,
+          ]}
+        >
+          <Image
+            source={require('../../assets/icon.png')}
+            resizeMode="cover"
+            style={[styles.appIcon as ImageStyle, { borderRadius: theme.radius }]}
+          />
+          <View style={styles.textBlock}>
+            {mobile ? (
+              <Text
+                numberOfLines={1}
+                style={[styles.title, { color: theme.colors.onAccent }]}
+              >
+                {mobileTitle}
+              </Text>
+            ) : (
+              <Text
+                numberOfLines={1}
+                style={[styles.title, { color: theme.colors.textPrimary }]}
+              >
+                {bannerCopy.title}
+                <Text style={{ color: theme.colors.textSecondary, fontWeight: '400', fontSize: 13 }}>
+                  {` · ${bannerCopy.subtitle}`}
+                </Text>
+              </Text>
+            )}
+          </View>
+          {device === 'android' ? (
+            <AnchorText
+              accessibilityRole="link"
+              accessibilityLabel="Get the Conduit Bend Calc app on Google Play"
+              href={GOOGLE_PLAY_URL}
+              hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
+              onPress={() => {
+                // gtag 同步 push 到 dataLayer，不阻塞 <a> 默认跳转。
+                trackEvent('google_play_click', { source: 'banner' });
+              }}
+              style={
+                [
+                  styles.getButton,
+                  styles.getText,
+                  {
+                    backgroundColor: mobile ? '#FFFFFF' : theme.colors.accent,
+                    color: theme.colors.onAccent,
+                    borderRadius: theme.radius,
+                  },
+                ] as StyleProp<TextStyle>
+              }
+            >
+              {bannerCopy.button}
+            </AnchorText>
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Acknowledge offline notice"
+              onPress={() => {
+                trackEvent('offline_notice_ack', { device });
+                handleDismiss();
+              }}
+              style={[
                 styles.getButton,
-                styles.getText,
-                { color: theme.colors.onAccent },
-              ] as StyleProp<TextStyle>
-            }
-          >
-            {bannerCopy.button}
-          </AnchorText>
-        ) : (
+                {
+                  backgroundColor: mobile ? 'rgba(255,255,255,0.35)' : theme.colors.accent,
+                  borderRadius: theme.radius,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.getText,
+                  { color: theme.colors.onAccent },
+                ]}
+              >
+                {bannerCopy.button}
+              </Text>
+            </Pressable>
+          )}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Acknowledge offline notice"
-            onPress={() => {
-              trackEvent('offline_notice_ack', { device });
-              handleDismiss();
-            }}
-            style={[
-              styles.getButton,
-              { backgroundColor: 'rgba(255,255,255,0.2)' },
-            ]}
+            accessibilityLabel="Dismiss download banner"
+            onPress={handleDismiss}
+            style={styles.closeButton}
           >
             <Text
               style={[
-                styles.getText,
-                { color: theme.colors.onAccent },
+                styles.closeText,
+                { color: mobile ? theme.colors.onAccent : theme.colors.textSecondary },
               ]}
             >
-              {bannerCopy.button}
+              ✕
             </Text>
           </Pressable>
-        )}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Dismiss download banner"
-          onPress={handleDismiss}
-          style={styles.closeButton}
-        >
-          <Text style={[styles.closeText, { color: theme.colors.onAccent }]}>
-            ✕
-          </Text>
-        </Pressable>
+        </View>
       </View>
       {/* 内容区占位：与 fixed banner 等高 */}
       <View style={{ height: DOWNLOAD_BANNER_HEIGHT }} />
@@ -205,43 +249,50 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: DOWNLOAD_BANNER_HEIGHT,
-    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    gap: 10,
     // 必须压过导航头所在的堆叠上下文：组件挂在 App 根节点，
     // 此处 zIndex 直接参与根堆叠上下文比较。
     zIndex: 1000,
   },
+  inner: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    gap: 8,
+  },
   appIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 28,
+    height: 28,
   },
   textBlock: {
     flex: 1,
     minWidth: 0,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  subtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  getButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 999,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-  },
-  getText: {
     fontSize: 14,
     fontWeight: '600',
   },
+  getButton: {
+    minWidth: 44,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    lineHeight: 44,
+  },
+  getText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
   closeButton: {
-    padding: 8,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeText: {
     fontSize: 16,

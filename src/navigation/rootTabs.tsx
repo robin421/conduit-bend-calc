@@ -1,13 +1,30 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getFocusedRouteNameFromRoute, type NavigatorScreenParams } from '@react-navigation/native';
-import { Platform, Text, View } from 'react-native';
+import {
+  getFocusedRouteNameFromRoute,
+  useNavigation,
+  type NavigationProp,
+  type NavigatorScreenParams,
+} from '@react-navigation/native';
+import { useState } from 'react';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import AppBrandBar from '../components/appBrandBar';
 import HistoryScreen from '../screens/historyScreen';
 import LookupScreen from '../screens/lookupScreen';
+import { isMobileNavViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { Theme, useTheme } from '../theme';
 import CalcStack from './calcStack';
 import type { CalcStackParamList } from './calcStack';
 import { handleCalcTabPress } from './calcTabReset';
+import type { RootStackParamList } from './rootStackTypes';
 
 export type RootTabParamList = {
   CalcHome: NavigatorScreenParams<CalcStackParamList>;
@@ -16,6 +33,15 @@ export type RootTabParamList = {
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
+
+const DESKTOP_TAB_ITEMS: ReadonlyArray<{
+  key: keyof RootTabParamList;
+  label: string;
+}> = [
+  { key: 'CalcHome', label: 'Calculate' },
+  { key: 'Lookup', label: 'Reference' },
+  { key: 'History', label: 'History' },
+];
 
 function tabIcon(glyph: string, theme: Theme) {
   return function TabIcon({ color, focused }: { color: string; focused: boolean }) {
@@ -67,8 +93,42 @@ function tabIcon(glyph: string, theme: Theme) {
 
 export default function RootTabs() {
   const theme = useTheme();
-  return (
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const rootNavigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [activeTab, setActiveTab] = useState<keyof RootTabParamList>('CalcHome');
+
+  const isWeb = Platform.OS === 'web';
+  const mobileNav = isMobileNavViewport(width);
+  const desktopWebNav = isWeb && !mobileNav;
+  const maxWidth = workspaceMaxWidth(width);
+
+  const handleDesktopSelect = (tabKey: keyof RootTabParamList) => {
+    setActiveTab(tabKey);
+    if (tabKey === 'CalcHome') {
+      rootNavigation.navigate('RootTabs', {
+        screen: 'CalcHome',
+        params: { screen: 'CalcHome' },
+      });
+      return;
+    }
+    rootNavigation.navigate('RootTabs', { screen: tabKey });
+  };
+
+  const tabNavigator = (
     <Tab.Navigator
+      tabBar={desktopWebNav ? () => null : undefined}
+      screenListeners={{
+        state: (event) => {
+          const state = event.data?.state;
+          const current = state?.routes?.[state.index]?.name as
+            | keyof RootTabParamList
+            | undefined;
+          if (current) {
+            setActiveTab(current);
+          }
+        },
+      }}
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.primary },
         headerTintColor: theme.colors.onPrimary,
@@ -80,13 +140,24 @@ export default function RootTabs() {
         tabBarActiveTintColor: theme.colors.accentText,
         tabBarInactiveTintColor: theme.colors.textSecondary,
         tabBarHideOnKeyboard: true,
-        tabBarStyle: {
-          backgroundColor: theme.colors.card,
-          borderTopColor: theme.colors.border,
-          height: Platform.OS === 'android' ? 80 : 56,
-          paddingBottom: Platform.OS === 'android' ? 12 : 6,
-          paddingTop: Platform.OS === 'android' ? 10 : 8,
-        },
+        tabBarStyle: desktopWebNav
+          ? { display: 'none' }
+          : {
+              backgroundColor: theme.colors.card,
+              borderTopColor: theme.colors.border,
+              height:
+                Platform.OS === 'android'
+                  ? 80
+                  : 56 + (isWeb ? insets.bottom : 0),
+              paddingBottom:
+                Platform.OS === 'android'
+                  ? 12
+                  : Math.max(6, isWeb ? insets.bottom : 6),
+              paddingTop: Platform.OS === 'android' ? 10 : 6,
+            },
+        tabBarItemStyle: isWeb
+          ? { justifyContent: 'center', alignItems: 'center' }
+          : undefined,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
@@ -98,8 +169,13 @@ export default function RootTabs() {
       <Tab.Screen
         name="CalcHome"
         component={CalcStack}
-        options={({ route }) => ({ title: 'Calculate', headerShown: false, tabBarIcon: tabIcon('⌐', theme),
-          ...(getFocusedRouteNameFromRoute(route) === 'Paywall' ? { tabBarStyle: { display: 'none' as const } } : {}),
+        options={({ route }) => ({
+          title: 'Calculate',
+          headerShown: false,
+          tabBarIcon: tabIcon('⌐', theme),
+          ...(getFocusedRouteNameFromRoute(route) === 'Paywall'
+            ? { tabBarStyle: { display: 'none' as const } }
+            : {}),
         })}
         listeners={({ navigation }) => ({
           tabPress: (event) => handleCalcTabPress(navigation, event),
@@ -108,13 +184,159 @@ export default function RootTabs() {
       <Tab.Screen
         name="Lookup"
         component={LookupScreen}
-        options={{ title: 'Reference', tabBarIcon: tabIcon('▦', theme) }}
+        options={{
+          title: 'Reference',
+          headerShown: !desktopWebNav,
+          tabBarIcon: tabIcon('▦', theme),
+        }}
       />
       <Tab.Screen
         name="History"
         component={HistoryScreen}
-        options={{ title: 'History', tabBarIcon: tabIcon('↺', theme) }}
+        options={{
+          title: 'History',
+          headerShown: !desktopWebNav,
+          tabBarIcon: tabIcon('↺', theme),
+        }}
       />
     </Tab.Navigator>
   );
+
+  if (!desktopWebNav) {
+    return tabNavigator;
+  }
+
+  return (
+    <View style={styles.webRoot}>
+      <View
+        accessibilityRole="header"
+        style={[styles.topNavBar, { backgroundColor: theme.colors.primary }]}
+      >
+        <View style={[styles.topNavInner, { maxWidth }]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => handleDesktopSelect('CalcHome')}
+            style={(state) => {
+              const { focused } = state as { focused?: boolean };
+              return [
+                styles.brandTrigger,
+                focused
+                  ? ({
+                      outlineStyle: 'solid',
+                      outlineWidth: 2,
+                      outlineColor: theme.colors.accent,
+                    } as object)
+                  : null,
+              ];
+            }}
+          >
+            <AppBrandBar tone="header" />
+          </Pressable>
+          <View style={styles.topNavLinks}>
+            {DESKTOP_TAB_ITEMS.map((item) => {
+              const selected = activeTab === item.key;
+              return (
+                <Pressable
+                  key={item.key}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected }}
+                  onPress={() => handleDesktopSelect(item.key)}
+                  style={(state) => {
+                    const { hovered, focused } = state as {
+                      hovered?: boolean;
+                      focused?: boolean;
+                    };
+                    return [
+                      styles.topNavItem,
+                      hovered
+                        ? { backgroundColor: 'rgba(255,255,255,0.08)' }
+                        : null,
+                      focused
+                        ? ({
+                            outlineStyle: 'solid',
+                            outlineWidth: 2,
+                            outlineColor: theme.colors.accent,
+                          } as object)
+                        : null,
+                    ];
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: selected
+                        ? theme.colors.onPrimary
+                        : 'rgba(255,255,255,0.78)',
+                      fontSize: 15,
+                      fontWeight: selected ? '600' : '500',
+                    }}
+                  >
+                    {item.label}
+                  </Text>
+                  {selected ? (
+                    <View
+                      style={[
+                        styles.topNavIndicator,
+                        { backgroundColor: theme.colors.accent },
+                      ]}
+                    />
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+      <View style={styles.webContent}>{tabNavigator}</View>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  webRoot: {
+    flex: 1,
+  },
+  webContent: {
+    flex: 1,
+  },
+  topNavBar: {
+    height: 56,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topNavInner: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+  },
+  brandTrigger: {
+    minHeight: 44,
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+  },
+  topNavLinks: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    height: '100%',
+    gap: 8,
+  },
+  topNavItem: {
+    minHeight: 44,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    borderRadius: 8,
+  },
+  topNavIndicator: {
+    position: 'absolute',
+    left: 10,
+    right: 10,
+    bottom: 0,
+    height: 3,
+  },
+});

@@ -26,7 +26,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Keyboard, Pressable, Text, View } from 'react-native';
 
 import { calculateOffset } from '../../calculators/offset/offset';
 import ImperialInput from '../../components/imperialInput';
@@ -97,7 +97,11 @@ export default function OffsetToolScreen() {
       angle?: OffsetAngle;
       heightText?: string;
       startText?: string;
+      dismissKeyboard?: boolean;
     }) => {
+      if (override?.dismissKeyboard) {
+        Keyboard.dismiss();
+      }
       const heightText = override?.heightText ?? riseText;
       const start = override?.startText ?? startText;
       const nextAngle = override?.angle ?? angle;
@@ -122,13 +126,26 @@ export default function OffsetToolScreen() {
     [calculate],
   );
 
+  // 实时结果预览：输入合法数值时即时更新结果卡，不写入历史或触发统计。
+  const preview = useMemo<CommittedOffset | null>(() => {
+    const height = parseLength(riseText, unit);
+    if (height === null || height <= 0) {
+      return null;
+    }
+    const startInches =
+      startText.trim() === '' ? null : parseLength(startText, unit);
+    return { heightInches: height, startInches, angle };
+  }, [angle, riseText, startText, unit]);
+
+  const activeInput = preview ?? committed;
+
   const result = useMemo(
-    () => (committed ? calculateOffset(committed.heightInches, committed.angle) : null),
-    [committed],
+    () => (activeInput ? calculateOffset(activeInput.heightInches, activeInput.angle) : null),
+    [activeInput],
   );
 
   const spacing = result ? result.distanceBetweenBends : null;
-  const mark1 = committed ? (committed.startInches ?? 0) : 0;
+  const mark1 = activeInput ? (activeInput.startInches ?? 0) : 0;
   const mark2 = spacing !== null ? mark1 + spacing : null;
 
   const committedSignature = committed
@@ -139,15 +156,20 @@ export default function OffsetToolScreen() {
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
 
   // 按下 Calculate 得到有效结果后写入历史（相同输入不重复写）。
+  const committedResult = useMemo(
+    () => (committed ? calculateOffset(committed.heightInches, committed.angle) : null),
+    [committed],
+  );
+
   useEffect(() => {
-    if (!committed || !result || !committedSignature) {
+    if (!committed || !committedResult || !committedSignature) {
       return;
     }
     add(
       createSeoHistoryEntry({
         kind: 'offset',
         inputSummary: `${formatSeoLength(committed.heightInches, unit)} @ ${committed.angle}°`,
-        summary: `spacing ${formatSeoLength(result.distanceBetweenBends, unit)}, shrink ${formatSeoLength(result.shrink, unit)}`,
+        summary: `spacing ${formatSeoLength(committedResult.distanceBetweenBends, unit)}, shrink ${formatSeoLength(committedResult.shrink, unit)}`,
         params: {
           heightText: riseText,
           startText,
@@ -193,9 +215,9 @@ export default function OffsetToolScreen() {
   );
 
   const copyText =
-    result && committed
+    result && activeInput
       ? buildOffsetCopyText({
-          angle: committed.angle,
+          angle: activeInput.angle,
           spacing: result.distanceBetweenBends,
           shrink: result.shrink,
           mark1,
@@ -239,6 +261,7 @@ export default function OffsetToolScreen() {
               label={t('offset.heightLabel')}
               value={riseText}
               onChangeText={setRiseText}
+              onSubmitEditing={() => calculate({ dismissKeyboard: true })}
               unit={unit}
               placeholder={
                 unit === 'metric'
@@ -253,6 +276,7 @@ export default function OffsetToolScreen() {
                   label={t('offset.startLabel')}
                   value={startText}
                   onChangeText={setStartText}
+                  onSubmitEditing={() => calculate({ dismissKeyboard: true })}
                   unit={unit}
                   placeholder={
                     unit === 'metric'
@@ -266,7 +290,7 @@ export default function OffsetToolScreen() {
               accessibilityRole="button"
               accessibilityState={{ expanded: startOpen }}
               onPress={() => setStartOpen((open) => !open)}
-              style={{ minHeight: 40, justifyContent: 'center' }}
+              style={{ minHeight: 44, justifyContent: 'center' }}
             >
               <Text
                 style={{
@@ -288,7 +312,7 @@ export default function OffsetToolScreen() {
             />
 
             <View>
-              <SeoCalculateButton onPress={() => calculate()} />
+              <SeoCalculateButton onPress={() => calculate({ dismissKeyboard: true })} />
             </View>
           </SeoCard>
         }

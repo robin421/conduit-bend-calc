@@ -5,7 +5,7 @@
  * 满足触控最小尺寸。切换会写 localStorage、改 `?lang=` 与 head（见 i18n/store）。
  */
 
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { LANG_LABELS, LANGS, useI18n } from '../i18n';
 import { useTheme } from '../theme';
@@ -25,17 +25,31 @@ export default function LanguageSwitcher() {
             accessibilityState={{ selected }}
             accessibilityLabel={LANG_LABELS[code]}
             onPress={() => setLang(code)}
-            hitSlop={6}
-            style={[
-              styles.button,
-              {
-                borderRadius: theme.radius,
-                borderColor: selected ? theme.colors.accentText : theme.colors.border,
-                backgroundColor: selected
-                  ? theme.colors.controlAccent
-                  : theme.colors.background,
-              },
-            ]}
+            hitSlop={4}
+            style={(state) => {
+              const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };
+              return [
+                styles.button,
+                {
+                  borderRadius: theme.radius,
+                  borderColor: selected
+                    ? theme.colors.accentText
+                    : Platform.OS === 'web' && hovered
+                      ? theme.colors.textSecondary
+                      : theme.colors.border,
+                  backgroundColor: selected
+                    ? theme.colors.controlAccent
+                    : theme.colors.background,
+                },
+                Platform.OS === 'web' && focused
+                  ? ({
+                      outlineStyle: 'solid',
+                      outlineWidth: 2,
+                      outlineColor: theme.colors.accentText,
+                    } as object)
+                  : null,
+              ];
+            }}
           >
             <Text
               style={{
@@ -63,8 +77,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    minHeight: 32,
+    minHeight: 44,
     minWidth: 44,
+    paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,

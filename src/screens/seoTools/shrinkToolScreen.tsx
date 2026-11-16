@@ -17,7 +17,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { calculateOffset } from '../../calculators/offset/offset';
 import ImperialInput from '../../components/imperialInput';
@@ -92,7 +92,11 @@ export default function ShrinkToolScreen() {
       angle?: OffsetAngle;
       mode?: ShrinkMode;
       heightText?: string;
+      dismissKeyboard?: boolean;
     }) => {
+      if (override?.dismissKeyboard) {
+        Keyboard.dismiss();
+      }
       const nextAngle = override?.angle ?? angle;
       const nextMode = override?.mode ?? mode;
       const height = parseLength(override?.heightText ?? heightText, unit);
@@ -121,17 +125,27 @@ export default function ShrinkToolScreen() {
     [calculate],
   );
 
+  const preview = useMemo<CommittedShrink | null>(() => {
+    const height = parseLength(heightText, unit);
+    if (height === null || height <= 0) {
+      return null;
+    }
+    return { heightInches: height, angle, mode };
+  }, [angle, heightText, mode, unit]);
+
+  const activeInput = preview ?? committed;
+
   const result = useMemo(
-    () => (committed ? calculateOffset(committed.heightInches, committed.angle) : null),
-    [committed],
+    () => (activeInput ? calculateOffset(activeInput.heightInches, activeInput.angle) : null),
+    [activeInput],
   );
 
   const perInch =
-    result && committed ? result.shrink / committed.heightInches : null;
+    result && activeInput ? result.shrink / activeInput.heightInches : null;
   const totalShrink =
-    result === null || committed === null
+    result === null || activeInput === null
       ? null
-      : committed.mode === 'saddle'
+      : activeInput.mode === 'saddle'
         ? result.shrink * 2
         : result.shrink;
 
@@ -142,15 +156,20 @@ export default function ShrinkToolScreen() {
   useCalculatorAnalytics('shrink', committedSignature);
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
 
+  const committedResult = useMemo(
+    () => (committed ? calculateOffset(committed.heightInches, committed.angle) : null),
+    [committed],
+  );
+
   useEffect(() => {
-    if (!committed || !result || !committedSignature) {
+    if (!committed || !committedResult || !committedSignature) {
       return;
     }
     add(
       createSeoHistoryEntry({
         kind: 'shrink',
         inputSummary: `${formatSeoLength(committed.heightInches, unit)} @ ${committed.angle}° · ${committed.mode}`,
-        summary: `shrink ${formatSeoLength(result.shrink * (committed.mode === 'saddle' ? 2 : 1), unit)}`,
+        summary: `shrink ${formatSeoLength(committedResult.shrink * (committed.mode === 'saddle' ? 2 : 1), unit)}`,
         params: {
           heightText,
           angle: committed.angle,
@@ -186,10 +205,10 @@ export default function ShrinkToolScreen() {
   );
 
   const copyText =
-    result && committed && totalShrink !== null
+    result && activeInput && totalShrink !== null
       ? buildShrinkCopyText({
-          mode: committed.mode,
-          angle: committed.angle,
+          mode: activeInput.mode,
+          angle: activeInput.angle,
           shrink: totalShrink,
           unit,
         })
@@ -269,6 +288,7 @@ export default function ShrinkToolScreen() {
                 label={t('shrink.heightLabel')}
                 value={heightText}
                 onChangeText={setHeightText}
+                onSubmitEditing={() => calculate({ dismissKeyboard: true })}
                 unit={unit}
                 placeholder={
                   unit === 'metric'
@@ -286,7 +306,7 @@ export default function ShrinkToolScreen() {
             />
 
             <View>
-              <SeoCalculateButton onPress={() => calculate()} />
+              <SeoCalculateButton onPress={() => calculate({ dismissKeyboard: true })} />
             </View>
           </SeoCard>
         }

@@ -92,24 +92,17 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
   }, [unit]);
 
   return (
-    <Card style={[styles.container, { borderColor: theme.colors.accent, borderWidth: 1 }]}>
+    <Card style={[styles.container, { borderColor: theme.colors.border, borderWidth: 1, borderRadius: theme.radius }]}>
       {/* 模式选择 Header */}
       <View style={styles.headerRow}>
-        <View style={styles.titleWithBadge}>
-          <Text
-            style={[
-              styles.headerTitle,
-              { color: theme.colors.textPrimary, fontSize: theme.fontSize.title },
-            ]}
-          >
-            Instant Calculator
-          </Text>
-          <View style={[styles.badge, { backgroundColor: theme.colors.accent }]}>
-            <Text style={[styles.badgeText, { color: theme.colors.onAccent }]}>
-              READY TO CALCULATE
-            </Text>
-          </View>
-        </View>
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: theme.colors.textPrimary, fontSize: theme.fontSize.title },
+          ]}
+        >
+          Instant Calculator
+        </Text>
         <View style={[styles.modeToggle, { gap: theme.spacing.xs }]}>
           <BigButton
             title="90° Stub"
@@ -285,7 +278,7 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   headerRow: {
     flexDirection: 'row',
@@ -295,29 +288,15 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 12,
   },
-  titleWithBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   headerTitle: {
     fontWeight: '700',
-  },
-  badge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
   modeToggle: {
     flexDirection: 'row',
   },
   modeButton: {
     minWidth: 80,
+    minHeight: 44,
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
@@ -334,11 +313,13 @@ const styles = StyleSheet.create({
   },
   sizeButton: {
     minWidth: 54,
+    minHeight: 44,
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
   presetButton: {
     minWidth: 46,
+    minHeight: 44,
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
@@ -347,6 +328,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 4,
-    paddingVertical: 4,
+    paddingVertical: 10,
+    minHeight: 44,
   },
 });

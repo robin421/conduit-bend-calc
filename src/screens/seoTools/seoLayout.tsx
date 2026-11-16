@@ -16,6 +16,7 @@ import {
   Text,
   View,
   useWindowDimensions,
+  type PressableStateCallbackType,
   type StyleProp,
   type TextStyle,
   type ViewStyle,
@@ -31,6 +32,8 @@ import { useI18n } from '../../i18n';
 import {
   CALCULATOR_NAV,
   calculatorNavMode,
+  isWideDesktopViewport,
+  workspaceMaxWidth,
   type CalculatorNavItem,
 } from '../../seo/calculatorNav';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../../constants';
@@ -50,7 +53,32 @@ import {
 import { copyToClipboard } from '../../lib/clipboard';
 import type { SeoHistoryEntry } from '../../lib/seoHistory';
 import { formatLength } from '../../lib/units';
-import { useTheme } from '../../theme';
+import { useTheme, type Theme } from '../../theme';
+
+/** Web 端无阴影 Hover / Focus-visible 样式辅助。 */
+function webFocusHoverStyle(
+  state: PressableStateCallbackType,
+  theme: Theme,
+  options?: { darkSurface?: boolean; hoverBorder?: string; hoverBg?: string },
+): ViewStyle | null {
+  if (Platform.OS !== 'web') {
+    return null;
+  }
+  const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };
+  const style: Record<string, unknown> = {};
+  if (hovered) {
+    if (options?.hoverBorder) style.borderColor = options.hoverBorder;
+    if (options?.hoverBg) style.backgroundColor = options.hoverBg;
+  }
+  if (focused) {
+    style.outlineStyle = 'solid';
+    style.outlineWidth = 2;
+    style.outlineColor = options?.darkSurface
+      ? theme.colors.accent
+      : theme.colors.accentText;
+  }
+  return Object.keys(style).length > 0 ? (style as ViewStyle) : null;
+}
 
 /** react-native-web 的 Text 支持 href（渲染为 <a>）；RN 类型未收录，做一次断言。 */
 const AnchorText = Text as unknown as ComponentType<
@@ -76,8 +104,10 @@ export function SeoPage({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  // 响应式断点：<600pt 汉堡 + 抽屉，>=600pt 横向切换条。
+  // 响应式断点：<600pt 汉堡 + 抽屉，>=600pt 横向切换条；>=1024pt 宽屏 1120px。
   const mobileNav = calculatorNavMode(width) === 'drawer';
+  const wideDesktop = Platform.OS === 'web' && isWideDesktopViewport(width);
+  const maxWidth = Platform.OS === 'web' ? workspaceMaxWidth(width) : 720;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // 从移动端切到桌面端时自动收起抽屉，避免遗留遮罩。
@@ -96,7 +126,8 @@ export function SeoPage({
         contentContainerStyle={[
           styles.page,
           {
-            paddingHorizontal: theme.spacing.sm,
+            maxWidth,
+            paddingHorizontal: wideDesktop ? 24 : theme.spacing.sm,
             paddingTop: theme.spacing.md + (Platform.OS === 'web' ? 0 : insets.top),
             paddingBottom: theme.spacing.xl,
             // 8pt 网格：区块之间 16pt 呼吸感（T66 移动端间距）。
@@ -213,6 +244,7 @@ export function CalculatorSwitcher({ activeKey }: { activeKey: string }) {
           <AnchorText
             href={item.path}
             onPress={() => trackInternalLinkClick(activeKey, item.key)}
+            style={styles.switcherLink}
           >
             {text}
           </AnchorText>
@@ -379,6 +411,7 @@ export function SeoCollapsibleSection({
     <View
       style={[
         styles.referenceSection,
+        styles.readingMeasure,
         {
           backgroundColor: theme.colors.card,
           borderColor: theme.colors.border,
@@ -390,7 +423,12 @@ export function SeoCollapsibleSection({
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         onPress={() => setOpen((previous) => !previous)}
-        style={styles.referenceHeader}
+        style={(state) => [
+          styles.referenceHeader,
+          webFocusHoverStyle(state, theme, {
+            hoverBg: theme.colors.background,
+          }),
+        ]}
       >
         <SeoHeading level={2} style={[styles.referenceTitle, { color: theme.colors.textSecondary }]}>
           {title}
@@ -463,13 +501,17 @@ export function SeoUnitToggle({
               }
               onChange(option.key);
             }}
-            style={[
+            style={(state) => [
               styles.segmentItem,
               {
                 backgroundColor: selected
                   ? theme.colors.primary
                   : theme.colors.card,
               },
+              webFocusHoverStyle(state, theme, {
+                darkSurface: selected,
+                hoverBg: selected ? theme.colors.primary : theme.colors.background,
+              }),
             ]}
           >
             <Text
@@ -621,7 +663,7 @@ export function AngleSelector({
               trackSeoToolPreset(toolName, preset.id);
               onChange(angle);
             }}
-            style={[
+            style={(state) => [
               styles.anglePresetButton,
               {
                 backgroundColor: selected
@@ -633,6 +675,9 @@ export function AngleSelector({
                 borderWidth: selected ? 1.5 : StyleSheet.hairlineWidth,
                 borderRadius: theme.radius,
               },
+              webFocusHoverStyle(state, theme, {
+                hoverBorder: selected ? theme.colors.accentText : theme.colors.textSecondary,
+              }),
             ]}
           >
             <Text
@@ -671,7 +716,7 @@ export function AngleSelector({
             accessibilityRole="button"
             accessibilityState={{ selected }}
             onPress={() => onChange(angle)}
-            style={[
+            style={(state) => [
               styles.angleButton,
               {
                 backgroundColor: selected
@@ -682,6 +727,9 @@ export function AngleSelector({
                   : theme.colors.border,
                 borderRadius: theme.radius,
               },
+              webFocusHoverStyle(state, theme, {
+                hoverBorder: selected ? theme.colors.accentText : theme.colors.textSecondary,
+              }),
             ]}
           >
             <Text
@@ -851,14 +899,17 @@ export function SeoCopyButton({
         accessibilityState={{ disabled: Boolean(disabled) }}
         disabled={disabled}
         onPress={handlePress}
-        style={({ pressed }) => [
+        style={(state) => [
           styles.secondaryButton,
           {
             backgroundColor: theme.colors.card,
             borderColor: theme.colors.border,
             borderRadius: theme.radius,
-            opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+            opacity: disabled ? 0.4 : state.pressed ? 0.85 : 1,
           },
+          webFocusHoverStyle(state, theme, {
+            hoverBorder: theme.colors.textSecondary,
+          }),
         ]}
       >
         <Text
@@ -952,15 +1003,18 @@ export function SeoHistoryList({
               trackSeoToolHistoryRefill(toolName);
               onRefill(entry);
             }}
-            style={({ pressed }) => [
+            style={(state) => [
               styles.historyRow,
               {
-                backgroundColor: pressed
+                backgroundColor: state.pressed
                   ? theme.colors.background
                   : theme.colors.card,
                 borderColor: theme.colors.border,
                 borderRadius: theme.radius,
               },
+              webFocusHoverStyle(state, theme, {
+                hoverBorder: theme.colors.textSecondary,
+              }),
             ]}
           >
             <Text
@@ -987,7 +1041,12 @@ export function SeoHistoryList({
         <Pressable
           accessibilityRole="button"
           onPress={onClear}
-          style={styles.historyClear}
+          style={(state) => [
+            styles.historyClear,
+            webFocusHoverStyle(state, theme, {
+              hoverBg: theme.colors.card,
+            }),
+          ]}
         >
           <Text
             style={{
@@ -1018,19 +1077,27 @@ export function SeoCalcLayout({
 }) {
   const theme = useTheme();
   const { width, height } = useWindowDimensions();
-  const landscape = width > height && width >= 600;
+  const wideDesktop = Platform.OS === 'web' && isWideDesktopViewport(width);
+  const landscape = wideDesktop || (width > height && width >= 600);
   if (!landscape) {
     return (
-    <>
-      {input}
-      {result}
-    </>
+      <>
+        {input}
+        {result}
+      </>
     );
   }
   return (
-    <View style={[styles.calcRow, { gap: theme.spacing.md }]}>
-      <View style={{ flex: 1, gap: theme.spacing.sm }}>{input}</View>
-      <View style={{ flex: 1 }}>{result}</View>
+    <View
+      style={[
+        styles.calcRow,
+        { gap: wideDesktop ? theme.spacing.lg : theme.spacing.md },
+      ]}
+    >
+      <View style={{ flex: wideDesktop ? 11 : 1, gap: theme.spacing.sm }}>
+        {input}
+      </View>
+      <View style={{ flex: wideDesktop ? 9 : 1 }}>{result}</View>
     </View>
   );
 }
@@ -1190,6 +1257,7 @@ export function FaqSection({
     <View
       style={[
         styles.referenceSection,
+        styles.readingMeasure,
         {
           backgroundColor: theme.colors.card,
           borderColor: theme.colors.border,
@@ -1215,7 +1283,12 @@ export function FaqSection({
                 accessibilityRole="button"
                 accessibilityState={{ expanded: open }}
                 onPress={() => toggle(faq.question)}
-                style={styles.faqQuestion}
+                style={(state) => [
+                  styles.faqQuestion,
+                  webFocusHoverStyle(state, theme, {
+                    hoverBg: theme.colors.background,
+                  }),
+                ]}
               >
                 <SeoHeading
                   level={3}
@@ -1325,7 +1398,7 @@ export function RelatedCalculators({
   const { lang } = useI18n();
   const links = buildRelatedLinks(current, lang);
   return (
-    <SeoSection title={getRelatedCalculatorsTitle(lang)}>
+    <SeoSection title={getRelatedCalculatorsTitle(lang)} style={styles.readingMeasure}>
       <View style={{ gap: theme.spacing.md }}>
         {links.map((link) => (
           <View key={link.key} style={{ gap: 2 }}>
@@ -1528,12 +1601,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   switcherChip: {
-    minHeight: 34,
+    minHeight: 44,
     paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 8,
     // 扁平：无背景、无边框、无阴影；选中态仅靠下方绝对定位的橙条区分。
     position: 'relative',
+  },
+  switcherLink: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    display: 'flex' as unknown as TextStyle['display'],
+  },
+  readingMeasure: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
   },
   switcherUnderline: {
     position: 'absolute',

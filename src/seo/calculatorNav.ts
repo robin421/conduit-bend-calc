@@ -68,6 +68,13 @@ export function isActiveCalculator(activeKey: string, itemKey: string): boolean 
  */
 export const MOBILE_NAV_BREAKPOINT = 600;
 
+/** 宽屏桌面工作区断点（≥1024pt 启用双栏宽屏布局）。 */
+export const DESKTOP_WIDE_BREAKPOINT = 1024;
+/** 默认容器最大宽度（pt）。 */
+export const DEFAULT_WORKSPACE_MAX_WIDTH = 720;
+/** 宽屏工作区最大宽度（pt）。 */
+export const WIDE_WORKSPACE_MAX_WIDTH = 1120;
+
 /** 抽屉最大宽度（pt）。 */
 export const DRAWER_MAX_WIDTH = 280;
 /** 抽屉相对屏幕宽度的上限比例（更窄的手机上不超过屏幕 85%）。 */
@@ -78,6 +85,18 @@ export const DRAWER_ANIMATION_MS = 300;
 /** 是否使用移动端汉堡 + 抽屉导航。 */
 export function isMobileNavViewport(width: number): boolean {
   return width < MOBILE_NAV_BREAKPOINT;
+}
+
+/** 是否为宽屏桌面工作区视口（width >= 1024）。 */
+export function isWideDesktopViewport(width: number): boolean {
+  return Number.isFinite(width) && width >= DESKTOP_WIDE_BREAKPOINT;
+}
+
+/** 根据视口宽度返回工作区容器最大宽度（>=1024 返回 1120，否则 720）。 */
+export function workspaceMaxWidth(width: number): number {
+  return isWideDesktopViewport(width)
+    ? WIDE_WORKSPACE_MAX_WIDTH
+    : DEFAULT_WORKSPACE_MAX_WIDTH;
 }
 
 /** 导航呈现模式：`drawer` = 汉堡 + 左侧抽屉，`switcher` = 横向切换条。 */

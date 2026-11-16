@@ -10,6 +10,8 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
+  type ViewStyle,
 } from 'react-native';
 
 import BigButton from '../components/bigButton';
@@ -17,6 +19,10 @@ import Card from '../components/card';
 import RatingCard from '../components/ratingCard';
 import FeedbackCard from '../components/feedbackCard';
 import WebQuickCalculator from '../components/webQuickCalculator';
+import {
+  isWideDesktopViewport,
+  workspaceMaxWidth,
+} from '../seo/calculatorNav';
 import {
   FOUR_POINT_SADDLE_ICON,
   THREE_POINT_SADDLE_ICON,
@@ -68,11 +74,15 @@ const GROUPS = [
 
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const { unit, setUnit } = useUnitSystem();
   const { access, phase, pendingPurchase } = useProAccess();
   const [pendingTask, setPendingTask] = useState<PendingProTask | null>(null);
   const [recent, setRecent] = useState<HistoryEntry | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
+
+  const isWideWeb = Platform.OS === 'web' && isWideDesktopViewport(width);
+  const containerMaxWidth = Platform.OS === 'web' ? workspaceMaxWidth(width) : 720;
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -156,15 +166,8 @@ export default function CalcHomeScreen({ navigation }: Props) {
     }
   };
 
-  return (
-    <>
-      <ScrollView
-        style={{ backgroundColor: theme.colors.background }}
-        contentContainerStyle={[
-          styles.content,
-          { padding: theme.spacing.md, gap: theme.spacing.md },
-        ]}
-      >
+  const mainColumn = (
+    <View style={{ gap: theme.spacing.md, flex: isWideWeb ? 3 : undefined }}>
       {(pendingPurchase || phase === 'purchasing' || (access === 'unlocked' && pendingTask)) ? (
         <Card style={{ gap: theme.spacing.sm }}>
           <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>
@@ -226,7 +229,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
         </View>
       </View>
 
-      {Platform.OS === 'web' ? (
+      {Platform.OS === 'web' && !isWideWeb ? (
         <BigButton
           title={quickOpen ? 'Hide quick calculator' : 'Open quick calculator'}
           variant="secondary"
@@ -235,7 +238,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
         />
       ) : null}
 
-      {Platform.OS === 'web' && quickOpen ? (
+      {Platform.OS === 'web' && !isWideWeb && quickOpen ? (
         <WebQuickCalculator
           onOpenStub={() => navigation.navigate('Stub')}
           onOpenOffset={() => navigation.navigate('Offset')}
@@ -248,71 +251,103 @@ export default function CalcHomeScreen({ navigation }: Props) {
           <Text accessibilityRole="header" style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
             {group.title}
           </Text>
-          {ENTRIES.filter((entry) => entry.group === group.key).map((entry) => (
-            <Card
-              key={entry.key}
-              accessibilityRole="button"
-              onPress={() => handlePress(entry)}
-              style={styles.card}
-            >
-              <View
-                style={[
-                  styles.accentBar,
-                  {
-                    backgroundColor: theme.colors.accent,
-                    marginRight: theme.spacing.sm,
-                  },
-                ]}
-              />
-              <Text
-                numberOfLines={1}
-                style={[styles.icon, { color: theme.colors.primaryText }]}
+          <View style={isWideWeb ? [styles.cardGrid, { gap: theme.spacing.sm }] : { gap: theme.spacing.sm }}>
+            {ENTRIES.filter((entry) => entry.group === group.key).map((entry) => (
+              <Card
+                key={entry.key}
+                accessibilityRole="button"
+                onPress={() => handlePress(entry)}
+                style={[styles.card, isWideWeb ? styles.cardGridItem : null]}
               >
-                {entry.icon}
-              </Text>
-              <View style={styles.textBlock}>
-                <View style={styles.nameRow}>
+                <View
+                  style={[
+                    styles.accentBar,
+                    {
+                      backgroundColor: theme.colors.accent,
+                      marginRight: theme.spacing.sm,
+                    },
+                  ]}
+                />
+                <Text
+                  numberOfLines={1}
+                  style={[styles.icon, { color: theme.colors.primaryText }]}
+                >
+                  {entry.icon}
+                </Text>
+                <View style={styles.textBlock}>
+                  <View style={styles.nameRow}>
+                    <Text
+                      style={{
+                        color: theme.colors.textPrimary,
+                        fontSize: theme.fontSize.body,
+                        fontWeight: theme.fontWeight.semibold,
+                        letterSpacing: 0.1,
+                      }}
+                    >
+                      {entry.name}
+                    </Text>
+                    {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
+                      <Text
+                        style={[
+                          styles.proPill,
+                          {
+                            backgroundColor: theme.colors.accent,
+                            color: theme.colors.onAccent,
+                            marginLeft: theme.spacing.xs,
+                          },
+                        ]}
+                      >
+                        PRO
+                      </Text>
+                    ) : null}
+                  </View>
                   <Text
                     style={{
-                      color: theme.colors.textPrimary,
-                      fontSize: theme.fontSize.body,
-                      fontWeight: theme.fontWeight.semibold,
-                      letterSpacing: 0.1,
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.fontSize.secondary,
+                      marginTop: theme.spacing.xs,
                     }}
                   >
-                    {entry.name}
+                    {entry.description}
                   </Text>
-                  {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
-                    <Text
-                      style={[
-                        styles.proPill,
-                        {
-                          backgroundColor: theme.colors.accent,
-                          color: theme.colors.onAccent,
-                          marginLeft: theme.spacing.xs,
-                        },
-                      ]}
-                    >
-                      PRO
-                    </Text>
-                  ) : null}
                 </View>
-                <Text
-                  style={{
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.fontSize.secondary,
-                    marginTop: theme.spacing.xs,
-                  }}
-                >
-                  {entry.description}
-                </Text>
-              </View>
-              <Text style={[styles.chevron, { color: theme.colors.accentText }]}>›</Text>
-            </Card>
-          ))}
+                <Text style={[styles.chevron, { color: theme.colors.accentText }]}>›</Text>
+              </Card>
+            ))}
+          </View>
         </View>
       ))}
       <FeedbackCard />
+    </View>
+  );
+
+  return (
+    <>
+      <ScrollView
+        style={{ backgroundColor: theme.colors.background }}
+        contentContainerStyle={[
+          styles.content,
+          {
+            maxWidth: containerMaxWidth,
+            paddingVertical: theme.spacing.md,
+            paddingHorizontal: isWideWeb ? 24 : theme.spacing.md,
+            gap: theme.spacing.md,
+          },
+        ]}
+      >
+        {isWideWeb ? (
+          <View style={styles.wideColumns}>
+            {mainColumn}
+            <View style={styles.stickySidebar}>
+              <WebQuickCalculator
+                onOpenStub={() => navigation.navigate('Stub')}
+                onOpenOffset={() => navigation.navigate('Offset')}
+              />
+            </View>
+          </View>
+        ) : (
+          mainColumn
+        )}
       </ScrollView>
     </>
   );
@@ -324,6 +359,26 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 720,
     alignSelf: 'center',
+  },
+  wideColumns: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 24,
+  },
+  stickySidebar: {
+    flex: 2,
+    minWidth: 320,
+    position: 'sticky' as unknown as ViewStyle['position'],
+    top: 24,
+  },
+  cardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  cardGridItem: {
+    flexBasis: '48%',
+    flexGrow: 1,
+    minWidth: 260,
   },
   card: {
     minHeight: 72,

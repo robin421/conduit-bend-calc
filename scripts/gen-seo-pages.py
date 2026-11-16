@@ -22,18 +22,172 @@ from urllib.parse import urlparse
 PLAY_URL = "https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc"
 
 BASE_CSS = """
-body { font-family: -apple-system, Helvetica, Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.65; color: #1a1a1a; }
-h1 { font-size: 1.6rem; line-height: 1.3; } h2 { font-size: 1.15rem; margin-top: 1.8rem; }
-.muted { color: #666; font-size: .9rem; }
-table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; }
-th, td { border: 1px solid #ddd; padding: .45rem .6rem; text-align: left; }
-th { background: #f5f5f5; font-weight: 600; }
-.cta { border: 1px solid #c9a227; border-radius: 8px; padding: 1rem 1.2rem; margin: 2rem 0; background: #fffdf5; }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #F5F8FB;
+  color: #0F2B46;
+  line-height: 1.65;
+}
+.topbar {
+  background: #0F2B46;
+  color: #FFFFFF;
+}
+.topbar-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  min-height: 44px;
+}
+.topbar-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  background: #F4C317;
+  color: #0F2B46;
+  font-weight: 700;
+  font-size: .9rem;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.topbar-cta:focus-visible, .hero-cta:focus-visible, .related a:focus-visible, a:focus-visible {
+  outline: 2px solid #806000;
+  outline-offset: 2px;
+}
+.topbar-cta:focus-visible {
+  outline-color: #F4C317;
+}
+.page-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+.main-col {
+  min-width: 0;
+}
+.side-col {
+  margin-top: 24px;
+}
+h1 { font-size: 1.6rem; line-height: 1.3; margin: 0 0 12px; color: #0F2B46; }
+h2 { font-size: 1.15rem; margin-top: 1.8rem; color: #0F2B46; }
+h3 { font-size: 1rem; margin-top: 1.2rem; color: #0F2B46; }
+.muted { color: #52677B; font-size: .9rem; }
+.hero-cta-bar {
+  margin: 16px 0 20px;
+  padding: 12px;
+  background: #FFFFFF;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  background: #F4C317;
+  color: #0F2B46;
+  font-weight: 700;
+  font-size: .95rem;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.hero-cta:hover, .topbar-cta:hover {
+  background: #E2B410;
+}
+.table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { border-bottom: 1px solid #D9E2EB; padding: .55rem .7rem; text-align: left; }
+tr:last-child td { border-bottom: none; }
+th { background: #F5F8FB; font-weight: 600; color: #0F2B46; }
+.table-wrap td { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cta {
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin: 0 0 16px;
+  background: #FFFFFF;
+}
 .cta p { margin: .4rem 0; }
-.related { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
-.related ul { padding-left: 1.2rem; }
-footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; color: #666; font-size: .85rem; }
-a { color: #0b5cad; }
+.related {
+  margin-top: 16px;
+  padding: 1rem 1.2rem;
+  background: #FFFFFF;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+}
+.related p { margin: 0 0 10px; }
+.related ul { list-style: none; padding: 0; margin: 0; }
+.related a {
+  display: block;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #F5F8FB;
+  color: #0F2B46;
+  font-weight: 600;
+  text-decoration: none;
+}
+.related li:last-child a { margin-bottom: 0; }
+.related a:hover { border-color: #806000; background: #FFFFFF; }
+footer {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+  border-top: 1px solid #D9E2EB;
+  color: #52677B;
+  font-size: .85rem;
+}
+a { color: #0F2B46; }
+@media (min-width: 1024px) {
+  .topbar-inner { padding: 8px 24px; }
+  .page-shell {
+    max-width: 1080px;
+    padding: 28px 24px 48px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 28px;
+    align-items: start;
+  }
+  .side-col {
+    margin-top: 0;
+    position: sticky;
+    top: 24px;
+  }
+  footer { padding: 20px 24px 40px; }
+}
 """
 
 PAGE_TEMPLATE = """<!DOCTYPE html>
@@ -63,10 +217,20 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 {faq_jsonld}
 </head>
 <body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand-link" href="{base}/">Conduit Bend Calc</a>
+    <a class="topbar-cta" href="{tool_url}">Open Calculator &rarr;</a>
+  </div>
+</header>
+<div class="page-shell">
+<main class="main-col">
 <h1>{h1}</h1>
 {body}
+</main>
+<aside class="side-col">
 <div class="cta">
-<p><strong>Try it free:</strong> <a href="{base}/">{cta_label}</a> &mdash; all six bend calculators, no sign-up.</p>
+<p><strong>Try it free:</strong> <a href="{tool_url}">{cta_label}</a> &mdash; instant mark spacing &amp; shrink, no sign-up.</p>
 <p><a href="{play_url}" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}})">Get Conduit Bend Calc on Google Play</a> for bender calibration and Pro tools.</p>
 </div>
 <nav class="related" aria-label="Related calculators">
@@ -75,6 +239,8 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 {related}
 </ul>
 </nav>
+</aside>
+</div>
 <footer>&copy; 2026 Conduit Bend Calc &middot; <a href="{base}/">bendcalc.wattflow.net</a> &middot; <a href="{base}/privacy.html">Privacy Policy</a></footer>
 </body>
 </html>
@@ -1438,9 +1604,42 @@ def render_faq_jsonld(faqs: list) -> str:
     )
 
 
+def calculator_url_for_slug(slug: str, base_url: str) -> str:
+    """Map each landing page slug to its corresponding interactive calculator route."""
+    if "4-point" in slug:
+        return f"{base_url}/4-point-saddle"
+    if "shrink" in slug:
+        return f"{base_url}/shrink"
+    if "stub" in slug or "deduct" in slug or "take-up" in slug:
+        return f"{base_url}/stub-up"
+    if "offset" in slug or "multiplier" in slug or "parallel" in slug or "dogleg" in slug:
+        return f"{base_url}/offset"
+    return f"{base_url}/"
+
+
+def enhance_body_html(body_html: str, tool_url: str, cta_label: str) -> str:
+    """Wrap tables in .table-wrap and inject a hero CTA bar after the lead paragraph."""
+    wrapped = re.sub(
+        r"(<table\b[^>]*>.*?</table>)",
+        r'<div class="table-wrap">\1</div>',
+        body_html,
+        flags=re.DOTALL,
+    )
+    hero_cta = (
+        f'\n<div class="hero-cta-bar">'
+        f'<span class="muted">Free interactive tool &mdash; no sign-up</span>'
+        f'<a class="hero-cta" href="{tool_url}">{html.escape(cta_label)} &rarr;</a>'
+        f'</div>\n'
+    )
+    if "</p>" in wrapped:
+        return wrapped.replace("</p>", "</p>" + hero_cta, 1)
+    return hero_cta + wrapped
+
+
 def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
     canonical = f"{base_url}/{page['slug']}/"
     host = urlparse(base_url).netloc or "bendcalc.wattflow.net"
+    tool_url = calculator_url_for_slug(page["slug"], base_url)
     related = "\n".join(
         f'  <li><a href="{base_url}/{p["slug"]}/">{html.escape(p["h1"])}</a></li>'
         for p in PAGES
@@ -1448,7 +1647,8 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
     )
     ga4 = GA4_TEMPLATE.format(gid=html.escape(ga4_id)) if ga4_id else ""
     faqs = page.get("faqs", [])
-    body = page["body"] + render_faq_section(faqs)
+    raw_body = page["body"] + render_faq_section(faqs)
+    body = enhance_body_html(raw_body, tool_url, page["cta_label"])
     return PAGE_TEMPLATE.format(
         title=html.escape(page["title"]),
         desc=html.escape(page["desc"]),
@@ -1458,6 +1658,7 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         h1=html.escape(page["h1"]),
         body=body,
         cta_label=html.escape(page["cta_label"]),
+        tool_url=tool_url,
         base=base_url,
         play_url=PLAY_URL,
         related=related,

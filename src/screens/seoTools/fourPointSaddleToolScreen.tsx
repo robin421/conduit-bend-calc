@@ -18,7 +18,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
 
 import { calculateFourPointSaddle } from '../../calculators/saddle/saddle';
 import ImperialInput from '../../components/imperialInput';
@@ -88,7 +88,11 @@ export default function FourPointSaddleToolScreen() {
       angle?: OffsetAngle;
       heightText?: string;
       widthText?: string;
+      dismissKeyboard?: boolean;
     }) => {
+      if (override?.dismissKeyboard) {
+        Keyboard.dismiss();
+      }
       const heightTextValue = override?.heightText ?? heightText;
       const widthTextValue = override?.widthText ?? widthText;
       const nextAngle = override?.angle ?? angle;
@@ -111,16 +115,27 @@ export default function FourPointSaddleToolScreen() {
     [calculate],
   );
 
+  const preview = useMemo<CommittedSaddle | null>(() => {
+    const height = parseLength(heightText, unit);
+    const width = parseLength(widthText, unit);
+    if (height === null || height <= 0 || width === null || width <= 0) {
+      return null;
+    }
+    return { heightInches: height, widthInches: width, angle };
+  }, [angle, heightText, widthText, unit]);
+
+  const activeInput = preview ?? committed;
+
   const result = useMemo(
     () =>
-      committed
+      activeInput
         ? calculateFourPointSaddle(
-            committed.heightInches,
-            committed.widthInches,
-            committed.angle,
+            activeInput.heightInches,
+            activeInput.widthInches,
+            activeInput.angle,
           )
         : null,
-    [committed],
+    [activeInput],
   );
 
   const marksLine = result
@@ -144,15 +159,27 @@ export default function FourPointSaddleToolScreen() {
   useCalculatorAnalytics('saddle4', committedSignature);
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
 
+  const committedResult = useMemo(
+    () =>
+      committed
+        ? calculateFourPointSaddle(
+            committed.heightInches,
+            committed.widthInches,
+            committed.angle,
+          )
+        : null,
+    [committed],
+  );
+
   useEffect(() => {
-    if (!committed || !result || !committedSignature) {
+    if (!committed || !committedResult || !committedSignature) {
       return;
     }
     add(
       createSeoHistoryEntry({
         kind: 'saddle4',
         inputSummary: `${formatSeoLength(committed.heightInches, unit)} × ${formatSeoLength(committed.widthInches, unit)} @ ${committed.angle}°`,
-        summary: `span ${formatSeoLength(result.spanInches, unit)}, spacing ${formatSeoLength(result.markSpacingInches, unit)}`,
+        summary: `span ${formatSeoLength(committedResult.spanInches, unit)}, spacing ${formatSeoLength(committedResult.markSpacingInches, unit)}`,
         params: {
           heightText,
           widthText,
@@ -192,9 +219,9 @@ export default function FourPointSaddleToolScreen() {
   );
 
   const copyText =
-    result && committed
+    result && activeInput
       ? buildSaddleCopyText({
-          angle: committed.angle,
+          angle: activeInput.angle,
           markSpacing: result.markSpacingInches,
           span: result.spanInches,
           totalShrink: result.totalShrinkInches ?? null,
@@ -239,6 +266,7 @@ export default function FourPointSaddleToolScreen() {
                 label={t('saddle.heightLabel')}
                 value={heightText}
                 onChangeText={setHeightText}
+                onSubmitEditing={() => calculate({ dismissKeyboard: true })}
                 unit={unit}
                 placeholder={
                   unit === 'metric'
@@ -251,6 +279,7 @@ export default function FourPointSaddleToolScreen() {
                 label={t('saddle.widthLabel')}
                 value={widthText}
                 onChangeText={setWidthText}
+                onSubmitEditing={() => calculate({ dismissKeyboard: true })}
                 unit={unit}
                 placeholder={
                   unit === 'metric'
@@ -268,7 +297,7 @@ export default function FourPointSaddleToolScreen() {
             />
 
             <View>
-              <SeoCalculateButton onPress={() => calculate()} />
+              <SeoCalculateButton onPress={() => calculate({ dismissKeyboard: true })} />
             </View>
           </SeoCard>
         }
