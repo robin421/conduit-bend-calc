@@ -475,6 +475,7 @@ export function buildWebApplicationJsonLd(
     operatingSystem: 'Any',
     browserRequirements: 'Requires JavaScript',
     isAccessibleForFree: true,
+    sameAs: 'https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc',
     offers: {
       '@type': 'Offer',
       price: '0',

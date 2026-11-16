@@ -8,6 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "web:export": "expo export --platform web",
+    "web:build-seo": "expo export --platform web && python3 scripts/inject-web-seo.py dist https://bendcalc.wattflow.net && node scripts/gen-seo-tool-shells.ts dist https://bendcalc.wattflow.net && python3 scripts/gen-seo-pages.py dist https://bendcalc.wattflow.net",
     "seo:tool-shells": "node scripts/gen-seo-tool-shells.ts dist https://bendcalc.wattflow.net",
     "aso:generate": "python3 scripts/generate_store_assets.py",
     "typecheck": "tsc --noEmit",

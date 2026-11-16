@@ -13,13 +13,21 @@ is given, no beacon is emitted. The token is never hardcoded; it is injected at
 build time only.
 Replaces the old /tmp/seo-inject.py (deleted during /tmp cleanup 2026-09-29).
 """
+from __future__ import annotations
+
+import datetime
 import html
+import json
 import os
 import re
 import sys
+from urllib.parse import urlparse
 
 EXPORT_DIR = sys.argv[1].rstrip("/")
 BASE_URL = sys.argv[2].rstrip("/")
+BASE_HOST = urlparse(BASE_URL).netloc or "bendcalc.wattflow.net"
+ANDROID_PACKAGE = "com.robin421.conduitbendcalc"
+PLAY_URL = f"https://play.google.com/store/apps/details?id={ANDROID_PACKAGE}"
 
 GA4_TEMPLATE = """<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>
 <script>
@@ -85,11 +93,63 @@ KEYWORDS = (
     "calculator, electrician bender app, EMT bending"
 )
 
+GSC_VERIFY = (os.environ.get("GSC_VERIFY") or "").strip()
+BING_VERIFY = (os.environ.get("BING_VERIFY") or "").strip()
+
+WEBSITE_JSONLD = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Conduit Bend Calc",
+    "url": f"{BASE_URL}/",
+    "publisher": {
+        "@type": "Organization",
+        "name": "WattFlow",
+        "url": "https://wattflow.net",
+    },
+}
+
+MOBILE_APP_JSONLD = {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Conduit Bend Calc",
+    "operatingSystem": "Android",
+    "applicationCategory": "UtilitiesApplication",
+    "installUrl": PLAY_URL,
+    "downloadUrl": PLAY_URL,
+    "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Free conduit bending calculator with optional Pro bender calibration upgrade.",
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "WattFlow",
+        "url": "https://wattflow.net",
+    },
+}
+
+
+def jsonld_tag(data: dict) -> str:
+    payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+    return f'<script type="application/ld+json">{payload}</script>'
+
+
+VERIFY_TAGS = ""
+if GSC_VERIFY:
+    VERIFY_TAGS += f'<meta name="google-site-verification" content="{html.escape(GSC_VERIFY)}" />\n'
+if BING_VERIFY:
+    VERIFY_TAGS += f'<meta name="msvalidate.01" content="{html.escape(BING_VERIFY)}" />\n'
+
 SEO_BLOCK = f"""<title>{html.escape(TITLE)}</title>
 <meta name="description" content="{html.escape(DESC)}" />
 <meta name="keywords" content="{html.escape(KEYWORDS)}" />
 <link rel="canonical" href="{BASE_URL}/" />
-<meta property="og:type" content="website" />
+<link rel="alternate" href="android-app://{ANDROID_PACKAGE}/https/{BASE_HOST}/" />
+<meta property="al:android:package" content="{ANDROID_PACKAGE}" />
+<meta property="al:android:url" content="{BASE_URL}/" />
+<meta property="al:android:app_name" content="Conduit Bend Calc" />
+{VERIFY_TAGS}<meta property="og:type" content="website" />
 <meta property="og:site_name" content="WattFlow" />
 <meta property="og:title" content="{html.escape(TITLE)}" />
 <meta property="og:description" content="{html.escape(DESC)}" />
@@ -99,21 +159,78 @@ SEO_BLOCK = f"""<title>{html.escape(TITLE)}</title>
 <meta name="twitter:image" content="{BASE_URL}/og-image.png" />
 <meta name="twitter:title" content="{html.escape(TITLE)}" />
 <meta name="twitter:description" content="{html.escape(DESC)}" />
+{jsonld_tag(WEBSITE_JSONLD)}
+{jsonld_tag(MOBILE_APP_JSONLD)}
 """
+
+HOME_STATIC_HTML = f"""<!-- static-seo-home-start -->
+<main class="static-seo-home" style="max-width:800px;margin:2rem auto;padding:0 1rem;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#1a1a1a;">
+  <h1>Conduit Bend Calc — Free Conduit Bending Calculator</h1>
+  <p>Free electrical conduit bending calculator for EMT, IMC, and Rigid conduit: offset bends, 90&deg; stub-ups, 3-point and 4-point saddles, rolling offsets, kicked 90s, shrink, and take-up in imperial inches or metric mm.</p>
+  <nav aria-label="Interactive bending calculators">
+    <h2>Interactive Calculators</h2>
+    <ul>
+      <li><a href="/offset/">Offset Bend Calculator</a> — Mark spacing and shrink for 10&deg;, 15&deg;, 22.5&deg;, 30&deg;, 45&deg;, and 60&deg; offsets.</li>
+      <li><a href="/4-point-saddle/">4-Point Saddle Calculator</a> — Four marks and total shrink over square obstacles and ductwork.</li>
+      <li><a href="/shrink/">Conduit Shrink Calculator</a> — Shrink per inch and total run allowance before cutting.</li>
+      <li><a href="/stub-up/">90&deg; Stub-Up Calculator</a> — Take-up deduct and mark placement for EMT, IMC, and Rigid conduit.</li>
+    </ul>
+  </nav>
+  <nav aria-label="Bending guides and charts">
+    <h2>Conduit Bending Guides &amp; Charts</h2>
+    <ul>
+      <li><a href="/conduit-bending-calculator/">Conduit Bending Calculator Guide</a></li>
+      <li><a href="/conduit-bending-chart/">Conduit Bending Multiplier &amp; Shrink Chart</a></li>
+      <li><a href="/conduit-bending-formula/">Conduit Bending Formulas</a></li>
+      <li><a href="/how-to-bend-emt-conduit/">How to Bend EMT Conduit</a></li>
+      <li><a href="/offset-multiplier-guide/">Offset Multiplier Guide</a></li>
+    </ul>
+  </nav>
+  <p><a href="{PLAY_URL}">Get Conduit Bend Calc on Google Play</a> for offline jobsite access and Pro bender calibration.</p>
+</main>
+<!-- static-seo-home-end -->"""
 
 index_path = f"{EXPORT_DIR}/index.html"
 with open(index_path) as f:
     content = f.read()
 
-# Remove any existing <title> to avoid duplicates, then inject before </head>.
-content = re.sub(r"<title>.*?</title>", "", content, flags=re.DOTALL)
-# 幂等：剥离旧的 og:/twitter: meta 标签，重复跑不再叠加。
-content = re.sub(r'<meta\s+(?:property="og:[^"]*"|name="twitter:[^"]*")[^>]*/?>\s*', "", content)
+# 幂等：剥离旧的 SEO / App Links / 验证 / JSON-LD 标签，重复跑不再叠加。
+content = re.sub(r"<title>.*?</title>\s*", "", content, flags=re.DOTALL)
+content = re.sub(
+    r'<meta\s+(?:name="(?:description|keywords|google-site-verification|msvalidate\.01|twitter:[^"]*)"|property="(?:og:[^"]*|al:android:[^"]*)")[^>]*/?>\s*',
+    "",
+    content,
+)
+content = re.sub(
+    r'<link\s+rel="(?:canonical|alternate)"[^>]*/?>\s*',
+    "",
+    content,
+)
+content = re.sub(
+    r'<script\s+type="application/ld\+json">.*?</script>\s*',
+    "",
+    content,
+    flags=re.DOTALL,
+)
 content = content.replace("</head>", SEO_BLOCK + "</head>", 1)
-if GA4_SNIPPET:
+if GA4_SNIPPET and "googletagmanager.com/gtag/js" not in content:
     content = content.replace("</head>", GA4_SNIPPET + "</head>", 1)
 if CF_BEACON_SNIPPET and "cloudflareinsights.com/beacon" not in content:
     content = content.replace("</head>", CF_BEACON_SNIPPET + "</head>", 1)
+
+# 幂等：向 <div id="root"></div> 注入首页静态语义化 HTML（React 挂载后自动接管替换）。
+content = re.sub(
+    r'<div id="root">\s*<!-- static-seo-home-start -->.*?<!-- static-seo-home-end -->\s*</div>',
+    '<div id="root"></div>',
+    content,
+    flags=re.DOTALL,
+)
+if '<div id="root"></div>' in content:
+    content = content.replace(
+        '<div id="root"></div>',
+        f'<div id="root">\n{HOME_STATIC_HTML}\n</div>',
+        1,
+    )
 
 with open(index_path, "w") as f:
     f.write(content)
@@ -223,12 +340,15 @@ SEO_PATHS = [
     "conduit-bend-radius/",
 ]
 
+today_iso = datetime.date.today().isoformat()
+
 with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:
     f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
     f.write(
         "  <url>\n"
         f"    <loc>{BASE_URL}/</loc>\n"
+        f"    <lastmod>{today_iso}</lastmod>\n"
         "    <changefreq>weekly</changefreq>\n"
         "    <priority>1.0</priority>\n"
         "  </url>\n"
@@ -237,11 +357,78 @@ with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:
         f.write(
             "  <url>\n"
             f"    <loc>{BASE_URL}/{path}</loc>\n"
+            f"    <lastmod>{today_iso}</lastmod>\n"
             "    <changefreq>monthly</changefreq>\n"
             "    <priority>0.8</priority>\n"
             "  </url>\n"
         )
+    if os.path.exists(privacy_path):
+        f.write(
+            "  <url>\n"
+            f"    <loc>{BASE_URL}/privacy.html</loc>\n"
+            f"    <lastmod>{today_iso}</lastmod>\n"
+            "    <changefreq>yearly</changefreq>\n"
+            "    <priority>0.3</priority>\n"
+            "  </url>\n"
+        )
     f.write("</urlset>\n")
+
+# Google Play App Links: dist/.well-known/assetlinks.json
+raw_fingerprints = (os.environ.get("ANDROID_SHA256_FINGERPRINTS") or "").strip()
+fingerprints = [fp.strip() for fp in raw_fingerprints.split(",") if fp.strip()]
+well_known_dir = f"{EXPORT_DIR}/.well-known"
+os.makedirs(well_known_dir, exist_ok=True)
+assetlinks = [
+    {
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": ANDROID_PACKAGE,
+            "sha256_cert_fingerprints": fingerprints,
+        },
+    }
+]
+with open(f"{well_known_dir}/assetlinks.json", "w") as f:
+    json.dump(assetlinks, f, indent=2)
+    f.write("\n")
+
+if fingerprints:
+    print(f"assetlinks.json wrote ({len(fingerprints)} SHA-256 fingerprint(s))")
+else:
+    print(
+        "warning: ANDROID_SHA256_FINGERPRINTS not set; assetlinks.json has empty "
+        "sha256_cert_fingerprints. Set ANDROID_SHA256_FINGERPRINTS=\"AA:BB:...\" "
+        "from Google Play Console > App integrity > App signing key certificate before deploy.",
+        file=sys.stderr,
+    )
+
+# Cloudflare Pages static headers: dist/_headers
+headers_content = """/.well-known/assetlinks.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+
+/sw.js
+  Cache-Control: no-cache
+"""
+with open(f"{EXPORT_DIR}/_headers", "w") as f:
+    f.write(headers_content)
+print("Cloudflare Pages _headers wrote")
+
+# Bing IndexNow verification key file: dist/<INDEXNOW_KEY>.txt
+indexnow_key = (os.environ.get("INDEXNOW_KEY") or "").strip()
+if indexnow_key:
+    if re.fullmatch(r"[A-Za-z0-9\-]{8,128}", indexnow_key):
+        with open(f"{EXPORT_DIR}/{indexnow_key}.txt", "w") as f:
+            f.write(indexnow_key + "\n")
+        print(f"IndexNow key file wrote: {indexnow_key}.txt")
+    else:
+        print(f"warning: ignoring malformed INDEXNOW_KEY {indexnow_key!r}", file=sys.stderr)
 
 print(f"SEO injected: title={TITLE[:40]}... base={BASE_URL}")
 print(f"GA4: {'on (' + GA4_ID + ')' if GA4_ID else 'off'}")

@@ -118,6 +118,10 @@ test('WebApplication JSON-LD 字段齐全且指向本页', () => {
   assert.equal(jsonLd.url, `${SEO_SITE_URL}/stub-up/`);
   assert.equal(jsonLd.applicationCategory, 'UtilitiesApplication');
   assert.equal(jsonLd.operatingSystem, 'Any');
+  assert.equal(
+    jsonLd.sameAs,
+    'https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc',
+  );
   assert.deepEqual(jsonLd.offers, {
     '@type': 'Offer',
     price: '0',

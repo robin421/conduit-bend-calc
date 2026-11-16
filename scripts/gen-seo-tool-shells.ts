@@ -31,9 +31,12 @@ import { buildAlternatesForPath } from '../src/lib/seoHead.ts';
 const HEAD_TAG_PATTERNS = [
   /<title>.*?<\/title>/gis,
   /<meta\s+name="description"[^>]*>/gi,
+  /<meta\s+name="keywords"[^>]*>/gi,
   /<meta\s+name="robots"[^>]*>/gi,
   /<link\s+rel="canonical"[^>]*>/gi,
+  /<link\s+rel="alternate"[^>]*>/gi,
   /<meta\s+property="og:[^"]*"[^>]*>/gi,
+  /<meta\s+property="al:android:[^"]*"[^>]*>/gi,
   /<meta\s+name="twitter:[^"]*"[^>]*>/gi,
   /<script\s+type="application\/ld\+json">.*?<\/script>/gis,
 ];
@@ -53,6 +56,7 @@ function jsonLdScript(data: unknown): string {
 
 function buildHead(page: (typeof SEO_TOOL_PAGES)[number], baseUrl: string): string {
   const canonical = buildCanonicalUrl(page, baseUrl);
+  const host = new URL(baseUrl || SEO_SITE_URL).host;
   const title = escapeHtml(page.title);
   const description = escapeHtml(page.description);
   const alternates = buildAlternatesForPath(page.path, baseUrl)
@@ -67,6 +71,10 @@ function buildHead(page: (typeof SEO_TOOL_PAGES)[number], baseUrl: string): stri
     `<meta name="robots" content="index,follow" />`,
     `<link rel="canonical" href="${canonical}" />`,
     alternates,
+    `<link rel="alternate" href="android-app://com.robin421.conduitbendcalc/https/${host}${page.path}/" />`,
+    `<meta property="al:android:package" content="com.robin421.conduitbendcalc" />`,
+    `<meta property="al:android:url" content="${canonical}" />`,
+    `<meta property="al:android:app_name" content="Conduit Bend Calc" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="WattFlow" />`,
     `<meta property="og:title" content="${title}" />`,
@@ -246,13 +254,17 @@ function buildStaticPageContentHtml(page: (typeof SEO_TOOL_PAGES)[number]): stri
  * 把完整静态内容塞进 `#root`。
  */
 function injectStaticContent(shell: string, contentHtml: string): string {
+  const cleaned = shell.replace(
+    /<div id="root">\s*<!-- static-seo-home-start -->[\s\S]*?<!-- static-seo-home-end -->\s*<\/div>/,
+    '<div id="root"></div>',
+  );
   const marker = '<div id="root"></div>';
-  if (!shell.includes(marker)) {
+  if (!cleaned.includes(marker)) {
     throw new Error(
       'index.html has no empty #root; cannot inject static SEO content',
     );
   }
-  return shell.replace(marker, `<div id="root">\n${contentHtml}\n</div>`);
+  return cleaned.replace(marker, `<div id="root">\n${contentHtml}\n</div>`);
 }
 
 function main(): void {

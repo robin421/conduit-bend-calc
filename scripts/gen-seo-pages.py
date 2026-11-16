@@ -11,10 +11,13 @@ Each page is written to dist/<slug>/index.html so Cloudflare Pages serves it
 at /<slug> and /<slug>/. Run AFTER `npx expo export --platform web` (and after
 scripts/inject-web-seo.py, order between the two doesn't matter).
 """
+from __future__ import annotations
+
 import html
 import os
 import re
 import sys
+from urllib.parse import urlparse
 
 PLAY_URL = "https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc"
 
@@ -41,12 +44,18 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <title>{title}</title>
 <meta name="description" content="{desc}" />
 <link rel="canonical" href="{canonical}" />
+<link rel="alternate" href="android-app://com.robin421.conduitbendcalc/https/{host}/{slug}/" />
+<meta property="al:android:package" content="com.robin421.conduitbendcalc" />
+<meta property="al:android:url" content="{canonical}" />
+<meta property="al:android:app_name" content="Conduit Bend Calc" />
 <meta property="og:type" content="article" />
 <meta property="og:site_name" content="Conduit Bend Calc" />
 <meta property="og:title" content="{title}" />
 <meta property="og:description" content="{desc}" />
 <meta property="og:url" content="{canonical}" />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content="{base}/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="{base}/og-image.png" />
 <meta name="twitter:title" content="{title}" />
 <meta name="twitter:description" content="{desc}" />
 <style>{css}</style>
@@ -1431,6 +1440,7 @@ def render_faq_jsonld(faqs: list) -> str:
 
 def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
     canonical = f"{base_url}/{page['slug']}/"
+    host = urlparse(base_url).netloc or "bendcalc.wattflow.net"
     related = "\n".join(
         f'  <li><a href="{base_url}/{p["slug"]}/">{html.escape(p["h1"])}</a></li>'
         for p in PAGES
@@ -1443,6 +1453,8 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         title=html.escape(page["title"]),
         desc=html.escape(page["desc"]),
         canonical=canonical,
+        host=host,
+        slug=page["slug"],
         h1=html.escape(page["h1"]),
         body=body,
         cta_label=html.escape(page["cta_label"]),
