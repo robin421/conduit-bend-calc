@@ -10,8 +10,10 @@ import {
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
   parseSessionState,
+  resolveAmplitudeApiKey,
   sanitizeEventProperties,
   sanitizeEventType,
+  WEB_AMPLITUDE_API_KEY,
 } from './amplitudeCore.ts';
 import type { HistoryStorage } from './historyStore.ts';
 
@@ -198,4 +200,38 @@ test('createAmplitudeClient：网络失败或存储异常时静默容错，不�
   await client.init();
   const ok = await client.logEvent('calculation_completed', { tool_name: 'offset' });
   assert.equal(ok, false);
+});
+
+test('resolveAmplitudeApiKey：Web 端与 Native 端项目隔离，支持 envKey 覆盖', () => {
+  assert.equal(resolveAmplitudeApiKey('web'), WEB_AMPLITUDE_API_KEY);
+  assert.equal(resolveAmplitudeApiKey('android'), DEFAULT_AMPLITUDE_API_KEY);
+  assert.equal(resolveAmplitudeApiKey('ios'), DEFAULT_AMPLITUDE_API_KEY);
+  assert.equal(resolveAmplitudeApiKey('web', '   '), WEB_AMPLITUDE_API_KEY);
+  assert.equal(resolveAmplitudeApiKey('android', ''), DEFAULT_AMPLITUDE_API_KEY);
+  assert.equal(resolveAmplitudeApiKey('web', 'custom-override-key'), 'custom-override-key');
+  assert.equal(resolveAmplitudeApiKey('android', ' custom-native-key '), 'custom-native-key');
+});
+
+test('sanitizeEventProperties：保留 Web 漏斗新增白名单属性并过滤非白名单尺寸', () => {
+  const cleaned = sanitizeEventProperties({
+    calculator: 'offset',
+    mode: 'stub',
+    unit: 'imperial',
+    lang: 'es',
+    target: '4-point-saddle',
+    source: 'calculator_drawer',
+    page_slug: 'emt-conduit-bending-chart',
+    rise_inches: 6,
+    stub_height: 12,
+  });
+
+  assert.deepEqual(cleaned, {
+    calculator: 'offset',
+    mode: 'stub',
+    unit: 'imperial',
+    lang: 'es',
+    target: '4-point-saddle',
+    source: 'calculator_drawer',
+    page_slug: 'emt-conduit-bending-chart',
+  });
 });

@@ -8,6 +8,7 @@
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { LANG_LABELS, LANGS, useI18n } from '../i18n';
+import { logAmplitudeEvent } from '../lib/amplitude';
 import { useTheme } from '../theme';
 
 export default function LanguageSwitcher({ tone = 'surface' }: { tone?: 'surface' | 'header' }) {
@@ -25,7 +26,12 @@ export default function LanguageSwitcher({ tone = 'surface' }: { tone?: 'surface
             accessibilityRole="button"
             accessibilityState={{ selected }}
             accessibilityLabel={LANG_LABELS[code]}
-            onPress={() => setLang(code)}
+            onPress={() => {
+              if (code !== lang) {
+                logAmplitudeEvent('language_changed', { lang: code });
+              }
+              setLang(code);
+            }}
             hitSlop={4}
             style={(state) => {
               const { hovered, focused } = state as { hovered?: boolean; focused?: boolean };

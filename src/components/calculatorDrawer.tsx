@@ -19,6 +19,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
+import { logAmplitudeEvent } from '../lib/amplitude';
 import { trackInternalLinkClick } from '../lib/analytics';
 import { useI18n } from '../i18n';
 import type { RootStackParamList } from '../navigation/rootStackTypes';
@@ -143,6 +144,10 @@ export default function CalculatorDrawer({
       altKey?: boolean;
     } | null;
     trackInternalLinkClick(activeKey, item.key);
+    logAmplitudeEvent('seo_nav_clicked', {
+      target: item.key,
+      source: 'calculator_drawer',
+    });
     onClose();
     if (Platform.OS !== 'web') {
       navigation.navigate(item.screen);
@@ -288,7 +293,12 @@ export default function CalculatorDrawer({
                 key={tab.key}
                 accessibilityRole="button"
                 onPress={() => {
-                  trackInternalLinkClick(activeKey, tab.key.toLowerCase());
+                  const target = tab.key.toLowerCase();
+                  trackInternalLinkClick(activeKey, target);
+                  logAmplitudeEvent('seo_nav_clicked', {
+                    target,
+                    source: 'calculator_drawer',
+                  });
                   onClose();
                   navigation.navigate('RootTabs', { screen: tab.key });
                 }}

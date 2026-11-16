@@ -27,6 +27,9 @@
 | T13 | 产品功能修复 QA 复验（`tsc` + 单测 + 构建 + `ego-browser` E2E 复验） | qa | T12 | DONE | QA 复验报告 | PASS（`tsc` 0 错、`395/395` 单测、Feedback iframe / History Clear / Metric 换算 E2E 复验全过） |
 | T14 | Web 页面跳转丝滑化 + 9 个计算器/Reference/History PC 端双栏宽屏适配 + Feedback 原生 UI 统一 | developer | T13 | DONE | `feedbackScreenContent.tsx`, `calcStack.tsx`, `webCalcShell.tsx`, 9 个计算器屏等 22 个文件 | 已完成开发并同步主工作区 |
 | T15 | T14 全量 QA 验收（`tsc` + 单测 + 构建 + `ego-browser` PC/Mobile 跳转与双栏截图验收） | qa | T14 | DONE | QA 验收报告 + 截图核验 | PASS（`tsc` 0 错、`395/395` 单测、9 计算器双栏/Reference/History/Feedback 原生 UI/无刷新跳转全过） |
+| T16 | Amplitude Web 项目建项（`909538` / `8e0f0f58b4e02e2a2583aae77b8c8d9b`） | ai-manager | - | DONE | `aicrosscheck / Conduit Bend Calc Web` | 已通过 Ego Browser 创建并提取 API Key |
+| T17 | Web 端 Amplitude API Key 隔离与全链路漏斗埋点追加 | developer | T16 | DONE | `amplitudeCore.ts`, `amplitude.ts`, `amplitude.test.ts`, `webQuickCalculator.tsx`, `seoLayout.tsx`, `useSeoHistory.ts`, `languageSwitcher.tsx`, `calculatorDrawer.tsx`, `downloadBanner.tsx`, `gen-seo-pages.py` | 已完成开发并同步主工作区 |
+| T18 | Amplitude Web 埋点 QA 验收（`tsc` + 单测 + 网络请求实测校验） | qa | T17 | DONE | QA 验收报告（含 HTTP v2 真实请求校验） | PASS（`tsc` 0 错、`397/397` 单测、HTTP v2/sendBeacon 实测 `8e0f0f58b4e02e2a2583aae77b8c8d9b` 无 PII 全过） |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

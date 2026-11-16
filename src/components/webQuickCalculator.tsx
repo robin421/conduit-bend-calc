@@ -8,6 +8,7 @@ import Card from './card';
 import ImperialInput from './imperialInput';
 import ResultGroup from './resultGroup';
 import type { OffsetAngle } from '../constants';
+import { logAmplitudeEvent } from '../lib/amplitude';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatInputValueForUnit, formatLength, formatMeasurement } from '../lib/units';
@@ -95,11 +96,13 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
     stubMark !== null ? formatMeasurement(stubMark, unit) : undefined;
 
   const handlePresetStub = useCallback((inches: number) => {
+    logAmplitudeEvent('web_quick_calc_mode_changed', { mode: 'stub', unit });
     setStubHeightInches(inches);
     setStubHeightText(unit === 'metric' ? `${Math.round(inches * 25.4)}` : `${inches}`);
   }, [unit]);
 
   const handlePresetOffset = useCallback((inches: number) => {
+    logAmplitudeEvent('web_quick_calc_mode_changed', { mode: 'offset', unit });
     setOffsetHeightInches(inches);
     setOffsetHeightText(unit === 'metric' ? `${Math.round(inches * 25.4)}` : `${inches}`);
   }, [unit]);
@@ -138,7 +141,12 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
                 key={item.key}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
-                onPress={() => setMode(item.key)}
+                onPress={() => {
+                  if (item.key !== mode) {
+                    logAmplitudeEvent('web_quick_calc_mode_changed', { mode: item.key, unit });
+                  }
+                  setMode(item.key);
+                }}
                 hitSlop={4}
                 style={(state) => {
                   const { focused } = state as { focused?: boolean };
@@ -321,7 +329,13 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
           {onOpenStub ? (
             <Text
               accessibilityRole="link"
-              onPress={onOpenStub}
+              onPress={() => {
+                logAmplitudeEvent('web_quick_calc_open_tool', {
+                  target: 'stub',
+                  source: 'web_quick_calc',
+                });
+                onOpenStub();
+              }}
               style={[styles.fullLink, { color: theme.colors.accentText }]}
             >
               Open dedicated 90° Stub calculator with diagram & calibration →
@@ -486,7 +500,13 @@ export default function WebQuickCalculator({ onOpenStub, onOpenOffset }: Props) 
           {onOpenOffset ? (
             <Text
               accessibilityRole="link"
-              onPress={onOpenOffset}
+              onPress={() => {
+                logAmplitudeEvent('web_quick_calc_open_tool', {
+                  target: 'offset',
+                  source: 'web_quick_calc',
+                });
+                onOpenOffset();
+              }}
               style={[styles.fullLink, { color: theme.colors.accentText }]}
             >
               Open dedicated Offset calculator with diagram & cheat sheet →

@@ -7,7 +7,9 @@ import {
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
+  resolveAmplitudeApiKey,
   sanitizeEventProperties,
+  WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
 } from './amplitudeCore';
 
@@ -16,7 +18,9 @@ export {
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
+  resolveAmplitudeApiKey,
   sanitizeEventProperties,
+  WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
 };
 
@@ -33,7 +37,7 @@ function resolveApiKey(): string {
     typeof process !== 'undefined' && process.env
       ? process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY
       : undefined;
-  return envKey?.trim() || DEFAULT_AMPLITUDE_API_KEY;
+  return resolveAmplitudeApiKey(Platform.OS, envKey);
 }
 
 const client = createAmplitudeClient({

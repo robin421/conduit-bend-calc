@@ -8,12 +8,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
+import { logAmplitudeEvent } from './amplitude.ts';
 import {
   createSeoHistoryStore,
   type SeoHistoryEntry,
   type SeoHistoryKind,
   type SeoHistoryStore,
 } from './seoHistory.ts';
+
+const HISTORY_KIND_TO_CALCULATOR: Record<SeoHistoryKind, string> = {
+  offset: 'offset',
+  stubUp: 'stub-up',
+  shrink: 'shrink',
+  saddle4: '4-point-saddle',
+};
 
 const stores = new Map<SeoHistoryKind, SeoHistoryStore>();
 
@@ -60,6 +68,9 @@ export function useSeoHistory(kind: SeoHistoryKind): UseSeoHistoryResult {
 
   const add = useCallback(
     (entry: SeoHistoryEntry) => {
+      logAmplitudeEvent('seo_history_saved', {
+        calculator: HISTORY_KIND_TO_CALCULATOR[kind],
+      });
       void storeFor(kind)
         .add(entry)
         .then(setEntries)

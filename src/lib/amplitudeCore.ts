@@ -2,7 +2,19 @@ import type { HistoryStorage } from './historyStore.ts';
 
 export const AMPLITUDE_API_ENDPOINT = 'https://api2.amplitude.com/2/httpapi';
 export const DEFAULT_AMPLITUDE_API_KEY = '4fab693935c6445c2df9ac357fc1f686';
+export const WEB_AMPLITUDE_API_KEY = '8e0f0f58b4e02e2a2583aae77b8c8d9b';
 export const AMPLITUDE_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+export function resolveAmplitudeApiKey(platform: string, envKey?: string): string {
+  const trimmedEnv = envKey?.trim();
+  if (trimmedEnv) {
+    return trimmedEnv;
+  }
+  if (platform === 'web') {
+    return WEB_AMPLITUDE_API_KEY;
+  }
+  return DEFAULT_AMPLITUDE_API_KEY;
+}
 
 export const AMPLITUDE_DEVICE_ID_KEY = '@conduit_amplitude_device_id';
 export const AMPLITUDE_SESSION_KEY = '@conduit_amplitude_session';
@@ -22,6 +34,12 @@ const ALLOWED_EVENT_PROPERTY_KEYS = new Set<string>([
   'outcome',
   'scene',
   'action',
+  'calculator',
+  'mode',
+  'unit',
+  'lang',
+  'target',
+  'page_slug',
 ]);
 
 const MAX_STRING_VALUE_LEN = 100;

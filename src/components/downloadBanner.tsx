@@ -22,6 +22,7 @@ import {
 import { GOOGLE_PLAY_URL } from '../lib/homeContent';
 import { isMobileNavViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { isSeoToolPath } from '../seo/toolPages';
+import { logAmplitudeEvent } from '../lib/amplitude';
 import { trackEvent } from '../lib/analytics';
 import { useTheme } from '../theme';
 
@@ -107,6 +108,7 @@ export default function DownloadBanner() {
   }
 
   const handleDismiss = () => {
+    logAmplitudeEvent('web_banner_dismissed');
     writeDismissedNow();
     setVisible(false);
   };
@@ -191,6 +193,7 @@ export default function DownloadBanner() {
               onPress={() => {
                 // gtag 同步 push 到 dataLayer，不阻塞 <a> 默认跳转。
                 trackEvent('google_play_click', { source: 'banner' });
+                logAmplitudeEvent('google_play_cta_clicked', { source: 'download_banner' });
               }}
               style={
                 [

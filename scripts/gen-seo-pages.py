@@ -214,13 +214,14 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <meta name="twitter:description" content="{desc}" />
 <style>{css}</style>
 {ga4}
+{amp_script}
 {faq_jsonld}
 </head>
 <body>
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand-link" href="{base}/">Conduit Bend Calc</a>
-    <a class="topbar-cta" href="{tool_url}">Open Calculator &rarr;</a>
+    <a class="topbar-cta" href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','topbar_cta')">Open Calculator &rarr;</a>
   </div>
 </header>
 <div class="page-shell">
@@ -230,8 +231,8 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 </main>
 <aside class="side-col">
 <div class="cta">
-<p><strong>Try it free:</strong> <a href="{tool_url}">{cta_label}</a> &mdash; instant mark spacing &amp; shrink, no sign-up.</p>
-<p><a href="{play_url}" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}})">Get Conduit Bend Calc on Google Play</a> for bender calibration and Pro tools.</p>
+<p><strong>Try it free:</strong> <a href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','sidebar_cta')">{cta_label}</a> &mdash; instant mark spacing &amp; shrink, no sign-up.</p>
+<p><a href="{play_url}" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','seo_page')">Get Conduit Bend Calc on Google Play</a> for bender calibration and Pro tools.</p>
 </div>
 <nav class="related" aria-label="Related calculators">
 <p><strong>Related:</strong></p>
@@ -252,6 +253,46 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){{dataLayer.push(arguments);}}
 gtag('js', new Date());
 gtag('config', '{gid}');
+</script>"""
+
+AMPLITUDE_WEB_API_KEY = "8e0f0f58b4e02e2a2583aae77b8c8d9b"
+AMPLITUDE_TEMPLATE = """<script>
+(function(){{
+  var KEY={api_key};
+  var SLUG={page_slug};
+  var LS_KEY='@conduit_amplitude_device_id';
+  function getDeviceId(){{
+    try{{
+      var id=window.localStorage&&window.localStorage.getItem(LS_KEY);
+      if(id&&id.length>=8)return id;
+      id=(window.crypto&&window.crypto.randomUUID)?window.crypto.randomUUID():('web-'+Math.random().toString(16).slice(2)+Date.now().toString(16));
+      if(window.localStorage)window.localStorage.setItem(LS_KEY,id);
+      return id;
+    }}catch(_){{return 'web-anon-'+Date.now().toString(16);}}
+  }}
+  var sid=Date.now();
+  function send(ev,src){{
+    try{{
+      if(!navigator.sendBeacon)return;
+      var now=Date.now();
+      var body=JSON.stringify({{
+        api_key:KEY,
+        events:[{{
+          device_id:getDeviceId(),
+          session_id:sid,
+          event_type:ev,
+          time:now,
+          platform:'web',
+          language:navigator.language||'en',
+          event_properties:{{page_slug:SLUG,source:src}}
+        }}]
+      }});
+      navigator.sendBeacon('https://api2.amplitude.com/2/httpapi',body);
+    }}catch(_){{}}
+  }}
+  window.__ampTrack=send;
+  send('seo_landing_viewed','seo_landing');
+}})();
 </script>"""
 
 # ---------------------------------------------------------------------------
@@ -1628,7 +1669,7 @@ def enhance_body_html(body_html: str, tool_url: str, cta_label: str) -> str:
     hero_cta = (
         f'\n<div class="hero-cta-bar">'
         f'<span class="muted">Free interactive tool &mdash; no sign-up</span>'
-        f'<a class="hero-cta" href="{tool_url}">{html.escape(cta_label)} &rarr;</a>'
+        f'<a class="hero-cta" href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack(\'seo_landing_cta_clicked\',\'hero_cta\')">{html.escape(cta_label)} &rarr;</a>'
         f'</div>\n'
     )
     if "</p>" in wrapped:
@@ -1645,7 +1686,12 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         for p in PAGES
         if p["slug"] != page["slug"]
     )
+    import json
     ga4 = GA4_TEMPLATE.format(gid=html.escape(ga4_id)) if ga4_id else ""
+    amp_script = AMPLITUDE_TEMPLATE.format(
+        api_key=json.dumps(AMPLITUDE_WEB_API_KEY),
+        page_slug=json.dumps(page["slug"]),
+    )
     faqs = page.get("faqs", [])
     raw_body = page["body"] + render_faq_section(faqs)
     body = enhance_body_html(raw_body, tool_url, page["cta_label"])
@@ -1664,6 +1710,7 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         related=related,
         css=BASE_CSS.strip(),
         ga4=ga4,
+        amp_script=amp_script,
         faq_jsonld=render_faq_jsonld(faqs),
     )
 

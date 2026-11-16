@@ -50,6 +50,7 @@ import {
   trackSeoToolUnitChange,
   type SeoToolName,
 } from '../../lib/analytics';
+import { logAmplitudeEvent } from '../../lib/amplitude';
 import { copyToClipboard } from '../../lib/clipboard';
 import type { SeoHistoryEntry } from '../../lib/seoHistory';
 import { formatLength } from '../../lib/units';
@@ -294,6 +295,10 @@ export function CalculatorSwitcher({
                 altKey?: boolean;
               } | null;
               trackInternalLinkClick(activeKey, item.key);
+              logAmplitudeEvent('seo_nav_clicked', {
+                target: item.key,
+                source: 'calculator_switcher',
+              });
               if (e && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
                 e.preventDefault?.();
                 navigation.navigate(item.screen);
@@ -312,6 +317,10 @@ export function CalculatorSwitcher({
         accessibilityRole="button"
         onPress={() => {
           trackInternalLinkClick(activeKey, item.key);
+          logAmplitudeEvent('seo_nav_clicked', {
+            target: item.key,
+            source: 'calculator_switcher',
+          });
           navigation.navigate(item.screen);
         }}
         style={styles.switcherChip}
@@ -940,6 +949,9 @@ export function SeoCopyButton({
   const handlePress = useCallback(async () => {
     const ok = await copyToClipboard(text, { source: 'seo_tool', toolName });
     trackSeoToolCopy(toolName, ok);
+    if (ok) {
+      logAmplitudeEvent('result_copied', { calculator: toolName });
+    }
     setStatus(ok ? 'copied' : 'failed');
     if (timerRef.current) {
       clearTimeout(timerRef.current);
