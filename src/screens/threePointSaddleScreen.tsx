@@ -362,11 +362,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
         showCalibrateCta={result !== null}
         onCalibrate={() => {
           trackEvent('calibration_cta_click', { source: 'three_point_saddle_result' });
-          if (access === 'unlocked') {
-            navigation.navigate('GuidedCalibration');
-          } else {
-            navigation.navigate('Paywall', { triggerSource: 'three_point_saddle_calibration', intent: { kind: 'calibration' } });
-          }
+          navigation.navigate('GuidedCalibration', { entrySource: 'three_point_saddle_calibration' });
         }}
       />
       <ExpectedActualFeedback

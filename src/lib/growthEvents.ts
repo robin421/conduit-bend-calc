@@ -4,6 +4,8 @@ export type GrowthEvent =
   | 'pro_checkout_started' | 'pro_purchase_result' | 'pro_next_step_started' | 'pro_preview_changed'
   | 'pro_restore_started' | 'pro_restore_result' | 'pro_paywall_dismissed'
   | 'pro_buy_tapped' | 'pro_retry_tapped' | 'pro_paywall_sku_loaded' | 'pro_entitlement_granted'
+  | 'pro_paywall_demo_interacted'
+  | 'calibration_try_started' | 'calibration_result_previewed' | 'calibration_save_gated' | 'calibration_draft_auto_applied'
   | 'history_saved' | 'history_exported' | 'history_reused' | 'bender_calibrated' | 'result_copied'
   | 'feedback_opened' | 'feedback_submitted' | 'feedback_submit_failed';
 export interface GrowthEventParams {
@@ -11,6 +13,10 @@ export interface GrowthEventParams {
   outcome?: string;
   scene?: string;
   action?: string;
+  mode?: string;
+  delta_bucket?: string;
+  has_personal_data?: boolean;
+  has_hidden_history?: boolean;
   bend_type?: string;
   unit_system?: string;
   unit_mode?: string;

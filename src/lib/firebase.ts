@@ -27,6 +27,8 @@ export interface ProPaywallViewedParams {
   scene?: string;
   sku_status?: string;
   price_loaded?: boolean;
+  has_personal_data?: boolean;
+  has_hidden_history?: boolean;
 }
 
 let initialized = false;
@@ -168,6 +170,8 @@ export function logFirebaseProPaywallViewed(
     ...(extra?.scene ? { scene: extra.scene } : {}),
     ...(extra?.sku_status ? { sku_status: extra.sku_status } : {}),
     ...(extra?.price_loaded !== undefined ? { price_loaded: extra.price_loaded } : {}),
+    ...(extra?.has_personal_data !== undefined ? { has_personal_data: extra.has_personal_data } : {}),
+    ...(extra?.has_hidden_history !== undefined ? { has_hidden_history: extra.has_hidden_history } : {}),
   };
   logEvent('pro_paywall_viewed', params);
   logAmplitudeEvent('pro_paywall_viewed', params);

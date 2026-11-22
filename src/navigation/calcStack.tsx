@@ -36,8 +36,8 @@ export type CalcStackParamList = {
   ConduitFill: undefined;
   VoltageDrop: undefined;
   WireSize: undefined;
-  GuidedCalibration: undefined;
-  Calibration: undefined;
+  GuidedCalibration: { entrySource?: string } | undefined;
+  Calibration: { entrySource?: string } | undefined;
   Bender: { conduitTypeFilter?: ConduitType; createCustom?: boolean } | undefined;
   Paywall: { triggerSource?: string; intent?: ProIntent; pendingTaskId?: string } | undefined;
   Placeholder: { title: string };

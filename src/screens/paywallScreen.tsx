@@ -10,6 +10,12 @@ import { GOOGLE_PLAY_URL } from '../lib/homeContent';
 import { trackEvent } from '../lib/analytics';
 import { trackGrowthEvent } from '../lib/growth';
 import { logFirebaseProPaywallViewed } from '../lib/firebase';
+import { loadHistory } from '../lib/history';
+import {
+  getCachedPendingCalibrationDraft,
+  loadPendingCalibrationDraft,
+  type PendingCalibrationDraft,
+} from '../lib/pendingCalibrationDraftStore';
 import { normalizeProSource, proIntentForSource, sceneForIntent, type ProScene } from '../lib/proFlow';
 import { beginPendingProTask, clearPendingProTask } from '../lib/pendingProIntent';
 import { continueProTask } from '../lib/proContinuation';
@@ -40,6 +46,11 @@ export default function PaywallScreen({ route, navigation }: Props) {
   const [scene, setScene] = useState<ProScene>(() => sceneForIntent(intent));
   const [actions, setActions] = useState<ReadonlySet<ProAction>>(new Set());
   const [localError, setLocalError] = useState<string | null>(null);
+  const [calibrationDraft, setCalibrationDraft] = useState<PendingCalibrationDraft | null>(() =>
+    getCachedPendingCalibrationDraft(),
+  );
+  const [totalHistoryCount, setTotalHistoryCount] = useState(0);
+
   const running = useRef(createProActionGuard());
   const impressionRef = useRef(false);
   const dismissedRef = useRef(false);
@@ -47,27 +58,71 @@ export default function PaywallScreen({ route, navigation }: Props) {
   const sawPendingOrUnknownRef = useRef(isPaywallSkuPending(getCurrentProState()));
   const sceneRef = useRef<ProScene>(scene);
   sceneRef.current = scene;
+  const hasPersonalDataRef = useRef<boolean>(Boolean(calibrationDraft));
+  hasPersonalDataRef.current = Boolean(calibrationDraft);
+  const hasHiddenHistoryRef = useRef<boolean>(totalHistoryCount > 5);
+  hasHiddenHistoryRef.current = totalHistoryCount > 5;
   const taskIdRef = useRef<string | undefined>(route.params?.pendingTaskId);
 
   useEffect(() => {
+    let active = true;
     suspendReviewForSession();
-    if (!impressionRef.current) {
-      const current = getCurrentProState();
-      impressionRef.current = true;
-      logFirebaseProPaywallViewed(
-        source,
-        buildPaywallViewedExtra({
-          scene: sceneRef.current,
-          skuAvailability: current.skuAvailability,
-          productPrice: current.productPrice,
-        }),
-      );
-      trackEvent('pro_paywall_viewed', { trigger_source: source });
-    }
+
+    void Promise.all([
+      loadPendingCalibrationDraft().catch(() => null),
+      loadHistory().catch(() => []),
+    ]).then(([draft, historyEntries]) => {
+      if (!active) return;
+      const historyCount = historyEntries.length;
+      const hasPersonalData = Boolean(draft);
+      const hasHiddenHistory = historyCount > 5;
+      hasPersonalDataRef.current = hasPersonalData;
+      hasHiddenHistoryRef.current = hasHiddenHistory;
+      setCalibrationDraft(draft);
+      setTotalHistoryCount(historyCount);
+
+      if (!impressionRef.current) {
+        const current = getCurrentProState();
+        impressionRef.current = true;
+        logFirebaseProPaywallViewed(
+          source,
+          buildPaywallViewedExtra({
+            scene: sceneRef.current,
+            skuAvailability: current.skuAvailability,
+            productPrice: current.productPrice,
+            hasPersonalData,
+            hasHiddenHistory,
+          }),
+        );
+        trackEvent('pro_paywall_viewed', { trigger_source: source });
+      }
+    });
+
     if (Platform.OS !== 'web' && (!getCurrentProState().initialized || !getCurrentProState().productPrice)) {
       void refreshProIap().catch(() => undefined);
     }
+
+    return () => {
+      active = false;
+    };
   }, [source]);
+
+  // 从 Paywall 试测入口跳转校准后再返回时，刷新本地草稿与历史条数。
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      void Promise.all([
+        loadPendingCalibrationDraft().catch(() => null),
+        loadHistory().catch(() => []),
+      ]).then(([draft, historyEntries]) => {
+        const historyCount = historyEntries.length;
+        hasPersonalDataRef.current = Boolean(draft);
+        hasHiddenHistoryRef.current = historyCount > 5;
+        setCalibrationDraft(draft);
+        setTotalHistoryCount(historyCount);
+      });
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   useEffect(() => {
     if (state.phase === 'loading' || state.skuAvailability === 'unknown') {
@@ -106,6 +161,8 @@ export default function PaywallScreen({ route, navigation }: Props) {
             scene: sceneRef.current,
             skuAvailability: current.skuAvailability,
             dismissMethod: 'back',
+            hasPersonalData: hasPersonalDataRef.current,
+            hasHiddenHistory: hasHiddenHistoryRef.current,
           }),
         );
       }
@@ -156,6 +213,8 @@ export default function PaywallScreen({ route, navigation }: Props) {
     scene={scene}
     intent={intent}
     unit={unit}
+    calibrationDraft={calibrationDraft}
+    totalHistoryCount={totalHistoryCount}
     phase={actions.has('buy') && state.phase === 'idle' ? 'loading' : state.phase}
     unlocked={Platform.OS !== 'web' && state.access === 'unlocked'}
     available={state.skuAvailability === 'available'}
@@ -166,6 +225,19 @@ export default function PaywallScreen({ route, navigation }: Props) {
     checking={actions.has('retry')}
     bottomInset={insets.bottom}
     onSceneChange={(next) => { setScene(next); trackGrowthEvent('pro_preview_changed', { scene: next, source }); }}
+    onDemoDeltaSelect={() => {
+      trackGrowthEvent('pro_paywall_demo_interacted', {
+        scene: 'calibration',
+        action: 'delta_chip',
+      });
+    }}
+    onTryFreeCalibration={() => {
+      trackGrowthEvent('pro_paywall_demo_interacted', {
+        scene: 'calibration',
+        action: 'try_free_cta',
+      });
+      navigation.navigate('GuidedCalibration', { entrySource: 'paywall_try_free' });
+    }}
     onBuy={() => {
       const current = getCurrentProState();
       trackGrowthEvent(
@@ -175,6 +247,8 @@ export default function PaywallScreen({ route, navigation }: Props) {
           scene,
           skuAvailability: current.skuAvailability,
           productPrice: current.productPrice,
+          hasPersonalData: hasPersonalDataRef.current,
+          hasHiddenHistory: hasHiddenHistoryRef.current,
         }),
       );
       void perform('buy');
@@ -204,6 +278,8 @@ export default function PaywallScreen({ route, navigation }: Props) {
             scene,
             skuAvailability: current.skuAvailability,
             dismissMethod: 'button',
+            hasPersonalData: hasPersonalDataRef.current,
+            hasHiddenHistory: hasHiddenHistoryRef.current,
           }),
         );
       }

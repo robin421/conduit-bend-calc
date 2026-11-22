@@ -2,9 +2,24 @@ import { Share } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
+import { getLang, translate } from '../i18n';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import type { RootTabParamList } from '../navigation/rootTabs';
+import { showAppToast } from './appToast';
+import {
+  loadBenderProfiles,
+  setActiveProfile,
+  specToProfile,
+  upsertProfile,
+} from './benderProfileStore';
+import { saveBenderSpec } from './benderSpecStore';
 import { formatHistoryTime, loadHistory } from './history';
+import {
+  applyPendingCalibrationDraft,
+  clearPendingCalibrationDraft,
+  computePostCalibrationPopCount,
+  loadPendingCalibrationDraft,
+} from './pendingCalibrationDraftStore';
 import { clearPendingProTask } from './pendingProIntent';
 import { getCurrentProAccess } from './proStore';
 import type { ProIntent } from './proFlow';
@@ -31,7 +46,51 @@ export async function continueProTask(
   const state = navigation.getState();
   const previous = state.routes[state.index - 1]?.name;
   switch (intent.kind) {
-    case 'calibration': navigation.replace('GuidedCalibration'); break;
+    case 'calibration': {
+      const applied = await applyPendingCalibrationDraft({
+        loadDraft: loadPendingCalibrationDraft,
+        clearDraft: clearPendingCalibrationDraft,
+        ensureProfilesLoaded: loadBenderProfiles,
+        applyGuidedProfile: (profile) => {
+          upsertProfile(profile);
+          setActiveProfile(profile.id);
+        },
+        applyManualSpec: (spec, profileName) => {
+          const profile = specToProfile(spec, {
+            source: 'custom',
+            id: `custom|${spec.customName ?? profileName}`,
+            name: spec.customName ?? profileName,
+          });
+          upsertProfile(profile);
+          setActiveProfile(profile.id);
+          saveBenderSpec(spec);
+        },
+        trackAutoApplied: (source, mode) => {
+          trackGrowthEvent('calibration_draft_auto_applied', { source, mode });
+        },
+        trackCalibrated: (source) => {
+          trackGrowthEvent('bender_calibrated', { source });
+        },
+        showToast: (profileName) => {
+          showAppToast(translate(getLang(), 'calibration.draftAppliedToast', { name: profileName }));
+        },
+      });
+      if (!navigation.isFocused()) return;
+      if (applied) {
+        const popCount = computePostCalibrationPopCount(
+          state.routes.map((route) => route.name),
+          state.index,
+        );
+        if (popCount && popCount > 0) {
+          navigation.pop(popCount);
+        } else {
+          navigation.navigate('CalcHome');
+        }
+        break;
+      }
+      navigation.replace('GuidedCalibration');
+      break;
+    }
     case 'feasibility':
       if (previous === intent.screen) navigation.goBack();
       else navigation.replace(intent.screen);

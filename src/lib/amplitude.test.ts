@@ -257,6 +257,33 @@ test('sanitizeEventProperties：保留 Phase 1 付费墙与单位模式新增白
   });
 });
 
+test('sanitizeEventProperties：放行 Value-First 漏斗离散/布尔维度并严格过滤实测数值与档案名', () => {
+  const cleaned = sanitizeEventProperties({
+    source: 'offset_calibration',
+    mode: 'quick',
+    scene: 'calibration',
+    action: 'delta_chip',
+    delta_bucket: 'large',
+    has_personal_data: true,
+    has_hidden_history: true,
+    base_take_up: 5,
+    measured_take_up: 5.375,
+    delta_inches: 0.375,
+    conduit_size: '1/2" EMT',
+    profile_name: 'My Shop Klein',
+  });
+
+  assert.deepEqual(cleaned, {
+    source: 'offset_calibration',
+    mode: 'quick',
+    scene: 'calibration',
+    action: 'delta_chip',
+    delta_bucket: 'large',
+    has_personal_data: true,
+    has_hidden_history: true,
+  });
+});
+
 test('sanitizeUserProperties：仅允许 is_pro / unit_system / app_lang，过滤 PII 与尺寸', () => {
   const cleaned = sanitizeUserProperties({
     is_pro: true,

@@ -288,11 +288,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
         showCalibrateCta={result !== null}
         onCalibrate={() => {
           trackEvent('calibration_cta_click', { source: 'offset_result' });
-          if (access === 'unlocked') {
-            navigation.navigate('GuidedCalibration');
-          } else {
-            navigation.navigate('Paywall', { triggerSource: 'offset_calibration', intent: { kind: 'calibration' } });
-          }
+          navigation.navigate('GuidedCalibration', { entrySource: 'offset_calibration' });
         }}
       />
       <ExpectedActualFeedback

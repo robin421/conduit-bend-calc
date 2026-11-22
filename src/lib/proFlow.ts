@@ -23,7 +23,19 @@ const SOURCE_SCREENS: Record<string, BendScreen> = {
 
 /** 外部深链中的未知来源不作为任意文本上报。 */
 export function normalizeProSource(source: string): string {
-  const known = ['direct', 'pending_resume', 'history_export', 'history_limit', 'bender_picker', 'calc_home_guidedcalibration', 'calc_home_calibration'];
+  const known = [
+    'direct',
+    'pending_resume',
+    'history_export',
+    'history_limit',
+    'bender_picker',
+    'bender_screen',
+    'calc_home_guidedcalibration',
+    'calc_home_calibration',
+    'guided_calibration_save',
+    'full_fingerprint_save',
+    'paywall_try_free',
+  ];
   if (known.includes(source)) return source;
   for (const prefix of Object.keys(SOURCE_SCREENS)) {
     if (source === `${prefix}_calibration` || source === `${prefix}_feasibility`) return source;

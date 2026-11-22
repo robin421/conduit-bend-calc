@@ -394,11 +394,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         showCalibrateCta={result !== null}
         onCalibrate={() => {
           trackEvent('calibration_cta_click', { source: 'four_point_saddle_result' });
-          if (access === 'unlocked') {
-            navigation.navigate('GuidedCalibration');
-          } else {
-            navigation.navigate('Paywall', { triggerSource: 'four_point_saddle_calibration', intent: { kind: 'calibration' } });
-          }
+          navigation.navigate('GuidedCalibration', { entrySource: 'four_point_saddle_calibration' });
         }}
       />
       <ExpectedActualFeedback

@@ -205,6 +205,11 @@ async function ensureLoaded(): Promise<ProfileState> {
   return loadPromise;
 }
 
+/** 确保本地档案已从 AsyncStorage 加载到内存（冷启动续接前调用）。 */
+export function loadBenderProfiles(): Promise<ProfileState> {
+  return ensureLoaded();
+}
+
 /** 当前内存快照（可能尚未加载完成，返回 null）。 */
 export function getProfileState(): ProfileState | null {
   return cachedState;

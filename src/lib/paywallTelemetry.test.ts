@@ -168,3 +168,61 @@ test('Paywall 事件参数构造：包含完整诊断字段与 product_id', () =
     },
   );
 });
+
+test('Paywall 事件参数构造：透传 has_personal_data 与 has_hidden_history 布尔维度', () => {
+  assert.deepEqual(
+    buildPaywallViewedExtra({
+      scene: 'calibration',
+      skuAvailability: 'available',
+      productPrice: '$4.99',
+      hasPersonalData: true,
+      hasHiddenHistory: false,
+    }),
+    {
+      scene: 'calibration',
+      sku_status: 'available',
+      price_loaded: true,
+      has_personal_data: true,
+      has_hidden_history: false,
+    },
+  );
+
+  assert.deepEqual(
+    buildPaywallBuyTapParams({
+      source: 'offset_calibration',
+      scene: 'calibration',
+      skuAvailability: 'available',
+      productPrice: '$4.99',
+      hasPersonalData: true,
+      hasHiddenHistory: true,
+    }),
+    {
+      source: 'offset_calibration',
+      scene: 'calibration',
+      sku_status: 'available',
+      price_loaded: true,
+      product_id: PRO_SKU,
+      has_personal_data: true,
+      has_hidden_history: true,
+    },
+  );
+
+  assert.deepEqual(
+    buildPaywallDismissParams({
+      source: 'history_limit',
+      scene: 'history',
+      skuAvailability: 'available',
+      dismissMethod: 'button',
+      hasPersonalData: false,
+      hasHiddenHistory: true,
+    }),
+    {
+      source: 'history_limit',
+      scene: 'history',
+      sku_status: 'available',
+      dismiss_method: 'button',
+      has_personal_data: false,
+      has_hidden_history: true,
+    },
+  );
+});

@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
@@ -17,13 +17,24 @@ import Card from '../components/card';
 import ImperialInput from '../components/imperialInput';
 import WebCalcShell from '../components/webCalcShell';
 import type { BenderSpec } from '../constants';
+import { useI18n } from '../i18n';
+import { selectSpecByValue } from '../lib/benderProfileStore';
 import { saveBenderSpec } from '../lib/benderSpecStore';
+import { useCustomSpecs } from '../lib/customSpecs';
 import { trackGrowthEvent } from '../lib/growth';
+import {
+  clearPendingCalibrationDraft,
+  deltaBucket,
+  savePendingCalibrationDraft,
+} from '../lib/pendingCalibrationDraftStore';
+import { normalizeProSource } from '../lib/proFlow';
+import { useProAccess } from '../lib/proStore';
 import { formatLength } from '../lib/units';
 import { useUnitSystem } from '../lib/unitStore';
-import { useCustomSpecs } from '../lib/customSpecs';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import { useTheme } from '../theme';
+
+type Props = NativeStackScreenProps<CalcStackParamList, 'Calibration'>;
 
 function InfoRow({
   label,
@@ -70,9 +81,11 @@ function SectionHint({ children }: { children: string }) {
 /** Full Fingerprint 默认废料长度（英寸），预填、用户可改。 */
 const DEFAULT_SCRAP_LENGTH = 24;
 
-export default function CalibrationScreen() {
+export default function CalibrationScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const { unit } = useUnitSystem();
+  const { access } = useProAccess();
   const [spec, setSpec] = useState<BenderSpec>(() => defaultBenderSpec());
   const { specs: customSpecs, addSpec } = useCustomSpecs();
 
@@ -92,6 +105,21 @@ export default function CalibrationScreen() {
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const startedRef = useRef(false);
+  const previewedRef = useRef(false);
+  const rawEntrySource = route.params?.entrySource;
+  const entrySource = normalizeProSource(rawEntrySource ?? 'full_fingerprint_save');
+
+  // 进入 Full Fingerprint 上报一次 calibration_try_started（无 PII）。
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    trackGrowthEvent('calibration_try_started', {
+      source: entrySource,
+      mode: 'full',
+    });
+  }, [entrySource]);
+
   // Gain 法：G = A+B−L₀，R = G/(2−π/2)
   const gainResult = useMemo(() => {
     if (l0 === null || legA === null || legB === null) {
@@ -107,6 +135,25 @@ export default function CalibrationScreen() {
     }
     return calibrateStubTakeUp(spec.takeUp, target, actual);
   }, [actual, spec.takeUp, target]);
+
+  // 首次得出有效校准结果时单次去重上报 calibration_result_previewed（仅离散分桶）。
+  useEffect(() => {
+    if (previewedRef.current) return;
+    if (gainResult === null && takeUpResult === null) return;
+    previewedRef.current = true;
+    const measuredTakeUp = takeUpResult ?? spec.takeUp;
+    const delta =
+      takeUpResult !== null
+        ? measuredTakeUp - spec.takeUp
+        : gainResult !== null
+          ? gainResult.radius - spec.centerlineRadius
+          : 0;
+    trackGrowthEvent('calibration_result_previewed', {
+      source: entrySource,
+      mode: 'full',
+      delta_bucket: deltaBucket(delta),
+    });
+  }, [entrySource, gainResult, spec.centerlineRadius, spec.takeUp, takeUpResult]);
 
   const canSave =
     name.trim().length > 0 && (gainResult !== null || takeUpResult !== null);
@@ -131,18 +178,66 @@ export default function CalibrationScreen() {
     if (!built) {
       return;
     }
+    if (access === 'locked' || Platform.OS === 'web') {
+      const now = Date.now();
+      const baseTakeUp = spec.takeUp;
+      const measuredTakeUp = built.takeUp;
+      setSaving(true);
+      void savePendingCalibrationDraft({
+        mode: 'manual',
+        baseTakeUp,
+        measuredTakeUp,
+        deltaInches: measuredTakeUp - baseTakeUp,
+        profileName: displaySpecName(built),
+        spec: built,
+        entrySource,
+        createdAt: now,
+      })
+        .finally(() => {
+          setSaving(false);
+          trackGrowthEvent('calibration_save_gated', {
+            source: entrySource,
+            mode: 'full',
+          });
+          navigation.navigate('Paywall', {
+            triggerSource: rawEntrySource ?? 'full_fingerprint_save',
+            intent: { kind: 'calibration' },
+          });
+        });
+      return;
+    }
     setSaving(true);
     void addSpec(built)
       .then(() => {
         saveBenderSpec(built);
+        selectSpecByValue(built);
         setSpec(built);
         trackGrowthEvent('bender_calibrated', { source: 'manual' });
+        void clearPendingCalibrationDraft();
         setSavedMessage(
-          `Saved "${displaySpecName(built)}": R=${formatLength(built.centerlineRadius, unit)}, take-up=${formatLength(built.takeUp, unit)} — now selected as the bender for all calculators and available in every bender picker.`,
+          t('calibration.full.savedMessage', {
+            name: displaySpecName(built),
+            radius: formatLength(built.centerlineRadius, unit),
+            takeUp: formatLength(built.takeUp, unit),
+          }),
         );
       })
       .finally(() => setSaving(false));
-  }, [addSpec, canSave, gainResult, name, saving, spec, takeUpResult, unit]);
+  }, [
+    access,
+    addSpec,
+    canSave,
+    entrySource,
+    gainResult,
+    name,
+    navigation,
+    rawEntrySource,
+    saving,
+    spec,
+    t,
+    takeUpResult,
+    unit,
+  ]);
 
   const handleClear = useCallback(() => {
     setL0Text(String(DEFAULT_SCRAP_LENGTH));
@@ -161,7 +256,7 @@ export default function CalibrationScreen() {
   }, []);
 
   return (
-    <WebCalcShell title="Full Fingerprint" spacing="md" singleColumnMaxWidth={960}>
+    <WebCalcShell title={t('nav.fullFingerprint')} spacing="md" singleColumnMaxWidth={960}>
       <Card style={{ gap: theme.spacing.sm }}>
         <Text
           style={{
@@ -170,13 +265,19 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          Step 1: Pick the bender to calibrate
+          {t('calibration.full.step1Title')}
         </Text>
         <BenderPicker
           spec={spec}
           customSpecs={customSpecs}
           onChange={setSpec}
           onCreateCustom={handleCreateCustom}
+          onUnlockPro={() =>
+            navigation.navigate('Paywall', {
+              triggerSource: 'bender_picker',
+              intent: { kind: 'bender' },
+            })
+          }
         />
       </Card>
 
@@ -188,41 +289,49 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          Step 2: Calibrate R with the gain method (optional)
+          {t('calibration.full.step2Title')}
         </Text>
         <SectionHint>
-          {`Cut a scrap of conduit and measure its exact length L₀ (${formatLength(DEFAULT_SCRAP_LENGTH, unit)} is pre-filled — change it if yours differs). Bend a 90° in the middle, then measure each leg from the back of the bend to the end of the conduit: hook your tape on the back of the 90°, the trade method.`}
+          {t('calibration.full.step2Hint', {
+            length: formatLength(DEFAULT_SCRAP_LENGTH, unit),
+          })}
         </SectionHint>
         <ImperialInput
-          label="Scrap length L₀"
+          label={t('calibration.full.scrapLength')}
           value={l0Text}
           onChangeText={setL0Text}
           onParsedChange={setL0}
-          placeholder={`e.g. ${formatLength(DEFAULT_SCRAP_LENGTH, unit)}`}
+          placeholder={t('calibration.full.placeholderExample', {
+            value: formatLength(DEFAULT_SCRAP_LENGTH, unit),
+          })}
           unit={unit}
         />
         <ImperialInput
-          label="Leg A"
+          label={t('calibration.full.legA')}
           value={legAText}
           onChangeText={setLegAText}
           onParsedChange={setLegA}
-          placeholder={`e.g. ${formatLength(13, unit)}`}
+          placeholder={t('calibration.full.placeholderExample', {
+            value: formatLength(13, unit),
+          })}
           unit={unit}
         />
         <ImperialInput
-          label="Leg B"
+          label={t('calibration.full.legB')}
           value={legBText}
           onChangeText={setLegBText}
           onParsedChange={setLegB}
-          placeholder={`e.g. ${formatLength(12.5, unit)}`}
+          placeholder={t('calibration.full.placeholderExample', {
+            value: formatLength(12.5, unit),
+          })}
           unit={unit}
         />
         <InfoRow
-          label="Gain（A+B−L₀）"
+          label={t('calibration.full.gainRow')}
           value={gainResult ? formatLength(gainResult.gain, unit) : undefined}
         />
         <InfoRow
-          label="Calibrated radius R"
+          label={t('calibration.full.radiusRow')}
           value={gainResult ? formatLength(gainResult.radius, unit) : undefined}
         />
       </Card>
@@ -235,33 +344,35 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          Step 3: Calibrate take-up with the stub method (optional)
+          {t('calibration.full.step3Title')}
         </Text>
-        <SectionHint>
-          Bend a stub to the target height using the current take-up, then measure the actual height you got.
-        </SectionHint>
+        <SectionHint>{t('calibration.full.step3Hint')}</SectionHint>
         <ImperialInput
-          label="Target height"
+          label={t('calibration.full.targetHeight')}
           value={targetText}
           onChangeText={setTargetText}
           onParsedChange={setTarget}
-          placeholder={`e.g. ${formatLength(12, unit)}`}
+          placeholder={t('calibration.full.placeholderExample', {
+            value: formatLength(12, unit),
+          })}
           unit={unit}
         />
         <ImperialInput
-          label="Actual height"
+          label={t('calibration.full.actualHeight')}
           value={actualText}
           onChangeText={setActualText}
           onParsedChange={setActual}
-          placeholder={`e.g. ${formatLength(12.5, unit)}`}
+          placeholder={t('calibration.full.placeholderExample', {
+            value: formatLength(12.5, unit),
+          })}
           unit={unit}
         />
         <InfoRow
-          label={`Old take-up (${displaySpecName(spec)})`}
+          label={t('calibration.full.oldTakeUp', { name: displaySpecName(spec) })}
           value={formatLength(spec.takeUp, unit)}
         />
         <InfoRow
-          label="Calibrated take-up"
+          label={t('calibration.full.calibratedTakeUp')}
           value={takeUpResult !== null ? formatLength(takeUpResult, unit) : undefined}
         />
       </Card>
@@ -274,15 +385,13 @@ export default function CalibrationScreen() {
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          Step 4: Save as a custom bender
+          {t('calibration.full.step4Title')}
         </Text>
-        <SectionHint>
-          Uncalibrated values keep the Step 1 spec. Saved on this device and available in every calculator's bender picker.
-        </SectionHint>
+        <SectionHint>{t('calibration.full.step4Hint')}</SectionHint>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="Name it, e.g. My Ideal (field-tested)"
+          placeholder={t('calibration.full.namePlaceholder')}
           placeholderTextColor={theme.colors.textSecondary}
           selectionColor={theme.colors.selection}
           cursorColor={theme.colors.accentText}
@@ -302,7 +411,7 @@ export default function CalibrationScreen() {
           ]}
         />
         <BigButton
-          title={saving ? 'Saving…' : 'Save as Custom'}
+          title={saving ? t('calibration.full.savingButton') : t('calibration.full.saveButton')}
           onPress={handleSave}
           disabled={!canSave || saving}
         />
@@ -319,7 +428,7 @@ export default function CalibrationScreen() {
         ) : null}
       </Card>
 
-      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
+      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
     </WebCalcShell>
   );
 }

@@ -259,6 +259,7 @@ export default function HistoryScreen({ navigation }: Props) {
     if (!hasHiddenEntries) {
       return null;
     }
+    const hiddenCount = Math.max(0, entries.length - 5);
     return (
       <Card style={styles.historyLimitCard}>
         <View style={styles.historyLimitHeader}>
@@ -269,10 +270,13 @@ export default function HistoryScreen({ navigation }: Props) {
                 color: theme.colors.textPrimary,
                 fontSize: theme.fontSize.body,
                 fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
               },
             ]}
           >
-            {t('history.limitTitle', { count: entries.length })}
+            {hiddenCount === 1
+              ? t('history.limitHiddenTitleOne', { count: entries.length })
+              : t('history.limitHiddenTitleMany', { count: entries.length, hidden: hiddenCount })}
           </Text>
           <Text
             style={[

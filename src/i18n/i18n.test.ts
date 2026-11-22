@@ -227,4 +227,32 @@ test('核心链路词条（paywall / home / history / tabs / calc）在 en / es 
   assert.equal(translate('en', 'rating.button'), 'Rate on Google Play');
   assert.equal(translate('es', 'rating.button'), 'Calificar en Google Play');
   assert.equal(translate('es', 'rating.opening'), 'Abriendo Google Play…');
+  assert.equal(
+    translate('en', 'paywall.personalCalibrationTitle', { delta: '+3/8"' }),
+    'Save your +3/8" bender calibration',
+  );
+  assert.equal(
+    translate('es', 'paywall.personalCalibrationTitle', { delta: '+3/8"' }),
+    'Guarda tu calibración de +3/8"',
+  );
+  assert.equal(
+    translate('en', 'paywall.roiAnchor'),
+    'One saved stick of conduit pays for it — one-time purchase, no subscription.',
+  );
+  assert.equal(
+    translate('es', 'paywall.roiAnchor'),
+    'Ahorra un solo conducto y se paga solo — pago único, sin suscripción.',
+  );
+  assert.equal(
+    translate('es', 'paywall.historyHiddenTitle', { total: 12, hidden: 7 }),
+    '12 dobleces guardados · 7 ocultos',
+  );
+  assert.equal(
+    translate('en', 'calibration.guided.saveAndApply'),
+    'Save & Apply to All Bend Calculators',
+  );
+  assert.equal(
+    translate('es', 'calibration.guided.saveAndApply'),
+    'Guardar y aplicar a todas las calculadoras de doblado',
+  );
 });

@@ -204,6 +204,13 @@ export const en = {
   'home.tool.guidedCalibration.name': 'Dial In My Bender',
   'home.tool.guidedCalibration.desc':
     'Match take-up or bend radius to your actual bender',
+  'home.tool.guidedCalibration.descTryFree':
+    'Measure your bender free · Save & apply with Pro',
+  'home.tool.guidedCalibration.freeTryBadge': 'FREE TRY',
+  'bender.freeTryBadge': 'Free test',
+  'bender.dialInCardBody':
+    'Test your bender with one 90° bend to see its real take-up — free to measure.',
+  'bender.dialInCta': 'Measure My Bender Free',
   'home.continueLast': 'Continue last calculation',
   'home.continueLastA11y': 'Continue last calculation: {title}',
   'home.proReadyTitle': 'Pro is ready — continue your task',
@@ -229,6 +236,8 @@ export const en = {
   'history.entryCountOne': '{count} entry',
   'history.entryCountMany': '{count} entries',
   'history.limitTitle': 'Viewing 5 of {count} recent bends',
+  'history.limitHiddenTitleOne': '{count} bends saved · 1 older bend hidden',
+  'history.limitHiddenTitleMany': '{count} bends saved · {hidden} older bends hidden',
   'history.limitSubtitle':
     'The latest {limit} bends are saved on this device. Pro shows all {limit} and enables export.',
   'history.limitCta': 'Unlock {limit}-Bend History & Export',
@@ -326,6 +335,99 @@ export const en = {
   'paywall.continueWithFree': 'Continue with Free',
   'paywall.notNow': 'Not now',
   'paywall.actionError': 'Unable to complete this action. Please try again.',
+  'paywall.personalCalibrationTitle': 'Save your {delta} bender calibration',
+  'paywall.personalCalibrationIntro': 'Measured from your test bend for "{name}".',
+  'paywall.personalCalibrationNote':
+    'Your test bend · ready to save to all bend calculators',
+  'paywall.demoDeltaLabel': 'Try a sample take-up offset',
+  'paywall.tryFreeCalibrationCta': 'Measure my bender free →',
+  'paywall.historyHiddenTitle': '{total} bends saved · {hidden} hidden',
+  'paywall.historyHiddenNote':
+    '{total} bends saved on this device · {hidden} hidden. Unlock Pro to view all {limit} and export.',
+  'paywall.roiAnchor':
+    'One saved stick of conduit pays for it — one-time purchase, no subscription.',
+  'paywall.continue.saveAndApplyDraft': 'Save & Apply "{name}"',
+  'paywall.readyDraftNote':
+    'Your measured calibration "{name}" is ready. Tap below to save and apply it to all bend calculators.',
+
+  // 校准向导与 Full Fingerprint
+  'calibration.draftAppliedToast': 'Saved & applied "{name}" to all bend calculators',
+  'calibration.chooser.intro':
+    'Free calculators use standard bender values. Run a free test bend to measure your own tool — save & apply to all bend calculators with Pro.',
+  'calibration.chooser.introUnlocked':
+    'Free calculators use standard bender values. Use a test bend to match take-up or bend radius to your own tool. Have your bender, scrap conduit and tape measure ready.',
+  'calibration.chooser.quickBadge': 'Recommended · 1 measurement',
+  'calibration.chooser.quickTitle': 'Quick Check',
+  'calibration.chooser.quickBody':
+    'Bend one {mark} stub with your bender\'s standard take-up, enter the finished height, and see your real take-up immediately.',
+  'calibration.chooser.quickCta': 'Start Quick Check',
+  'calibration.chooser.fullTitle': 'Full Fingerprint',
+  'calibration.chooser.fullBody':
+    'Cut {length} of scrap, bend a 90° in the middle, measure both legs — the app derives your bender\'s true centerline radius.',
+  'calibration.chooser.fullCta': 'Start Full Fingerprint',
+  'calibration.guided.stepTitle1': 'Mark the conduit',
+  'calibration.guided.stepTitle2': 'Bend 90°',
+  'calibration.guided.stepTitle3': 'Measure the stub',
+  'calibration.guided.stepTitle4': 'Save your bender',
+  'calibration.guided.progress': 'Quick Check · Step {current} of {total} · {title}',
+  'calibration.guided.calibrating': 'Calibrating: {name}',
+  'calibration.guided.step1Heading': 'Mark {mark} from the end',
+  'calibration.guided.step1Body':
+    'Measure from the end of the conduit and make one clear mark. This is the only measurement you need before bending.',
+  'calibration.guided.step1Diagram': 'End ─────●───── {mark} mark',
+  'calibration.guided.step2Heading': 'Bend a 90° stub',
+  'calibration.guided.step2Body':
+    'Line the {datum} up with your mark, then bend a full 90° stub. Keep the conduit seated in the bender.',
+  'calibration.guided.step2Diagram': '{datum} ▼\nEnd ─────●───── mark\n           90°',
+  'calibration.guided.skipToMeasure': 'Already bent? Enter measurement →',
+  'calibration.guided.step3Heading': 'Enter the finished stub height',
+  'calibration.guided.step3Body':
+    'Measure from the end of the conduit to the back of the bend. Type the finished height S below.',
+  'calibration.guided.stubInputLabel': 'Finished stub height (S)',
+  'calibration.guided.stubPlaceholderMetric': 'e.g. 440 mm',
+  'calibration.guided.stubPlaceholderImperial': 'e.g. 17 3/8"',
+  'calibration.guided.finishedHeightRow': 'Finished height (S)',
+  'calibration.guided.deductRow': 'Deduct (S − {mark})',
+  'calibration.guided.diagnosisTitle': 'Your bender diagnosis',
+  'calibration.guided.standardTakeUp': 'Standard take-up',
+  'calibration.guided.measuredTakeUp': 'Measured take-up',
+  'calibration.guided.markCompareLabel': 'Mark for a {target} stub',
+  'calibration.guided.step4Heading': 'Calibrated ✓',
+  'calibration.guided.step4Body':
+    'Your bender is matched to your test bend. Give it a name you will recognize on the job.',
+  'calibration.guided.nameLabel': 'Profile name',
+  'calibration.guided.defaultName': 'My {label}',
+  'calibration.guided.defaultNameFallback': 'My bender',
+  'calibration.guided.namePlaceholder': 'e.g. My {label}',
+  'calibration.guided.namePlaceholderFallback': 'e.g. My bender',
+  'calibration.guided.back': 'Back',
+  'calibration.guided.next': 'Next',
+  'calibration.guided.saveAndApply': 'Save & Apply to All Bend Calculators',
+  'calibration.full.step1Title': 'Step 1: Pick the bender to calibrate',
+  'calibration.full.step2Title': 'Step 2: Calibrate R with the gain method (optional)',
+  'calibration.full.step2Hint':
+    'Cut a scrap of conduit and measure its exact length L₀ ({length} is pre-filled — change it if yours differs). Bend a 90° in the middle, then measure each leg from the back of the bend to the end of the conduit: hook your tape on the back of the 90°, the trade method.',
+  'calibration.full.scrapLength': 'Scrap length L₀',
+  'calibration.full.legA': 'Leg A',
+  'calibration.full.legB': 'Leg B',
+  'calibration.full.gainRow': 'Gain (A+B−L₀)',
+  'calibration.full.radiusRow': 'Calibrated radius R',
+  'calibration.full.step3Title': 'Step 3: Calibrate take-up with the stub method (optional)',
+  'calibration.full.step3Hint':
+    'Bend a stub to the target height using the current take-up, then measure the actual height you got.',
+  'calibration.full.targetHeight': 'Target height',
+  'calibration.full.actualHeight': 'Actual height',
+  'calibration.full.oldTakeUp': 'Old take-up ({name})',
+  'calibration.full.calibratedTakeUp': 'Calibrated take-up',
+  'calibration.full.step4Title': 'Step 4: Save as a custom bender',
+  'calibration.full.step4Hint':
+    'Uncalibrated values keep the Step 1 spec. Saved on this device and available in every calculator\'s bender picker.',
+  'calibration.full.namePlaceholder': 'Name it, e.g. My Ideal (field-tested)',
+  'calibration.full.saveButton': 'Save as Custom',
+  'calibration.full.savingButton': 'Saving…',
+  'calibration.full.savedMessage':
+    'Saved "{name}": R={radius}, take-up={takeUp} — now selected as the bender for all calculators and available in every bender picker.',
+  'calibration.full.placeholderExample': 'e.g. {value}',
 
   // 核心计算器公共与 4 大高频计算器
   'calc.bender': 'Bender',
@@ -571,6 +673,13 @@ export const es: Record<TranslationKey, string> = {
   'home.tool.guidedCalibration.name': 'Calibrar mi doblador',
   'home.tool.guidedCalibration.desc':
     'Ajusta la recogida o el radio a tu doblador real',
+  'home.tool.guidedCalibration.descTryFree':
+    'Mide tu doblador gratis · Guarda y aplica con Pro',
+  'home.tool.guidedCalibration.freeTryBadge': 'GRATIS',
+  'bender.freeTryBadge': 'Prueba gratis',
+  'bender.dialInCardBody':
+    'Prueba tu doblador con un doblez de 90° para ver su recogida real — medición gratis.',
+  'bender.dialInCta': 'Medir mi doblador gratis',
   'home.continueLast': 'Continuar último cálculo',
   'home.continueLastA11y': 'Continuar último cálculo: {title}',
   'home.proReadyTitle': 'Pro está listo — continúa tu tarea',
@@ -597,6 +706,8 @@ export const es: Record<TranslationKey, string> = {
   'history.entryCountOne': '{count} registro',
   'history.entryCountMany': '{count} registros',
   'history.limitTitle': 'Viendo 5 de {count} dobleces recientes',
+  'history.limitHiddenTitleOne': '{count} dobleces guardados · 1 anterior oculto',
+  'history.limitHiddenTitleMany': '{count} dobleces guardados · {hidden} anteriores ocultos',
   'history.limitSubtitle':
     'Los últimos {limit} dobleces se guardan en este dispositivo. Pro muestra los {limit} y permite exportar.',
   'history.limitCta': 'Desbloquear historial de {limit} y exportación',
@@ -697,6 +808,107 @@ export const es: Record<TranslationKey, string> = {
   'paywall.notNow': 'Ahora no',
   'paywall.actionError':
     'No se pudo completar esta acción. Inténtalo de nuevo.',
+  'paywall.personalCalibrationTitle': 'Guarda tu calibración de {delta}',
+  'paywall.personalCalibrationIntro':
+    'Medido con tu doblez de prueba para "{name}".',
+  'paywall.personalCalibrationNote':
+    'Tu doblez de prueba · listo para guardar en todas las calculadoras de doblado',
+  'paywall.demoDeltaLabel': 'Prueba una desviación de recogida',
+  'paywall.tryFreeCalibrationCta': 'Medir mi doblador gratis →',
+  'paywall.historyHiddenTitle': '{total} dobleces guardados · {hidden} ocultos',
+  'paywall.historyHiddenNote':
+    '{total} dobleces guardados en este dispositivo · {hidden} ocultos. Desbloquea Pro para ver los {limit} y exportar.',
+  'paywall.roiAnchor':
+    'Ahorra un solo conducto y se paga solo — pago único, sin suscripción.',
+  'paywall.continue.saveAndApplyDraft': 'Guardar y aplicar "{name}"',
+  'paywall.readyDraftNote':
+    'Tu calibración medida "{name}" está lista. Toca abajo para guardarla y aplicarla a todas las calculadoras de doblado.',
+
+  // 校准向导与 Full Fingerprint
+  'calibration.draftAppliedToast':
+    '"{name}" guardado y aplicado a todas las calculadoras de doblado',
+  'calibration.chooser.intro':
+    'Las calculadoras gratuitas usan valores estándar. Haz un doblez de prueba gratis para medir tu herramienta — guarda y aplica en todas las calculadoras de doblado con Pro.',
+  'calibration.chooser.introUnlocked':
+    'Las calculadoras usan valores estándar. Usa un doblez de prueba para ajustar la recogida o el radio a tu herramienta. Ten a mano tu doblador, un tramo sobrante de conducto y cinta métrica.',
+  'calibration.chooser.quickBadge': 'Recomendado · 1 medida',
+  'calibration.chooser.quickTitle': 'Verificación rápida',
+  'calibration.chooser.quickBody':
+    'Dobla una subida de {mark} con la recogida estándar de tu doblador, ingresa la altura final y ve tu recogida real al instante.',
+  'calibration.chooser.quickCta': 'Iniciar verificación rápida',
+  'calibration.chooser.fullTitle': 'Huella completa',
+  'calibration.chooser.fullBody':
+    'Corta {length} de conducto sobrante, dobla 90° en el centro y mide ambos lados — la app calcula el radio real de tu doblador.',
+  'calibration.chooser.fullCta': 'Iniciar huella completa',
+  'calibration.guided.stepTitle1': 'Marca el conducto',
+  'calibration.guided.stepTitle2': 'Dobla 90°',
+  'calibration.guided.stepTitle3': 'Mide la subida',
+  'calibration.guided.stepTitle4': 'Guarda tu doblador',
+  'calibration.guided.progress':
+    'Verificación rápida · Paso {current} de {total} · {title}',
+  'calibration.guided.calibrating': 'Calibrando: {name}',
+  'calibration.guided.step1Heading': 'Marca {mark} desde el extremo',
+  'calibration.guided.step1Body':
+    'Mide desde el extremo del conducto y haz una marca clara. Es la única medida que necesitas antes de doblar.',
+  'calibration.guided.step1Diagram': 'Extremo ─────●───── marca {mark}',
+  'calibration.guided.step2Heading': 'Dobla una subida de 90°',
+  'calibration.guided.step2Body':
+    'Alinea {datum} con tu marca y dobla una subida completa de 90°. Mantén el conducto bien asentado en el doblador.',
+  'calibration.guided.step2Diagram':
+    '{datum} ▼\nExtremo ─────●───── marca\n           90°',
+  'calibration.guided.skipToMeasure': '¿Ya doblaste? Ingresa la medida →',
+  'calibration.guided.step3Heading': 'Ingresa la altura final de la subida',
+  'calibration.guided.step3Body':
+    'Mide desde el extremo del conducto hasta la espalda del doblez. Escribe la altura final S abajo.',
+  'calibration.guided.stubInputLabel': 'Altura final de la subida (S)',
+  'calibration.guided.stubPlaceholderMetric': 'p. ej. 440 mm',
+  'calibration.guided.stubPlaceholderImperial': 'p. ej. 17 3/8"',
+  'calibration.guided.finishedHeightRow': 'Altura final (S)',
+  'calibration.guided.deductRow': 'Recogida (S − {mark})',
+  'calibration.guided.diagnosisTitle': 'Diagnóstico de tu doblador',
+  'calibration.guided.standardTakeUp': 'Recogida estándar',
+  'calibration.guided.measuredTakeUp': 'Recogida medida',
+  'calibration.guided.markCompareLabel': 'Marca para una subida de {target}',
+  'calibration.guided.step4Heading': 'Calibrado ✓',
+  'calibration.guided.step4Body':
+    'Tu doblador ya coincide con tu doblez de prueba. Ponle un nombre fácil de reconocer en obra.',
+  'calibration.guided.nameLabel': 'Nombre del perfil',
+  'calibration.guided.defaultName': 'Mi {label}',
+  'calibration.guided.defaultNameFallback': 'Mi doblador',
+  'calibration.guided.namePlaceholder': 'p. ej. Mi {label}',
+  'calibration.guided.namePlaceholderFallback': 'p. ej. Mi doblador',
+  'calibration.guided.back': 'Atrás',
+  'calibration.guided.next': 'Siguiente',
+  'calibration.guided.saveAndApply':
+    'Guardar y aplicar a todas las calculadoras de doblado',
+  'calibration.full.step1Title': 'Paso 1: Elige el doblador a calibrar',
+  'calibration.full.step2Title':
+    'Paso 2: Calibra R con el método de ganancia (opcional)',
+  'calibration.full.step2Hint':
+    'Corta un tramo sobrante de conducto y mide su largo exacto L₀ ({length} viene prellenado — cámbialo si el tuyo es distinto). Dobla 90° en el centro y mide cada lado desde la espalda del doblez hasta el extremo del conducto.',
+  'calibration.full.scrapLength': 'Largo sobrante L₀',
+  'calibration.full.legA': 'Lado A',
+  'calibration.full.legB': 'Lado B',
+  'calibration.full.gainRow': 'Ganancia (A+B−L₀)',
+  'calibration.full.radiusRow': 'Radio calibrado R',
+  'calibration.full.step3Title':
+    'Paso 3: Calibra la recogida con una subida (opcional)',
+  'calibration.full.step3Hint':
+    'Dobla una subida a la altura objetivo usando la recogida actual y luego mide la altura real obtenida.',
+  'calibration.full.targetHeight': 'Altura objetivo',
+  'calibration.full.actualHeight': 'Altura real',
+  'calibration.full.oldTakeUp': 'Recogida anterior ({name})',
+  'calibration.full.calibratedTakeUp': 'Recogida calibrada',
+  'calibration.full.step4Title': 'Paso 4: Guardar como doblador personalizado',
+  'calibration.full.step4Hint':
+    'Los valores sin calibrar conservan el ajuste del Paso 1. Se guarda en este dispositivo y queda disponible en todas las calculadoras.',
+  'calibration.full.namePlaceholder':
+    'Ponle nombre, p. ej. Mi Ideal (probado en obra)',
+  'calibration.full.saveButton': 'Guardar como personalizado',
+  'calibration.full.savingButton': 'Guardando…',
+  'calibration.full.savedMessage':
+    'Guardado "{name}": R={radius}, recogida={takeUp} — seleccionado para todas las calculadoras y disponible en el selector de dobladores.',
+  'calibration.full.placeholderExample': 'p. ej. {value}',
 
   // 核心计算器公共与 4 大高频计算器
   'calc.bender': 'Doblador',

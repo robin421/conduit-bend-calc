@@ -145,17 +145,6 @@ export default function CalcHomeScreen({ navigation }: Props) {
             : 'advanced_calibration',
       });
     }
-    // Web 没有 IAP：展示统一功能预览，再导流到 Google Play。
-    if (entry.pro && Platform.OS === 'web') {
-      navigation.navigate('Paywall', { triggerSource: 'calc_home_guidedcalibration', intent: { kind: 'calibration' } });
-      return;
-    }
-    if (entry.pro && access === 'locked') {
-      navigation.navigate('Paywall', {
-        triggerSource: `calc_home_${entry.key.toLowerCase()}`, intent: { kind: 'calibration' },
-      });
-      return;
-    }
     if (entry.key === 'Offset') {
       navigation.navigate('Offset');
     } else if (entry.key === 'Stub') {
@@ -175,9 +164,10 @@ export default function CalcHomeScreen({ navigation }: Props) {
     } else if (entry.key === 'WireSize') {
       navigation.navigate('WireSize');
     } else if (entry.key === 'GuidedCalibration') {
-      navigation.navigate('GuidedCalibration');
+      // Try-Before-Buy：Native/Web 均直达免费实测向导，仅在保存时后置门控。
+      navigation.navigate('GuidedCalibration', { entrySource: 'calc_home_guidedcalibration' });
     } else if (entry.key === 'Calibration') {
-      navigation.navigate('Calibration');
+      navigation.navigate('Calibration', { entrySource: 'calc_home_calibration' });
     } else {
       navigation.navigate('Placeholder', { title: t(entry.nameKey) });
     }
@@ -347,13 +337,15 @@ export default function CalcHomeScreen({ navigation }: Props) {
                         style={[
                           styles.proPill,
                           {
-                            backgroundColor: theme.colors.accent,
-                            color: theme.colors.onAccent,
+                            backgroundColor: theme.colors.selection,
+                            color: theme.colors.accentText,
+                            borderColor: theme.colors.accentText,
+                            borderWidth: StyleSheet.hairlineWidth,
                             marginLeft: theme.spacing.xs,
                           },
                         ]}
                       >
-                        PRO
+                        {t('home.tool.guidedCalibration.freeTryBadge')}
                       </Text>
                     ) : null}
                   </View>
@@ -364,7 +356,9 @@ export default function CalcHomeScreen({ navigation }: Props) {
                       marginTop: theme.spacing.xs,
                     }}
                   >
-                    {t(entry.descriptionKey)}
+                    {entry.pro && (access === 'locked' || Platform.OS === 'web')
+                      ? t('home.tool.guidedCalibration.descTryFree')
+                      : t(entry.descriptionKey)}
                   </Text>
                 </View>
                 <View style={styles.chevronWrap}>

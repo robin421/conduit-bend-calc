@@ -45,6 +45,9 @@ const ALLOWED_EVENT_PROPERTY_KEYS = new Set<string>([
   'price_loaded',
   'dismiss_method',
   'product_id',
+  'delta_bucket',
+  'has_personal_data',
+  'has_hidden_history',
 ]);
 
 /** 严格用户属性白名单：仅允许低基数状态维度，禁止上传任何 PII、尺寸或收据。 */

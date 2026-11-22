@@ -55,6 +55,8 @@ export function logFirebaseProPaywallViewed(
     ...(extra?.scene ? { scene: extra.scene } : {}),
     ...(extra?.sku_status ? { sku_status: extra.sku_status } : {}),
     ...(extra?.price_loaded !== undefined ? { price_loaded: extra.price_loaded } : {}),
+    ...(extra?.has_personal_data !== undefined ? { has_personal_data: extra.has_personal_data } : {}),
+    ...(extra?.has_hidden_history !== undefined ? { has_hidden_history: extra.has_hidden_history } : {}),
   });
 }
 

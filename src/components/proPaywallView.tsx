@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import { calibrateDeductFromStub } from '../calculators/calibration/calibration';
 import { defaultBenderSpec } from '../calculators/geometry/benderSpecs';
 import { calculateStubUpMark } from '../calculators/geometry/geometry';
 import { offsetFeasibility } from '../calculators/feasibility/feasibility';
@@ -9,7 +8,12 @@ import { calculateOffset } from '../calculators/offset/offset';
 import { useI18n, type TranslationKey } from '../i18n';
 import { HISTORY_LIMIT } from '../lib/historyStore';
 import { TEST_BEND_MARK } from '../lib/guidedCalibrationFlow';
-import { formatLength, type UnitSystem } from '../lib/units';
+import {
+  computeTakeUpComparison,
+  formatSignedDelta,
+  type PendingCalibrationDraft,
+} from '../lib/pendingCalibrationDraftStore';
+import { formatLength, MM_PER_INCH, type UnitSystem } from '../lib/units';
 import { PRO_SCENES, purchaseBusy, type ProIntent, type ProScene, type PurchasePhase } from '../lib/proFlow';
 import { useTheme } from '../theme';
 import BigButton from './bigButton';
@@ -28,7 +32,11 @@ export interface ProPaywallViewProps {
   checking?: boolean;
   bottomInset?: number;
   unit?: UnitSystem;
+  calibrationDraft?: PendingCalibrationDraft | null;
+  totalHistoryCount?: number;
   onSceneChange(scene: ProScene): void;
+  onDemoDeltaSelect?(): void;
+  onTryFreeCalibration?(): void;
   onBuy(): void;
   onRestore(): void;
   onRetry(): void;
@@ -62,6 +70,18 @@ const CONTINUE_KEYS: Record<ProIntent['kind'], TranslationKey> = {
   export: 'paywall.continue.export',
   bender: 'paywall.continue.bender',
 };
+
+const IMPERIAL_DEMO_DELTAS = [
+  { label: '+1/8"', deltaInches: 0.125 },
+  { label: '+1/4"', deltaInches: 0.25 },
+  { label: '+3/8"', deltaInches: 0.375 },
+] as const;
+
+const METRIC_DEMO_DELTAS = [
+  { label: '+3 mm', deltaInches: 3 / MM_PER_INCH },
+  { label: '+6 mm', deltaInches: 6 / MM_PER_INCH },
+  { label: '+10 mm', deltaInches: 10 / MM_PER_INCH },
+] as const;
 
 function Caption({ children }: { children: string }) {
   const theme = useTheme();
@@ -139,23 +159,52 @@ function ComparisonPair({
 function HeroComparisonCard({
   scene,
   unit,
+  calibrationDraft,
+  totalHistoryCount,
   onSceneChange,
+  onDemoDeltaSelect,
+  onTryFreeCalibration,
 }: {
   scene: ProScene;
   unit: UnitSystem;
+  calibrationDraft?: PendingCalibrationDraft | null;
+  totalHistoryCount: number;
   onSceneChange(scene: ProScene): void;
+  onDemoDeltaSelect?(): void;
+  onTryFreeCalibration?(): void;
 }) {
   const theme = useTheme();
   const { t } = useI18n();
+  const [demoDeltaIndex, setDemoDeltaIndex] = useState(2);
   const base = defaultBenderSpec();
-  // Illustrative fixture, not an assumed correction for the user's bender.
-  const measured = 17.375;
-  const actualTakeUp = calibrateDeductFromStub(TEST_BEND_MARK, measured)!;
-  const standardMark = calculateStubUpMark(TEST_BEND_MARK, base)!;
-  const personalMark = calculateStubUpMark(TEST_BEND_MARK, { ...base, takeUp: actualTakeUp })!;
-  const takeUpDelta = Math.abs(actualTakeUp - base.takeUp);
+
+  const demoChips = unit === 'metric' ? METRIC_DEMO_DELTAS : IMPERIAL_DEMO_DELTAS;
+  const selectedDemoChip = demoChips[demoDeltaIndex] ?? demoChips[2];
+
+  const hasPersonalDraft = Boolean(calibrationDraft);
+  const effectiveBaseTakeUp = calibrationDraft ? calibrationDraft.baseTakeUp : base.takeUp;
+  const effectiveMeasuredTakeUp = calibrationDraft
+    ? calibrationDraft.measuredTakeUp
+    : base.takeUp + selectedDemoChip.deltaInches;
+  const demoMeasuredStub = TEST_BEND_MARK + effectiveMeasuredTakeUp;
+  const comparison = computeTakeUpComparison(
+    effectiveBaseTakeUp,
+    effectiveMeasuredTakeUp,
+    TEST_BEND_MARK,
+  );
+  const standardMark =
+    comparison?.standardMark ?? calculateStubUpMark(TEST_BEND_MARK, base)!;
+  const personalMark =
+    comparison?.personalMark ??
+    calculateStubUpMark(TEST_BEND_MARK, { ...base, takeUp: effectiveMeasuredTakeUp }) ??
+    standardMark;
+  const deltaBadgeText = calibrationDraft
+    ? formatSignedDelta(calibrationDraft.deltaInches, unit)
+    : selectedDemoChip.label;
+
   const sampleOffset = calculateOffset(3, 45, base.centerlineRadius)!;
   const risk = offsetFeasibility(sampleOffset.geometry.vertexSpacing, 45, base, unit);
+  const hiddenHistoryCount = Math.max(0, totalHistoryCount - 5);
 
   return (
     <Card style={{ padding: 12, gap: 12, borderColor: theme.colors.border }}>
@@ -214,17 +263,78 @@ function HeroComparisonCard({
 
       {scene === 'calibration' ? (
         <>
-          <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
-            {t('paywall.exampleCalibrationIntro', {
-              mark: formatLength(TEST_BEND_MARK, unit),
-              measured: formatLength(measured, unit),
-            })}
-          </Text>
+          {hasPersonalDraft && calibrationDraft ? (
+            <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+              {t('paywall.personalCalibrationIntro', { name: calibrationDraft.profileName })}
+            </Text>
+          ) : (
+            <View style={{ gap: 6 }}>
+              <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+                {t('paywall.exampleCalibrationIntro', {
+                  mark: formatLength(TEST_BEND_MARK, unit),
+                  measured: formatLength(demoMeasuredStub, unit),
+                })}
+              </Text>
+              <Text
+                style={{
+                  color: theme.colors.textSecondary,
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontWeight: theme.fontWeight.medium,
+                }}
+              >
+                {t('paywall.demoDeltaLabel')}
+              </Text>
+              <View style={{ flexDirection: 'row', gap: theme.spacing.xs }}>
+                {demoChips.map((chip, index) => {
+                  const active = index === demoDeltaIndex;
+                  return (
+                    <Pressable
+                      key={chip.label}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      onPress={() => {
+                        setDemoDeltaIndex(index);
+                        onDemoDeltaSelect?.();
+                      }}
+                      android_ripple={{ color: theme.colors.pressFeedback }}
+                      style={({ pressed }) => ({
+                        flex: 1,
+                        minHeight: 44,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        borderRadius: theme.radius,
+                        borderColor: active ? theme.colors.accent : theme.colors.border,
+                        backgroundColor: active
+                          ? theme.colors.accent
+                          : pressed && Platform.OS !== 'android'
+                            ? theme.colors.pressFeedback
+                            : theme.colors.background,
+                        overflow: 'hidden',
+                      })}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: active ? theme.fontWeight.semibold : theme.fontWeight.medium,
+                          color: active ? theme.colors.onAccent : theme.colors.textPrimary,
+                          fontVariant: ['tabular-nums'],
+                        }}
+                      >
+                        {chip.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          )}
           <ComparisonPair
             beforeLabel={t('paywall.exampleStandardTakeUp')}
-            beforeValue={formatLength(base.takeUp, unit)}
+            beforeValue={formatLength(effectiveBaseTakeUp, unit)}
             afterLabel={t('paywall.exampleMeasuredTakeUp')}
-            afterValue={formatLength(actualTakeUp, unit)}
+            afterValue={formatLength(effectiveMeasuredTakeUp, unit)}
           />
           <View
             style={{
@@ -255,7 +365,7 @@ function HeroComparisonCard({
                     fontVariant: ['tabular-nums'],
                   }}
                 >
-                  {`+${formatLength(takeUpDelta, unit)}`}
+                  {deltaBadgeText}
                 </Text>
               </View>
             </View>
@@ -271,9 +381,55 @@ function HeroComparisonCard({
               {`${formatLength(standardMark, unit)} → ${formatLength(personalMark, unit)}`}
             </Text>
           </View>
-          <Text style={{ color: theme.colors.textSecondary, fontSize: 12, lineHeight: 16 }}>
-            {t('paywall.exampleCalibrationNote')}
-          </Text>
+          {hasPersonalDraft ? (
+            <Text
+              style={{
+                color: theme.colors.accentText,
+                fontSize: 12,
+                lineHeight: 16,
+                fontWeight: theme.fontWeight.semibold,
+              }}
+            >
+              {t('paywall.personalCalibrationNote')}
+            </Text>
+          ) : (
+            <>
+              <Text style={{ color: theme.colors.textSecondary, fontSize: 12, lineHeight: 16 }}>
+                {t('paywall.exampleCalibrationNote')}
+              </Text>
+              {onTryFreeCalibration ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={onTryFreeCalibration}
+                  android_ripple={{ color: theme.colors.pressFeedback }}
+                  style={({ pressed }) => ({
+                    minHeight: 44,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: theme.radius,
+                    borderWidth: StyleSheet.hairlineWidth,
+                    borderColor: theme.colors.border,
+                    backgroundColor:
+                      pressed && Platform.OS !== 'android'
+                        ? theme.colors.pressFeedback
+                        : theme.colors.background,
+                    paddingHorizontal: 12,
+                    overflow: 'hidden',
+                  })}
+                >
+                  <Text
+                    style={{
+                      color: theme.colors.accentText,
+                      fontSize: theme.fontSize.secondary,
+                      fontWeight: theme.fontWeight.semibold,
+                    }}
+                  >
+                    {t('paywall.tryFreeCalibrationCta')}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </>
+          )}
         </>
       ) : scene === 'feasibility' ? (
         <>
@@ -322,6 +478,47 @@ function HeroComparisonCard({
         </>
       ) : (
         <>
+          {hiddenHistoryCount > 0 ? (
+            <View
+              style={{
+                backgroundColor: theme.colors.selection,
+                borderColor: theme.colors.accentText,
+                borderWidth: 1,
+                borderRadius: theme.radius,
+                padding: 10,
+                gap: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.accentText,
+                  fontSize: theme.fontSize.secondary,
+                  lineHeight: 19,
+                  fontWeight: theme.fontWeight.semibold,
+                  fontVariant: ['tabular-nums'],
+                }}
+              >
+                {t('paywall.historyHiddenTitle', {
+                  total: totalHistoryCount,
+                  hidden: hiddenHistoryCount,
+                })}
+              </Text>
+              <Text
+                style={{
+                  color: theme.colors.textPrimary,
+                  fontSize: 13,
+                  lineHeight: 18,
+                  fontVariant: ['tabular-nums'],
+                }}
+              >
+                {t('paywall.historyHiddenNote', {
+                  total: totalHistoryCount,
+                  hidden: hiddenHistoryCount,
+                  limit: HISTORY_LIMIT,
+                })}
+              </Text>
+            </View>
+          ) : null}
           <ComparisonPair
             beforeLabel={t('paywall.exampleFreeLabel')}
             beforeValue="5"
@@ -405,6 +602,11 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
   const { t } = useI18n();
   const { height, fontScale } = useWindowDimensions();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const unit = props.unit ?? 'fractional';
+  const totalHistoryCount = props.totalHistoryCount ?? 0;
+  const hiddenHistoryCount = Math.max(0, totalHistoryCount - 5);
+  const calibrationDraft = props.calibrationDraft ?? null;
+
   const busy = purchaseBusy(props.phase);
   const disabled = busy || Boolean(props.continuing);
   const waiting = props.phase === 'pending' || props.phase === 'purchasing';
@@ -421,6 +623,26 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
     [t('paywall.benefit2.title'), t('paywall.benefit2.desc')],
     [t('paywall.benefit3.title'), t('paywall.benefit3.desc', { limit: HISTORY_LIMIT })],
   ];
+
+  const headerTitle = props.unlocked
+    ? props.phase === 'restored'
+      ? t('paywall.unlockedRestoredTitle')
+      : t('paywall.unlockedReadyTitle')
+    : props.scene === 'calibration' && calibrationDraft
+      ? t('paywall.personalCalibrationTitle', {
+          delta: formatSignedDelta(calibrationDraft.deltaInches, unit),
+        })
+      : props.scene === 'history' && hiddenHistoryCount > 0
+        ? t('paywall.historyHiddenTitle', {
+            total: totalHistoryCount,
+            hidden: hiddenHistoryCount,
+          })
+        : t(SCENE_TITLE_KEYS[props.scene]);
+
+  const unlockedContinueTitle =
+    props.intent.kind === 'calibration' && calibrationDraft
+      ? t('paywall.continue.saveAndApplyDraft', { name: calibrationDraft.profileName })
+      : t(CONTINUE_KEYS[props.intent.kind]);
 
   const footer = (
     <View
@@ -454,9 +676,21 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
           {props.error}
         </Text>
       ) : null}
+      {!props.unlocked ? (
+        <Text
+          style={{
+            color: theme.colors.accentText,
+            fontSize: 13,
+            lineHeight: 18,
+            fontWeight: theme.fontWeight.medium,
+          }}
+        >
+          {t('paywall.roiAnchor')}
+        </Text>
+      ) : null}
       {props.unlocked ? (
         <BigButton
-          title={props.continuing ? t('paywall.openingTask') : t(CONTINUE_KEYS[props.intent.kind])}
+          title={props.continuing ? t('paywall.openingTask') : unlockedContinueTitle}
           onPress={props.onContinue}
           disabled={Boolean(props.continuing)}
           variant="accent"
@@ -597,13 +831,10 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
                 fontSize: theme.fontSize.title,
                 lineHeight: 28,
                 fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
               }}
             >
-              {props.unlocked
-                ? props.phase === 'restored'
-                  ? t('paywall.unlockedRestoredTitle')
-                  : t('paywall.unlockedReadyTitle')
-                : t(SCENE_TITLE_KEYS[props.scene])}
+              {headerTitle}
             </Text>
             <Text
               style={{
@@ -636,17 +867,23 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
                 </Text>
               </View>
               <Caption>
-                {props.intent.kind === 'calibration' || props.intent.kind === 'bender'
-                  ? t('paywall.readyCalibrationNote')
-                  : t('paywall.readyDefaultNote')}
+                {props.intent.kind === 'calibration' && calibrationDraft
+                  ? t('paywall.readyDraftNote', { name: calibrationDraft.profileName })
+                  : props.intent.kind === 'calibration' || props.intent.kind === 'bender'
+                    ? t('paywall.readyCalibrationNote')
+                    : t('paywall.readyDefaultNote')}
               </Caption>
             </View>
           ) : (
             <>
               <HeroComparisonCard
                 scene={props.scene}
-                unit={props.unit ?? 'fractional'}
+                unit={unit}
+                calibrationDraft={calibrationDraft}
+                totalHistoryCount={totalHistoryCount}
                 onSceneChange={props.onSceneChange}
+                onDemoDeltaSelect={props.onDemoDeltaSelect}
+                onTryFreeCalibration={props.onTryFreeCalibration}
               />
 
               <View style={{ gap: 10 }}>

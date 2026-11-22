@@ -365,11 +365,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         showCalibrateCta={result !== null}
         onCalibrate={() => {
           trackEvent('calibration_cta_click', { source: 'kicked_90_result' });
-          if (access === 'unlocked') {
-            navigation.navigate('GuidedCalibration');
-          } else {
-            navigation.navigate('Paywall', { triggerSource: 'kicked_90_calibration', intent: { kind: 'calibration' } });
-          }
+          navigation.navigate('GuidedCalibration', { entrySource: 'kicked_90_calibration' });
         }}
       />
       <ExpectedActualFeedback

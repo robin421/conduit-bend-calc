@@ -498,11 +498,7 @@ export default function StubScreen({ route, navigation }: Props) {
         showCalibrateCta={markPoint !== null}
         onCalibrate={() => {
           trackEvent('calibration_cta_click', { source: 'stub_result' });
-          if (access === 'unlocked') {
-            navigation.navigate('GuidedCalibration');
-          } else {
-            navigation.navigate('Paywall', { triggerSource: 'stub_calibration', intent: { kind: 'calibration' } });
-          }
+          navigation.navigate('GuidedCalibration', { entrySource: 'stub_calibration' });
         }}
       />
       <ExpectedActualFeedback

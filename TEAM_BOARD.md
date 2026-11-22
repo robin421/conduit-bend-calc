@@ -39,7 +39,10 @@
 | T22 | 升级版本号 `1.11.0 (vc11)` + 本地签名 AAB 打包与 16 KB 页对齐核验 + 真机初测 | ai-manager | T21 | DONE | `dist/conduit-bend-calc-1.11.0-vc11.aab`（52MB，42/42 `.so` 16KB PASS） | 真机试测发现 Paywall 视觉层级待优化、引导评分门槛过严，暂缓 Google Play 上架 |
 | T23 | Pro 付费页高转化 UI/UX 重构方案设计（基于真机截图与 `theme.ts` Token） | designer | T22 | DONE | Paywall 重构设计规格（首屏 520pt 预算、Segmented Control 对比 Hero Card、WCAG AAA 底栏） | 已审定通过 |
 | T24 | Pro 付费页重构实现 + 官方 In-App Review（`expo-store-review`）触发策略优化与 `RatingCard` 西语化 | developer | T23 | DONE | `proPaywallView.tsx`, `inAppReviewStore.ts`, `ratingCard.tsx`, `dictionaries.ts` 及单测 | 主仓物理核验 PASS（`tsc` 0 错、`413/413` 单测） |
-| T25 | 重打包 `v1.11.0 (vc11)` 真机复测确认后 `fastlane android deploy` 上架 Google Play | ai-manager | T24 | IN_PROGRESS | 真机复测截图 + AAB 16KB 核验 + Google Play 发布状态 | 重打包中 |
+| T25 | 重打包 `v1.11.0 (vc11)` 真机复测确认后 `fastlane android deploy` 上架 Google Play | ai-manager | T24 | DONE | 新版 Paywall 真机截屏 + AAB 签名校验通过 | 用户指示从产品经理视角全面重构 Paywall 转化流程（Paywall Flow）后再发版 |
+| T26 | 产品经理视角重构 Value-First Paywall Flow PRD（Try-Before-Buy 先测后锁 + 真实个人数据透传 + ROI 锚点 + 漏斗埋点） | product | T25 | DONE | `docs/prd/t26-value-first-paywall.md` | 已审定通过（Try-Before-Buy + 本地草稿自动落盘 + 交互式试算 + 真实隐藏历史数 + 完整漏斗埋点） |
+| T27 | 落地 Value-First Paywall Flow（Guided Calibration 免费试测→Step 4 保存触发 Paywall→购后自动保存应用 + 交互式试算 + History 真实隐藏数 + 西语化 + 漏斗埋点） | developer | T26 | DONE | `pendingCalibrationDraftStore.ts`, `guidedCalibrationScreen.tsx`, `calibrationScreen.tsx`, `paywallScreen.tsx`, `proPaywallView.tsx`, `calcHomeScreen.tsx`, `benderScreen.tsx`, `historyScreen.tsx`, `proContinuation.ts`, `dictionaries.ts` 及单测 | 主仓物理核验 PASS（`tsc` 0 错、`423/423` 单测、0 `tubería`、零新依赖） |
+| T28 | Paywall Flow 全量 QA + 重打包 `v1.11.0 (vc11)` 真机全链路实测确认后发布 Google Play | ai-manager | T27 | IN_PROGRESS | `tsc` + 全量单测 + 真机端到端实测截图 + Google Play 发布 | 重打包与真机实测中 |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

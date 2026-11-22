@@ -56,11 +56,21 @@ export function buildPaywallViewedExtra(params: {
   scene: ProScene;
   skuAvailability: SkuAvailability;
   productPrice: string | null;
-}): { scene: ProScene; sku_status: SkuAvailability; price_loaded: boolean } {
+  hasPersonalData?: boolean;
+  hasHiddenHistory?: boolean;
+}): {
+  scene: ProScene;
+  sku_status: SkuAvailability;
+  price_loaded: boolean;
+  has_personal_data?: boolean;
+  has_hidden_history?: boolean;
+} {
   return {
     scene: params.scene,
     sku_status: params.skuAvailability,
     price_loaded: Boolean(params.productPrice),
+    ...(params.hasPersonalData !== undefined ? { has_personal_data: params.hasPersonalData } : {}),
+    ...(params.hasHiddenHistory !== undefined ? { has_hidden_history: params.hasHiddenHistory } : {}),
   };
 }
 
@@ -83,12 +93,16 @@ export function buildPaywallDismissParams(params: {
   scene: ProScene;
   skuAvailability: SkuAvailability;
   dismissMethod: PaywallDismissMethod;
+  hasPersonalData?: boolean;
+  hasHiddenHistory?: boolean;
 }): GrowthEventParams {
   return {
     source: params.source,
     scene: params.scene,
     sku_status: params.skuAvailability,
     dismiss_method: params.dismissMethod,
+    ...(params.hasPersonalData !== undefined ? { has_personal_data: params.hasPersonalData } : {}),
+    ...(params.hasHiddenHistory !== undefined ? { has_hidden_history: params.hasHiddenHistory } : {}),
   };
 }
 
@@ -97,6 +111,8 @@ export function buildPaywallBuyTapParams(params: {
   scene: ProScene;
   skuAvailability: SkuAvailability;
   productPrice: string | null;
+  hasPersonalData?: boolean;
+  hasHiddenHistory?: boolean;
 }): GrowthEventParams {
   return {
     source: params.source,
@@ -104,6 +120,8 @@ export function buildPaywallBuyTapParams(params: {
     sku_status: params.skuAvailability,
     price_loaded: Boolean(params.productPrice),
     product_id: PRO_SKU,
+    ...(params.hasPersonalData !== undefined ? { has_personal_data: params.hasPersonalData } : {}),
+    ...(params.hasHiddenHistory !== undefined ? { has_hidden_history: params.hasHiddenHistory } : {}),
   };
 }
 
