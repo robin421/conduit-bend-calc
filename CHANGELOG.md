@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.11.0 — Paywall Conversion, Amplitude Telemetry & Native Spanish Localization (T19–T21)
+
+### Analytics & Paywall Conversion (T19)
+- Add whitelisted Amplitude `user_properties` (`is_pro`, `unit_system`, `app_lang`) and paywall diagnostic properties (`sku_status`, `price_loaded`, `unit_mode`, `dismiss_method`, `product_id`).
+- Fix missing `pro_paywall_dismissed` on Android back navigation via `beforeRemove` listener with single-fire deduplication.
+- Add `pro_paywall_sku_loaded`, `pro_buy_tapped`, `pro_retry_tapped`, `pro_entitlement_granted`, and `history_reused` events.
+- Expand the contextual `ExamplePreview` comparison card on the Pro paywall by default so users immediately see standard vs. measured take-up savings.
+
+### Native Spanish Localization & Unit UX (T20)
+- Auto-detect device language (`es*` → Spanish) with `AsyncStorage` persistence and an `EN | ES` switcher on Home.
+- Localize core flows in Spanish (Home, Pro Paywall, Bottom Tabs & Stack headers, History, and the top 4 calculators: Offset, 90° Stub, 3-Point Saddle, 4-Point Saddle).
+- Add locale-aware initial default unit (`metric` for metric locales, `fractional` for US/imperial locales) without overwriting existing user preferences.
+- Add compact in-calculator `Frac | Dec | mm` quick unit toggle across the top 4 bending calculators.
+
 ## Unreleased — Subtle press feedback (T86)
 
 - Reduce white press feedback opacity from 8% to 4%, including history header actions.
