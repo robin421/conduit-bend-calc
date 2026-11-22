@@ -25,9 +25,11 @@ import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
 import WebCalcShell from '../components/webCalcShell';
 import ImperialInput from '../components/imperialInput';
+import QuickUnitToggle from '../components/quickUnitToggle';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { stubFeasibility } from '../calculators/feasibility/feasibility';
+import { useI18n } from '../i18n';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
 import { useProAccess } from '../lib/proStore';
@@ -58,6 +60,7 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'Stub'>;
 
 export default function StubScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const focused = useIsFocused();
   const { unit, setUnit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('stub', { heightText: '' });
@@ -239,9 +242,9 @@ export default function StubScreen({ route, navigation }: Props) {
 
   let hint: string | undefined;
   if (heightInches === null) {
-    hint = 'Enter values to see results';
+    hint = t('calc.enterValuesHint');
   } else if (markPoint === null) {
-    hint = 'Target height must exceed take-up';
+    hint = t('stub.mustExceedTakeUp');
   }
 
   const calibratedMark =
@@ -251,12 +254,15 @@ export default function StubScreen({ route, navigation }: Props) {
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
-      <BenderRow
-        spec={spec}
-        onPress={() =>
-          navigation.navigate('Bender', { conduitTypeFilter: conduitType })
-        }
-      />
+      <QuickUnitToggle />
+      <View style={{ marginTop: theme.spacing.xs }}>
+        <BenderRow
+          spec={spec}
+          onPress={() =>
+            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+          }
+        />
+      </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ConduitTypeToggle
           value={conduitType}
@@ -272,7 +278,7 @@ export default function StubScreen({ route, navigation }: Props) {
             marginBottom: theme.spacing.xs,
           }}
         >
-          Quick EMT Size Presets
+          {t('stub.quickEmtPresets')}
         </Text>
         <View style={{ flexDirection: 'row', gap: theme.spacing.xs }}>
           {(['1/2', '3/4', '1'] as const).map((sz) => {
@@ -297,12 +303,12 @@ export default function StubScreen({ route, navigation }: Props) {
 
       <View style={{ marginTop: theme.spacing.sm }}>
         <ImperialInput
-          label="Target height"
+          label={t('stub.targetHeight')}
           value={heightText}
           onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
           onParsedChange={setHeightInches}
           unit={unit}
-          placeholder={unit === 'metric' ? 'e.g. 300 mm' : 'e.g. 12"'}
+          placeholder={unit === 'metric' ? t('placeholder.mm300') : t('placeholder.inch12')}
         />
         <View
           style={{
@@ -320,7 +326,7 @@ export default function StubScreen({ route, navigation }: Props) {
               marginRight: 2,
             }}
           >
-            Presets:
+            {t('calc.presets')}
           </Text>
           {(unit === 'metric'
             ? (['150', '250', '300', '450', '600'] as const)
@@ -371,7 +377,7 @@ export default function StubScreen({ route, navigation }: Props) {
     <>
       <ResultGroup
         hero={{
-          label: 'Mark location',
+          label: t('stub.markLocationShort'),
           value: markMeasurement?.value,
           unit: markMeasurement?.unit,
         }}
@@ -390,7 +396,17 @@ export default function StubScreen({ route, navigation }: Props) {
       />
 
       {diagramInput ? (
-        <BendGuide input={diagramInput} summary={feasibility?.status !== 'impossible' && calibratedMark !== null ? `Measure ${formatLength(calibratedMark, unit)} from the conduit end. Align the mark with the ${isHookDatum(spec) ? "front of the hook" : "arrow"} and bend 90°.` : undefined} />
+        <BendGuide
+          input={diagramInput}
+          summary={
+            feasibility?.status !== 'impossible' && calibratedMark !== null
+              ? t('stub.guideSummary', {
+                  mark: formatLength(calibratedMark, unit),
+                  datum: isHookDatum(spec) ? t('stub.datumHook') : t('stub.datumArrow'),
+                })
+              : undefined
+          }
+        />
       ) : null}
       {recentBends.length > 0 ? (
         <Card style={{ padding: theme.spacing.sm }}>
@@ -409,7 +425,7 @@ export default function StubScreen({ route, navigation }: Props) {
                 fontWeight: theme.fontWeight.semibold,
               }}
             >
-              Recent 90° Bends (Tap to refill)
+              {t('stub.recentBends')}
             </Text>
             <Pressable
               accessibilityRole="button"
@@ -422,7 +438,7 @@ export default function StubScreen({ route, navigation }: Props) {
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                View all →
+                {t('calc.viewAll')}
               </Text>
             </Pressable>
           </View>
@@ -492,15 +508,15 @@ export default function StubScreen({ route, navigation }: Props) {
       <ExpectedActualFeedback
         profile={activeProfile}
         expectedInches={calibratedMark}
-        label="Mark location"
+        label={t('stub.markLocationShort')}
         unit={unit}
       />
 
-      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
+      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
     </>
   );
 
-  return <WebCalcShell title="90° Stub" left={leftColumn} right={rightColumn} />;
+  return <WebCalcShell title={t('home.tool.stub.name')} left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({

@@ -18,11 +18,13 @@ import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
+import QuickUnitToggle from '../components/quickUnitToggle';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { fourPointSaddleFeasibility } from '../calculators/feasibility/feasibility';
+import { useI18n } from '../i18n';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
 import { useProAccess } from '../lib/proStore';
@@ -48,16 +50,17 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'FourPointSaddle'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 30;
 
-function formatFromCenter(value: number, unit: UnitSystem): string {
+function formatFromCenter(value: number, unit: UnitSystem, centerLabel: string): string {
   if (value === 0) {
-    return 'Center';
+    return centerLabel;
   }
   const abs = formatLength(Math.abs(value), unit);
-  return value < 0 ? `Center −${abs}` : `Center +${abs}`;
+  return value < 0 ? `${centerLabel} −${abs}` : `${centerLabel} +${abs}`;
 }
 
 export default function FourPointSaddleScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('fourPointSaddle', {
@@ -222,7 +225,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
     setWidthInches(null);
   }, [setMemory]);
 
-  const hint = result ? undefined : 'Enter values to see results';
+  const hint = result ? undefined : t('calc.enterValuesHint');
 
   const calibratedSpacing =
     result !== null ? applyCalibrationOffset(result.markSpacingInches, activeProfile) : null;
@@ -231,12 +234,15 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
-      <BenderRow
-        spec={spec}
-        onPress={() =>
-          navigation.navigate('Bender', { conduitTypeFilter: conduitType })
-        }
-      />
+      <QuickUnitToggle />
+      <View style={{ marginTop: theme.spacing.xs }}>
+        <BenderRow
+          spec={spec}
+          onPress={() =>
+            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+          }
+        />
+      </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ConduitTypeToggle
           value={conduitType}
@@ -245,21 +251,21 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
       </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ImperialInput
-          label="Obstacle height"
+          label={t('calc.obstacleHeight')}
           value={heightText}
           onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
           onParsedChange={setHeightInches}
           unit={unit}
-          placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+          placeholder={unit === 'metric' ? t('placeholder.mm150') : t('placeholder.inch6')}
         />
 
         <ImperialInput
-          label="Obstacle width"
+          label={t('calc.obstacleWidth')}
           value={widthText}
           onChangeText={(text) => { noteReviewInteraction(); setWidthText(text); }}
           onParsedChange={setWidthInches}
           unit={unit}
-          placeholder={unit === 'metric' ? 'e.g. 100 mm' : 'e.g. 4"'}
+          placeholder={unit === 'metric' ? t('placeholder.mm100') : t('placeholder.inch4')}
           style={{ marginTop: theme.spacing.sm }}
         />
       </View>
@@ -272,7 +278,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
           marginBottom: theme.spacing.sm,
         }}
       >
-        Bend angle
+        {t('calc.bendAngle')}
       </Text>
       <View style={styles.angleRow}>
         {OFFSET_ANGLES.map((value) => (
@@ -294,7 +300,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
     <>
       <ResultGroup
         hero={{
-          label: 'Bend spacing (edge ↔ bend)',
+          label: t('saddle4.bendSpacing'),
           value: spacingMeasurement?.value,
           unit: spacingMeasurement?.unit,
         }}
@@ -324,7 +330,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Mark layout · total span {formatLength(result.spanInches, unit)}
+            {t('calc.markLayoutSpan', { span: formatLength(result.spanInches, unit) })}
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -345,7 +351,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {formatFromCenter(mark.fromCenterInches, unit)}
+                {formatFromCenter(mark.fromCenterInches, unit, t('calc.center'))}
               </Text>
               <Text
                 style={{
@@ -365,8 +371,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
               marginTop: theme.spacing.sm,
             }}
           >
-            Leave about {formatLength(2, unit)} past the inner marks so the conduit clears the
-            obstacle.
+            {t('saddle4.clearanceNote', { clearance: formatLength(2, unit) })}
           </Text>
           {result.totalShrinkInches !== undefined ? (
             <Text
@@ -375,8 +380,9 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
                 fontSize: theme.fontSize.secondary,
               }}
             >
-              Measuring from a fixed point? Add {formatLength(result.totalShrinkInches, unit)}
-              shrink to find the true center.
+              {t('saddle4.fixedPointNote', {
+                shrink: formatLength(result.totalShrinkInches, unit),
+              })}
             </Text>
           ) : null}
         </Card>
@@ -398,15 +404,15 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
       <ExpectedActualFeedback
         profile={activeProfile}
         expectedInches={calibratedSpacing}
-        label="Bend spacing"
+        label={t('calc.bendSpacing')}
         unit={unit}
       />
 
-      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
+      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
     </>
   );
 
-  return <WebCalcShell title="4-Point Saddle" left={leftColumn} right={rightColumn} />;
+  return <WebCalcShell title={t('home.tool.saddle4.name')} left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({

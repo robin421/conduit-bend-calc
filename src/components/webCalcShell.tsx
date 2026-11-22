@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
+import { useI18n } from '../i18n';
 import type { CalcStackParamList } from '../navigation/calcStack';
 import {
   isMobileNavViewport,
@@ -29,10 +30,12 @@ export interface WebBreadcrumbBarProps {
  */
 export function WebBreadcrumbBar({
   title,
-  backLabel = 'All Calculators',
+  backLabel,
   onBack,
 }: WebBreadcrumbBarProps) {
   const theme = useTheme();
+  const { t } = useI18n();
+  const resolvedBackLabel = backLabel ?? t('nav.home');
   const { width } = useWindowDimensions();
   const navigation = useNavigation<NavigationProp<CalcStackParamList>>();
 
@@ -72,7 +75,7 @@ export function WebBreadcrumbBar({
       >
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={backLabel}
+          accessibilityLabel={resolvedBackLabel}
           onPress={handleBack}
           style={(state) => {
             const { hovered, focused } = state as {
@@ -101,7 +104,7 @@ export function WebBreadcrumbBar({
             }}
           >
             {'← '}
-            {backLabel}
+            {resolvedBackLabel}
           </Text>
         </Pressable>
         <Text

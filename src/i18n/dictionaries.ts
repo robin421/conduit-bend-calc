@@ -162,6 +162,205 @@ export const en = {
   'feedback.ticketIdLabel': 'Ticket ID',
   'feedback.doneButton': 'Done / Back',
   'feedback.submitAnotherButton': 'Submit another',
+
+  // 通用补充
+  'common.clear': 'Clear',
+  'common.cancel': 'Cancel',
+  'common.language': 'Language',
+  'common.unit.short.fractional': 'Frac',
+  'common.unit.short.decimal': 'Dec',
+  'common.unit.short.metric': 'mm',
+
+  // 底部 Tab 与页面标题
+  'tabs.calculate': 'Calculate',
+  'tabs.reference': 'Reference',
+  'tabs.history': 'History',
+  'tabs.myBender': 'My Bender',
+  'nav.fullFingerprint': 'Full Fingerprint',
+  'nav.benderSetup': 'Bender Setup',
+
+  // 首页
+  'home.group.bending': 'Conduit bending',
+  'home.group.electrical': 'Electrical calculators',
+  'home.group.bender': 'My bender',
+  'home.tool.offset.name': 'Offset Bend',
+  'home.tool.offset.desc': 'Move the run around an obstacle',
+  'home.tool.stub.name': '90° Stub',
+  'home.tool.stub.desc': 'Turn up to a measured height',
+  'home.tool.saddle3.name': '3-Point Saddle',
+  'home.tool.saddle3.desc': 'Cross a narrow obstacle with three bends',
+  'home.tool.saddle4.name': '4-Point Saddle',
+  'home.tool.saddle4.desc': 'Cross a wide obstacle with a flat top',
+  'home.tool.rollingOffset.name': 'Rolling Offset',
+  'home.tool.rollingOffset.desc': 'Move the run both up and sideways',
+  'home.tool.kicked90.name': 'Kicked 90°',
+  'home.tool.kicked90.desc': 'Combine a 90° bend with an offset',
+  'home.tool.conduitFill.name': 'Conduit Fill',
+  'home.tool.conduitFill.desc': 'How many THHN wires fit (NEC Ch. 9)',
+  'home.tool.voltageDrop.name': 'Voltage Drop',
+  'home.tool.voltageDrop.desc': 'Drop % and wire size for 3% / 5%',
+  'home.tool.wireSize.name': 'Wire Size',
+  'home.tool.wireSize.desc': 'Minimum AWG from amps (NEC 310.16)',
+  'home.tool.guidedCalibration.name': 'Dial In My Bender',
+  'home.tool.guidedCalibration.desc':
+    'Match take-up or bend radius to your actual bender',
+  'home.continueLast': 'Continue last calculation',
+  'home.continueLastA11y': 'Continue last calculation: {title}',
+  'home.proReadyTitle': 'Pro is ready — continue your task',
+  'home.proPendingTitle': 'Your purchase is not complete yet',
+  'home.proReadyBody': 'Your saved inputs are kept. Open your next step when ready.',
+  'home.proPendingBody':
+    'Keep using the free calculators while Google Play confirms payment.',
+  'home.proContinueButton': 'Continue with Pro',
+  'home.proCheckStatusButton': 'Check purchase status',
+  'home.quickCalcOpen': 'Open quick calculator',
+  'home.quickCalcHide': 'Hide quick calculator',
+
+  // 历史记录页
+  'history.export': 'Export',
+  'history.clear': 'Clear',
+  'history.clearTitle': 'Clear history',
+  'history.clearConfirm': 'Delete all history entries?',
+  'history.exportErrorTitle': 'Could not export',
+  'history.exportErrorToast': 'Could not export: {message}',
+  'history.tryAgain': 'Please try again.',
+  'history.emptyTitle': 'No calculations yet',
+  'history.emptyBody': 'Calculations you run will be recorded here',
+  'history.entryCountOne': '{count} entry',
+  'history.entryCountMany': '{count} entries',
+  'history.limitTitle': 'Viewing 5 of {count} recent bends',
+  'history.limitSubtitle':
+    'The latest {limit} bends are saved on this device. Pro shows all {limit} and enables export.',
+  'history.limitCta': 'Unlock {limit}-Bend History & Export',
+
+  // Paywall
+  'paywall.eyebrow': 'PRO · LIFETIME ACCESS',
+  'paywall.scene.calibration.title': 'Dial in your own bender',
+  'paywall.scene.feasibility.title': 'Plan your bend with confidence',
+  'paywall.scene.history.title': 'Keep your recent work handy',
+  'paywall.sceneTab.calibration': 'Bender',
+  'paywall.sceneTab.feasibility': 'Bend checks',
+  'paywall.sceneTab.history': 'History',
+  'paywall.sceneTabA11y': '{label} example',
+  'paywall.unlockedRestoredTitle': 'Your Pro is restored',
+  'paywall.unlockedReadyTitle': 'Your Pro is ready',
+  'paywall.unlockedSubtitle':
+    'Your inputs and saved settings are ready. Continue when you are.',
+  'paywall.defaultSubtitle':
+    'A personal setup for your bender, with more confidence on every job.',
+  'paywall.readyOnDevice': 'Ready to use on this device',
+  'paywall.readyCalibrationNote':
+    'Have your bender, scrap conduit and tape measure ready. Settings change only when you save.',
+  'paywall.readyDefaultNote':
+    'Your original calculation and recent history are kept.',
+  'paywall.benefit1.title': 'Personal calibration',
+  'paywall.benefit1.desc': 'Use your own take-up and bend radius.',
+  'paywall.benefit2.title': 'Detailed bend checks',
+  'paywall.benefit2.desc': 'Check clearance and explore alternatives.',
+  'paywall.benefit3.title': 'History & text export',
+  'paywall.benefit3.desc': 'Keep your latest {limit} bends and share them.',
+  'paywall.freePromise': 'All nine calculators and safety warnings stay free.',
+  'paywall.hideExample': 'Hide example −',
+  'paywall.showExample': 'See Pro in practice +',
+  'paywall.exampleHeader': 'Illustrative example · settings unchanged',
+  'paywall.exampleCalibrationIntro':
+    'A test bend marked at {mark} finishes at {measured}.',
+  'paywall.exampleStandardTakeUp': 'Standard take-up',
+  'paywall.exampleMeasuredTakeUp': 'Measured take-up',
+  'paywall.exampleMarkLabel': 'Mark for the same target stub',
+  'paywall.exampleCalibrationNote':
+    'Use your own measured result after unlocking. Quick Check changes take-up; Full Fingerprint derives bend radius.',
+  'paywall.exampleFeasibilityTitle': 'Example: tight bend clearance',
+  'paywall.exampleFeasibilityFallback': 'The selected bend needs more space.',
+  'paywall.exampleFeasibilityNext': 'Pro adds a next step',
+  'paywall.exampleFeasibilityNote':
+    'Preview only. Check your actual dimensions and selected bender; free risk warnings remain visible.',
+  'paywall.exampleFreeLabel': 'Free',
+  'paywall.exampleFreeValue': 'Latest 5',
+  'paywall.exampleProLabel': 'Pro',
+  'paywall.exampleProValue': 'Latest {limit}',
+  'paywall.exampleExportTitle': 'Text export example',
+  'paywall.exampleExportSample':
+    'Offset · {height} · 30°\nSpacing {spacing} · shrink {shrink}',
+  'paywall.exampleHistoryNote':
+    'The latest {limit} bends stay on this device. Export before older entries are replaced. No unlimited storage or cloud backup is included.',
+  'paywall.faqHeading': 'Good to know',
+  'paywall.faq1.q': 'Is this a subscription?',
+  'paywall.faq1.a':
+    'No. Pro is a one-time purchase for this app. There are no recurring charges.',
+  'paywall.faq2.q': 'What stays free?',
+  'paywall.faq2.a':
+    'All nine calculators, standard bender values, basic diagrams and safety warnings stay free. Pro adds personal calibration, detailed bend options, saved bender profiles and recent-history export.',
+  'paywall.faq3.q': 'What do I need to calibrate?',
+  'paywall.faq3.a':
+    'Bring your bender, scrap conduit and a tape measure. Quick Check uses one finished-height measurement. Full Fingerprint uses both legs of a 90° test bend to derive bend radius.',
+  'paywall.faq4.q': 'Can I restore my purchase?',
+  'paywall.faq4.a':
+    'Yes. On Android, use the same Google Play account and choose Restore purchase. Previously unlocked Pro keeps working offline on this device. Bender profiles and recent history are stored on this device.',
+  'paywall.statusPending':
+    'Payment pending. Pro unlocks after Google Play confirms it. Please do not buy again.',
+  'paywall.statusPurchasing':
+    'Waiting for Google Play. You can keep using the free calculators.',
+  'paywall.statusRestoring': 'Checking purchases for your store account…',
+  'paywall.statusLoading': 'Checking your purchase and local price…',
+  'paywall.openingTask': 'Opening your task…',
+  'paywall.continue.calibration': 'Start bender calibration',
+  'paywall.continue.feasibility': 'See my bend alternatives',
+  'paywall.continue.history': 'View my recent bends',
+  'paywall.continue.export': 'Export my recent bends',
+  'paywall.continue.bender': 'Continue adding my bender',
+  'paywall.webCaption':
+    'Pro is available in the Android app. Google Play shows your local price.',
+  'paywall.getAndroidApp': 'Get the Android app',
+  'paywall.checkingPurchase': 'Checking purchase…',
+  'paywall.checkPurchaseStatus': 'Check purchase status',
+  'paywall.restoringPurchase': 'Restoring purchase…',
+  'paywall.loadingPrice': 'Loading price…',
+  'paywall.oneTimeNote': 'One-time · No subscription',
+  'paywall.unlockCta': 'Unlock Pro Lifetime',
+  'paywall.storeUnavailableCaption':
+    'Unable to load your store price. Free calculators are still available.',
+  'paywall.retryStore': 'Retry store connection',
+  'paywall.restorePurchase': 'Restore purchase',
+  'paywall.backToCalculators': 'Back to calculators',
+  'paywall.continueWithFree': 'Continue with Free',
+  'paywall.notNow': 'Not now',
+  'paywall.actionError': 'Unable to complete this action. Please try again.',
+
+  // 核心计算器公共与 4 大高频计算器
+  'calc.bender': 'Bender',
+  'calc.benderA11y': 'Bender: {name}. Tap to change',
+  'calc.conduitMaterial': 'Conduit material',
+  'calc.conduitMaterialA11y': 'Conduit material {option}',
+  'calc.usingProfile': 'Using {name}',
+  'calc.standardBenderNotice': 'Calculated using standard bender values.',
+  'calc.obstacleHeight': 'Obstacle height',
+  'calc.obstacleWidth': 'Obstacle width',
+  'calc.bendAngle': 'Bend angle',
+  'calc.enterValuesHint': 'Enter values to see results',
+  'calc.presets': 'Presets:',
+  'calc.viewAll': 'View all →',
+  'calc.center': 'Center',
+  'calc.bendSpacing': 'Bend spacing',
+  'calc.markLayoutSpan': 'Mark layout · total span {span}',
+  'offset.guideSummary':
+    'Space the two marks {distance} apart. Align each mark with the arrow and bend {angle}° in opposite directions.',
+  'stub.quickEmtPresets': 'Quick EMT Size Presets',
+  'stub.markLocationShort': 'Mark location',
+  'stub.mustExceedTakeUp': 'Target height must exceed take-up',
+  'stub.datumHook': 'front of the hook',
+  'stub.datumArrow': 'arrow',
+  'stub.guideSummary':
+    'Measure {mark} from the conduit end. Align the mark with the {datum} and bend 90°.',
+  'stub.recentBends': 'Recent 90° Bends (Tap to refill)',
+  'saddle3.bendSpacing': 'Bend spacing (center ↔ sides)',
+  'saddle3.centerMarkShrink': 'Center mark shrink',
+  'saddle3.addToCenterMark': 'Add to the center mark',
+  'saddle4.bendSpacing': 'Bend spacing (edge ↔ bend)',
+  'saddle4.clearanceNote':
+    'Leave about {clearance} past the inner marks so the conduit clears the obstacle.',
+  'saddle4.fixedPointNote':
+    'Measuring from a fixed point? Add {shrink} shrink to find the true center.',
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -319,6 +518,210 @@ export const es: Record<TranslationKey, string> = {
   'feedback.ticketIdLabel': 'ID de ticket',
   'feedback.doneButton': 'Listo / Volver',
   'feedback.submitAnotherButton': 'Enviar otro',
+
+  // 通用补充
+  'common.clear': 'Borrar',
+  'common.cancel': 'Cancelar',
+  'common.language': 'Idioma',
+  'common.unit.short.fractional': 'Frac',
+  'common.unit.short.decimal': 'Dec',
+  'common.unit.short.metric': 'mm',
+
+  // 底部 Tab 与页面标题
+  'tabs.calculate': 'Calcular',
+  'tabs.reference': 'Referencia',
+  'tabs.history': 'Historial',
+  'tabs.myBender': 'Mi doblador',
+  'nav.fullFingerprint': 'Huella completa',
+  'nav.benderSetup': 'Ajuste de doblador',
+
+  // 首页
+  'home.group.bending': 'Doblado de conducto',
+  'home.group.electrical': 'Calculadoras eléctricas',
+  'home.group.bender': 'Mi doblador',
+  'home.tool.offset.name': 'Desplazamiento',
+  'home.tool.offset.desc': 'Desvía el conducto alrededor de un obstáculo',
+  'home.tool.stub.name': 'Subida de 90°',
+  'home.tool.stub.desc': 'Sube el conducto a una altura medida',
+  'home.tool.saddle3.name': 'Silla de 3 puntos',
+  'home.tool.saddle3.desc': 'Cruza un obstáculo angosto con tres dobleces',
+  'home.tool.saddle4.name': 'Silla de 4 puntos',
+  'home.tool.saddle4.desc': 'Cruza un obstáculo ancho con parte superior plana',
+  'home.tool.rollingOffset.name': 'Desplazamiento compuesto',
+  'home.tool.rollingOffset.desc': 'Desvía el conducto hacia arriba y hacia un lado',
+  'home.tool.kicked90.name': '90° con patada',
+  'home.tool.kicked90.desc': 'Combina un doblez de 90° con un desplazamiento',
+  'home.tool.conduitFill.name': 'Llenado de conducto',
+  'home.tool.conduitFill.desc': 'Cuántos cables THHN caben (NEC Cap. 9)',
+  'home.tool.voltageDrop.name': 'Caída de voltaje',
+  'home.tool.voltageDrop.desc': '% de caída y calibre de cable para 3% / 5%',
+  'home.tool.wireSize.name': 'Calibre de cable',
+  'home.tool.wireSize.desc': 'AWG mínimo según amperios (NEC 310.16)',
+  'home.tool.guidedCalibration.name': 'Calibrar mi doblador',
+  'home.tool.guidedCalibration.desc':
+    'Ajusta la recogida o el radio a tu doblador real',
+  'home.continueLast': 'Continuar último cálculo',
+  'home.continueLastA11y': 'Continuar último cálculo: {title}',
+  'home.proReadyTitle': 'Pro está listo — continúa tu tarea',
+  'home.proPendingTitle': 'Tu compra aún no se completa',
+  'home.proReadyBody':
+    'Tus datos guardados se conservan. Abre el siguiente paso cuando quieras.',
+  'home.proPendingBody':
+    'Sigue usando las calculadoras gratuitas mientras Google Play confirma el pago.',
+  'home.proContinueButton': 'Continuar con Pro',
+  'home.proCheckStatusButton': 'Verificar estado de compra',
+  'home.quickCalcOpen': 'Abrir calculadora rápida',
+  'home.quickCalcHide': 'Ocultar calculadora rápida',
+
+  // 历史记录页
+  'history.export': 'Exportar',
+  'history.clear': 'Borrar',
+  'history.clearTitle': 'Borrar historial',
+  'history.clearConfirm': '¿Eliminar todos los registros del historial?',
+  'history.exportErrorTitle': 'No se pudo exportar',
+  'history.exportErrorToast': 'No se pudo exportar: {message}',
+  'history.tryAgain': 'Inténtalo de nuevo.',
+  'history.emptyTitle': 'Aún no hay cálculos',
+  'history.emptyBody': 'Los cálculos que hagas aparecerán aquí',
+  'history.entryCountOne': '{count} registro',
+  'history.entryCountMany': '{count} registros',
+  'history.limitTitle': 'Viendo 5 de {count} dobleces recientes',
+  'history.limitSubtitle':
+    'Los últimos {limit} dobleces se guardan en este dispositivo. Pro muestra los {limit} y permite exportar.',
+  'history.limitCta': 'Desbloquear historial de {limit} y exportación',
+
+  // Paywall
+  'paywall.eyebrow': 'PRO · ACCESO DE POR VIDA',
+  'paywall.scene.calibration.title': 'Calibra tu propio doblador',
+  'paywall.scene.feasibility.title': 'Planifica tu doblez con confianza',
+  'paywall.scene.history.title': 'Ten a mano tus cálculos recientes',
+  'paywall.sceneTab.calibration': 'Doblador',
+  'paywall.sceneTab.feasibility': 'Verificaciones',
+  'paywall.sceneTab.history': 'Historial',
+  'paywall.sceneTabA11y': 'Ejemplo de {label}',
+  'paywall.unlockedRestoredTitle': 'Tu Pro fue restaurado',
+  'paywall.unlockedReadyTitle': 'Tu Pro está listo',
+  'paywall.unlockedSubtitle':
+    'Tus datos y ajustes guardados están listos. Continúa cuando quieras.',
+  'paywall.defaultSubtitle':
+    'Ajuste personal para tu doblador, con más precisión en cada trabajo.',
+  'paywall.readyOnDevice': 'Listo para usar en este dispositivo',
+  'paywall.readyCalibrationNote':
+    'Ten a mano tu doblador, un tramo de conducto sobrante y cinta métrica. Los ajustes solo cambian al guardar.',
+  'paywall.readyDefaultNote':
+    'Tu cálculo original y el historial reciente se conservan.',
+  'paywall.benefit1.title': 'Calibración personal',
+  'paywall.benefit1.desc': 'Usa tu propia recogida y radio de doblez.',
+  'paywall.benefit2.title': 'Verificaciones detalladas',
+  'paywall.benefit2.desc': 'Revisa el espacio libre y explora alternativas.',
+  'paywall.benefit3.title': 'Historial y exportación de texto',
+  'paywall.benefit3.desc': 'Guarda tus últimos {limit} dobleces y compártelos.',
+  'paywall.freePromise':
+    'Las nueve calculadoras y las alertas de seguridad siguen siendo gratuitas.',
+  'paywall.hideExample': 'Ocultar ejemplo −',
+  'paywall.showExample': 'Ver Pro en práctica +',
+  'paywall.exampleHeader': 'Ejemplo ilustrativo · sin cambiar tus ajustes',
+  'paywall.exampleCalibrationIntro':
+    'Un doblez de prueba marcado en {mark} termina en {measured}.',
+  'paywall.exampleStandardTakeUp': 'Recogida estándar',
+  'paywall.exampleMeasuredTakeUp': 'Recogida medida',
+  'paywall.exampleMarkLabel': 'Marca para la misma subida objetivo',
+  'paywall.exampleCalibrationNote':
+    'Usa tu propia medición tras desbloquear. Verificación rápida ajusta la recogida; Huella completa calcula el radio de doblez.',
+  'paywall.exampleFeasibilityTitle': 'Ejemplo: espacio ajustado entre dobleces',
+  'paywall.exampleFeasibilityFallback':
+    'El doblez seleccionado necesita más espacio.',
+  'paywall.exampleFeasibilityNext': 'Pro agrega el siguiente paso',
+  'paywall.exampleFeasibilityNote':
+    'Solo vista previa. Verifica tus medidas reales y el doblador elegido; las alertas de riesgo gratuitas siguen visibles.',
+  'paywall.exampleFreeLabel': 'Gratis',
+  'paywall.exampleFreeValue': 'Últimos 5',
+  'paywall.exampleProLabel': 'Pro',
+  'paywall.exampleProValue': 'Últimos {limit}',
+  'paywall.exampleExportTitle': 'Ejemplo de exportación de texto',
+  'paywall.exampleExportSample':
+    'Desplazamiento · {height} · 30°\nDistancia {spacing} · contracción {shrink}',
+  'paywall.exampleHistoryNote':
+    'Los últimos {limit} dobleces se guardan en este dispositivo. Exporta antes de que se reemplacen los anteriores. No incluye almacenamiento ilimitado ni respaldo en la nube.',
+  'paywall.faqHeading': 'Información útil',
+  'paywall.faq1.q': '¿Es una suscripción?',
+  'paywall.faq1.a':
+    'No. Pro es una compra única para esta app. No hay cargos recurrentes.',
+  'paywall.faq2.q': '¿Qué sigue siendo gratis?',
+  'paywall.faq2.a':
+    'Las nueve calculadoras, valores estándar de dobladores, diagramas básicos y alertas de seguridad siguen siendo gratis. Pro agrega calibración personal, opciones detalladas de doblez, perfiles guardados y exportación del historial reciente.',
+  'paywall.faq3.q': '¿Qué necesito para calibrar?',
+  'paywall.faq3.a':
+    'Necesitas tu doblador, un tramo de conducto sobrante y cinta métrica. Verificación rápida usa una medida de altura final. Huella completa usa ambos lados de un doblez de prueba de 90° para calcular el radio.',
+  'paywall.faq4.q': '¿Puedo restaurar mi compra?',
+  'paywall.faq4.a':
+    'Sí. En Android, usa la misma cuenta de Google Play y elige Restaurar compra. Si ya desbloqueaste Pro, sigue funcionando sin conexión en este dispositivo. Los perfiles de doblador y el historial reciente se guardan localmente.',
+  'paywall.statusPending':
+    'Pago pendiente. Pro se desbloqueará cuando Google Play lo confirme. No vuelvas a comprar.',
+  'paywall.statusPurchasing':
+    'Esperando a Google Play. Puedes seguir usando las calculadoras gratuitas.',
+  'paywall.statusRestoring': 'Verificando compras de tu cuenta…',
+  'paywall.statusLoading': 'Consultando tu compra y el precio local…',
+  'paywall.openingTask': 'Abriendo tu tarea…',
+  'paywall.continue.calibration': 'Iniciar calibración del doblador',
+  'paywall.continue.feasibility': 'Ver alternativas de doblez',
+  'paywall.continue.history': 'Ver mis dobleces recientes',
+  'paywall.continue.export': 'Exportar mis dobleces recientes',
+  'paywall.continue.bender': 'Seguir agregando mi doblador',
+  'paywall.webCaption':
+    'Pro está disponible en la app de Android. Google Play muestra tu precio local.',
+  'paywall.getAndroidApp': 'Obtener la app de Android',
+  'paywall.checkingPurchase': 'Verificando compra…',
+  'paywall.checkPurchaseStatus': 'Verificar estado de compra',
+  'paywall.restoringPurchase': 'Restaurando compra…',
+  'paywall.loadingPrice': 'Cargando precio…',
+  'paywall.oneTimeNote': 'Pago único · Sin suscripción',
+  'paywall.unlockCta': 'Desbloquear Pro de por vida',
+  'paywall.storeUnavailableCaption':
+    'No se pudo cargar el precio de la tienda. Las calculadoras gratuitas siguen disponibles.',
+  'paywall.retryStore': 'Reintentar conexión con la tienda',
+  'paywall.restorePurchase': 'Restaurar compra',
+  'paywall.backToCalculators': 'Volver a calculadoras',
+  'paywall.continueWithFree': 'Seguir con Gratis',
+  'paywall.notNow': 'Ahora no',
+  'paywall.actionError':
+    'No se pudo completar esta acción. Inténtalo de nuevo.',
+
+  // 核心计算器公共与 4 大高频计算器
+  'calc.bender': 'Doblador',
+  'calc.benderA11y': 'Doblador: {name}. Toca para cambiar',
+  'calc.conduitMaterial': 'Material del conducto',
+  'calc.conduitMaterialA11y': 'Material del conducto {option}',
+  'calc.usingProfile': 'Usando {name}',
+  'calc.standardBenderNotice':
+    'Calculado con valores estándar de doblador.',
+  'calc.obstacleHeight': 'Altura del obstáculo',
+  'calc.obstacleWidth': 'Ancho del obstáculo',
+  'calc.bendAngle': 'Ángulo de doblez',
+  'calc.enterValuesHint': 'Ingresa valores para ver los resultados',
+  'calc.presets': 'Preajustes:',
+  'calc.viewAll': 'Ver todo →',
+  'calc.center': 'Centro',
+  'calc.bendSpacing': 'Distancia entre dobleces',
+  'calc.markLayoutSpan': 'Trazado de marcas · largo total {span}',
+  'offset.guideSummary':
+    'Separa las dos marcas {distance}. Alinea cada marca con la flecha y dobla {angle}° en direcciones opuestas.',
+  'stub.quickEmtPresets': 'Tamaños EMT rápidos',
+  'stub.markLocationShort': 'Ubicación de la marca',
+  'stub.mustExceedTakeUp': 'La altura objetivo debe superar la recogida',
+  'stub.datumHook': 'el frente del gancho',
+  'stub.datumArrow': 'la flecha',
+  'stub.guideSummary':
+    'Mide {mark} desde el extremo del conducto. Alinea la marca con {datum} y dobla 90°.',
+  'stub.recentBends': 'Subidas de 90° recientes (toca para rellenar)',
+  'saddle3.bendSpacing': 'Distancia entre dobleces (centro ↔ lados)',
+  'saddle3.centerMarkShrink': 'Contracción de la marca central',
+  'saddle3.addToCenterMark': 'Sumar a la marca central',
+  'saddle4.bendSpacing': 'Distancia entre dobleces (borde ↔ doblez)',
+  'saddle4.clearanceNote':
+    'Deja aproximadamente {clearance} después de las marcas interiores para que el conducto libre el obstáculo.',
+  'saddle4.fixedPointNote':
+    '¿Mides desde un punto fijo? Suma {shrink} de contracción para hallar el centro real.',
 };
 
 export const DICTIONARIES: Record<Lang, Record<TranslationKey, string>> = {

@@ -23,6 +23,7 @@ import {
   ReferenceIcon,
   type IconProps,
 } from '../components/toolIcons';
+import { useI18n, type TranslationKey } from '../i18n';
 import HistoryScreen from '../screens/historyScreen';
 import LookupScreen from '../screens/lookupScreen';
 import { isMobileNavViewport, workspaceMaxWidth } from '../seo/calculatorNav';
@@ -42,11 +43,11 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 
 const DESKTOP_TAB_ITEMS: ReadonlyArray<{
   key: keyof RootTabParamList;
-  label: string;
+  labelKey: TranslationKey;
 }> = [
-  { key: 'CalcHome', label: 'Calculate' },
-  { key: 'Lookup', label: 'Reference' },
-  { key: 'History', label: 'History' },
+  { key: 'CalcHome', labelKey: 'tabs.calculate' },
+  { key: 'Lookup', labelKey: 'tabs.reference' },
+  { key: 'History', labelKey: 'tabs.history' },
 ];
 
 function tabIcon(IconComponent: ComponentType<IconProps>, theme: Theme) {
@@ -80,6 +81,7 @@ function tabIcon(IconComponent: ComponentType<IconProps>, theme: Theme) {
 
 export default function RootTabs() {
   const theme = useTheme();
+  const { t } = useI18n();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const rootNavigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -164,7 +166,7 @@ export default function RootTabs() {
         name="CalcHome"
         component={CalcStack}
         options={({ route }) => ({
-          title: 'Calculate',
+          title: t('tabs.calculate'),
           headerShown: false,
           tabBarIcon: tabIcon(CalculateIcon, theme),
           ...(getFocusedRouteNameFromRoute(route) === 'Paywall'
@@ -179,7 +181,7 @@ export default function RootTabs() {
         name="Lookup"
         component={LookupScreen}
         options={{
-          title: 'Reference',
+          title: t('tabs.reference'),
           headerShown: !desktopWebNav,
           tabBarIcon: tabIcon(ReferenceIcon, theme),
         }}
@@ -188,7 +190,7 @@ export default function RootTabs() {
         name="History"
         component={HistoryScreen}
         options={{
-          title: 'History',
+          title: t('tabs.history'),
           headerShown: !desktopWebNav,
           tabBarIcon: tabIcon(HistoryIcon, theme),
         }}
@@ -264,7 +266,7 @@ export default function RootTabs() {
                       fontWeight: selected ? '600' : '500',
                     }}
                   >
-                    {item.label}
+                    {t(item.labelKey)}
                   </Text>
                   {selected ? (
                     <View

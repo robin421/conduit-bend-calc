@@ -17,8 +17,10 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import LanguageSwitcher from '../components/languageSwitcher';
 import RatingCard from '../components/ratingCard';
 import FeedbackCard from '../components/feedbackCard';
+import { useI18n, type TranslationKey } from '../i18n';
 import {
   BenderDialIcon,
   ChevronRightIcon,
@@ -57,34 +59,38 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'CalcHome'>;
 interface CalculatorEntry {
   key: keyof CalcStackParamList;
   Icon: ComponentType<IconProps>;
-  name: string;
-  description: string;
+  nameKey: TranslationKey;
+  descriptionKey: TranslationKey;
   group: 'bending' | 'electrical' | 'bender';
   /** Pro 功能：未购买时点击进付费墙（仅校准类，计算器不再 gate）。 */
   pro?: boolean;
 }
 
 const ENTRIES: CalculatorEntry[] = [
-  { key: 'Offset', group: 'bending', Icon: OffsetIcon, name: 'Offset Bend', description: 'Move the run around an obstacle' },
-  { key: 'Stub', group: 'bending', Icon: StubIcon, name: '90° Stub', description: 'Turn up to a measured height' },
-  { key: 'ThreePointSaddle', group: 'bending', Icon: ThreePointSaddleIcon, name: '3-Point Saddle', description: 'Cross a narrow obstacle with three bends' },
-  { key: 'FourPointSaddle', group: 'bending', Icon: FourPointSaddleIcon, name: '4-Point Saddle', description: 'Cross a wide obstacle with a flat top' },
-  { key: 'RollingOffset', group: 'bending', Icon: RollingOffsetIcon, name: 'Rolling Offset', description: 'Move the run both up and sideways' },
-  { key: 'Kicked90', group: 'bending', Icon: Kicked90Icon, name: 'Kicked 90°', description: 'Combine a 90° bend with an offset' },
-  { key: 'ConduitFill', group: 'electrical', Icon: ConduitFillIcon, name: 'Conduit Fill', description: 'How many THHN wires fit (NEC Ch. 9)' },
-  { key: 'VoltageDrop', group: 'electrical', Icon: VoltageDropIcon, name: 'Voltage Drop', description: 'Drop % and wire size for 3% / 5%' },
-  { key: 'WireSize', group: 'electrical', Icon: WireSizeIcon, name: 'Wire Size', description: 'Minimum AWG from amps (NEC 310.16)' },
-  { key: 'GuidedCalibration', group: 'bender', Icon: BenderDialIcon, name: 'Dial In My Bender', description: 'Match take-up or bend radius to your actual bender', pro: true },
+  { key: 'Offset', group: 'bending', Icon: OffsetIcon, nameKey: 'home.tool.offset.name', descriptionKey: 'home.tool.offset.desc' },
+  { key: 'Stub', group: 'bending', Icon: StubIcon, nameKey: 'home.tool.stub.name', descriptionKey: 'home.tool.stub.desc' },
+  { key: 'ThreePointSaddle', group: 'bending', Icon: ThreePointSaddleIcon, nameKey: 'home.tool.saddle3.name', descriptionKey: 'home.tool.saddle3.desc' },
+  { key: 'FourPointSaddle', group: 'bending', Icon: FourPointSaddleIcon, nameKey: 'home.tool.saddle4.name', descriptionKey: 'home.tool.saddle4.desc' },
+  { key: 'RollingOffset', group: 'bending', Icon: RollingOffsetIcon, nameKey: 'home.tool.rollingOffset.name', descriptionKey: 'home.tool.rollingOffset.desc' },
+  { key: 'Kicked90', group: 'bending', Icon: Kicked90Icon, nameKey: 'home.tool.kicked90.name', descriptionKey: 'home.tool.kicked90.desc' },
+  { key: 'ConduitFill', group: 'electrical', Icon: ConduitFillIcon, nameKey: 'home.tool.conduitFill.name', descriptionKey: 'home.tool.conduitFill.desc' },
+  { key: 'VoltageDrop', group: 'electrical', Icon: VoltageDropIcon, nameKey: 'home.tool.voltageDrop.name', descriptionKey: 'home.tool.voltageDrop.desc' },
+  { key: 'WireSize', group: 'electrical', Icon: WireSizeIcon, nameKey: 'home.tool.wireSize.name', descriptionKey: 'home.tool.wireSize.desc' },
+  { key: 'GuidedCalibration', group: 'bender', Icon: BenderDialIcon, nameKey: 'home.tool.guidedCalibration.name', descriptionKey: 'home.tool.guidedCalibration.desc', pro: true },
 ];
 
-const GROUPS = [
-  { key: 'bending', title: 'Conduit bending' },
-  { key: 'electrical', title: 'Electrical calculators' },
-  { key: 'bender', title: 'My bender' },
-] as const;
+const GROUPS: ReadonlyArray<{
+  key: 'bending' | 'electrical' | 'bender';
+  titleKey: TranslationKey;
+}> = [
+  { key: 'bending', titleKey: 'home.group.bending' },
+  { key: 'electrical', titleKey: 'home.group.electrical' },
+  { key: 'bender', titleKey: 'home.group.bender' },
+];
 
 export default function CalcHomeScreen({ navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const { width } = useWindowDimensions();
   const { unit, setUnit } = useUnitSystem();
   const { access, phase, pendingPurchase } = useProAccess();
@@ -173,7 +179,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
     } else if (entry.key === 'Calibration') {
       navigation.navigate('Calibration');
     } else {
-      navigation.navigate('Placeholder', { title: entry.name });
+      navigation.navigate('Placeholder', { title: t(entry.nameKey) });
     }
   };
 
@@ -182,21 +188,21 @@ export default function CalcHomeScreen({ navigation }: Props) {
       {(pendingPurchase || phase === 'purchasing' || (access === 'unlocked' && pendingTask)) ? (
         <Card style={{ gap: theme.spacing.sm }}>
           <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>
-            {access === 'unlocked' ? 'Pro is ready — continue your task' : 'Your purchase is not complete yet'}
+            {access === 'unlocked' ? t('home.proReadyTitle') : t('home.proPendingTitle')}
           </Text>
           <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-            {access === 'unlocked' ? 'Your saved inputs are kept. Open your next step when ready.' : 'Keep using the free calculators while Google Play confirms payment.'}
+            {access === 'unlocked' ? t('home.proReadyBody') : t('home.proPendingBody')}
           </Text>
-          <BigButton title={access === 'unlocked' ? 'Continue with Pro' : 'Check purchase status'} variant="secondary" onPress={() => navigation.navigate('Paywall', { triggerSource: 'pending_resume', intent: pendingTask?.intent ?? { kind: 'calibration' }, pendingTaskId: pendingTask?.id })} />
+          <BigButton title={access === 'unlocked' ? t('home.proContinueButton') : t('home.proCheckStatusButton')} variant="secondary" onPress={() => navigation.navigate('Paywall', { triggerSource: 'pending_resume', intent: pendingTask?.intent ?? { kind: 'calibration' }, pendingTaskId: pendingTask?.id })} />
         </Card>
       ) : null}
       {recent ? (
         <Card onPress={() => {
           setUnit(recent.params.unit ?? 'fractional');
           navigation.navigate(HISTORY_CALCULATOR_SCREENS[recent.kind], { backfill: recent.params });
-        }} accessibilityLabel={`Continue last calculation: ${recent.title}`} style={{ gap: theme.spacing.xs }}>
+        }} accessibilityLabel={t('home.continueLastA11y', { title: recent.title })} style={{ gap: theme.spacing.xs }}>
           <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
-            Continue last calculation
+            {t('home.continueLast')}
           </Text>
           <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>
             {recent.title} · {recent.inputSummary}
@@ -207,15 +213,18 @@ export default function CalcHomeScreen({ navigation }: Props) {
         </Card>
       ) : null}
       <View style={styles.unitRow}>
-        <Text
-          style={{
-            color: theme.colors.textSecondary,
-            fontSize: theme.fontSize.secondary,
-            fontWeight: theme.fontWeight.medium,
-          }}
-        >
-          Units
-        </Text>
+        <View style={styles.preferencesHeader}>
+          <Text
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.fontSize.secondary,
+              fontWeight: theme.fontWeight.medium,
+            }}
+          >
+            {t('common.units')}
+          </Text>
+          <LanguageSwitcher tone="surface" />
+        </View>
         <View
           style={[
             styles.unitSegmentTrack,
@@ -228,9 +237,9 @@ export default function CalcHomeScreen({ navigation }: Props) {
         >
           {(
             [
-              { key: 'fractional', label: 'Fraction' },
-              { key: 'decimal', label: 'Decimal' },
-              { key: 'metric', label: 'Metric' },
+              { key: 'fractional', labelKey: 'common.unit.fractional' },
+              { key: 'decimal', labelKey: 'common.unit.decimal' },
+              { key: 'metric', labelKey: 'common.unit.metric' },
             ] as const
           ).map((opt) => {
             const selected = unit === opt.key;
@@ -264,13 +273,14 @@ export default function CalcHomeScreen({ navigation }: Props) {
                 }}
               >
                 <Text
+                  numberOfLines={1}
                   style={{
                     color: selected ? theme.colors.textPrimary : theme.colors.textSecondary,
                     fontSize: 13,
                     fontWeight: selected ? theme.fontWeight.semibold : theme.fontWeight.medium,
                   }}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </Text>
               </Pressable>
             );
@@ -280,7 +290,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
 
       {Platform.OS === 'web' && !isWideWeb ? (
         <BigButton
-          title={quickOpen ? 'Hide quick calculator' : 'Open quick calculator'}
+          title={quickOpen ? t('home.quickCalcHide') : t('home.quickCalcOpen')}
           variant="secondary"
           expanded={quickOpen}
           onPress={() => setQuickOpen((open) => !open)}
@@ -298,7 +308,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
         <View key={group.key} style={{ gap: theme.spacing.sm }}>
           {group.key === 'bender' ? <RatingCard source="home" /> : null}
           <Text accessibilityRole="header" style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
-            {group.title}
+            {t(group.titleKey)}
           </Text>
           <View style={isWideWeb ? [styles.cardGrid, { gap: theme.spacing.sm }] : { gap: theme.spacing.sm }}>
             {ENTRIES.filter((entry) => entry.group === group.key).map((entry) => (
@@ -330,7 +340,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
                         letterSpacing: 0.1,
                       }}
                     >
-                      {entry.name}
+                      {t(entry.nameKey)}
                     </Text>
                     {entry.pro && (access === 'locked' || Platform.OS === 'web') ? (
                       <Text
@@ -354,7 +364,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
                       marginTop: theme.spacing.xs,
                     }}
                   >
-                    {entry.description}
+                    {t(entry.descriptionKey)}
                   </Text>
                 </View>
                 <View style={styles.chevronWrap}>
@@ -468,6 +478,12 @@ const styles = StyleSheet.create({
   },
   unitRow: {
     gap: 6,
+  },
+  preferencesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   unitSegmentTrack: {
     flexDirection: 'row',

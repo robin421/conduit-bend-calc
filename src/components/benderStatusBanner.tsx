@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useI18n } from '../i18n';
 import type { BenderProfile } from '../lib/profile';
 import { useTheme } from '../theme';
 import BigButton from './bigButton';
@@ -25,6 +26,7 @@ export default function BenderStatusBanner({
   onCalibrate,
 }: BenderStatusBannerProps) {
   const theme = useTheme();
+  const { t } = useI18n();
 
   if (profile && profile.source === 'calibrated') {
     return (
@@ -50,7 +52,7 @@ export default function BenderStatusBanner({
             flex: 1,
           }}
         >
-          {`Using ${profile.name}`}
+          {t('calc.usingProfile', { name: profile.name })}
         </Text>
       </View>
     );
@@ -78,7 +80,7 @@ export default function BenderStatusBanner({
             flex: 1,
           }}
         >
-          {`Using ${profile.name}`}
+          {t('calc.usingProfile', { name: profile.name })}
         </Text>
       </View>
     );
@@ -96,10 +98,10 @@ export default function BenderStatusBanner({
           fontSize: theme.fontSize.secondary,
         }}
       >
-        Calculated using standard bender values.
+        {t('calc.standardBenderNotice')}
       </Text>
       <BigButton
-        title="Dial In My Bender"
+        title={t('home.tool.guidedCalibration.name')}
         variant="secondary"
         onPress={onCalibrate}
       />

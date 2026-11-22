@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Platform, useWindowDimensions } from 'react-native';
 
 import AppBrandBar from '../components/appBrandBar';
+import { useI18n } from '../i18n';
 import { isMobileNavViewport } from '../seo/calculatorNav';
 import { PRODUCT_NAME } from '../seo/brand';
 import type { HistoryParams } from '../lib/historyStore';
@@ -46,6 +47,7 @@ const Stack = createNativeStackNavigator<CalcStackParamList>();
 
 export default function CalcStack() {
   const theme = useTheme();
+  const { t } = useI18n();
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
   const hideWebDesktopHeader = isWeb && !isMobileNavViewport(width);
@@ -73,49 +75,49 @@ export default function CalcStack() {
           headerTitle: () => <AppBrandBar tone="header" />,
         }}
       />
-      <Stack.Screen name="Offset" component={OffsetScreen} options={{ title: 'Offset Bend' }} />
-      <Stack.Screen name="Stub" component={StubScreen} options={{ title: '90° Stub' }} />
+      <Stack.Screen name="Offset" component={OffsetScreen} options={{ title: t('home.tool.offset.name') }} />
+      <Stack.Screen name="Stub" component={StubScreen} options={{ title: t('home.tool.stub.name') }} />
       <Stack.Screen
         name="ThreePointSaddle"
         component={ThreePointSaddleScreen}
-        options={{ title: '3-Point Saddle' }}
+        options={{ title: t('home.tool.saddle3.name') }}
       />
       <Stack.Screen
         name="FourPointSaddle"
         component={FourPointSaddleScreen}
-        options={{ title: '4-Point Saddle' }}
+        options={{ title: t('home.tool.saddle4.name') }}
       />
       <Stack.Screen
         name="RollingOffset"
         component={RollingOffsetScreen}
-        options={{ title: 'Rolling Offset' }}
+        options={{ title: t('home.tool.rollingOffset.name') }}
       />
       <Stack.Screen
         name="Kicked90"
         component={Kicked90Screen}
-        options={{ title: 'Kicked 90°' }}
+        options={{ title: t('home.tool.kicked90.name') }}
       />
-      <Stack.Screen name="ConduitFill" component={ConduitFillScreen} options={{ title: 'Conduit Fill' }} />
-      <Stack.Screen name="VoltageDrop" component={VoltageDropScreen} options={{ title: 'Voltage Drop' }} />
+      <Stack.Screen name="ConduitFill" component={ConduitFillScreen} options={{ title: t('home.tool.conduitFill.name') }} />
+      <Stack.Screen name="VoltageDrop" component={VoltageDropScreen} options={{ title: t('home.tool.voltageDrop.name') }} />
       <Stack.Screen
         name="WireSize"
         component={WireSizeScreen}
-        options={{ title: 'Wire Size' }}
+        options={{ title: t('home.tool.wireSize.name') }}
       />
       <Stack.Screen
         name="GuidedCalibration"
         component={GuidedCalibrationScreen}
-        options={{ title: 'Dial In My Bender' }}
+        options={{ title: t('home.tool.guidedCalibration.name') }}
       />
       <Stack.Screen
         name="Calibration"
         component={CalibrationScreen}
-        options={{ title: 'Full Fingerprint' }}
+        options={{ title: t('nav.fullFingerprint') }}
       />
       <Stack.Screen
         name="Bender"
         component={BenderScreen}
-        options={{ title: 'Bender Setup' }}
+        options={{ title: t('nav.benderSetup') }}
       />
       <Stack.Screen
         name="Paywall"

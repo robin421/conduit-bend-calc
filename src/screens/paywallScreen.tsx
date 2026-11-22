@@ -4,6 +4,7 @@ import { Linking, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ProPaywallView from '../components/proPaywallView';
+import { useI18n } from '../i18n';
 import { buyPro, clearProError, getCurrentProState, refreshProIap, restorePro, useProAccess } from '../lib/proStore';
 import { GOOGLE_PLAY_URL } from '../lib/homeContent';
 import { trackEvent } from '../lib/analytics';
@@ -30,6 +31,7 @@ import type { CalcStackParamList } from '../navigation/calcStack';
 type Props = NativeStackScreenProps<CalcStackParamList, 'Paywall'>;
 
 export default function PaywallScreen({ route, navigation }: Props) {
+  const { t } = useI18n();
   const state = useProAccess();
   const insets = useSafeAreaInsets();
   const { unit } = useUnitSystem();
@@ -143,7 +145,7 @@ export default function PaywallScreen({ route, navigation }: Props) {
       }
     } catch (error) {
       failed = true;
-      setLocalError(error instanceof Error ? error.message : 'Unable to complete this action. Please try again.');
+      setLocalError(error instanceof Error ? error.message : t('paywall.actionError'));
     } finally {
       running.current.end(kind, failed);
       setActions(running.current.snapshot());

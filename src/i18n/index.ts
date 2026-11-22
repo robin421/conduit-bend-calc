@@ -8,9 +8,13 @@
 export * from './lang.ts';
 export * from './dictionaries.ts';
 export {
+  configureAsyncLangStorage,
   getLang,
+  hydrateStoredLang,
+  initI18n,
+  resolveRuntimeLocale,
   setLang,
   subscribeLang,
-  initI18n,
+  type AsyncLangStorage,
 } from './store.ts';
 export { useI18n, type I18n } from './useI18n.ts';

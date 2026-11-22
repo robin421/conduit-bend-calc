@@ -18,11 +18,13 @@ import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
+import QuickUnitToggle from '../components/quickUnitToggle';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { threePointSaddleFeasibility } from '../calculators/feasibility/feasibility';
+import { useI18n } from '../i18n';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
 import { useProAccess } from '../lib/proStore';
@@ -48,16 +50,17 @@ type Props = NativeStackScreenProps<CalcStackParamList, 'ThreePointSaddle'>;
 
 const DEFAULT_ANGLE: OffsetAngle = 45;
 
-function formatFromCenter(value: number, unit: UnitSystem): string {
+function formatFromCenter(value: number, unit: UnitSystem, centerLabel: string): string {
   if (value === 0) {
-    return 'Center';
+    return centerLabel;
   }
   const abs = formatLength(Math.abs(value), unit);
-  return value < 0 ? `Center −${abs}` : `Center +${abs}`;
+  return value < 0 ? `${centerLabel} −${abs}` : `${centerLabel} +${abs}`;
 }
 
 export default function ThreePointSaddleScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('threePointSaddle', {
@@ -199,7 +202,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
     setHeightInches(null);
   }, [setMemory]);
 
-  const hint = result ? undefined : 'Enter values to see results';
+  const hint = result ? undefined : t('calc.enterValuesHint');
 
   const calibratedSpacing =
     result !== null ? applyCalibrationOffset(result.markSpacingInches, activeProfile) : null;
@@ -212,12 +215,15 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
-      <BenderRow
-        spec={spec}
-        onPress={() =>
-          navigation.navigate('Bender', { conduitTypeFilter: conduitType })
-        }
-      />
+      <QuickUnitToggle />
+      <View style={{ marginTop: theme.spacing.xs }}>
+        <BenderRow
+          spec={spec}
+          onPress={() =>
+            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+          }
+        />
+      </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ConduitTypeToggle
           value={conduitType}
@@ -226,12 +232,12 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
       </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ImperialInput
-          label="Obstacle height"
+          label={t('calc.obstacleHeight')}
           value={heightText}
           onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
           onParsedChange={setHeightInches}
           unit={unit}
-          placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+          placeholder={unit === 'metric' ? t('placeholder.mm150') : t('placeholder.inch6')}
         />
       </View>
 
@@ -243,7 +249,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
           marginBottom: theme.spacing.sm,
         }}
       >
-        Bend angle
+        {t('calc.bendAngle')}
       </Text>
       <View style={styles.angleRow}>
         {OFFSET_ANGLES.map((value) => (
@@ -265,13 +271,13 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
     <>
       <ResultGroup
         hero={{
-          label: 'Bend spacing (center ↔ sides)',
+          label: t('saddle3.bendSpacing'),
           value: spacingMeasurement?.value,
           unit: spacingMeasurement?.unit,
         }}
         rows={[
           {
-            label: 'Center mark shrink',
+            label: t('saddle3.centerMarkShrink'),
             value: shrinkMeasurement?.value,
             unit: shrinkMeasurement?.unit,
           },
@@ -301,7 +307,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
             fontSize: theme.fontSize.secondary,
           }}
         >
-          Add to the center mark
+          {t('saddle3.addToCenterMark')}
         </Text>
       ) : null}
 
@@ -313,7 +319,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Mark layout · total span {formatLength(result.spanInches, unit)}
+            {t('calc.markLayoutSpan', { span: formatLength(result.spanInches, unit) })}
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -334,7 +340,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {formatFromCenter(mark.fromCenterInches, unit)}
+                {formatFromCenter(mark.fromCenterInches, unit, t('calc.center'))}
               </Text>
               <Text
                 style={{
@@ -366,15 +372,15 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
       <ExpectedActualFeedback
         profile={activeProfile}
         expectedInches={calibratedSpacing}
-        label="Bend spacing"
+        label={t('calc.bendSpacing')}
         unit={unit}
       />
 
-      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
+      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
     </>
   );
 
-  return <WebCalcShell title="3-Point Saddle" left={leftColumn} right={rightColumn} />;
+  return <WebCalcShell title={t('home.tool.saddle3.name')} left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({

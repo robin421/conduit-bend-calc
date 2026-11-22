@@ -34,8 +34,8 @@
 | T17 | Web 端 Amplitude API Key 隔离与全链路漏斗埋点追加 | developer | T16 | DONE | `amplitudeCore.ts`, `amplitude.ts`, `amplitude.test.ts`, `webQuickCalculator.tsx`, `seoLayout.tsx`, `useSeoHistory.ts`, `languageSwitcher.tsx`, `calculatorDrawer.tsx`, `downloadBanner.tsx`, `gen-seo-pages.py` | 已完成开发并同步主工作区 |
 | T18 | Amplitude Web 埋点 QA 验收（`tsc` + 单测 + 网络请求实测校验） | qa | T17 | DONE | QA 验收报告（含 HTTP v2 真实请求校验） | PASS（`tsc` 0 错、`397/397` 单测、HTTP v2/sendBeacon 实测 `8e0f0f58b4e02e2a2583aae77b8c8d9b` 无 PII 全过） |
 | T19 | Phase 1：Amplitude 全链路埋点补齐（user_properties/SKU状态/dismiss修复/history_reused/unit_mode）+ 付费墙首屏实测对比默认展开 | developer | T18 | DONE | `amplitudeCore.ts`, `amplitude.ts`, `growthEvents.ts`, `proStore.ts`, `paywallTelemetry.ts`, `paywallScreen.tsx`, `proPaywallView.tsx`, `historyScreen.tsx`, `useDebouncedCalculationCompleted.ts` 及单测 | 主仓物理核验 PASS（`tsc` 0 错、`405/405` 单测） |
-| T20 | Phase 2：原生 App 西班牙语核心链路本地化（系统语言检测/持久化/首页/Paywall/导航/History/4大高频计算器）+ 单位体验优化 | developer | T19 | IN_PROGRESS | `src/i18n/*`, `unitStore.ts`, `App.tsx`, `calcHomeScreen.tsx`, `paywallScreen.tsx`, `proPaywallView.tsx`, `historyScreen.tsx`, 4大计算器屏及单测 | 开发中 |
-| T21 | Phase 1 + Phase 2 全量 QA 验收（`tsc` + 单测 + Web 构建 + `ego-browser` 实测西语/单位/Paywall/Amplitude Payload） | qa | T20 | PENDING | QA 验收报告 | 待启动 |
+| T20 | Phase 2：原生 App 西班牙语核心链路本地化（系统语言检测/持久化/首页/Paywall/导航/History/4大高频计算器）+ 单位体验优化 | developer | T19 | DONE | `src/i18n/*`, `unitStore.ts`, `quickUnitToggle.tsx`, `App.tsx`, `calcHomeScreen.tsx`, `paywallScreen.tsx`, `proPaywallView.tsx`, `historyScreen.tsx`, 4大计算器屏及单测 | 主仓物理核验 PASS（`tsc` 0 错、`413/413` 单测） |
+| T21 | Phase 1 + Phase 2 全量 QA 验收（`tsc` + 单测 + Web 构建 + `ego-browser` 实测西语/单位/Paywall/Amplitude Payload） | qa | T20 | IN_PROGRESS | QA 验收报告 | 验收中 |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

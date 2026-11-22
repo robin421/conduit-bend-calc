@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
@@ -5,7 +6,7 @@ import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { initAmplitude, logAmplitudeScreenView, setAmplitudeUserProperties } from './src/lib/amplitude';
-import { getLang } from './src/i18n';
+import { configureAsyncLangStorage, getLang, hydrateStoredLang } from './src/i18n';
 import { loadUnitSystem } from './src/lib/unitStore';
 import { applyWebDocumentTitle, shouldApplyWebDocumentTitle } from './src/lib/documentTitle';
 import { initFirebase, logFirebaseScreenView } from './src/lib/firebase';
@@ -30,6 +31,14 @@ export default function App() {
     // Firebase 与 Amplitude 初始化：首屏渲染后执行，避免拖慢冷启动；dev 下 Crashlytics 关闭。
     initFirebase();
     setAmplitudeUserProperties({ app_lang: getLang() });
+    if (Platform.OS !== 'web') {
+      configureAsyncLangStorage(AsyncStorage);
+      void hydrateStoredLang()
+        .then((lang) => {
+          setAmplitudeUserProperties({ app_lang: lang });
+        })
+        .catch(() => undefined);
+    }
     void loadUnitSystem().catch(() => undefined);
     void initAmplitude().catch(() => undefined);
     // Web 端注册 service worker：首屏关键资源离线缓存（工地断网也能开）。

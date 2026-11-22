@@ -13,6 +13,42 @@ import type { UnitSystem } from './units.ts';
 /** AsyncStorage 存储键。 */
 export const UNIT_SYSTEM_STORAGE_KEY = 'bendcalc:unit-system:v1';
 
+/** 美制默认地区码（仅在用户从未保存单位偏好时生效）。 */
+const IMPERIAL_REGIONS = new Set(['US', 'LR', 'MM']);
+
+/**
+ * 根据系统 locale 推断首次使用的默认单位系统：
+ * - 无明确地区码（如 `'en'` / `'es'` / `null`）或美制地区（`US`, `LR`, `MM`）→ `'fractional'`；
+ * - 其他明确公制地区（如 `MX`, `ES`, `CO`, `AR`, `CL`, `PE`, `419`, `GB`, `CA`, `AU`, `DE`, `FR`, `CN`, `JP` 等）→ `'metric'`。
+ */
+export function defaultUnitForLocale(locale?: string | null): UnitSystem {
+  if (!locale) {
+    return 'fractional';
+  }
+  const parts = locale.trim().split(/[-_]/).filter((part) => part.length > 0);
+  if (parts.length < 2) {
+    return 'fractional';
+  }
+  // 跳过第 0 段语言码，查找 BCP 47 地区码（2 位字母或 3 位 UN M.49 数字，忽略 4 位文字脚本如 Hans/Latn）。
+  for (let i = 1; i < parts.length; i += 1) {
+    const subtag = parts[i];
+    if (/^[a-zA-Z]{2}$/.test(subtag) || /^[0-9]{3}$/.test(subtag)) {
+      const region = subtag.toUpperCase();
+      return IMPERIAL_REGIONS.has(region) ? 'fractional' : 'metric';
+    }
+  }
+  return 'fractional';
+}
+
+function resolveRuntimeLocale(): string | null {
+  try {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+    return typeof locale === 'string' && locale.trim().length > 0 ? locale : null;
+  } catch {
+    return null;
+  }
+}
+
 /** 解析存储字符串：'imperial'（老版本）→ 'fractional'；非法/损坏/未知值回退 'fractional'，不抛异常。 */
 export function parseUnitSystem(raw: string | null): UnitSystem {
   if (raw === 'metric') {
@@ -55,12 +91,12 @@ async function ensureLoaded(): Promise<UnitSystem> {
   if (cachedUnit) {
     return cachedUnit;
   }
-  let loaded: UnitSystem = 'fractional';
+  let loaded: UnitSystem = defaultUnitForLocale(resolveRuntimeLocale());
   try {
     const raw = await storage.getItem(UNIT_SYSTEM_STORAGE_KEY);
-    loaded = parseUnitSystem(raw);
+    loaded = raw === null ? defaultUnitForLocale(resolveRuntimeLocale()) : parseUnitSystem(raw);
   } catch {
-    loaded = 'fractional';
+    loaded = defaultUnitForLocale(resolveRuntimeLocale());
   }
   if (!cachedUnit) {
     cachedUnit = loaded;
@@ -88,7 +124,9 @@ export function useUnitSystem(): {
   setUnit: (unit: UnitSystem) => void;
   loaded: boolean;
 } {
-  const [unit, setUnitState] = useState<UnitSystem>(() => cachedUnit ?? 'fractional');
+  const [unit, setUnitState] = useState<UnitSystem>(
+    () => cachedUnit ?? defaultUnitForLocale(resolveRuntimeLocale()),
+  );
   const [loaded, setLoaded] = useState(cachedUnit !== null);
 
   useEffect(() => {

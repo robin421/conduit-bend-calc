@@ -32,14 +32,33 @@ export function isLang(value: unknown): value is Lang {
 }
 
 /**
+ * 从系统 locale 检测默认语言：`es` / `es-MX` / `es-US` / `es-419` 等西语系返回 `'es'`，其他返回 `'en'`。
+ */
+export function detectSystemLang(locale?: string | null): Lang {
+  if (!locale) {
+    return DEFAULT_LANG;
+  }
+  const base = locale.trim().toLowerCase().split(/[-_]/)[0];
+  return base === 'es' ? 'es' : DEFAULT_LANG;
+}
+
+/**
+ * 解析已保存语言字符串：仅当为受支持语言时返回 Lang，空值或未知值返回 null。
+ * 用于区分「未保存 (null)」与「用户显式选择了 en」。
+ */
+export function parseStoredLang(value: string | null | undefined): Lang | null {
+  if (!value) {
+    return null;
+  }
+  const base = value.trim().toLowerCase().split(/[-_]/)[0];
+  return isLang(base) ? base : null;
+}
+
+/**
  * 规范化语言字符串：`es-MX` / `ES_mx` → `es`；未知值回退英语，不抛异常。
  */
 export function normalizeLang(value: string | null | undefined): Lang {
-  if (!value) {
-    return DEFAULT_LANG;
-  }
-  const base = value.trim().toLowerCase().split(/[-_]/)[0];
-  return isLang(base) ? base : DEFAULT_LANG;
+  return parseStoredLang(value) ?? DEFAULT_LANG;
 }
 
 /**
@@ -61,14 +80,20 @@ export function resolveLangFromSearch(
 }
 
 /**
- * 初始语言优先级：URL `?lang=` > 已存 localStorage > 默认英语。
- * URL 显式指定时永远压过历史选择（分享链接能落到正确语言）。
+ * 初始语言优先级：URL `?lang=` > 用户已保存语言 > 系统 locale 检测 > 默认英语。
+ * URL 显式指定时永远压过历史选择（分享链接能落到正确语言）；
+ * 仅当 `stored` 为有效语言值时才视为已保存（区分未保存 null 与显式选 en）。
  */
 export function resolveInitialLang(
   search: string | null | undefined,
   stored: string | null | undefined,
+  systemLocale?: string | null,
 ): Lang {
-  return resolveLangFromSearch(search) ?? normalizeLang(stored);
+  return (
+    resolveLangFromSearch(search) ??
+    parseStoredLang(stored) ??
+    detectSystemLang(systemLocale)
+  );
 }
 
 export interface LangStorage {
@@ -76,16 +101,23 @@ export interface LangStorage {
   setItem(key: string, value: string): void;
 }
 
-/** 读取已存语言；storage 缺失或抛错一律回退默认语言。 */
-export function readStoredLang(storage: LangStorage | null | undefined): Lang {
+/** 读取原始已存语言：未保存、非法或抛错时返回 null（不回退默认语言）。 */
+export function readRawStoredLang(
+  storage: LangStorage | null | undefined,
+): Lang | null {
   if (!storage) {
-    return DEFAULT_LANG;
+    return null;
   }
   try {
-    return normalizeLang(storage.getItem(LANG_STORAGE_KEY));
+    return parseStoredLang(storage.getItem(LANG_STORAGE_KEY));
   } catch {
-    return DEFAULT_LANG;
+    return null;
   }
+}
+
+/** 读取已存语言；storage 缺失或抛错一律回退默认语言。 */
+export function readStoredLang(storage: LangStorage | null | undefined): Lang {
+  return readRawStoredLang(storage) ?? DEFAULT_LANG;
 }
 
 /** 持久化语言选择；storage 缺失或抛错静默忽略（隐私模式下不崩）。 */

@@ -14,6 +14,7 @@ import {
 
 import BigButton from '../components/bigButton';
 import Card from '../components/card';
+import { useI18n } from '../i18n';
 import { isWideDesktopViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { showAppToast } from '../lib/appToast';
 import { trackGrowthEvent } from '../lib/growth';
@@ -34,6 +35,7 @@ type Props = BottomTabScreenProps<RootTabParamList, 'History'>;
 
 export default function HistoryScreen({ navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const { width } = useWindowDimensions();
   const isWideWeb = Platform.OS === 'web' && isWideDesktopViewport(width);
   const maxWidth = isWideWeb ? workspaceMaxWidth(width) : 720;
@@ -66,7 +68,7 @@ export default function HistoryScreen({ navigation }: Props) {
     if (Platform.OS === 'web') {
       const confirmed =
         typeof window !== 'undefined' && typeof window.confirm === 'function'
-          ? window.confirm('Delete all history entries?')
+          ? window.confirm(t('history.clearConfirm'))
           : true;
       if (confirmed) {
         void clearHistory()
@@ -75,10 +77,10 @@ export default function HistoryScreen({ navigation }: Props) {
       }
       return;
     }
-    Alert.alert('Clear history', 'Delete all history entries?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('history.clearTitle'), t('history.clearConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Clear',
+        text: t('history.clear'),
         style: 'destructive',
         onPress: () => {
           void clearHistory()
@@ -87,7 +89,7 @@ export default function HistoryScreen({ navigation }: Props) {
         },
       },
     ]);
-  }, []);
+  }, [t]);
 
   const handleExport = useCallback(() => {
     if (access === 'locked') {
@@ -99,14 +101,14 @@ export default function HistoryScreen({ navigation }: Props) {
     }
     void exportRecentHistory(() => navigation.isFocused()).catch((error) => {
       if (!navigation.isFocused()) return;
-      const message = error instanceof Error ? error.message : 'Please try again.';
+      const message = error instanceof Error ? error.message : t('history.tryAgain');
       if (Platform.OS === 'web') {
-        showAppToast(`Could not export: ${message}`);
+        showAppToast(t('history.exportErrorToast', { message }));
       } else {
-        Alert.alert('Could not export', message);
+        Alert.alert(t('history.exportErrorTitle'), message);
       }
     });
-  }, [access, entries, navigation]);
+  }, [access, entries, navigation, t]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -121,7 +123,7 @@ export default function HistoryScreen({ navigation }: Props) {
               style={styles.headerButton}
             >
               <Text style={[styles.headerButtonText, { color: theme.colors.accent }]}>
-                Export
+                {t('history.export')}
               </Text>
             </Pressable>
             <Pressable
@@ -132,7 +134,7 @@ export default function HistoryScreen({ navigation }: Props) {
               style={styles.headerButton}
             >
               <Text style={[styles.headerButtonText, { color: theme.colors.textSecondary }]}>
-                Clear
+                {t('history.clear')}
               </Text>
             </Pressable>
           </View>
@@ -143,6 +145,7 @@ export default function HistoryScreen({ navigation }: Props) {
     handleClear,
     handleExport,
     navigation,
+    t,
     theme.colors.accent,
     theme.colors.pressFeedback,
     theme.colors.textSecondary,
@@ -269,7 +272,7 @@ export default function HistoryScreen({ navigation }: Props) {
               },
             ]}
           >
-            Viewing 5 of {entries.length} recent bends
+            {t('history.limitTitle', { count: entries.length })}
           </Text>
           <Text
             style={[
@@ -281,12 +284,12 @@ export default function HistoryScreen({ navigation }: Props) {
               },
             ]}
           >
-            {`The latest ${HISTORY_LIMIT} bends are saved on this device. Pro shows all ${HISTORY_LIMIT} and enables export.`}
+            {t('history.limitSubtitle', { limit: HISTORY_LIMIT })}
           </Text>
         </View>
         <View style={{ marginTop: theme.spacing.md }}>
           <BigButton
-            title={`Unlock ${HISTORY_LIMIT}-Bend History & Export`}
+            title={t('history.limitCta', { limit: HISTORY_LIMIT })}
             variant="primary"
             onPress={() => {
               navigation.navigate('CalcHome', {
@@ -298,7 +301,7 @@ export default function HistoryScreen({ navigation }: Props) {
         </View>
       </Card>
     );
-  }, [entries.length, hasHiddenEntries, navigation, theme]);
+  }, [entries.length, hasHiddenEntries, navigation, t, theme]);
 
   const renderHeader = useCallback(() => {
     if (Platform.OS !== 'web' || entries.length === 0) {
@@ -314,12 +317,14 @@ export default function HistoryScreen({ navigation }: Props) {
             fontVariant: ['tabular-nums'],
           }}
         >
-          {`${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`}
+          {entries.length === 1
+            ? t('history.entryCountOne', { count: entries.length })
+            : t('history.entryCountMany', { count: entries.length })}
         </Text>
         <View style={styles.webToolbarActions}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Export"
+            accessibilityLabel={t('history.export')}
             onPress={handleExport}
             style={({ pressed }) => [
               styles.webActionButton,
@@ -336,12 +341,12 @@ export default function HistoryScreen({ navigation }: Props) {
                 { color: theme.colors.accentText },
               ]}
             >
-              Export
+              {t('history.export')}
             </Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Clear"
+            accessibilityLabel={t('history.clear')}
             onPress={handleClear}
             style={({ pressed }) => [
               styles.webActionButton,
@@ -358,13 +363,13 @@ export default function HistoryScreen({ navigation }: Props) {
                 { color: theme.colors.textSecondary },
               ]}
             >
-              Clear
+              {t('history.clear')}
             </Text>
           </Pressable>
         </View>
       </Card>
     );
-  }, [entries.length, handleClear, handleExport, theme]);
+  }, [entries.length, handleClear, handleExport, t, theme]);
 
   if (entries.length === 0) {
     return (
@@ -390,7 +395,7 @@ export default function HistoryScreen({ navigation }: Props) {
             marginTop: theme.spacing.md,
           }}
         >
-          No calculations yet
+          {t('history.emptyTitle')}
         </Text>
         <Text
           style={{
@@ -401,7 +406,7 @@ export default function HistoryScreen({ navigation }: Props) {
             maxWidth: 260,
           }}
         >
-          Calculations you run will be recorded here
+          {t('history.emptyBody')}
         </Text>
       </View>
     );

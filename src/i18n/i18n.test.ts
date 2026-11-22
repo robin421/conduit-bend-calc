@@ -14,9 +14,12 @@ import {
   LANG_STORAGE_KEY,
   LANGS,
   LANG_QUERY_PARAM,
+  detectSystemLang,
   isLang,
   normalizeLang,
+  parseStoredLang,
   persistLang,
+  readRawStoredLang,
   readStoredLang,
   resolveInitialLang,
   resolveLangFromSearch,
@@ -68,13 +71,50 @@ test('resolveLangFromSearch：解析 ?lang=（含 & 拼接 / 非法值）', () =
   assert.equal(resolveLangFromSearch(null), null);
 });
 
-test('resolveInitialLang：URL ?lang= 覆盖 localStorage，非法 URL 回退存储', () => {
+test('detectSystemLang：西语系 locale 返回 es，其他回退 en', () => {
+  assert.equal(detectSystemLang('es'), 'es');
+  assert.equal(detectSystemLang('es-MX'), 'es');
+  assert.equal(detectSystemLang('es-US'), 'es');
+  assert.equal(detectSystemLang('es-419'), 'es');
+  assert.equal(detectSystemLang('ES_es'), 'es');
+  assert.equal(detectSystemLang('en'), 'en');
+  assert.equal(detectSystemLang('en-US'), 'en');
+  assert.equal(detectSystemLang('fr-FR'), 'en');
+  assert.equal(detectSystemLang(''), 'en');
+  assert.equal(detectSystemLang(null), 'en');
+  assert.equal(detectSystemLang(undefined), 'en');
+});
+
+test('parseStoredLang / readRawStoredLang：区分未保存 null 与显式保存 en', () => {
+  assert.equal(parseStoredLang('en'), 'en');
+  assert.equal(parseStoredLang('es'), 'es');
+  assert.equal(parseStoredLang('es-MX'), 'es');
+  assert.equal(parseStoredLang(null), null);
+  assert.equal(parseStoredLang(undefined), null);
+  assert.equal(parseStoredLang(''), null);
+  assert.equal(parseStoredLang('fr'), null);
+  assert.equal(readRawStoredLang(fakeStorage()), null);
+  assert.equal(readRawStoredLang(fakeStorage({ [LANG_STORAGE_KEY]: 'en' })), 'en');
+  assert.equal(readRawStoredLang(fakeStorage({ [LANG_STORAGE_KEY]: 'bogus' })), null);
+});
+
+test('resolveInitialLang：URL ?lang= > 已保存语言 > systemLocale > 默认 en', () => {
+  // 向后兼容 2 参数调用
   assert.equal(resolveInitialLang('?lang=es', 'en'), 'es');
   assert.equal(resolveInitialLang('?lang=en', 'es'), 'en');
   assert.equal(resolveInitialLang('', 'es'), 'es');
   assert.equal(resolveInitialLang('?foo=1', 'es'), 'es');
   assert.equal(resolveInitialLang('?lang=fr', 'es'), 'es');
   assert.equal(resolveInitialLang('', null), 'en');
+
+  // 3 参数调用：区分未保存 null 与用户显式选了 en
+  assert.equal(resolveInitialLang('', null, 'es-MX'), 'es');
+  assert.equal(resolveInitialLang('', undefined, 'es-419'), 'es');
+  assert.equal(resolveInitialLang('', 'invalid', 'es-US'), 'es');
+  assert.equal(resolveInitialLang('', 'en', 'es-MX'), 'en');
+  assert.equal(resolveInitialLang('?lang=es', 'en', 'en-US'), 'es');
+  assert.equal(resolveInitialLang('?lang=en', 'es', 'es-MX'), 'en');
+  assert.equal(resolveInitialLang('', null, 'en-US'), 'en');
 });
 
 test('localStorage 持久化：写入后能读回，未知值回退默认', () => {
@@ -168,5 +208,20 @@ test('feedback.* 词条在 en / es 中完整且支持插值', () => {
   assert.equal(
     translate('es', 'feedback.errorTooLong', { max: 1000 }),
     'El comentario debe tener 1000 caracteres o menos.',
+  );
+});
+
+test('核心链路词条（paywall / home / history / tabs / calc）在 en / es 完整且支持插值', () => {
+  assert.equal(translate('en', 'paywall.unlockCta'), 'Unlock Pro Lifetime');
+  assert.equal(translate('es', 'paywall.unlockCta'), 'Desbloquear Pro de por vida');
+  assert.equal(translate('es', 'home.group.bending'), 'Doblado de conducto');
+  assert.equal(translate('es', 'tabs.history'), 'Historial');
+  assert.equal(
+    translate('es', 'history.limitTitle', { count: 12 }),
+    'Viendo 5 de 12 dobleces recientes',
+  );
+  assert.equal(
+    translate('es', 'offset.guideSummary', { distance: '12"', angle: 30 }),
+    'Separa las dos marcas 12". Alinea cada marca con la flecha y dobla 30° en direcciones opuestas.',
   );
 });

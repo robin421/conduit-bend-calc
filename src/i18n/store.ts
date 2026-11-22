@@ -10,17 +10,53 @@
 import { applySeoHead } from '../lib/seoHead.ts';
 import {
   DEFAULT_LANG,
+  LANG_STORAGE_KEY,
+  parseStoredLang,
   persistLang,
-  readStoredLang,
+  readRawStoredLang,
   resolveInitialLang,
+  resolveLangFromSearch,
   withLangQuery,
   type Lang,
   type LangStorage,
 } from './lang.ts';
 
+export interface AsyncLangStorage {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+}
+
 let currentLang: Lang = DEFAULT_LANG;
 let initialized = false;
+let hasExplicitUserSelection = false;
+let asyncStorage: AsyncLangStorage | null = null;
 const listeners = new Set<() => void>();
+
+/** 读取当前运行环境的系统 locale（Web / RN / Node 通用，失败回退 null）。 */
+export function resolveRuntimeLocale(): string | null {
+  try {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+    return typeof locale === 'string' && locale.trim().length > 0 ? locale : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 注入异步持久化适配器（如 Native 启动时注入 AsyncStorage），保持本模块不顶层 import RN。 */
+export function configureAsyncLangStorage(adapter: AsyncLangStorage | null): void {
+  asyncStorage = adapter;
+}
+
+function persistAsyncLang(lang: Lang): void {
+  if (!asyncStorage) {
+    return;
+  }
+  try {
+    void asyncStorage.setItem(LANG_STORAGE_KEY, lang).catch(() => undefined);
+  } catch {
+    // 忽略异步存储写入异常，语言仍在本进程内生效。
+  }
+}
 
 /** 当前语言（快照，供 useSyncExternalStore 使用）。 */
 export function getLang(): Lang {
@@ -83,13 +119,15 @@ function syncAmplitudeAppLang(lang: Lang): void {
   }
 }
 
-/** 显式切换语言：持久化 → 改 URL → 改 head → 通知订阅者。 */
+/** 显式切换语言：持久化（Web + Native）→ 改 URL → 改 head → 同步 Amplitude → 通知订阅者。 */
 export function setLang(next: Lang): void {
+  hasExplicitUserSelection = true;
+  persistLang(getBrowserStorage(), next);
+  persistAsyncLang(next);
   if (next === currentLang) {
     return;
   }
   currentLang = next;
-  persistLang(getBrowserStorage(), next);
   replaceUrlLang(next);
   applyBrowserHead(next);
   syncAmplitudeAppLang(next);
@@ -97,10 +135,10 @@ export function setLang(next: Lang): void {
 }
 
 /**
- * 首屏初始化：URL `?lang=` > localStorage > 默认英语。
+ * 首屏初始化：URL `?lang=` > localStorage > 系统 locale > 默认英语。
  * 幂等，多次调用只生效一次；不在初始化时改写 URL（避免给 canonical URL 添参数）。
  */
-export function initI18n(): Lang {
+export function initI18n(systemLocale?: string | null): Lang {
   if (initialized) {
     return currentLang;
   }
@@ -109,10 +147,47 @@ export function initI18n(): Lang {
     typeof window !== 'undefined' && window.location
       ? window.location.search
       : '';
-  currentLang = resolveInitialLang(search, readStoredLang(getBrowserStorage()));
-  persistLang(getBrowserStorage(), currentLang);
+  const urlLang = resolveLangFromSearch(search);
+  const rawStored = readRawStoredLang(getBrowserStorage());
+  const locale = systemLocale !== undefined ? systemLocale : resolveRuntimeLocale();
+  currentLang = resolveInitialLang(search, rawStored, locale);
+  if (urlLang !== null) {
+    persistLang(getBrowserStorage(), urlLang);
+  }
   applyBrowserHead(currentLang);
   syncAmplitudeAppLang(currentLang);
+  return currentLang;
+}
+
+/**
+ * 异步水合已保存语言（供 Native 启动时在注入 AsyncStorage 后调用）。
+ * 仅在用户尚未手动切换且无 URL `?lang=` 覆盖时，使用已保存的有效语言覆盖首屏自动检测结果。
+ */
+export async function hydrateStoredLang(): Promise<Lang> {
+  if (!asyncStorage || hasExplicitUserSelection) {
+    return currentLang;
+  }
+  const search =
+    typeof window !== 'undefined' && window.location
+      ? window.location.search
+      : '';
+  if (resolveLangFromSearch(search) !== null) {
+    return currentLang;
+  }
+  try {
+    const raw = await asyncStorage.getItem(LANG_STORAGE_KEY);
+    const stored = parseStoredLang(raw);
+    if (stored !== null && !hasExplicitUserSelection) {
+      if (stored !== currentLang) {
+        currentLang = stored;
+        applyBrowserHead(currentLang);
+        syncAmplitudeAppLang(currentLang);
+        emit();
+      }
+    }
+  } catch {
+    // 异步存储读取失败时保持当前语言，不抛异常。
+  }
   return currentLang;
 }
 
@@ -120,5 +195,7 @@ export function initI18n(): Lang {
 export function __resetI18nForTests(lang: Lang = DEFAULT_LANG): void {
   currentLang = lang;
   initialized = false;
+  hasExplicitUserSelection = false;
+  asyncStorage = null;
   listeners.clear();
 }

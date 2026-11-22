@@ -16,10 +16,12 @@ import type { DiagramInput } from '../calculators/diagrams/diagrams.ts';
 import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
+import QuickUnitToggle from '../components/quickUnitToggle';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
+import { useI18n } from '../i18n';
 import { offsetFeasibility } from '../calculators/feasibility/feasibility';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
@@ -48,6 +50,7 @@ const DEFAULT_ANGLE: OffsetAngle = 30;
 
 export default function OffsetScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('offset', {
@@ -194,12 +197,15 @@ export default function OffsetScreen({ route, navigation }: Props) {
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
-      <BenderRow
-        spec={spec}
-        onPress={() =>
-          navigation.navigate('Bender', { conduitTypeFilter: conduitType })
-        }
-      />
+      <QuickUnitToggle />
+      <View style={{ marginTop: theme.spacing.xs }}>
+        <BenderRow
+          spec={spec}
+          onPress={() =>
+            navigation.navigate('Bender', { conduitTypeFilter: conduitType })
+          }
+        />
+      </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ConduitTypeToggle
           value={conduitType}
@@ -208,12 +214,12 @@ export default function OffsetScreen({ route, navigation }: Props) {
       </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ImperialInput
-          label="Obstacle height"
+          label={t('calc.obstacleHeight')}
           value={heightText}
           onChangeText={(text) => { noteReviewInteraction(); setHeightText(text); }}
           onParsedChange={setHeightInches}
           unit={unit}
-          placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+          placeholder={unit === 'metric' ? t('placeholder.mm150') : t('placeholder.inch6')}
         />
       </View>
 
@@ -225,7 +231,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
           marginBottom: theme.spacing.sm,
         }}
       >
-        Bend angle
+        {t('calc.bendAngle')}
       </Text>
       <View style={styles.angleRow}>
         {OFFSET_ANGLES.map((value) => (
@@ -246,9 +252,9 @@ export default function OffsetScreen({ route, navigation }: Props) {
   const rightColumn = (
     <>
       <ResultGroup
-        hero={{ label: 'Mark spacing', value: distance?.value, unit: distance?.unit }}
-        rows={[{ label: 'Shrink', value: shrink?.value, unit: shrink?.unit }]}
-        hint={!result ? 'Enter values to see results' : undefined}
+        hero={{ label: t('offset.markSpacing'), value: distance?.value, unit: distance?.unit }}
+        rows={[{ label: t('shrink.shrink'), value: shrink?.value, unit: shrink?.unit }]}
+        hint={!result ? t('calc.enterValuesHint') : undefined}
       />
 
       <WarningBar warnings={warnings} />
@@ -263,7 +269,17 @@ export default function OffsetScreen({ route, navigation }: Props) {
       />
 
       {diagramInput ? (
-        <BendGuide input={diagramInput} summary={feasibility?.status !== 'impossible' && calibratedDistance !== null ? `Space the two marks ${formatLength(calibratedDistance, unit)} apart. Align each mark with the arrow and bend ${angle}° in opposite directions.` : undefined} />
+        <BendGuide
+          input={diagramInput}
+          summary={
+            feasibility?.status !== 'impossible' && calibratedDistance !== null
+              ? t('offset.guideSummary', {
+                  distance: formatLength(calibratedDistance, unit),
+                  angle,
+                })
+              : undefined
+          }
+        />
       ) : null}
 
       <BenderStatusBanner
@@ -282,15 +298,15 @@ export default function OffsetScreen({ route, navigation }: Props) {
       <ExpectedActualFeedback
         profile={activeProfile}
         expectedInches={calibratedDistance}
-        label="Mark spacing"
+        label={t('offset.markSpacing')}
         unit={unit}
       />
 
-      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
+      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
     </>
   );
 
-  return <WebCalcShell title="Offset Bend" left={leftColumn} right={rightColumn} />;
+  return <WebCalcShell title={t('home.tool.offset.name')} left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({

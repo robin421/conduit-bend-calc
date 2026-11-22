@@ -1,5 +1,6 @@
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useI18n } from '../i18n';
 import type { ConduitType } from '../lib/profile';
 import { useTheme } from '../theme';
 
@@ -25,6 +26,7 @@ export default function ConduitTypeToggle({
   onChange,
 }: ConduitTypeToggleProps) {
   const theme = useTheme();
+  const { t } = useI18n();
   return (
     <View>
       <Text
@@ -34,7 +36,7 @@ export default function ConduitTypeToggle({
           marginBottom: theme.spacing.xs,
         }}
       >
-        Conduit material
+        {t('calc.conduitMaterial')}
       </Text>
       <View
         style={[
@@ -55,7 +57,7 @@ export default function ConduitTypeToggle({
               key={option}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              accessibilityLabel={`Conduit material ${OPTION_LABELS[option]}`}
+              accessibilityLabel={t('calc.conduitMaterialA11y', { option: OPTION_LABELS[option] })}
               onPress={() => onChange(option)}
               android_ripple={{ color: rippleColor }}
               style={[

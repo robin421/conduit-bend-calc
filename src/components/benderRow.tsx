@@ -2,6 +2,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { displaySpecName } from '../calculators/geometry/benderSpecs';
 import type { BenderSpec } from '../constants';
+import { useI18n } from '../i18n';
 import { useTheme } from '../theme';
 
 interface BenderRowProps {
@@ -12,12 +13,13 @@ interface BenderRowProps {
 /** 计算器输入卡顶部的紧凑弯管机行：点击进入 Bender Setup。 */
 export default function BenderRow({ spec, onPress }: BenderRowProps) {
   const theme = useTheme();
+  const { t } = useI18n();
   const rippleColor = theme.colors.pressFeedback;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Bender: ${displaySpecName(spec)}. Tap to change`}
+      accessibilityLabel={t('calc.benderA11y', { name: displaySpecName(spec) })}
       onPress={onPress}
       android_ripple={{ color: rippleColor }}
       style={({ pressed }) => [
@@ -35,7 +37,7 @@ export default function BenderRow({ spec, onPress }: BenderRowProps) {
           fontSize: theme.fontSize.secondary,
         }}
       >
-        Bender
+        {t('calc.bender')}
       </Text>
       <View style={styles.valueRow}>
         <Text
