@@ -42,7 +42,7 @@
 | T25 | 重打包 `v1.11.0 (vc11)` 真机复测确认后 `fastlane android deploy` 上架 Google Play | ai-manager | T24 | DONE | 新版 Paywall 真机截屏 + AAB 签名校验通过 | 用户指示从产品经理视角全面重构 Paywall 转化流程（Paywall Flow）后再发版 |
 | T26 | 产品经理视角重构 Value-First Paywall Flow PRD（Try-Before-Buy 先测后锁 + 真实个人数据透传 + ROI 锚点 + 漏斗埋点） | product | T25 | DONE | `docs/prd/t26-value-first-paywall.md` | 已审定通过（Try-Before-Buy + 本地草稿自动落盘 + 交互式试算 + 真实隐藏历史数 + 完整漏斗埋点） |
 | T27 | 落地 Value-First Paywall Flow（Guided Calibration 免费试测→Step 4 保存触发 Paywall→购后自动保存应用 + 交互式试算 + History 真实隐藏数 + 西语化 + 漏斗埋点） | developer | T26 | DONE | `pendingCalibrationDraftStore.ts`, `guidedCalibrationScreen.tsx`, `calibrationScreen.tsx`, `paywallScreen.tsx`, `proPaywallView.tsx`, `calcHomeScreen.tsx`, `benderScreen.tsx`, `historyScreen.tsx`, `proContinuation.ts`, `dictionaries.ts` 及单测 | 主仓物理核验 PASS（`tsc` 0 错、`423/423` 单测、0 `tubería`、零新依赖） |
-| T28 | Paywall Flow 全量 QA + 重打包 `v1.11.0 (vc11)` 真机全链路实测确认后发布 Google Play | ai-manager | T27 | IN_PROGRESS | `tsc` + 全量单测 + 真机端到端实测截图 + Google Play 发布 | 重打包与真机实测中 |
+| T28 | Paywall Flow 全量 QA + 重打包 `v1.11.0 (vc11)` 校验与 Google Play 正式发布 | ai-manager | T27 | DONE | `dist/conduit-bend-calc-1.11.0-vc11.aab`、`fastlane/metadata/android/{en-US,es-US}/changelogs/11.txt` | PASS（`tsc` 0 错、`423/423` 单测、42/42 `.so` 16KB PASS、签名与 T27 bundle 核验通过、`fastlane android deploy` 已上传至 Google Play `production` 轨道） |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

@@ -1,0 +1,5 @@
+• Native Spanish (ES) support across Home, History, Pro & top 4 bending calculators with EN | ES switcher
+• Locale-aware default units plus fast in-calculator Frac | Dec | mm unit toggle
+• Try-before-buy Guided Bender Calibration: run a free test bend and preview your custom take-up savings
+• Redesigned Pro upgrade page with side-by-side standard vs. measured bend comparison
+• Improved in-app feedback & rating experience

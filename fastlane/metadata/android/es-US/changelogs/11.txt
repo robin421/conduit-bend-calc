@@ -1,0 +1,5 @@
+• Nuevo soporte nativo en español (ES) en Inicio, Historial, Pro y las 4 calculadoras principales con selector EN | ES
+• Unidades predeterminadas según región y cambio rápido Frac | Dec | mm en cada calculadora
+• Calibración guiada de dobladora con prueba gratuita antes de desbloquear Pro
+• Nueva vista Pro con comparación directa entre valores estándar y medidos en conducto
+• Mejoras en comentarios dentro de la app y calificación
