@@ -191,7 +191,7 @@ export default function StubScreen({ route, navigation }: Props) {
   useHistoryAutoSave(historyEntry, 800, focused);
   const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('stub', activeSignature, { unitSystem });
-  useFirebaseCalculationCompleted('stub', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('stub', activeSignature, { unitSystem, unitMode: unit });
 
   const [recentBends, setRecentBends] = useState<HistoryEntry[]>([]);
 

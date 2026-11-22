@@ -214,7 +214,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
   useHistoryAutoSave(historyEntry, 800, focused);
   const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('saddle4', activeSignature, { unitSystem });
-  useFirebaseCalculationCompleted('saddle4', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('saddle4', activeSignature, { unitSystem, unitMode: unit });
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', widthText: '', angle: DEFAULT_ANGLE });

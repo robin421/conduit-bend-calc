@@ -564,3 +564,75 @@ test('restore 埋点：触发 pro_restore_started 与对应 outcome 的 pro_rest
     { name: 'pro_restore_result', params: { outcome: 'failed' } },
   ]);
 });
+
+test('购买与恢复生命周期埋点：携带 product_id、上报 pro_entitlement_granted 并同步 is_pro 用户属性', async () => {
+  const events: Array<{ name: string; params: Record<string, unknown> }> = [];
+  const userPropsHistory: Array<{ is_pro: boolean }> = [];
+  const gateway = new FakeGateway({ purchasedSkus: [] });
+  const store = createProStore(createMemoryStorage(), () => Promise.resolve(gateway), {
+    onEvent: (name, params) => { events.push({ name, params: { ...params } }); },
+    onUserProperties: (props) => { userPropsHistory.push({ ...props }); },
+  });
+
+  await store.init();
+  assert.deepEqual(userPropsHistory, [{ is_pro: false }]);
+
+  const buyRes = await store.buy({ source: 'calibration', scene: 'calibration' });
+  assert.equal(buyRes.ok, true);
+  assert.deepEqual(events, [
+    {
+      name: 'pro_checkout_started',
+      params: { source: 'calibration', scene: 'calibration', product_id: PRO_SKU },
+    },
+  ]);
+
+  gateway.emitPurchase({ productId: PRO_SKU, isPending: false, isPurchased: true, purchaseToken: 'tok-1' });
+  await new Promise((r) => setTimeout(r, 0));
+
+  assert.deepEqual(events, [
+    {
+      name: 'pro_checkout_started',
+      params: { source: 'calibration', scene: 'calibration', product_id: PRO_SKU },
+    },
+    {
+      name: 'pro_purchase_result',
+      params: { source: 'calibration', scene: 'calibration', outcome: 'purchased', product_id: PRO_SKU },
+    },
+    {
+      name: 'pro_entitlement_granted',
+      params: { source: 'calibration', scene: 'calibration', outcome: 'purchased', product_id: PRO_SKU },
+    },
+  ]);
+  assert.deepEqual(userPropsHistory, [{ is_pro: false }, { is_pro: true }]);
+});
+
+test('初始化已购状态与恢复成功：同步 is_pro=true 且恢复上报 pro_entitlement_granted', async () => {
+  const storage = createMemoryStorage();
+  await storage.setItem(PRO_ENTITLEMENT_STORAGE_KEY, serializeProEntitlement({ purchased: true }));
+  const initUserProps: Array<{ is_pro: boolean }> = [];
+  const initStore = createProStore(storage, () => Promise.resolve(new FakeGateway({ purchasedSkus: [PRO_SKU] })), {
+    onUserProperties: (props) => { initUserProps.push({ ...props }); },
+  });
+  await initStore.init();
+  assert.deepEqual(initUserProps, [{ is_pro: true }]);
+
+  const restoreEvents: Array<{ name: string; params: Record<string, unknown> }> = [];
+  const restoreUserProps: Array<{ is_pro: boolean }> = [];
+  const restoreStore = createProStore(
+    createMemoryStorage(),
+    () => Promise.resolve(new FakeGateway({ purchasedSkus: [PRO_SKU] })),
+    {
+      onEvent: (name, params) => { restoreEvents.push({ name, params: { ...params } }); },
+      onUserProperties: (props) => { restoreUserProps.push({ ...props }); },
+    },
+  );
+  await restoreStore.restore();
+  assert.deepEqual(
+    restoreEvents.filter((e) => e.name === 'pro_purchase_result' || e.name === 'pro_entitlement_granted'),
+    [
+      { name: 'pro_purchase_result', params: { outcome: 'restored', product_id: PRO_SKU } },
+      { name: 'pro_entitlement_granted', params: { outcome: 'restored', product_id: PRO_SKU } },
+    ],
+  );
+  assert.deepEqual(restoreUserProps, [{ is_pro: true }]);
+});

@@ -72,6 +72,17 @@ function applyBrowserHead(lang: Lang): void {
   applySeoHead(lang, window.location.pathname);
 }
 
+function syncAmplitudeAppLang(lang: Lang): void {
+  try {
+    const mod = require('../lib/amplitude') as {
+      setAmplitudeUserProperties?: (props: { app_lang: Lang }) => void;
+    };
+    mod.setAmplitudeUserProperties?.({ app_lang: lang });
+  } catch {
+    /* best-effort in non-RN / test environments */
+  }
+}
+
 /** 显式切换语言：持久化 → 改 URL → 改 head → 通知订阅者。 */
 export function setLang(next: Lang): void {
   if (next === currentLang) {
@@ -81,6 +92,7 @@ export function setLang(next: Lang): void {
   persistLang(getBrowserStorage(), next);
   replaceUrlLang(next);
   applyBrowserHead(next);
+  syncAmplitudeAppLang(next);
   emit();
 }
 
@@ -100,6 +112,7 @@ export function initI18n(): Lang {
   currentLang = resolveInitialLang(search, readStoredLang(getBrowserStorage()));
   persistLang(getBrowserStorage(), currentLang);
   applyBrowserHead(currentLang);
+  syncAmplitudeAppLang(currentLang);
   return currentLang;
 }
 

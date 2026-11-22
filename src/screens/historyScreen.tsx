@@ -16,6 +16,7 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import { isWideDesktopViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { showAppToast } from '../lib/appToast';
+import { trackGrowthEvent } from '../lib/growth';
 import { exportRecentHistory } from '../lib/proContinuation';
 import {
   clearHistory,
@@ -150,7 +151,12 @@ export default function HistoryScreen({ navigation }: Props) {
   const handlePress = useCallback(
     (entry: HistoryEntry) => {
       const backfill = entry.params;
-      setUnit(backfill.unit ?? 'fractional');
+      const unitMode = backfill.unit ?? 'fractional';
+      trackGrowthEvent('history_reused', {
+        bend_type: entry.kind,
+        unit_system: unitMode,
+      });
+      setUnit(unitMode);
       switch (entry.kind) {
         case 'offset':
           navigation.navigate('CalcHome', {

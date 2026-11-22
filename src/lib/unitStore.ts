@@ -34,6 +34,17 @@ const storage: HistoryStorage = AsyncStorage;
 let cachedUnit: UnitSystem | null = null;
 const listeners = new Set<(unit: UnitSystem) => void>();
 
+function syncAmplitudeUnitSystem(unit: UnitSystem): void {
+  try {
+    const mod = require('./amplitude') as {
+      setAmplitudeUserProperties?: (props: { unit_system: UnitSystem }) => void;
+    };
+    mod.setAmplitudeUserProperties?.({ unit_system: unit });
+  } catch {
+    /* best-effort in non-RN / test environments */
+  }
+}
+
 function notify(unit: UnitSystem): void {
   for (const listener of listeners) {
     listener(unit);
@@ -54,6 +65,7 @@ async function ensureLoaded(): Promise<UnitSystem> {
   if (!cachedUnit) {
     cachedUnit = loaded;
   }
+  syncAmplitudeUnitSystem(cachedUnit);
   return cachedUnit;
 }
 
@@ -65,6 +77,7 @@ export function loadUnitSystem(): Promise<UnitSystem> {
 /** 立即写入缓存并持久化。 */
 export function saveUnitSystem(unit: UnitSystem): void {
   cachedUnit = unit;
+  syncAmplitudeUnitSystem(unit);
   notify(unit);
   void storage.setItem(UNIT_SYSTEM_STORAGE_KEY, serializeUnitSystem(unit)).catch(() => undefined);
 }

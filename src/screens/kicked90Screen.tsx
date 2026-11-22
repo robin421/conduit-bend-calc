@@ -190,7 +190,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
   useHistoryAutoSave(historyEntry, 800, focused);
   const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('kicked90', activeSignature, { unitSystem });
-  useFirebaseCalculationCompleted('kicked90', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('kicked90', activeSignature, { unitSystem, unitMode: unit });
 
   const handleClear = useCallback(() => {
     setMemory({ kickText: '', lengthText: '' });

@@ -9,8 +9,10 @@ import {
   DEFAULT_AMPLITUDE_API_KEY,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
+  sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
+  type AmplitudeUserProperties,
 } from './amplitudeCore';
 
 export {
@@ -20,8 +22,10 @@ export {
   DEFAULT_AMPLITUDE_API_KEY,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
+  sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
+  type AmplitudeUserProperties,
 };
 
 function resolveLanguage(): string {
@@ -51,6 +55,11 @@ const client = createAmplitudeClient({
 /** 初始化 Amplitude（读取/生成匿名 device_id 与 session_id）；静默容错。 */
 export function initAmplitude(): Promise<void> {
   return client.init();
+}
+
+/** 更新内存态白名单 user_properties（仅允许 is_pro / unit_system / app_lang），后续事件自动携带。 */
+export function setAmplitudeUserProperties(props: AmplitudeUserProperties): void {
+  client.setUserProperties(props);
 }
 
 /** 上报事件到 Amplitude HTTP API v2；参数经过白名单清洗，静默容错。 */

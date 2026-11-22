@@ -201,7 +201,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
   useHistoryAutoSave(historyEntry, 800, focused);
   const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('rolling', activeSignature, { unitSystem });
-  useFirebaseCalculationCompleted('rolling', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('rolling', activeSignature, { unitSystem, unitMode: unit });
 
   const handleClear = useCallback(() => {
     setMemory({ riseText: '', rollText: '', angle: DEFAULT_ANGLE });

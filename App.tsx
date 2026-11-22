@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { initAmplitude, logAmplitudeScreenView } from './src/lib/amplitude';
+import { initAmplitude, logAmplitudeScreenView, setAmplitudeUserProperties } from './src/lib/amplitude';
+import { getLang } from './src/i18n';
+import { loadUnitSystem } from './src/lib/unitStore';
 import { applyWebDocumentTitle, shouldApplyWebDocumentTitle } from './src/lib/documentTitle';
 import { initFirebase, logFirebaseScreenView } from './src/lib/firebase';
 import { initPro, observeProResume } from './src/lib/proInit';
@@ -27,6 +29,8 @@ export default function App() {
     const stopProResume = observeProResume();
     // Firebase 与 Amplitude 初始化：首屏渲染后执行，避免拖慢冷启动；dev 下 Crashlytics 关闭。
     initFirebase();
+    setAmplitudeUserProperties({ app_lang: getLang() });
+    void loadUnitSystem().catch(() => undefined);
     void initAmplitude().catch(() => undefined);
     // Web 端注册 service worker：首屏关键资源离线缓存（工地断网也能开）。
     registerServiceWorker(Platform.OS === 'web');

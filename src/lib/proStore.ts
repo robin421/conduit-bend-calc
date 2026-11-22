@@ -98,7 +98,10 @@ export const PRO_PENDING_STORAGE_KEY = '@cbc:pro-pending-v1';
 export function createProStore(
   storage: HistoryStorage,
   getGateway: IapGatewayProvider,
-  options: { onEvent?: (name: GrowthEvent, params: GrowthEventParams) => void } = {},
+  options: {
+    onEvent?: (name: GrowthEvent, params: GrowthEventParams) => void;
+    onUserProperties?: (props: { is_pro: boolean }) => void;
+  } = {},
 ): ProStore {
   let state: InternalState = { ...INITIAL_STATE };
   const listeners = new Set<() => void>();
@@ -113,12 +116,18 @@ export function createProStore(
   let purchaseEpoch = 0;
   let queryGeneration = 0;
   let checkoutContext: GrowthEventParams = {};
+  let lastReportedIsPro: boolean | null = null;
 
   function emitEvent(name: GrowthEvent, params: GrowthEventParams): void {
     try { options.onEvent?.(name, params); } catch { /* telemetry is best-effort */ }
   }
+  function emitUserPro(isPro: boolean): void {
+    if (lastReportedIsPro === isPro) return;
+    lastReportedIsPro = isPro;
+    try { options.onUserProperties?.({ is_pro: isPro }); } catch { /* telemetry is best-effort */ }
+  }
   function emit(outcome: string): void {
-    emitEvent('pro_purchase_result', { ...checkoutContext, outcome });
+    emitEvent('pro_purchase_result', { ...checkoutContext, outcome, product_id: PRO_SKU });
   }
   function setPatch(patch: Partial<InternalState>): void {
     state = { ...state, ...patch };
@@ -162,7 +171,11 @@ export function createProStore(
     setPatch({ purchased: true, pendingPurchase: false, lastError: null,
       phase: origin === 'restore' ? 'restored' : newlyCompleted ? 'purchased' : state.phase === 'purchased' ? 'purchased' : 'idle' });
     await Promise.all([persistEntitlement(true), setPending(false)]);
-    if (newlyCompleted) emit('purchased');
+    emitUserPro(true);
+    if (newlyCompleted) {
+      emit('purchased');
+      emitEvent('pro_entitlement_granted', { ...checkoutContext, outcome: 'purchased', product_id: PRO_SKU });
+    }
     await acknowledge(purchase);
   }
   function handlePurchaseError(error: { code?: string }): void {
@@ -242,6 +255,7 @@ export function createProStore(
     } catch { setPatch({ skuAvailability: 'unknown', productPrice: null }); }
     finally {
       setPatch({ initialized: true, phase: state.pendingPurchase ? 'pending' : state.phase === 'loading' ? 'idle' : state.phase });
+      emitUserPro(state.purchased);
     }
   }
   function load(): Promise<void> {
@@ -270,7 +284,7 @@ export function createProStore(
       registerListeners(gw);
       setPatch({ phase: 'purchasing', lastError: null });
       purchaseEpoch++;
-      try { options.onEvent?.('pro_checkout_started', { ...checkoutContext }); } catch { /* no business impact */ }
+      emitEvent('pro_checkout_started', { ...checkoutContext, product_id: PRO_SKU });
       await gw.requestPurchase(PRO_SKU);
       // Resolving requestPurchase only means the store sheet was launched.
       return { ok: true, message: null };
@@ -297,7 +311,9 @@ export function createProStore(
       const found = await queryPurchases(gw, 'restore');
       if (found) {
         emit('restored');
+        emitEvent('pro_entitlement_granted', { ...checkoutContext, outcome: 'restored', product_id: PRO_SKU });
         emitEvent('pro_restore_result', { outcome: 'found' });
+        emitUserPro(true);
         return { ok: true, found: true, message: null };
       }
       const message = state.pendingPurchase ? 'Payment pending. Complete payment before restoring Pro.' : NO_PREVIOUS_PURCHASE_MESSAGE;
@@ -350,10 +366,15 @@ const singleton = createProStore(AsyncStorage, () => {
     defaultGatewayPromise = defaultGatewayProvider();
   }
   return defaultGatewayPromise;
-}, { onEvent: (name, params) => {
-  // Keep the native analytics dependency out of pure store tests.
-  try { require('./growth').trackGrowthEvent(name, params); } catch { /* best-effort */ }
-} });
+}, {
+  onEvent: (name, params) => {
+    // Keep the native analytics dependency out of pure store tests.
+    try { require('./growth').trackGrowthEvent(name, params); } catch { /* best-effort */ }
+  },
+  onUserProperties: (props) => {
+    try { require('./amplitude').setAmplitudeUserProperties(props); } catch { /* best-effort */ }
+  },
+});
 let defaultGatewayPromise: Promise<IapGateway> | null = null;
 
 /** 供测试/特殊场景替换网关；替换后下一次 init 会重新执行。 */

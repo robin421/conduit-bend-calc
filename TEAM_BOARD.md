@@ -5,7 +5,10 @@
 2. 核查并完善 **引导评分（In-App Review）** 触发链路与展示入口。（已完成）
 3. 接入 **Amplitude** 埋点统计。（已完成）
 4. **Web 站全面优化与 SEO 升级**：完善 `https://bendcalc.wattflow.net` 的技术 SEO、爬虫可读性与构建流水线，做好 Google 与 Bing 收录准备，并打通与 Google Play 的双向关联。（已完成并上线）
-5. **Web 移动端与 PC 端 UI/交互全面适配**：消除 PC 端“手机壳子居中”与底部 Tab 栏，升级双栏宽屏工作区、桌面键盘流与实时结果预览；统一移动端 `>=44px` 触控热区，并同步升级 23 个静态 SEO 着陆页的双端体验。
+5. **Web 移动端与 PC 端 UI/交互全面适配**：消除 PC 端“手机壳子居中”与底部 Tab 栏，升级双栏宽屏工作区、桌面键盘流与实时结果预览；统一移动端 `>=44px` 触控热区，并同步升级 23 个静态 SEO 着陆页的双端体验。（已完成）
+6. **数据驱动产品与增长优化（基于 2026-11-14 ~ 11-22 Amplitude 全量数据）**：
+   - Phase 1（P0）：修复付费墙转化黑盒与 0 转化体验（首屏默认展开实测对比、补齐 SKU 状态/购买点击/导航返回 dismiss 埋点、补齐 Amplitude `user_properties` 与 `history_reused`、`unit_mode` 细分）。
+   - Phase 2（P1）：覆盖 37.8% 西班牙语用户的原生 App 核心链路本地化（自动检测系统语言 + AsyncStorage 持久化 + 首页/Paywall/导航/History/4 大高频计算器西语化）与单位体验优化（按地区智能默认单位 + 快捷切换）。
 
 ## DAG 任务矩阵
 
@@ -30,6 +33,9 @@
 | T16 | Amplitude Web 项目建项（`909538` / `8e0f0f58b4e02e2a2583aae77b8c8d9b`） | ai-manager | - | DONE | `aicrosscheck / Conduit Bend Calc Web` | 已通过 Ego Browser 创建并提取 API Key |
 | T17 | Web 端 Amplitude API Key 隔离与全链路漏斗埋点追加 | developer | T16 | DONE | `amplitudeCore.ts`, `amplitude.ts`, `amplitude.test.ts`, `webQuickCalculator.tsx`, `seoLayout.tsx`, `useSeoHistory.ts`, `languageSwitcher.tsx`, `calculatorDrawer.tsx`, `downloadBanner.tsx`, `gen-seo-pages.py` | 已完成开发并同步主工作区 |
 | T18 | Amplitude Web 埋点 QA 验收（`tsc` + 单测 + 网络请求实测校验） | qa | T17 | DONE | QA 验收报告（含 HTTP v2 真实请求校验） | PASS（`tsc` 0 错、`397/397` 单测、HTTP v2/sendBeacon 实测 `8e0f0f58b4e02e2a2583aae77b8c8d9b` 无 PII 全过） |
+| T19 | Phase 1：Amplitude 全链路埋点补齐（user_properties/SKU状态/dismiss修复/history_reused/unit_mode）+ 付费墙首屏实测对比默认展开 | developer | T18 | DONE | `amplitudeCore.ts`, `amplitude.ts`, `growthEvents.ts`, `proStore.ts`, `paywallTelemetry.ts`, `paywallScreen.tsx`, `proPaywallView.tsx`, `historyScreen.tsx`, `useDebouncedCalculationCompleted.ts` 及单测 | 主仓物理核验 PASS（`tsc` 0 错、`405/405` 单测） |
+| T20 | Phase 2：原生 App 西班牙语核心链路本地化（系统语言检测/持久化/首页/Paywall/导航/History/4大高频计算器）+ 单位体验优化 | developer | T19 | IN_PROGRESS | `src/i18n/*`, `unitStore.ts`, `App.tsx`, `calcHomeScreen.tsx`, `paywallScreen.tsx`, `proPaywallView.tsx`, `historyScreen.tsx`, 4大计算器屏及单测 | 开发中 |
+| T21 | Phase 1 + Phase 2 全量 QA 验收（`tsc` + 单测 + Web 构建 + `ego-browser` 实测西语/单位/Paywall/Amplitude Payload） | qa | T20 | PENDING | QA 验收报告 | 待启动 |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

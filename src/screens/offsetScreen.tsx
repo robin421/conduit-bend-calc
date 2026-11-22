@@ -179,7 +179,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
   useHistoryAutoSave(historyEntry, 800, focused);
   const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('offset', activeSignature, { unitSystem });
-  useFirebaseCalculationCompleted('offset', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('offset', activeSignature, { unitSystem, unitMode: unit });
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', angle: DEFAULT_ANGLE });

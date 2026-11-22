@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { CalculatorSlug } from './analytics.ts';
 
+export type CalculationUnitMode = 'fractional' | 'decimal' | 'metric';
+
 /**
  * 1000ms 防抖计算完成上报 Hook（卸载时 flush 未上报计算）。
  * 供 Native (firebase.ts) 与 Web (firebase.web.ts) 共享，避免重复逻辑。
@@ -9,13 +11,18 @@ export function useDebouncedCalculationCompleted(
   bendType: CalculatorSlug,
   signature: string | null,
   unitSystem: 'imperial' | 'metric',
-  onCompleted: (bendType: CalculatorSlug, options: { unitSystem: 'imperial' | 'metric' }) => void,
+  onCompleted: (
+    bendType: CalculatorSlug,
+    options: { unitSystem: 'imperial' | 'metric'; unitMode?: CalculationUnitMode },
+  ) => void,
+  unitMode?: CalculationUnitMode,
 ): void {
   const lastSentRef = useRef<string | null>(null);
   const pendingRef = useRef<{
     signature: string;
     bendType: CalculatorSlug;
     unitSystem: 'imperial' | 'metric';
+    unitMode?: CalculationUnitMode;
   } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const callbackRef = useRef(onCompleted);
@@ -29,7 +36,10 @@ export function useDebouncedCalculationCompleted(
     const pending = pendingRef.current;
     if (pending && pending.signature && pending.signature !== lastSentRef.current) {
       lastSentRef.current = pending.signature;
-      callbackRef.current(pending.bendType, { unitSystem: pending.unitSystem });
+      callbackRef.current(pending.bendType, {
+        unitSystem: pending.unitSystem,
+        ...(pending.unitMode ? { unitMode: pending.unitMode } : {}),
+      });
       pendingRef.current = null;
     }
   }, []);
@@ -44,7 +54,7 @@ export function useDebouncedCalculationCompleted(
       return;
     }
 
-    pendingRef.current = { signature, bendType, unitSystem };
+    pendingRef.current = { signature, bendType, unitSystem, unitMode };
 
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -52,7 +62,7 @@ export function useDebouncedCalculationCompleted(
     timerRef.current = setTimeout(() => {
       flush();
     }, 1000);
-  }, [bendType, signature, unitSystem, flush]);
+  }, [bendType, signature, unitSystem, unitMode, flush]);
 
   useEffect(() => {
     return () => {

@@ -7,11 +7,11 @@
 
 import { logAmplitudeEvent, trackAmplitudeActivationIfNeeded } from './amplitude';
 import { normalizeToolName, type CalculatorSlug } from './analytics.ts';
-import type { UnitSystemSlug } from './firebase.ts';
+import type { ProPaywallViewedParams, UnitSystemSlug } from './firebase.ts';
 import type { GrowthEvent, GrowthEventParams } from './growthEvents';
 import { useDebouncedCalculationCompleted } from './useDebouncedCalculationCompleted';
 
-export type { UnitSystemSlug };
+export type { ProPaywallViewedParams, UnitSystemSlug };
 
 export function initFirebase(): void {}
 
@@ -19,19 +19,22 @@ export function logFirebaseScreenView(_screenName: string): void {}
 
 export function logFirebaseCalculationCompleted(
   bendType: CalculatorSlug,
-  options?: { unitSystem?: 'imperial' | 'metric' },
+  options?: { unitSystem?: 'imperial' | 'metric'; unitMode?: UnitSystemSlug },
 ): void {
-  const unitSystem = options?.unitSystem ?? 'imperial';
+  const unitSystem = options?.unitSystem ?? (options?.unitMode === 'metric' ? 'metric' : 'imperial');
+  const unitMode: UnitSystemSlug = options?.unitMode ?? (unitSystem === 'metric' ? 'metric' : 'fractional');
   const toolName = normalizeToolName(bendType);
   logAmplitudeEvent('calculation_completed', {
     bend_type: bendType,
     tool_name: toolName,
     unit_system: unitSystem,
+    unit_mode: unitMode,
     platform: 'web',
   });
   trackAmplitudeActivationIfNeeded({
     tool_name: toolName,
     unit_system: unitSystem,
+    unit_mode: unitMode,
     platform: 'web',
   });
 }
@@ -43,8 +46,16 @@ export function logFirebaseUnitSystemChanged(
   logAmplitudeEvent('unit_system_changed', { from, to });
 }
 
-export function logFirebaseProPaywallViewed(triggerSource = 'direct'): void {
-  logAmplitudeEvent('pro_paywall_viewed', { trigger_source: triggerSource });
+export function logFirebaseProPaywallViewed(
+  triggerSource = 'direct',
+  extra?: ProPaywallViewedParams,
+): void {
+  logAmplitudeEvent('pro_paywall_viewed', {
+    trigger_source: triggerSource,
+    ...(extra?.scene ? { scene: extra.scene } : {}),
+    ...(extra?.sku_status ? { sku_status: extra.sku_status } : {}),
+    ...(extra?.price_loaded !== undefined ? { price_loaded: extra.price_loaded } : {}),
+  });
 }
 
 export function logFirebaseGrowthEvent(_name: GrowthEvent, _params: GrowthEventParams): void {}
@@ -52,8 +63,14 @@ export function logFirebaseGrowthEvent(_name: GrowthEvent, _params: GrowthEventP
 export function useFirebaseCalculationCompleted(
   bendType: CalculatorSlug,
   signature: string | null,
-  options?: { unitSystem?: 'imperial' | 'metric' },
+  options?: { unitSystem?: 'imperial' | 'metric'; unitMode?: UnitSystemSlug },
 ): void {
-  const unitSystem = options?.unitSystem ?? 'imperial';
-  useDebouncedCalculationCompleted(bendType, signature, unitSystem, logFirebaseCalculationCompleted);
+  const unitSystem = options?.unitSystem ?? (options?.unitMode === 'metric' ? 'metric' : 'imperial');
+  useDebouncedCalculationCompleted(
+    bendType,
+    signature,
+    unitSystem,
+    logFirebaseCalculationCompleted,
+    options?.unitMode,
+  );
 }

@@ -55,7 +55,7 @@ export default function VoltageDropScreen() {
   const unitSystem = metric ? 'metric' : 'imperial';
   const noteReviewInteraction = useReviewOnSuccessfulCalc(signature, result ? 'ok' : undefined);
   useCalculatorAnalytics('voltage_drop', signature, { unitSystem });
-  useFirebaseCalculationCompleted('voltage_drop', signature, { unitSystem });
+  useFirebaseCalculationCompleted('voltage_drop', signature, { unitSystem, unitMode: unit });
 
   const suggestion = useMemo(() => {
     if (!result || result.dropFraction <= limit || amps === null || lengthFt === null) return undefined;

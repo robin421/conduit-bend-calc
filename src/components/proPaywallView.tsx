@@ -122,7 +122,7 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
   const theme = useTheme();
   const { height, fontScale } = useWindowDimensions();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [exampleOpen, setExampleOpen] = useState(false);
+  const [exampleOpen, setExampleOpen] = useState(true);
   const copy = PRO_SCENES.find((item) => item.key === props.scene)!;
   const busy = purchaseBusy(props.phase);
   const disabled = busy || Boolean(props.continuing);

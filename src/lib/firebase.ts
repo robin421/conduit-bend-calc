@@ -23,6 +23,12 @@ import { useDebouncedCalculationCompleted } from './useDebouncedCalculationCompl
 /** 与 src/lib/units.ts 的 UnitSystem 对齐（此处只用于事件参数类型）。 */
 export type UnitSystemSlug = 'fractional' | 'decimal' | 'metric';
 
+export interface ProPaywallViewedParams {
+  scene?: string;
+  sku_status?: string;
+  price_loaded?: boolean;
+}
+
 let initialized = false;
 
 function isNative(): boolean {
@@ -87,13 +93,21 @@ export function initFirebase(): void {
   }
 }
 
-function logEvent(name: string, params?: Record<string, string>): void {
+function logEvent(name: string, params?: Record<string, string | number | boolean | undefined>): void {
   try {
     const analytics = getAnalytics();
     if (!analytics) {
       return;
     }
-    void analytics.logEvent(name, params ?? {}).catch(() => undefined);
+    const cleaned: Record<string, string | number | boolean> = {};
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined) {
+          cleaned[key] = value;
+        }
+      }
+    }
+    void analytics.logEvent(name, cleaned).catch(() => undefined);
   } catch {
     // 埋点永不抛异常。
   }
@@ -112,18 +126,20 @@ export function logFirebaseScreenView(screenName: string): void {
   }
 }
 
-/** calculation_completed：统一 tool_name / unit_system / platform 规范。 */
+/** calculation_completed：统一 tool_name / unit_system / unit_mode / platform 规范。 */
 export function logFirebaseCalculationCompleted(
   bendType: CalculatorSlug,
-  options?: { unitSystem?: 'imperial' | 'metric' },
+  options?: { unitSystem?: 'imperial' | 'metric'; unitMode?: UnitSystemSlug },
 ): void {
   const platform = Platform.OS === 'web' ? 'web' : (Platform.OS === 'android' ? 'android' : 'ios');
-  const unitSystem = options?.unitSystem ?? 'imperial';
+  const unitSystem = options?.unitSystem ?? (options?.unitMode === 'metric' ? 'metric' : 'imperial');
+  const unitMode: UnitSystemSlug = options?.unitMode ?? (unitSystem === 'metric' ? 'metric' : 'fractional');
   const toolName = normalizeToolName(bendType);
   const props = {
     bend_type: bendType,
     tool_name: toolName,
     unit_system: unitSystem,
+    unit_mode: unitMode,
     platform,
   };
   logEvent('calculation_completed', props);
@@ -131,6 +147,7 @@ export function logFirebaseCalculationCompleted(
   trackAmplitudeActivationIfNeeded({
     tool_name: toolName,
     unit_system: unitSystem,
+    unit_mode: unitMode,
     platform,
   });
 }
@@ -141,10 +158,19 @@ export function logFirebaseUnitSystemChanged(from: UnitSystemSlug, to: UnitSyste
   logAmplitudeEvent('unit_system_changed', { from, to });
 }
 
-/** pro_paywall_viewed：Pro 解锁页展示时触发，支持携带触发来源。 */
-export function logFirebaseProPaywallViewed(triggerSource = 'direct'): void {
-  logEvent('pro_paywall_viewed', { trigger_source: triggerSource });
-  logAmplitudeEvent('pro_paywall_viewed', { trigger_source: triggerSource });
+/** pro_paywall_viewed：Pro 解锁页展示时触发，支持携带触发来源与 SKU 诊断维度。 */
+export function logFirebaseProPaywallViewed(
+  triggerSource = 'direct',
+  extra?: ProPaywallViewedParams,
+): void {
+  const params: Record<string, string | boolean | undefined> = {
+    trigger_source: triggerSource,
+    ...(extra?.scene ? { scene: extra.scene } : {}),
+    ...(extra?.sku_status ? { sku_status: extra.sku_status } : {}),
+    ...(extra?.price_loaded !== undefined ? { price_loaded: extra.price_loaded } : {}),
+  };
+  logEvent('pro_paywall_viewed', params);
+  logAmplitudeEvent('pro_paywall_viewed', params);
 }
 
 export function logFirebaseGrowthEvent(name: GrowthEvent, params: GrowthEventParams): void {
@@ -160,8 +186,14 @@ export function logFirebaseGrowthEvent(name: GrowthEvent, params: GrowthEventPar
 export function useFirebaseCalculationCompleted(
   bendType: CalculatorSlug,
   signature: string | null,
-  options?: { unitSystem?: 'imperial' | 'metric' },
+  options?: { unitSystem?: 'imperial' | 'metric'; unitMode?: UnitSystemSlug },
 ): void {
-  const unitSystem = options?.unitSystem ?? 'imperial';
-  useDebouncedCalculationCompleted(bendType, signature, unitSystem, logFirebaseCalculationCompleted);
+  const unitSystem = options?.unitSystem ?? (options?.unitMode === 'metric' ? 'metric' : 'imperial');
+  useDebouncedCalculationCompleted(
+    bendType,
+    signature,
+    unitSystem,
+    logFirebaseCalculationCompleted,
+    options?.unitMode,
+  );
 }

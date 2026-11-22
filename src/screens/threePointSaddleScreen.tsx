@@ -192,7 +192,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
   useHistoryAutoSave(historyEntry, 800, focused);
   const noteReviewInteraction = useReviewOnSuccessfulCalc(activeSignature, feasibility?.status);
   useCalculatorAnalytics('saddle3', activeSignature, { unitSystem });
-  useFirebaseCalculationCompleted('saddle3', activeSignature, { unitSystem });
+  useFirebaseCalculationCompleted('saddle3', activeSignature, { unitSystem, unitMode: unit });
 
   const handleClear = useCallback(() => {
     setMemory({ heightText: '', angle: DEFAULT_ANGLE });

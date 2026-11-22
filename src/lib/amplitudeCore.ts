@@ -25,6 +25,7 @@ const ALLOWED_EVENT_PROPERTY_KEYS = new Set<string>([
   'bend_type',
   'tool_name',
   'unit_system',
+  'unit_mode',
   'platform',
   'screen_name',
   'from',
@@ -40,6 +41,17 @@ const ALLOWED_EVENT_PROPERTY_KEYS = new Set<string>([
   'lang',
   'target',
   'page_slug',
+  'sku_status',
+  'price_loaded',
+  'dismiss_method',
+  'product_id',
+]);
+
+/** 严格用户属性白名单：仅允许低基数状态维度，禁止上传任何 PII、尺寸或收据。 */
+const ALLOWED_USER_PROPERTY_KEYS = new Set<string>([
+  'is_pro',
+  'unit_system',
+  'app_lang',
 ]);
 
 const MAX_STRING_VALUE_LEN = 100;
@@ -47,6 +59,7 @@ const MAX_EVENT_TYPE_LEN = 64;
 
 export type AmplitudePrimitive = string | number | boolean;
 export type AmplitudeEventProperties = Record<string, AmplitudePrimitive | undefined>;
+export type AmplitudeUserProperties = Record<string, AmplitudePrimitive | undefined>;
 
 export interface AmplitudeEventPayload {
   device_id: string;
@@ -57,6 +70,7 @@ export interface AmplitudeEventPayload {
   app_version: string;
   language: string;
   event_properties?: Record<string, AmplitudePrimitive>;
+  user_properties?: Record<string, AmplitudePrimitive>;
 }
 
 export interface AmplitudeHttpBody {
@@ -98,9 +112,9 @@ export function sanitizeEventType(eventType: string): string {
   return cleaned || 'unknown_event';
 }
 
-/** 仅保留白名单内的字段与安全原始值，截断超长字符串。 */
-export function sanitizeEventProperties(
-  props?: Record<string, unknown>,
+function sanitizeWhitelistedProperties(
+  props: Record<string, unknown> | undefined,
+  allowedKeys: ReadonlySet<string>,
 ): Record<string, AmplitudePrimitive> | undefined {
   if (!props || typeof props !== 'object') {
     return undefined;
@@ -108,7 +122,7 @@ export function sanitizeEventProperties(
   const result: Record<string, AmplitudePrimitive> = {};
   let count = 0;
   for (const [key, value] of Object.entries(props)) {
-    if (!ALLOWED_EVENT_PROPERTY_KEYS.has(key)) continue;
+    if (!allowedKeys.has(key)) continue;
     if (value === undefined || value === null) continue;
     if (typeof value === 'string') {
       const trimmed = value.trim().slice(0, MAX_STRING_VALUE_LEN);
@@ -127,6 +141,20 @@ export function sanitizeEventProperties(
     }
   }
   return count > 0 ? result : undefined;
+}
+
+/** 仅保留白名单内的事件字段与安全原始值，截断超长字符串。 */
+export function sanitizeEventProperties(
+  props?: Record<string, unknown>,
+): Record<string, AmplitudePrimitive> | undefined {
+  return sanitizeWhitelistedProperties(props, ALLOWED_EVENT_PROPERTY_KEYS);
+}
+
+/** 仅保留白名单内的用户属性字段（is_pro / unit_system / app_lang），禁止 PII。 */
+export function sanitizeUserProperties(
+  props?: Record<string, unknown>,
+): Record<string, AmplitudePrimitive> | undefined {
+  return sanitizeWhitelistedProperties(props, ALLOWED_USER_PROPERTY_KEYS);
 }
 
 export function parseSessionState(raw: string | null, currentTime: number): AmplitudeSessionState {
@@ -160,8 +188,10 @@ export function buildAmplitudeHttpBody(params: {
   appVersion: string;
   language: string;
   eventProperties?: Record<string, unknown>;
+  userProperties?: Record<string, unknown>;
 }): AmplitudeHttpBody {
   const sanitizedProps = sanitizeEventProperties(params.eventProperties);
+  const sanitizedUserProps = sanitizeUserProperties(params.userProperties);
   const event: AmplitudeEventPayload = {
     device_id: params.deviceId,
     session_id: params.sessionId,
@@ -171,6 +201,7 @@ export function buildAmplitudeHttpBody(params: {
     app_version: params.appVersion,
     language: params.language,
     ...(sanitizedProps ? { event_properties: sanitizedProps } : {}),
+    ...(sanitizedUserProps ? { user_properties: sanitizedUserProps } : {}),
   };
   return {
     api_key: params.apiKey,
@@ -190,6 +221,7 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
   let deviceId: string | null = null;
   let session: AmplitudeSessionState | null = null;
   let activated: boolean | null = null;
+  let userProperties: Record<string, AmplitudePrimitive> = {};
   let queue: Promise<void> = Promise.resolve();
 
   function serialize<T>(op: () => Promise<T>): Promise<T> {
@@ -255,6 +287,7 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
       appVersion,
       language,
       eventProperties,
+      userProperties: Object.keys(userProperties).length > 0 ? userProperties : undefined,
     });
     try {
       const response = await fetchFn(AMPLITUDE_API_ENDPOINT, {
@@ -276,6 +309,12 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
       return serialize(async () => {
         await ensureDeviceAndSession(now());
       }).catch(() => undefined);
+    },
+    setUserProperties(props?: Record<string, unknown>): void {
+      const sanitized = sanitizeUserProperties(props);
+      if (sanitized) {
+        userProperties = { ...userProperties, ...sanitized };
+      }
     },
     logEvent(eventType: string, eventProperties?: Record<string, unknown>): Promise<boolean> {
       return serialize(() => sendEventInternal(eventType, eventProperties)).catch(() => false);

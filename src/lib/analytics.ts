@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 /** 事件参数：只允许分类标签，不允许输入值 / PII。 */
-export type AnalyticsEventParams = Record<string, string | number>;
+export type AnalyticsEventParams = Record<string, string | number | boolean | undefined>;
 
 /** 计算器的事件 slug（含 SEO `/shrink` 工具页及新电工工具）。 */
 export type CalculatorSlug =

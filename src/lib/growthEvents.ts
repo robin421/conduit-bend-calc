@@ -3,7 +3,8 @@ export type GrowthEvent =
   | 'review_request_attempted' | 'review_store_open' | 'review_request_result'
   | 'pro_checkout_started' | 'pro_purchase_result' | 'pro_next_step_started' | 'pro_preview_changed'
   | 'pro_restore_started' | 'pro_restore_result' | 'pro_paywall_dismissed'
-  | 'history_saved' | 'history_exported' | 'bender_calibrated' | 'result_copied'
+  | 'pro_buy_tapped' | 'pro_retry_tapped' | 'pro_paywall_sku_loaded' | 'pro_entitlement_granted'
+  | 'history_saved' | 'history_exported' | 'history_reused' | 'bender_calibrated' | 'result_copied'
   | 'feedback_opened' | 'feedback_submitted' | 'feedback_submit_failed';
 export interface GrowthEventParams {
   source?: string;
@@ -12,5 +13,10 @@ export interface GrowthEventParams {
   action?: string;
   bend_type?: string;
   unit_system?: string;
+  unit_mode?: string;
   tool_name?: string;
+  sku_status?: string;
+  price_loaded?: boolean;
+  dismiss_method?: string;
+  product_id?: string;
 }

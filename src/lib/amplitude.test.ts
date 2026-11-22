@@ -13,6 +13,7 @@ import {
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
   sanitizeEventType,
+  sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
 } from './amplitudeCore.ts';
 import type { HistoryStorage } from './historyStore.ts';
@@ -233,5 +234,99 @@ test('sanitizeEventProperties：保留 Web 漏斗新增白名单属性并过滤�
     target: '4-point-saddle',
     source: 'calculator_drawer',
     page_slug: 'emt-conduit-bending-chart',
+  });
+});
+
+test('sanitizeEventProperties：保留 Phase 1 付费墙与单位模式新增白名单字段', () => {
+  const cleaned = sanitizeEventProperties({
+    sku_status: 'available',
+    price_loaded: true,
+    unit_mode: 'fractional',
+    dismiss_method: 'back',
+    product_id: 'conduit_bend_calc_pro_lifetime',
+    purchase_token: 'secret-token',
+    measured_stub: 17.375,
+  });
+
+  assert.deepEqual(cleaned, {
+    sku_status: 'available',
+    price_loaded: true,
+    unit_mode: 'fractional',
+    dismiss_method: 'back',
+    product_id: 'conduit_bend_calc_pro_lifetime',
+  });
+});
+
+test('sanitizeUserProperties：仅允许 is_pro / unit_system / app_lang，过滤 PII 与尺寸', () => {
+  const cleaned = sanitizeUserProperties({
+    is_pro: true,
+    unit_system: 'decimal',
+    app_lang: 'en',
+    email: 'user@example.com',
+    receipt: 'tok_123',
+    stub_height: 12,
+    extra: 'drop',
+  });
+
+  assert.deepEqual(cleaned, {
+    is_pro: true,
+    unit_system: 'decimal',
+    app_lang: 'en',
+  });
+  assert.equal(sanitizeUserProperties({ email: 'user@example.com' }), undefined);
+});
+
+test('buildAmplitudeHttpBody 与 createAmplitudeClient：缓存并附带白名单 user_properties', async () => {
+  const body = buildAmplitudeHttpBody({
+    apiKey: DEFAULT_AMPLITUDE_API_KEY,
+    deviceId: 'anon-device-user-props',
+    sessionId: 1700000000000,
+    eventType: 'pro_paywall_viewed',
+    time: 1700000001000,
+    platform: 'android',
+    appVersion: '1.10.1',
+    language: 'en-US',
+    eventProperties: { trigger_source: 'calibration', sku_status: 'available', price_loaded: true },
+    userProperties: { is_pro: false, unit_system: 'fractional', app_lang: 'en', receipt: 'drop-me' },
+  });
+
+  assert.deepEqual(body.events[0].user_properties, {
+    is_pro: false,
+    unit_system: 'fractional',
+    app_lang: 'en',
+  });
+
+  const storage = createMemoryStorage();
+  const payloads: Array<any> = [];
+  const client = createAmplitudeClient({
+    storage,
+    uuid: () => 'anon-uuid-user-props',
+    fetchFn: (async (_url: string, init?: RequestInit) => {
+      payloads.push(JSON.parse(String(init?.body ?? '{}')));
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch,
+  });
+
+  // 未设置 user_properties 时不附带该字段
+  await client.logEvent('pro_paywall_viewed', { trigger_source: 'direct' });
+  assert.equal('user_properties' in payloads[0].events[0], false);
+
+  // 分次设置并合并缓存，非法字段被清洗
+  client.setUserProperties({ is_pro: false, unit_system: 'fractional', email: 'drop@example.com' });
+  client.setUserProperties({ app_lang: 'es' });
+  await client.logEvent('calculation_completed', { tool_name: 'offset', unit_mode: 'fractional' });
+  assert.deepEqual(payloads[1].events[0].user_properties, {
+    is_pro: false,
+    unit_system: 'fractional',
+    app_lang: 'es',
+  });
+
+  // 后续更新覆盖对应键
+  client.setUserProperties({ is_pro: true });
+  await client.logEvent('pro_entitlement_granted', { outcome: 'purchased', product_id: 'conduit_bend_calc_pro_lifetime' });
+  assert.deepEqual(payloads[2].events[0].user_properties, {
+    is_pro: true,
+    unit_system: 'fractional',
+    app_lang: 'es',
   });
 });
