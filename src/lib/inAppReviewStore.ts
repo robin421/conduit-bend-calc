@@ -10,8 +10,8 @@ export const REVIEW_STORAGE_KEY = 'bendcalc:inAppReview:v1';
 
 /** Parent / ASO P0: after 3 successful free-core calculations. */
 export const MIN_SUCCESSFUL_CALCS = 3;
-/** Installed / first seen at least this many days. */
-export const MIN_DAYS_SINCE_FIRST_SEEN = 3;
+/** Eligible from day 0 once MIN_SUCCESSFUL_CALCS distinct valid calcs complete. */
+export const MIN_DAYS_SINCE_FIRST_SEEN = 0;
 /** At most one request every 90 days. */
 export const MIN_DAYS_BETWEEN_REQUESTS = 90;
 

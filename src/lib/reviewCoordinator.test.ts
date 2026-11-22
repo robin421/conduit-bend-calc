@@ -10,19 +10,27 @@ function memory(seed?: string): HistoryStorage & { data: Map<string, string> } {
 }
 const DAY = 86400000;
 
-test('首次打开即持久化时间；三天前不请求，第三天完成计算后才请求', async () => {
+test('首次打开即持久化时间；首日完成 3 次不同有效计算后空闲即可请求，随后进入 90 天冷却', async () => {
   let now = DAY;
   let calls = 0;
   const storage = memory();
-  const coordinator = createReviewCoordinator(storage, { isAvailable: async () => true, request: async () => { calls++; } }, { now: () => now });
+  const gateway = { isAvailable: async () => true, request: async () => { calls++; } };
+  const coordinator = createReviewCoordinator(storage, gateway, { now: () => now });
   await coordinator.initialize();
   assert.equal(parseReviewState(storage.data.get(REVIEW_STORAGE_KEY)!).firstSeenAt, DAY);
-  await Promise.all(['a', 'b', 'c'].map((sig) => coordinator.noteCalculation(sig)));
+  await Promise.all(['a', 'b'].map((sig) => coordinator.noteCalculation(sig)));
   assert.equal(await coordinator.requestWhenIdle(() => true), 'ineligible');
-  now += 3 * DAY;
+  await coordinator.noteCalculation('c');
   assert.equal(await coordinator.requestWhenIdle(() => true), 'attempted');
   assert.equal(calls, 1);
   assert.equal(await coordinator.requestWhenIdle(() => true), 'ineligible');
+
+  // 新会话在 90 天冷却满后，完成一次新计算即可再次请求
+  now += 90 * DAY;
+  const nextSession = createReviewCoordinator(storage, gateway, { now: () => now });
+  await nextSession.noteCalculation('d');
+  assert.equal(await nextSession.requestWhenIdle(() => true), 'attempted');
+  assert.equal(calls, 2);
 });
 
 test('旧计数与冷却保留；默认启动没有新计算时不请求', async () => {

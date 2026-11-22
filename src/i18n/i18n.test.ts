@@ -224,4 +224,7 @@ test('核心链路词条（paywall / home / history / tabs / calc）在 en / es 
     translate('es', 'offset.guideSummary', { distance: '12"', angle: 30 }),
     'Separa las dos marcas 12". Alinea cada marca con la flecha y dobla 30° en direcciones opuestas.',
   );
+  assert.equal(translate('en', 'rating.button'), 'Rate on Google Play');
+  assert.equal(translate('es', 'rating.button'), 'Calificar en Google Play');
+  assert.equal(translate('es', 'rating.opening'), 'Abriendo Google Play…');
 });

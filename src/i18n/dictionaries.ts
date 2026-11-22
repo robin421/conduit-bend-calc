@@ -361,6 +361,17 @@ export const en = {
     'Leave about {clearance} past the inner marks so the conduit clears the obstacle.',
   'saddle4.fixedPointNote':
     'Measuring from a fixed point? Add {shrink} shrink to find the true center.',
+
+  // 评分引导卡
+  'rating.title': 'Rate Conduit Bend Calc',
+  'rating.bodyWeb':
+    'Use the Android app? Share your experience on Google Play.',
+  'rating.bodyNative':
+    'Share your experience on Google Play. Your review helps other electricians choose their tools.',
+  'rating.button': 'Rate on Google Play',
+  'rating.opening': 'Opening Google Play…',
+  'rating.error':
+    'Could not open Google Play. Check your connection and try again.',
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -722,6 +733,17 @@ export const es: Record<TranslationKey, string> = {
     'Deja aproximadamente {clearance} después de las marcas interiores para que el conducto libre el obstáculo.',
   'saddle4.fixedPointNote':
     '¿Mides desde un punto fijo? Suma {shrink} de contracción para hallar el centro real.',
+
+  // 评分引导卡
+  'rating.title': 'Califica Conduit Bend Calc',
+  'rating.bodyWeb':
+    '¿Usas la app de Android? Comparte tu experiencia en Google Play.',
+  'rating.bodyNative':
+    'Comparte tu experiencia en Google Play. Tu reseña ayuda a otros electricistas a elegir sus herramientas.',
+  'rating.button': 'Calificar en Google Play',
+  'rating.opening': 'Abriendo Google Play…',
+  'rating.error':
+    'No se pudo abrir Google Play. Revisa tu conexión e inténtalo de nuevo.',
 };
 
 export const DICTIONARIES: Record<Lang, Record<TranslationKey, string>> = {

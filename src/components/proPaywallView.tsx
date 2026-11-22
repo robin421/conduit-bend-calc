@@ -68,7 +68,83 @@ function Caption({ children }: { children: string }) {
   return <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary, lineHeight: 20 }}>{children}</Text>;
 }
 
-function ExamplePreview({ scene, unit }: { scene: ProScene; unit: UnitSystem }) {
+function ComparisonPair({
+  beforeLabel,
+  beforeValue,
+  afterLabel,
+  afterValue,
+}: {
+  beforeLabel: string;
+  beforeValue: string;
+  afterLabel: string;
+  afterValue: string;
+}) {
+  const theme = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm }}>
+      <View
+        style={{
+          flex: 1,
+          minWidth: 120,
+          backgroundColor: theme.colors.background,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          borderRadius: theme.radius,
+          padding: 10,
+          gap: 4,
+        }}
+      >
+        <Text style={{ color: theme.colors.textSecondary, fontSize: 12, lineHeight: 16 }}>{beforeLabel}</Text>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: 22,
+            lineHeight: 26,
+            fontWeight: theme.fontWeight.semibold,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {beforeValue}
+        </Text>
+      </View>
+      <View
+        style={{
+          flex: 1,
+          minWidth: 120,
+          backgroundColor: theme.colors.resultBackground,
+          borderWidth: 1.5,
+          borderColor: theme.colors.accent,
+          borderRadius: theme.radius,
+          padding: 10,
+          gap: 4,
+        }}
+      >
+        <Text style={{ color: theme.colors.resultLabel, fontSize: 12, lineHeight: 16 }}>{afterLabel}</Text>
+        <Text
+          style={{
+            color: theme.colors.accent,
+            fontSize: 22,
+            lineHeight: 26,
+            fontWeight: '700',
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {afterValue}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function HeroComparisonCard({
+  scene,
+  unit,
+  onSceneChange,
+}: {
+  scene: ProScene;
+  unit: UnitSystem;
+  onSceneChange(scene: ProScene): void;
+}) {
   const theme = useTheme();
   const { t } = useI18n();
   const base = defaultBenderSpec();
@@ -77,64 +153,250 @@ function ExamplePreview({ scene, unit }: { scene: ProScene; unit: UnitSystem }) 
   const actualTakeUp = calibrateDeductFromStub(TEST_BEND_MARK, measured)!;
   const standardMark = calculateStubUpMark(TEST_BEND_MARK, base)!;
   const personalMark = calculateStubUpMark(TEST_BEND_MARK, { ...base, takeUp: actualTakeUp })!;
+  const takeUpDelta = Math.abs(actualTakeUp - base.takeUp);
   const sampleOffset = calculateOffset(3, 45, base.centerlineRadius)!;
   const risk = offsetFeasibility(sampleOffset.geometry.vertexSpacing, 45, base, unit);
+
   return (
-    <Card style={{ gap: theme.spacing.md, borderColor: theme.colors.border }}>
-      <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
-        {t('paywall.exampleHeader')}
-      </Text>
-      {scene === 'calibration' ? <>
-        <Caption>{t('paywall.exampleCalibrationIntro', { mark: formatLength(TEST_BEND_MARK, unit), measured: formatLength(measured, unit) })}</Caption>
-        <View style={styles.comparison}>
-          {([[t('paywall.exampleStandardTakeUp'), base.takeUp], [t('paywall.exampleMeasuredTakeUp'), actualTakeUp]] as const).map(([label, value]) => (
-            <View key={label} style={{ flex: 1, minWidth: 120, gap: theme.spacing.xs }}>
-              <Caption>{label}</Caption>
-              <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold, fontVariant: ['tabular-nums'] }}>{formatLength(value, unit)}</Text>
-            </View>
-          ))}
-        </View>
-        <View style={{ backgroundColor: theme.colors.resultBackground, padding: theme.spacing.md, borderRadius: theme.radius, gap: theme.spacing.xs }}>
-          <Text style={{ color: theme.colors.resultLabel, fontSize: theme.fontSize.secondary }}>{t('paywall.exampleMarkLabel')}</Text>
-          <Text style={{ color: theme.colors.resultText, fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold, fontVariant: ['tabular-nums'] }}>{`${formatLength(standardMark, unit)} → ${formatLength(personalMark, unit)}`}</Text>
-        </View>
-        <Caption>{t('paywall.exampleCalibrationNote')}</Caption>
-      </> : scene === 'feasibility' ? <>
-        <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>{t('paywall.exampleFeasibilityTitle')}</Text>
-        <Caption>{risk.messages[0] ?? t('paywall.exampleFeasibilityFallback')}</Caption>
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>{t('paywall.exampleFeasibilityNext')}</Text>
-          {risk.suggestions.map((suggestion) => <Text key={suggestion} style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, lineHeight: 22 }}>{suggestion}</Text>)}
-        </View>
-        <Caption>{t('paywall.exampleFeasibilityNote')}</Caption>
-      </> : <>
-        <View style={styles.comparison}>
-          {([
-            [t('paywall.exampleFreeLabel'), t('paywall.exampleFreeValue')],
-            [t('paywall.exampleProLabel'), t('paywall.exampleProValue', { limit: HISTORY_LIMIT })],
-          ] as const).map(([label, value]) => <View key={label} style={{ flex: 1, gap: theme.spacing.xs }}>
-            <Caption>{label}</Caption><Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold }}>{value}</Text>
-          </View>)}
-        </View>
-        <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>{t('paywall.exampleExportTitle')}</Text>
-        <View style={{ padding: theme.spacing.md, backgroundColor: theme.colors.resultBackground, borderRadius: theme.radius }}>
-          <Text style={{ color: theme.colors.resultText, fontSize: theme.fontSize.body, lineHeight: 24, fontVariant: ['tabular-nums'] }}>
-            {t('paywall.exampleExportSample', { height: formatLength(6, unit), spacing: formatLength(12, unit), shrink: formatLength(1.5, unit) })}
+    <Card style={{ padding: 12, gap: 12, borderColor: theme.colors.border }}>
+      <View
+        style={{
+          backgroundColor: theme.colors.background,
+          padding: 3,
+          borderRadius: theme.radius,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          flexDirection: 'row',
+        }}
+      >
+        {PRO_SCENES.map((item) => {
+          const selected = item.key === scene;
+          const tabLabel = t(SCENE_TAB_KEYS[item.key]);
+          return (
+            <Pressable
+              key={item.key}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              accessibilityLabel={t('paywall.sceneTabA11y', { label: tabLabel })}
+              onPress={() => onSceneChange(item.key)}
+              android_ripple={{ color: theme.colors.pressFeedback }}
+              style={({ pressed }) => ({
+                flex: 1,
+                minHeight: 44,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 6,
+                borderRadius: theme.radius - 2,
+                overflow: 'hidden',
+                backgroundColor: selected
+                  ? theme.colors.accent
+                  : pressed && Platform.OS !== 'android'
+                    ? theme.colors.pressFeedback
+                    : 'transparent',
+              })}
+            >
+              <Text
+                numberOfLines={2}
+                style={{
+                  fontSize: 13,
+                  lineHeight: 16,
+                  textAlign: 'center',
+                  fontWeight: selected ? theme.fontWeight.semibold : theme.fontWeight.medium,
+                  color: selected ? theme.colors.onAccent : theme.colors.textSecondary,
+                }}
+              >
+                {tabLabel}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {scene === 'calibration' ? (
+        <>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+            {t('paywall.exampleCalibrationIntro', {
+              mark: formatLength(TEST_BEND_MARK, unit),
+              measured: formatLength(measured, unit),
+            })}
           </Text>
-        </View>
-        <Caption>{t('paywall.exampleHistoryNote', { limit: HISTORY_LIMIT })}</Caption>
-      </>}
+          <ComparisonPair
+            beforeLabel={t('paywall.exampleStandardTakeUp')}
+            beforeValue={formatLength(base.takeUp, unit)}
+            afterLabel={t('paywall.exampleMeasuredTakeUp')}
+            afterValue={formatLength(actualTakeUp, unit)}
+          />
+          <View
+            style={{
+              backgroundColor: theme.colors.resultBackground,
+              padding: 10,
+              borderRadius: theme.radius,
+              gap: 4,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.xs }}>
+              <Text style={{ flex: 1, color: theme.colors.resultLabel, fontSize: 13, lineHeight: 18 }}>
+                {t('paywall.exampleMarkLabel')}
+              </Text>
+              <View
+                style={{
+                  backgroundColor: theme.colors.accent,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 4,
+                }}
+              >
+                <Text
+                  style={{
+                    color: theme.colors.onAccent,
+                    fontSize: 12,
+                    lineHeight: 16,
+                    fontWeight: theme.fontWeight.semibold,
+                    fontVariant: ['tabular-nums'],
+                  }}
+                >
+                  {`+${formatLength(takeUpDelta, unit)}`}
+                </Text>
+              </View>
+            </View>
+            <Text
+              style={{
+                color: theme.colors.resultText,
+                fontSize: 20,
+                lineHeight: 24,
+                fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {`${formatLength(standardMark, unit)} → ${formatLength(personalMark, unit)}`}
+            </Text>
+          </View>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: 12, lineHeight: 16 }}>
+            {t('paywall.exampleCalibrationNote')}
+          </Text>
+        </>
+      ) : scene === 'feasibility' ? (
+        <>
+          <View style={{ gap: 4 }}>
+            <Text
+              style={{
+                color: theme.colors.accentText,
+                fontSize: theme.fontSize.secondary,
+                lineHeight: 19,
+                fontWeight: theme.fontWeight.semibold,
+              }}
+            >
+              {t('paywall.exampleFeasibilityTitle')}
+            </Text>
+            <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+              {risk.messages[0] ?? t('paywall.exampleFeasibilityFallback')}
+            </Text>
+          </View>
+          <View
+            style={{
+              backgroundColor: theme.colors.resultBackground,
+              padding: 10,
+              borderRadius: theme.radius,
+              gap: 4,
+            }}
+          >
+            <Text style={{ color: theme.colors.resultLabel, fontSize: 12, lineHeight: 16, fontWeight: theme.fontWeight.semibold }}>
+              {t('paywall.exampleFeasibilityNext')}
+            </Text>
+            {risk.suggestions.map((suggestion) => (
+              <Text
+                key={suggestion}
+                style={{
+                  color: theme.colors.resultText,
+                  fontSize: theme.fontSize.secondary,
+                  lineHeight: 20,
+                }}
+              >
+                {suggestion}
+              </Text>
+            ))}
+          </View>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: 12, lineHeight: 16 }}>
+            {t('paywall.exampleFeasibilityNote')}
+          </Text>
+        </>
+      ) : (
+        <>
+          <ComparisonPair
+            beforeLabel={t('paywall.exampleFreeLabel')}
+            beforeValue="5"
+            afterLabel={t('paywall.exampleProLabel')}
+            afterValue={String(HISTORY_LIMIT)}
+          />
+          <View
+            style={{
+              backgroundColor: theme.colors.resultBackground,
+              padding: 10,
+              borderRadius: theme.radius,
+              gap: 4,
+            }}
+          >
+            <Text style={{ color: theme.colors.resultLabel, fontSize: 12, lineHeight: 16, fontWeight: theme.fontWeight.semibold }}>
+              {t('paywall.exampleExportTitle')}
+            </Text>
+            <Text
+              style={{
+                color: theme.colors.resultText,
+                fontSize: theme.fontSize.secondary,
+                lineHeight: 20,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {t('paywall.exampleExportSample', {
+                height: formatLength(6, unit),
+                spacing: formatLength(12, unit),
+                shrink: formatLength(1.5, unit),
+              })}
+            </Text>
+          </View>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: 12, lineHeight: 16 }}>
+            {t('paywall.exampleHistoryNote', { limit: HISTORY_LIMIT })}
+          </Text>
+        </>
+      )}
     </Card>
   );
 }
 
-function TextAction({ title, onPress, disabled = false, expanded }: { title: string; onPress(): void; disabled?: boolean; expanded?: boolean }) {
+function TextAction({ title, onPress, disabled = false }: { title: string; onPress(): void; disabled?: boolean }) {
   const theme = useTheme();
-  return <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled, expanded }} disabled={disabled} onPress={onPress}
-    android_ripple={{ color: theme.colors.pressFeedback }}
-    style={({ pressed }) => ({ minHeight: theme.size.buttonMinHeight, flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: theme.spacing.sm, borderRadius: theme.radius, overflow: 'hidden', opacity: disabled ? 0.4 : 1, backgroundColor: pressed && Platform.OS !== 'android' ? theme.colors.pressFeedback : 'transparent' })}>
-    <Text style={{ color: theme.colors.primaryText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.medium, textAlign: 'center' }}>{title}</Text>
-  </Pressable>;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      android_ripple={{ color: theme.colors.pressFeedback }}
+      style={({ pressed }) => ({
+        minHeight: 44,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: theme.spacing.sm,
+        borderRadius: theme.radius,
+        overflow: 'hidden',
+        opacity: disabled ? 0.4 : 1,
+        backgroundColor: pressed && Platform.OS !== 'android' ? theme.colors.pressFeedback : 'transparent',
+      })}
+    >
+      <Text
+        style={{
+          color: theme.colors.textSecondary,
+          fontSize: theme.fontSize.secondary,
+          fontWeight: theme.fontWeight.medium,
+          textAlign: 'center',
+        }}
+      >
+        {title}
+      </Text>
+    </Pressable>
+  );
 }
 
 /** 只负责展示：沿用购买状态和显式继续任务，不写授权或调用商店。 */
@@ -143,13 +405,13 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
   const { t } = useI18n();
   const { height, fontScale } = useWindowDimensions();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [exampleOpen, setExampleOpen] = useState(true);
   const busy = purchaseBusy(props.phase);
   const disabled = busy || Boolean(props.continuing);
   const waiting = props.phase === 'pending' || props.phase === 'purchasing';
   const loading = props.phase === 'loading' || props.phase === 'restoring';
   // 横屏、小高度或放大字体时，让操作区随整页滚动，避免固定区域吞掉内容。
   const footerInScroll = height < 640 || fontScale > 1.2;
+  const showRestore = !props.isWeb && !props.unlocked && !waiting;
   const statusText = props.phase === 'pending' ? t('paywall.statusPending')
     : props.phase === 'purchasing' ? t('paywall.statusPurchasing')
     : props.phase === 'restoring' ? t('paywall.statusRestoring')
@@ -159,92 +421,343 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
     [t('paywall.benefit2.title'), t('paywall.benefit2.desc')],
     [t('paywall.benefit3.title'), t('paywall.benefit3.desc', { limit: HISTORY_LIMIT })],
   ];
-  const footer = <View style={{ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.colors.border, backgroundColor: theme.colors.background, paddingHorizontal: theme.spacing.md, paddingTop: theme.spacing.sm, paddingBottom: Math.max(props.bottomInset ?? 0, theme.spacing.sm), gap: theme.spacing.sm }}>
-    {statusText && !props.unlocked ? <View accessibilityLiveRegion="polite" style={{ flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
-      {props.phase !== 'pending' ? <ActivityIndicator color={theme.colors.accentText} /> : null}
-      <View style={{ flex: 1 }}><Caption>{statusText}</Caption></View>
-    </View> : null}
-    {props.error ? <Text accessibilityLiveRegion="polite" style={{ color: props.phase === 'cancelled' ? theme.colors.textSecondary : theme.colors.error, fontSize: theme.fontSize.secondary, lineHeight: 20 }}>{props.error}</Text> : null}
-    {props.unlocked ? <BigButton title={props.continuing ? t('paywall.openingTask') : t(CONTINUE_KEYS[props.intent.kind])} onPress={props.onContinue} disabled={Boolean(props.continuing)} variant="accent" />
-      : props.isWeb ? <><Caption>{t('paywall.webCaption')}</Caption><BigButton title={t('paywall.getAndroidApp')} variant="accent" onPress={props.onBuy} /></>
-      : waiting ? <BigButton title={props.checking ? t('paywall.checkingPurchase') : t('paywall.checkPurchaseStatus')} variant="secondary" disabled={props.checking} onPress={props.onRetry} />
-      : loading ? <BigButton title={props.phase === 'restoring' ? t('paywall.restoringPurchase') : t('paywall.loadingPrice')} variant="accent" disabled onPress={props.onBuy} />
-      : props.available && props.price ? <>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.sm }}>
-          <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, fontWeight: theme.fontWeight.semibold, fontVariant: ['tabular-nums'] }}>{props.price}</Text>
-          <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>{t('paywall.oneTimeNote')}</Text>
-        </View>
-        <BigButton title={t('paywall.unlockCta')} variant="accent" onPress={props.onBuy} disabled={disabled} />
-      </> : <><Caption>{t('paywall.storeUnavailableCaption')}</Caption><BigButton title={t('paywall.retryStore')} variant="secondary" onPress={props.onRetry} disabled={disabled} /></>}
-    <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-      {!props.isWeb && !props.unlocked && !waiting ? <TextAction title={t('paywall.restorePurchase')} onPress={props.onRestore} disabled={disabled} /> : null}
-      <TextAction title={props.unlocked ? t('paywall.backToCalculators') : waiting ? t('paywall.continueWithFree') : t('paywall.notNow')} onPress={props.onClose} disabled={Boolean(props.continuing)} />
-    </View>
-  </View>;
 
-  return <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
-      <View style={[styles.content, { padding: theme.spacing.md, gap: theme.spacing.lg }, props.unlocked && !footerInScroll ? { flexGrow: 1, justifyContent: 'center' } : null]}>
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>{t('paywall.eyebrow')}</Text>
-          <Text accessibilityRole="header" style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.title, lineHeight: 30, fontWeight: theme.fontWeight.semibold }}>
-            {props.unlocked ? (props.phase === 'restored' ? t('paywall.unlockedRestoredTitle') : t('paywall.unlockedReadyTitle')) : t(SCENE_TITLE_KEYS[props.scene])}
-          </Text>
-          <Caption>{props.unlocked ? t('paywall.unlockedSubtitle') : t('paywall.defaultSubtitle')}</Caption>
+  const footer = (
+    <View
+      style={{
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.border,
+        backgroundColor: theme.colors.card,
+        paddingHorizontal: theme.spacing.md,
+        paddingTop: 10,
+        paddingBottom: Math.max(props.bottomInset ?? 0, 10),
+        gap: theme.spacing.sm,
+      }}
+    >
+      {statusText && !props.unlocked ? (
+        <View accessibilityLiveRegion="polite" style={{ flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'center' }}>
+          {props.phase !== 'pending' ? <ActivityIndicator color={theme.colors.accentText} /> : null}
+          <View style={{ flex: 1 }}>
+            <Caption>{statusText}</Caption>
+          </View>
         </View>
-        {props.unlocked ? <View style={{ gap: theme.spacing.sm, paddingVertical: theme.spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
-            <Text accessible={false} importantForAccessibility="no-hide-descendants" style={{ color: theme.colors.success, fontSize: theme.fontSize.title }}>✓</Text>
-            <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>{t('paywall.readyOnDevice')}</Text>
+      ) : null}
+      {props.error ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          style={{
+            color: props.phase === 'cancelled' ? theme.colors.textSecondary : theme.colors.error,
+            fontSize: theme.fontSize.secondary,
+            lineHeight: 20,
+          }}
+        >
+          {props.error}
+        </Text>
+      ) : null}
+      {props.unlocked ? (
+        <BigButton
+          title={props.continuing ? t('paywall.openingTask') : t(CONTINUE_KEYS[props.intent.kind])}
+          onPress={props.onContinue}
+          disabled={Boolean(props.continuing)}
+          variant="accent"
+        />
+      ) : props.isWeb ? (
+        <>
+          <Caption>{t('paywall.webCaption')}</Caption>
+          <BigButton title={t('paywall.getAndroidApp')} variant="accent" onPress={props.onBuy} />
+        </>
+      ) : waiting ? (
+        <BigButton
+          title={props.checking ? t('paywall.checkingPurchase') : t('paywall.checkPurchaseStatus')}
+          variant="secondary"
+          disabled={props.checking}
+          onPress={props.onRetry}
+        />
+      ) : loading ? (
+        <BigButton
+          title={props.phase === 'restoring' ? t('paywall.restoringPurchase') : t('paywall.loadingPrice')}
+          variant="accent"
+          disabled
+          onPress={props.onBuy}
+        />
+      ) : props.available && props.price ? (
+        <>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.sm }}>
+            <Text
+              style={{
+                color: theme.colors.textPrimary,
+                fontSize: theme.fontSize.title,
+                fontWeight: theme.fontWeight.semibold,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {props.price}
+            </Text>
+            <View
+              style={{
+                backgroundColor: theme.colors.selection,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                borderRadius: theme.radius,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.accentText,
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontWeight: theme.fontWeight.semibold,
+                }}
+              >
+                {t('paywall.oneTimeNote')}
+              </Text>
+            </View>
           </View>
-          <Caption>{props.intent.kind === 'calibration' || props.intent.kind === 'bender' ? t('paywall.readyCalibrationNote') : t('paywall.readyDefaultNote')}</Caption>
-        </View> : <>
-          <View style={{ gap: theme.spacing.md }}>
-            {benefits.map(([title, description]) => <View key={title} style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-              <Text accessible={false} importantForAccessibility="no-hide-descendants" style={{ color: theme.colors.accentText, fontSize: theme.fontSize.body, lineHeight: 24 }}>✓</Text>
-              <View style={{ flex: 1, gap: theme.spacing.xs }}>
-                <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, lineHeight: 24, fontWeight: theme.fontWeight.semibold }}>{title}</Text>
-                <Caption>{description}</Caption>
+          <BigButton title={t('paywall.unlockCta')} variant="accent" onPress={props.onBuy} disabled={disabled} />
+        </>
+      ) : (
+        <>
+          <Caption>{t('paywall.storeUnavailableCaption')}</Caption>
+          <BigButton title={t('paywall.retryStore')} variant="secondary" onPress={props.onRetry} disabled={disabled} />
+        </>
+      )}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs }}>
+        {showRestore ? (
+          <>
+            <TextAction title={t('paywall.restorePurchase')} onPress={props.onRestore} disabled={disabled} />
+            <View
+              style={{
+                backgroundColor: theme.colors.border,
+                width: StyleSheet.hairlineWidth,
+                height: 18,
+                alignSelf: 'center',
+              }}
+            />
+          </>
+        ) : null}
+        <TextAction
+          title={
+            props.unlocked
+              ? t('paywall.backToCalculators')
+              : waiting
+                ? t('paywall.continueWithFree')
+                : t('paywall.notNow')
+          }
+          onPress={props.onClose}
+          disabled={Boolean(props.continuing)}
+        />
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+        <View
+          style={[
+            styles.content,
+            {
+              paddingHorizontal: theme.spacing.md,
+              paddingTop: 12,
+              paddingBottom: theme.spacing.md,
+              gap: theme.spacing.md,
+            },
+            props.unlocked && !footerInScroll ? { flexGrow: 1, justifyContent: 'center' } : null,
+          ]}
+        >
+          <View>
+            <View
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: theme.spacing.sm,
+                paddingVertical: theme.spacing.xs,
+                borderRadius: theme.radius,
+                backgroundColor: theme.colors.selection,
+                borderWidth: 1,
+                borderColor: theme.colors.accentText,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.accentText,
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontWeight: theme.fontWeight.semibold,
+                  letterSpacing: 0.6,
+                }}
+              >
+                {t('paywall.eyebrow')}
+              </Text>
+            </View>
+            <Text
+              accessibilityRole="header"
+              style={{
+                marginTop: 6,
+                color: theme.colors.textPrimary,
+                fontSize: theme.fontSize.title,
+                lineHeight: 28,
+                fontWeight: theme.fontWeight.semibold,
+              }}
+            >
+              {props.unlocked
+                ? props.phase === 'restored'
+                  ? t('paywall.unlockedRestoredTitle')
+                  : t('paywall.unlockedReadyTitle')
+                : t(SCENE_TITLE_KEYS[props.scene])}
+            </Text>
+            <Text
+              style={{
+                marginTop: theme.spacing.xs,
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                lineHeight: 19,
+              }}
+            >
+              {props.unlocked ? t('paywall.unlockedSubtitle') : t('paywall.defaultSubtitle')}
+            </Text>
+          </View>
+
+          {props.unlocked ? (
+            <View
+              style={{
+                gap: theme.spacing.sm,
+                paddingVertical: theme.spacing.md,
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderColor: theme.colors.border,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm }}>
+                <Text accessible={false} importantForAccessibility="no-hide-descendants" style={{ color: theme.colors.success, fontSize: theme.fontSize.title }}>
+                  ✓
+                </Text>
+                <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>
+                  {t('paywall.readyOnDevice')}
+                </Text>
               </View>
-            </View>)}
-            <Caption>{t('paywall.freePromise')}</Caption>
-          </View>
-          <View style={{ borderTopWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border }}>
-            <TextAction title={exampleOpen ? t('paywall.hideExample') : t('paywall.showExample')} expanded={exampleOpen} onPress={() => setExampleOpen(!exampleOpen)} />
-            {exampleOpen ? <View style={{ gap: theme.spacing.md }}>
-              <View style={{ flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.colors.border }}>
-                {PRO_SCENES.map((item) => {
-                  const tabLabel = t(SCENE_TAB_KEYS[item.key]);
-                  return <Pressable key={item.key} accessibilityRole="button" accessibilityState={{ selected: item.key === props.scene }} accessibilityLabel={t('paywall.sceneTabA11y', { label: tabLabel })}
-                    onPress={() => props.onSceneChange(item.key)} android_ripple={{ color: theme.colors.pressFeedback }}
-                    style={({ pressed }) => ({ flex: 1, minWidth: 0, minHeight: theme.size.buttonMinHeight, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.xs, borderBottomWidth: 2, borderBottomColor: item.key === props.scene ? theme.colors.accentText : 'transparent', backgroundColor: pressed && Platform.OS !== 'android' ? theme.colors.pressFeedback : 'transparent' })}>
-                    <Text style={{ fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold, textAlign: 'center', color: item.key === props.scene ? theme.colors.accentText : theme.colors.textSecondary }}>{tabLabel}</Text>
-                  </Pressable>;
+              <Caption>
+                {props.intent.kind === 'calibration' || props.intent.kind === 'bender'
+                  ? t('paywall.readyCalibrationNote')
+                  : t('paywall.readyDefaultNote')}
+              </Caption>
+            </View>
+          ) : (
+            <>
+              <HeroComparisonCard
+                scene={props.scene}
+                unit={props.unit ?? 'fractional'}
+                onSceneChange={props.onSceneChange}
+              />
+
+              <View style={{ gap: 10 }}>
+                {benefits.map(([title, description]) => (
+                  <View key={title} style={{ flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'flex-start' }}>
+                    <Text
+                      accessible={false}
+                      importantForAccessibility="no-hide-descendants"
+                      style={{ color: theme.colors.accentText, fontSize: theme.fontSize.body, lineHeight: 20 }}
+                    >
+                      ✓
+                    </Text>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text
+                        style={{
+                          color: theme.colors.textPrimary,
+                          fontSize: theme.fontSize.secondary,
+                          lineHeight: 19,
+                          fontWeight: theme.fontWeight.semibold,
+                        }}
+                      >
+                        {title}
+                      </Text>
+                      <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+                        {description}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+                <View
+                  style={{
+                    borderTopWidth: StyleSheet.hairlineWidth,
+                    borderTopColor: theme.colors.border,
+                    paddingTop: theme.spacing.sm,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+                    {t('paywall.freePromise')}
+                  </Text>
+                </View>
+              </View>
+
+              <View>
+                <Text
+                  style={{
+                    color: theme.colors.textPrimary,
+                    fontSize: theme.fontSize.body,
+                    lineHeight: 22,
+                    fontWeight: theme.fontWeight.semibold,
+                  }}
+                >
+                  {t('paywall.faqHeading')}
+                </Text>
+                {FAQ_KEYS.map(([questionKey, answerKey], index) => {
+                  const isOpen = openFaq === index;
+                  return (
+                    <View key={questionKey}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityState={{ expanded: isOpen }}
+                        onPress={() => setOpenFaq(isOpen ? null : index)}
+                        android_ripple={{ color: theme.colors.pressFeedback }}
+                        style={{
+                          minHeight: 48,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: theme.spacing.sm,
+                          borderBottomWidth: StyleSheet.hairlineWidth,
+                          borderBottomColor: theme.colors.border,
+                          paddingVertical: theme.spacing.sm,
+                        }}
+                      >
+                        <Text style={{ flex: 1, color: theme.colors.textPrimary, fontSize: theme.fontSize.secondary, lineHeight: 19 }}>
+                          {t(questionKey)}
+                        </Text>
+                        <Text
+                          accessible={false}
+                          importantForAccessibility="no-hide-descendants"
+                          style={{
+                            color: theme.colors.accentText,
+                            fontSize: theme.fontSize.body,
+                            fontWeight: theme.fontWeight.semibold,
+                          }}
+                        >
+                          {isOpen ? '−' : '+'}
+                        </Text>
+                      </Pressable>
+                      {isOpen ? (
+                        <View style={{ paddingVertical: theme.spacing.sm }}>
+                          <Text style={{ color: theme.colors.textSecondary, fontSize: 13, lineHeight: 19 }}>
+                            {t(answerKey)}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  );
                 })}
               </View>
-              <ExamplePreview scene={props.scene} unit={props.unit ?? 'fractional'} />
-            </View> : null}
-          </View>
-          <View>
-            <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>{t('paywall.faqHeading')}</Text>
-            {FAQ_KEYS.map(([questionKey, answerKey], index) => <View key={questionKey}>
-              <Pressable accessibilityRole="button" accessibilityState={{ expanded: openFaq === index }} onPress={() => setOpenFaq(openFaq === index ? null : index)} android_ripple={{ color: theme.colors.pressFeedback }} style={{ minHeight: theme.size.buttonMinHeight, justifyContent: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.colors.border, paddingVertical: theme.spacing.sm }}>
-                <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.secondary }}>{t(questionKey)} {openFaq === index ? '−' : '+'}</Text>
-              </Pressable>
-              {openFaq === index ? <View style={{ paddingVertical: theme.spacing.sm }}><Caption>{t(answerKey)}</Caption></View> : null}
-            </View>)}
-          </View>
-        </>}
-      </View>
-      {footerInScroll ? <View style={styles.footer}>{footer}</View> : null}
-    </ScrollView>
-    {!footerInScroll ? <View style={styles.footer}>{footer}</View> : null}
-  </View>;
+            </>
+          )}
+        </View>
+        {footerInScroll ? <View style={styles.footer}>{footer}</View> : null}
+      </ScrollView>
+      {!footerInScroll ? <View style={styles.footer}>{footer}</View> : null}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   scroll: { flexGrow: 1 },
   content: { width: '100%', maxWidth: 600, alignSelf: 'center' },
   footer: { width: '100%', maxWidth: 600, alignSelf: 'center' },
-  comparison: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
 });

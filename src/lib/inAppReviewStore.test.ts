@@ -23,7 +23,8 @@ test('parseReviewState seeds firstSeenAt when empty', () => {
   assert.equal(state.lastRequestedAt, null);
 });
 
-test('shouldRequestInAppReview needs 3 successes, 3 days, 90-day cool-down', () => {
+test('shouldRequestInAppReview needs 3 successes, day-0 eligible, 90-day cool-down', () => {
+  assert.equal(MIN_DAYS_SINCE_FIRST_SEEN, 0);
   const now = Date.UTC(2026, 10, 4);
   const base = {
     firstSeenAt: now - MIN_DAYS_SINCE_FIRST_SEEN * DAY,
@@ -36,10 +37,7 @@ test('shouldRequestInAppReview needs 3 successes, 3 days, 90-day cool-down', () 
     false,
   );
   assert.equal(
-    shouldRequestInAppReview(
-      { ...base, firstSeenAt: now - (MIN_DAYS_SINCE_FIRST_SEEN - 1) * DAY },
-      now,
-    ),
+    shouldRequestInAppReview({ ...base, firstSeenAt: 0 }, now),
     false,
   );
   assert.equal(

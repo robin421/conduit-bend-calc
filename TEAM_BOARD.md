@@ -36,6 +36,10 @@
 | T19 | Phase 1：Amplitude 全链路埋点补齐（user_properties/SKU状态/dismiss修复/history_reused/unit_mode）+ 付费墙首屏实测对比默认展开 | developer | T18 | DONE | `amplitudeCore.ts`, `amplitude.ts`, `growthEvents.ts`, `proStore.ts`, `paywallTelemetry.ts`, `paywallScreen.tsx`, `proPaywallView.tsx`, `historyScreen.tsx`, `useDebouncedCalculationCompleted.ts` 及单测 | 主仓物理核验 PASS（`tsc` 0 错、`405/405` 单测） |
 | T20 | Phase 2：原生 App 西班牙语核心链路本地化（系统语言检测/持久化/首页/Paywall/导航/History/4大高频计算器）+ 单位体验优化 | developer | T19 | DONE | `src/i18n/*`, `unitStore.ts`, `quickUnitToggle.tsx`, `App.tsx`, `calcHomeScreen.tsx`, `paywallScreen.tsx`, `proPaywallView.tsx`, `historyScreen.tsx`, 4大计算器屏及单测 | 主仓物理核验 PASS（`tsc` 0 错、`413/413` 单测） |
 | T21 | Phase 1 + Phase 2 全量 QA 验收（`tsc` + 单测 + Web 构建 + `ego-browser` 实测西语/单位/Paywall/Amplitude Payload） | qa | T20 | DONE | QA 验收报告（含 `ego-browser` 截图与 34 次 Amplitude HTTP v2 实测） | PASS（`tsc` 0 错、`413/413` 单测、`web:build-seo` 711 modules、284/284 词典对齐、0 控制台错、0 PII 违规） |
+| T22 | 升级版本号 `1.11.0 (vc11)` + 本地签名 AAB 打包与 16 KB 页对齐核验 + 真机初测 | ai-manager | T21 | DONE | `dist/conduit-bend-calc-1.11.0-vc11.aab`（52MB，42/42 `.so` 16KB PASS） | 真机试测发现 Paywall 视觉层级待优化、引导评分门槛过严，暂缓 Google Play 上架 |
+| T23 | Pro 付费页高转化 UI/UX 重构方案设计（基于真机截图与 `theme.ts` Token） | designer | T22 | DONE | Paywall 重构设计规格（首屏 520pt 预算、Segmented Control 对比 Hero Card、WCAG AAA 底栏） | 已审定通过 |
+| T24 | Pro 付费页重构实现 + 官方 In-App Review（`expo-store-review`）触发策略优化与 `RatingCard` 西语化 | developer | T23 | DONE | `proPaywallView.tsx`, `inAppReviewStore.ts`, `ratingCard.tsx`, `dictionaries.ts` 及单测 | 主仓物理核验 PASS（`tsc` 0 错、`413/413` 单测） |
+| T25 | 重打包 `v1.11.0 (vc11)` 真机复测确认后 `fastlane android deploy` 上架 Google Play | ai-manager | T24 | IN_PROGRESS | 真机复测截图 + AAB 16KB 核验 + Google Play 发布状态 | 重打包中 |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。
