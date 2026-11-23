@@ -110,6 +110,18 @@ const FourPointSaddleToolScreen = lazyScreen(
 const ShrinkToolScreen = lazyScreen(
   () => import('../screens/seoTools/shrinkToolScreen'),
 );
+const RollingOffsetToolScreen = lazyScreen(
+  () => import('../screens/seoTools/rollingOffsetToolScreen'),
+);
+const Kicked90ToolScreen = lazyScreen(
+  () => import('../screens/seoTools/kicked90ToolScreen'),
+);
+const WireSizeToolScreen = lazyScreen(
+  () => import('../screens/seoTools/wireSizeToolScreen'),
+);
+const VoltageDropToolScreen = lazyScreen(
+  () => import('../screens/seoTools/voltageDropToolScreen'),
+);
 const FeedbackScreen = lazyScreen(
   () => import('../screens/feedbackScreen'),
 );
@@ -134,6 +146,10 @@ export default function RootStack() {
       <Stack.Screen name="SeoConduitFill" component={ConduitFillToolScreen} />
       <Stack.Screen name="SeoSaddle4" component={FourPointSaddleToolScreen} />
       <Stack.Screen name="SeoShrink" component={ShrinkToolScreen} />
+      <Stack.Screen name="SeoRollingOffset" component={RollingOffsetToolScreen} />
+      <Stack.Screen name="SeoKicked90" component={Kicked90ToolScreen} />
+      <Stack.Screen name="SeoWireSize" component={WireSizeToolScreen} />
+      <Stack.Screen name="SeoVoltageDrop" component={VoltageDropToolScreen} />
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
     </Stack.Navigator>
   );

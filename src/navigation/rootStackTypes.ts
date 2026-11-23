@@ -14,5 +14,9 @@ export type RootStackParamList = {
   SeoConduitFill: undefined;
   SeoSaddle4: undefined;
   SeoShrink: undefined;
+  SeoRollingOffset: undefined;
+  SeoKicked90: undefined;
+  SeoWireSize: undefined;
+  SeoVoltageDrop: undefined;
   Feedback: undefined;
 };

@@ -10,7 +10,15 @@
  *   （Web 端即 localStorage，工地上断网也能读上次算过的数）。
  */
 
-import type { EmtTakeUpSize, OffsetAngle, RacewayType, TradeSize, WireSize } from '../constants.ts';
+import type {
+  ConductorMetal,
+  EmtTakeUpSize,
+  OffsetAngle,
+  RacewayType,
+  TempColumn,
+  TradeSize,
+  WireSize,
+} from '../constants.ts';
 import type { UnitSystem } from './units.ts';
 
 /** 每个 SEO 工具页保留的历史条数。 */
@@ -22,7 +30,11 @@ export type SeoHistoryKind =
   | 'saddle3'
   | 'conduitFill'
   | 'saddle4'
-  | 'shrink';
+  | 'shrink'
+  | 'rollingOffset'
+  | 'kicked90'
+  | 'wireSize'
+  | 'voltageDrop';
 
 export type ShrinkMode = 'offset' | 'saddle';
 
@@ -31,6 +43,9 @@ export interface SeoHistoryParams {
   heightText?: string;
   widthText?: string;
   startText?: string;
+  riseText?: string;
+  rollText?: string;
+  kickText?: string;
   angle?: OffsetAngle;
   size?: EmtTakeUpSize;
   mode?: ShrinkMode;
@@ -42,6 +57,16 @@ export interface SeoHistoryParams {
   trade?: TradeSize;
   wire?: WireSize;
   countText?: string;
+  /** Wire size / Voltage drop 参数。 */
+  metal?: ConductorMetal;
+  ampsText?: string;
+  continuous?: boolean;
+  tempColumn?: TempColumn | 'auto';
+  phase?: 1 | 3;
+  voltsText?: string;
+  distanceText?: string;
+  distanceUnit?: 'ft' | 'm';
+  vdLimit?: 'branch' | 'total';
 }
 
 export interface SeoHistoryEntry {

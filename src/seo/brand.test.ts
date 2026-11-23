@@ -39,7 +39,7 @@ test('withBrandTitle 去除首尾空白', () => {
 });
 
 test('全部 SEO 工具页 title 带品牌后缀且 ≤ 60 字符', () => {
-  assert.equal(SEO_TOOL_PAGES.length, 6);
+  assert.equal(SEO_TOOL_PAGES.length, 10);
   for (const page of SEO_TOOL_PAGES) {
     assert.ok(
       page.title.endsWith('| WattFlow'),

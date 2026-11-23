@@ -12,7 +12,11 @@ export type SeoScreenName =
   | 'SeoSaddle3'
   | 'SeoConduitFill'
   | 'SeoSaddle4'
-  | 'SeoShrink';
+  | 'SeoShrink'
+  | 'SeoRollingOffset'
+  | 'SeoKicked90'
+  | 'SeoWireSize'
+  | 'SeoVoltageDrop';
 
 export const SEO_TOOL_SCREENS: Record<SeoToolKey, SeoScreenName> = {
   offset: 'SeoOffset',
@@ -21,4 +25,8 @@ export const SEO_TOOL_SCREENS: Record<SeoToolKey, SeoScreenName> = {
   conduitFill: 'SeoConduitFill',
   saddle4: 'SeoSaddle4',
   shrink: 'SeoShrink',
+  rollingOffset: 'SeoRollingOffset',
+  kicked90: 'SeoKicked90',
+  wireSize: 'SeoWireSize',
+  voltageDrop: 'SeoVoltageDrop',
 };

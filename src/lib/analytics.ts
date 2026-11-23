@@ -107,7 +107,8 @@ export function isLocalDevEnvironment(): boolean {
 
 /**
  * SEO 工具页的 GA4 `tool_name` 口径（与内部 key 不同）：
- * offset / stub-up / 3-point-saddle / conduit-fill / 4-point-saddle / shrink。
+ * offset / stub-up / 3-point-saddle / conduit-fill / 4-point-saddle / shrink /
+ * rolling-offset / kicked-90 / wire-size / voltage-drop。
  */
 export type SeoToolName =
   | 'offset'
@@ -115,7 +116,11 @@ export type SeoToolName =
   | '3-point-saddle'
   | 'conduit-fill'
   | '4-point-saddle'
-  | 'shrink';
+  | 'shrink'
+  | 'rolling-offset'
+  | 'kicked-90'
+  | 'wire-size'
+  | 'voltage-drop';
 
 /**
  * GA4 Measurement ID 为 `G-Z6L51MPY1J`，但**不在此文件硬编码**：

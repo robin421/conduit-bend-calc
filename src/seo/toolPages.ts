@@ -23,7 +23,11 @@ export type SeoToolKey =
   | 'saddle3'
   | 'conduitFill'
   | 'saddle4'
-  | 'shrink';
+  | 'shrink'
+  | 'rollingOffset'
+  | 'kicked90'
+  | 'wireSize'
+  | 'voltageDrop';
 
 export interface SeoFaqItem {
   question: string;
@@ -489,6 +493,298 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
           answer:
             'Sí. La calculadora de contracción tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la longitud que consume cada doblez sigue el material que elijas. Cambia el selector de material y los valores coincidirán con las especificaciones de la dobladora que tienes en la mano.',
+        },
+      ],
+    },
+  },
+  {
+    key: 'rollingOffset',
+    path: '/rolling-offset',
+    slug: 'rolling-offset',
+    title: 'Rolling Offset Conduit Calculator — True Offset | WattFlow',
+    description:
+      'Free rolling offset conduit calculator for EMT and rigid conduit: enter rise, roll, and bend angle to get true offset, mark spacing, rotation, and shrink.',
+    h1: 'Rolling Offset Conduit Calculator',
+    tagline:
+      'A rolling offset shifts conduit both vertically (rise) and sideways (roll) in one plane. Enter rise, roll, and bend angle to calculate true offset, mark spacing, rotation angle, and shrink.',
+    faqs: [
+      {
+        question: 'How do you calculate a rolling offset in conduit?',
+        answer:
+          'First find the true offset using the Pythagorean theorem: true offset = √(rise² + roll²). Then multiply the true offset by the multiplier for your bend angle (2.0 for 30°, 1.4 for 45°) to get mark spacing, and multiply true offset by shrink per inch to get total shrink.',
+      },
+      {
+        question: 'What is the true offset for a 6 inch rise and 8 inch roll?',
+        answer:
+          'Using √(6² + 8²) = √(36 + 64) = 10" true offset. At a 30° bend angle (multiplier 2.0), place your two bend marks 20" apart and allow 2.5" of shrink (10" × 1/4" per inch).',
+      },
+      {
+        question: 'How much does a rolling offset shrink?',
+        answer:
+          'Rolling offset shrink is based on the true offset, not just the rise or roll alone. Multiply true offset by the shrink per inch for your bend angle: 1/4" per inch at 30° or 3/8" per inch at 45°. Add shrink before cutting conduit.',
+      },
+      {
+        question: 'Should I use 30° or 45° bends for a rolling offset?',
+        answer:
+          'Use 30° bends when you have room — the 2.0 multiplier keeps math easy, shrink moderate, and wire pulling smooth. Choose 45° (1.4 multiplier) when space is tight and you need shorter mark spacing, keeping NEC 360° total bend limits in mind.',
+      },
+      {
+        question: 'Does this rolling offset calculator work for EMT and Rigid conduit?',
+        answer:
+          'Yes. The true offset, bender rotation angle, mark spacing, and shrink formulas apply to EMT, IMC, and Rigid (RMC) conduit. Sight the rotation angle accurately before making the first bend to prevent doglegs.',
+      },
+    ],
+    es: {
+      title: 'Calculadora de desplazamiento compuesto | WattFlow',
+      description:
+        'Calculadora gratuita de desplazamiento compuesto para conducto EMT y rígido: desplazamiento real, distancia entre marcas, rotación y contracción.',
+      h1: 'Calculadora de desplazamiento compuesto',
+      tagline:
+        'Un desplazamiento compuesto mueve el conducto hacia arriba (subida) y hacia un lado (avance lateral) en un solo plano. Introduce subida, avance y ángulo para calcular el desplazamiento real, marcas y contracción.',
+      faqs: [
+        {
+          question: '¿Cómo se calcula un desplazamiento compuesto en conducto?',
+          answer:
+            'Primero calcula el desplazamiento real con el teorema de Pitágoras: desplazamiento real = √(subida² + avance²). Luego multiplica ese valor por el multiplicador de tu ángulo (2,0 para 30°, 1,4 para 45°) para obtener la distancia entre marcas, y por la contracción por pulgada para hallar la contracción total.',
+        },
+        {
+          question: '¿Cuál es el desplazamiento real para 6" de subida y 8" de avance lateral?',
+          answer:
+            'Con √(6² + 8²) = √(36 + 64) = 10" de desplazamiento real. Con un ángulo de 30° (multiplicador 2,0), separa las dos marcas 20" entre sí y suma 2,5" de contracción (10" × 1/4" por pulgada).',
+        },
+        {
+          question: '¿Cuánto contrae el conducto un desplazamiento compuesto?',
+          answer:
+            'La contracción depende del desplazamiento real, no solo de la subida o el avance por separado. Multiplica el desplazamiento real por la contracción por pulgada de tu ángulo: 1/4" por pulgada a 30° o 3/8" a 45°, y súmala antes de cortar el conducto.',
+        },
+        {
+          question: '¿Conviene usar 30° o 45° en un desplazamiento compuesto?',
+          answer:
+            'Usa 30° siempre que tengas espacio: el multiplicador 2,0 simplifica la cuenta, reduce la contracción y facilita el jalado de cable. Elige 45° (multiplicador 1,4) cuando el espacio sea reducido, respetando el límite NEC de 360° entre cajas.',
+        },
+        {
+          question: '¿Esta calculadora funciona para conducto EMT y rígido?',
+          answer:
+            'Sí. Las fórmulas de desplazamiento real, ángulo de rotación, distancia entre marcas y contracción aplican a conducto EMT, IMC y rígido (RMC). Verifica el plano de giro antes de doblar para evitar desvíos fuera de eje.',
+        },
+      ],
+    },
+  },
+  {
+    key: 'kicked90',
+    path: '/kicked-90',
+    slug: 'kicked-90',
+    title: 'Kicked 90 Conduit Bend Calculator — Kick Chart | WattFlow',
+    description:
+      'Free kicked 90 conduit bend calculator for EMT & rigid: get 90° stub mark with take-up, kick mark distance from back of 90°, total gain, and kick chart.',
+    h1: 'Kicked 90° Conduit Bend Calculator',
+    tagline:
+      'A kicked 90° combines a 90° stub with an angled kick to elevate the run into a panel knockout or box. Enter stub height, kick height, trade size, and kick angle.',
+    faqs: [
+      {
+        question: 'How do you calculate a kicked 90 conduit bend?',
+        answer:
+          'First mark the 90° stub at target stub height minus bender take-up (5" for 1/2" EMT, 6" for 3/4" EMT, 8" for 1" EMT) and bend the 90°. Then measure from the back of the 90° by kick height × angle multiplier (2.0 at 30°) to place the kick mark and bend to your chosen kick angle.',
+      },
+      {
+        question: 'Where do you measure the kick mark on a kicked 90?',
+        answer:
+          'Measure from the back of the finished 90° bend along the straight run toward the kick. For example, a 4" kick at 30° (multiplier 2.0) places the kick mark 8" from the back of the 90°.',
+      },
+      {
+        question: 'What kick angle is best for a kicked 90?',
+        answer:
+          '30° is the standard choice when space allows because its 2.0 multiplier is fast to lay out. Use 10°, 15°, or 22.5° for shallow kicks into panel knockouts so wire pulling stays easy, and use 45° only when space behind the 90° is tight.',
+      },
+      {
+        question: 'How does stub take-up affect a kicked 90?',
+        answer:
+          'Your 90° stub still needs the bender take-up subtracted before bending — 5" for 1/2" EMT, 6" for 3/4" EMT, and 8" for 1" EMT. Adding a kick changes elevation along the run, while total gain (90° gain + kick gain) reduces the cut length needed.',
+      },
+      {
+        question: 'Does this kicked 90 calculator work for EMT and Rigid conduit?',
+        answer:
+          'Yes. The kick distance multiplier works identically for EMT, IMC, and Rigid conduit. For 90° stub take-up, standard hand-bender EMT values (5", 6", 8") are built in; confirm take-up stamped on your Rigid or IMC bender shoe before marking.',
+      },
+    ],
+    es: {
+      title: 'Calculadora de codo 90° con kick | WattFlow',
+      description:
+        'Calculadora gratuita de codo 90° con kick para conducto EMT y rígido: marca de subida con recogida, distancia del kick desde atrás del 90° y ganancia total.',
+      h1: 'Calculadora de codo 90° con kick',
+      tagline:
+        'Un codo de 90° con kick combina una subida de 90° con una elevación en ángulo para entrar directo a una caja o tablero. Introduce altura de subida, altura del kick, tamaño de conducto y ángulo.',
+      faqs: [
+        {
+          question: '¿Cómo se calcula un codo de 90° con kick en conducto?',
+          answer:
+            'Primero marca la subida de 90° restando la recogida de la dobladora (5" en EMT de 1/2", 6" en 3/4" y 8" en 1") y dobla el 90°. Luego mide desde la parte posterior del 90° la altura del kick × multiplicador del ángulo (2,0 a 30°) para ubicar la marca del kick.',
+        },
+        {
+          question: '¿Desde dónde se mide la marca del kick en un codo de 90°?',
+          answer:
+            'Mide desde la parte posterior del doblez de 90° ya formado hacia el tramo recto. Por ejemplo, un kick de 4" a 30° (multiplicador 2,0) coloca la marca del kick a 8" desde la espalda del 90°.',
+        },
+        {
+          question: '¿Qué ángulo de kick conviene usar en un codo de 90°?',
+          answer:
+            '30° es la opción más usada cuando hay espacio porque su multiplicador 2,0 facilita el trazado. Usa 10°, 15° o 22,5° para entradas suaves a tableros que faciliten el jalado de cable, y 45° solo si el espacio detrás del 90° es reducido.',
+        },
+        {
+          question: '¿Cómo afecta la recogida (take-up) a un codo 90° con kick?',
+          answer:
+            'La subida de 90° sigue requiriendo restar la recogida antes de doblar: 5" para EMT de 1/2", 6" para 3/4" y 8" para 1". El kick ajusta la elevación del tramo y la ganancia total (90° + kick) reduce la longitud de corte necesaria.',
+        },
+        {
+          question: '¿Esta calculadora de codo 90° con kick sirve para EMT y conducto rígido?',
+          answer:
+            'Sí. El multiplicador de distancia del kick aplica igual a conducto EMT, IMC y rígido. Para la recogida del 90°, se incluyen los valores estándar de EMT manual (5", 6", 8"); verifica siempre la recogida grabada en tu dobladora de conducto rígido.',
+        },
+      ],
+    },
+  },
+  {
+    key: 'wireSize',
+    path: '/wire-size',
+    slug: 'wire-size',
+    title: 'NEC Wire Size Calculator — AWG Ampacity Chart | WattFlow',
+    description:
+      'Free NEC Table 310.16 wire size calculator: pick load amps, copper or aluminum, 60°C/75°C/90°C rating, and 125% continuous load for 14 AWG to 500 kcmil.',
+    h1: 'NEC Wire Size Calculator',
+    tagline:
+      'Find the minimum NEC Table 310.16 copper or aluminum wire gauge (14 AWG to 500 kcmil) from load amps, termination temperature rating, and 125% continuous load rules.',
+    faqs: [
+      {
+        question: 'How does NEC Table 310.16 determine wire size?',
+        answer:
+          'NEC Table 310.16 lists allowable ampacities for up to three current-carrying conductors in a raceway or cable at 30°C ambient temperature across 60°C, 75°C, and 90°C insulation columns. Select the smallest AWG or kcmil whose ampacity meets or exceeds your design load.',
+      },
+      {
+        question: 'Should I use the 60°C, 75°C, or 90°C ampacity column?',
+        answer:
+          'Follow NEC 110.14(C)(1): circuits rated 100 A or less (14–1 AWG) default to the 60°C column unless equipment terminations are listed for 75°C, while circuits over 100 A use the 75°C column. The 90°C column (THHN/THWN-2) is used only as a starting point for derating adjustments.',
+      },
+      {
+        question: 'What is the 125% continuous load rule in the NEC?',
+        answer:
+          'Under NEC 210.19(A)(1) and 215.2(A)(1), a continuous load operating at maximum current for 3 hours or more must be multiplied by 125% before sizing conductors and overcurrent protection. For example, a 16 A continuous load requires 20 A minimum ampacity (12 AWG Cu).',
+      },
+      {
+        question: 'How do copper and aluminum wire sizes compare?',
+        answer:
+          'Aluminum has higher electrical resistance than copper, so aluminum conductors typically step up one or two trade sizes for the same ampacity. For example, a 100 A feeder at 75°C takes 3 AWG copper or 1 AWG aluminum, and building wire aluminum starts at 12 AWG.',
+      },
+      {
+        question: 'How does NEC 240.4(D) affect 14, 12, and 10 AWG wire?',
+        answer:
+          'Even though 75°C and 90°C THHN ratings are higher, NEC 240.4(D) caps standard overcurrent protection at 15 A for 14 AWG copper, 20 A for 12 AWG copper (15 A Al), and 30 A for 10 AWG copper (25 A Al). This calculator automatically applies those small-conductor caps.',
+      },
+    ],
+    es: {
+      title: 'Calculadora de calibre de cable AWG NEC | WattFlow',
+      description:
+        'Calculadora gratuita de calibre de cable NEC Tabla 310.16: cobre o aluminio, columnas 60°C/75°C/90°C y regla 125% carga continua desde 14 AWG hasta 500 kcmil.',
+      h1: 'Calculadora de calibre de cable NEC',
+      tagline:
+        'Encuentra el calibre mínimo AWG o kcmil (cobre o aluminio, 14 AWG a 500 kcmil) según NEC Tabla 310.16 para conductores en conducto, columna de temperatura y carga continua al 125%.',
+      faqs: [
+        {
+          question: '¿Cómo determina el calibre de cable la Tabla 310.16 del NEC?',
+          answer:
+            'La Tabla 310.16 del NEC indica la ampacidad permitida para hasta tres conductores portadores de corriente en un conducto a 30°C ambiente en columnas de 60°C, 75°C y 90°C. Se elige el calibre más pequeño cuya ampacidad iguale o supere la corriente de diseño.',
+        },
+        {
+          question: '¿Cuándo usar la columna de 60°C, 75°C o 90°C?',
+          answer:
+            'Según NEC 110.14(C)(1), circuitos de 100 A o menos (14 a 1 AWG) usan por defecto la columna de 60°C salvo terminales listados a 75°C; circuitos mayores a 100 A usan 75°C. La columna de 90°C (THHN/THWN-2) solo se usa para factores de corrección por temperatura o agrupamiento.',
+        },
+        {
+          question: '¿Qué es la regla NEC del 125% para carga continua?',
+          answer:
+            'Según NEC 210.19(A)(1) y 215.2(A)(1), toda carga continua que opere 3 horas o más a corriente máxima debe multiplicarse por 125% al dimensionar conductores y protección. Por ejemplo, una carga continua de 16 A requiere al menos 20 A (12 AWG cobre).',
+        },
+        {
+          question: '¿Cómo se comparan el calibre en cobre y en aluminio?',
+          answer:
+            'El aluminio tiene mayor resistencia eléctrica que el cobre, por lo que normalmente requiere uno o dos calibres mayores para la misma corriente. Por ejemplo, un alimentador de 100 A a 75°C usa 3 AWG en cobre o 1 AWG en aluminio.',
+        },
+        {
+          question: '¿Cómo afecta NEC 240.4(D) a los cables 14, 12 y 10 AWG?',
+          answer:
+            'Aunque el aislamiento THHN a 75°C o 90°C soporta más corriente, NEC 240.4(D) limita la protección estándar a 15 A para 14 AWG cobre, 20 A para 12 AWG cobre (15 A Al) y 30 A para 10 AWG cobre (25 A Al). Esta calculadora aplica esos límites automáticamente.',
+        },
+      ],
+    },
+  },
+  {
+    key: 'voltageDrop',
+    path: '/voltage-drop',
+    slug: 'voltage-drop',
+    title: 'Voltage Drop Calculator — NEC 3% Wire Sizing | WattFlow',
+    description:
+      'Free NEC voltage drop calculator for single-phase & three-phase circuits: enter voltage, amps, distance (ft/m), Cu/Al, and AWG to check 3%/5% drop and upsize.',
+    h1: 'NEC Voltage Drop Calculator',
+    tagline:
+      'Calculate single-phase and three-phase voltage drop in volts and percent using NEC Chapter 9 Table 8 resistance, verify 3% branch / 5% total limits, and find the minimum AWG.',
+    faqs: [
+      {
+        question: 'What is the NEC 3% and 5% voltage drop recommendation?',
+        answer:
+          'NEC 210.19(A) Informational Note recommends keeping voltage drop to 3% or less on branch circuits and 5% or less combined across the feeder and branch circuit. Staying within 3% prevents motor overheating, dimmed lights, and nuisance equipment trips.',
+      },
+      {
+        question: 'What is the formula for single-phase vs three-phase voltage drop?',
+        answer:
+          'Using NEC Chapter 9 Table 8 DC resistance R (ohms per 1,000 ft): single-phase VD = (2 × L × I × R) ÷ 1,000, and three-phase VD = (1.732 × L × I × R) ÷ 1,000, where L is one-way run length in feet and I is load current in amps.',
+      },
+      {
+        question: 'How do copper and aluminum affect voltage drop?',
+        answer:
+          'Copper has lower resistance (approximately K ≈ 12.9 Ω·cmil/ft) than aluminum (K ≈ 21.2 Ω·cmil/ft). For the same wire size, current, and run length, aluminum drops about 64% more voltage than copper, so long aluminum runs usually step up one or two wire sizes.',
+      },
+      {
+        question: 'How do I upsize AWG to stay under 3% voltage drop?',
+        answer:
+          'If calculated voltage drop exceeds 3%, step up to the next larger wire gauge (lower AWG number or larger kcmil) until drop falls at or below 3%. This calculator automatically shows the smallest compliant copper or aluminum wire size when your run is over limit.',
+      },
+      {
+        question: 'Do I enter one-way distance or total round-trip wire length?',
+        answer:
+          'Always enter the one-way distance from the panel or source to the load (in feet or meters). The single-phase factor (2) and three-phase factor (√3 ≈ 1.732) already account for the return path.',
+      },
+    ],
+    es: {
+      title: 'Calculadora de caída de tensión NEC 3% | WattFlow',
+      description:
+        'Calculadora gratuita de caída de tensión NEC monofásica y trifásica: voltaje, amperios, distancia (ft/m), cobre o aluminio y calibre AWG para límite 3%/5%.',
+      h1: 'Calculadora de caída de tensión NEC',
+      tagline:
+        'Calcula la caída de tensión monofásica y trifásica en voltios y porcentaje con la Tabla 8 Cap. 9 NEC para cables en conducto, verifica límites 3%/5% y sugiere el calibre mínimo AWG.',
+      faqs: [
+        {
+          question: '¿Cuál es la recomendación NEC del 3% y 5% de caída de tensión?',
+          answer:
+            'La Nota Informativa NEC 210.19(A) recomienda mantener la caída de tensión en 3% o menos en circuitos derivados y 5% o menos sumando alimentador y derivado. Cumplir el 3% evita sobrecalentamiento de motores, parpadeo de luces y fallos en equipos.',
+        },
+        {
+          question: '¿Cuál es la fórmula de caída de tensión monofásica y trifásica?',
+          answer:
+            'Con la resistencia CC de la Tabla 8 Cap. 9 NEC (Ω por 1.000 ft): monofásica VD = (2 × L × I × R) ÷ 1.000, y trifásica VD = (1,732 × L × I × R) ÷ 1.000, donde L es la distancia de ida en pies e I es la corriente en amperios.',
+        },
+        {
+          question: '¿Cómo influyen el cobre y el aluminio en la caída de tensión?',
+          answer:
+            'El cobre tiene menor resistencia eléctrica (K ≈ 12,9) que el aluminio (K ≈ 21,2). Para el mismo calibre, carga y longitud de conducto, el aluminio presenta cerca de un 64% más de caída de tensión, por lo que en tramos largos suele subir uno o dos calibres.',
+        },
+        {
+          question: '¿Cómo subir el calibre AWG para mantenerme bajo el 3%?',
+          answer:
+            'Si la caída supera el 3%, elige el siguiente calibre más grueso (número AWG menor o mayor kcmil) hasta quedar igual o por debajo del 3%. Esta calculadora te muestra automáticamente el calibre mínimo sugerido cuando excedes el límite.',
+        },
+        {
+          question: '¿Se ingresa la distancia de ida o el largo total ida y vuelta?',
+          answer:
+            'Ingresa siempre la distancia de ida desde el tablero hasta la carga (en pies o metros). El factor monofásico (2) y el trifásico (√3 ≈ 1,732) ya contemplan el recorrido de retorno del conductor.',
         },
       ],
     },

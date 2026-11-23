@@ -24,10 +24,14 @@ const EXPECTED_KEYS: SeoToolKey[] = [
   'conduitFill',
   'saddle4',
   'shrink',
+  'rollingOffset',
+  'kicked90',
+  'wireSize',
+  'voltageDrop',
 ];
 
-test('SEO_TOOL_PAGES：6 个交互式 SEO 工具页且 Top-4 优先排序', () => {
-  assert.equal(SEO_TOOL_PAGES.length, 6);
+test('SEO_TOOL_PAGES：10 个交互式 SEO 工具页且 Top-4 优先排序', () => {
+  assert.equal(SEO_TOOL_PAGES.length, 10);
   assert.deepEqual(
     SEO_TOOL_PAGES.map((page) => page.key),
     EXPECTED_KEYS,
@@ -42,6 +46,10 @@ test('title ≤ 60 字符且包含目标关键词', () => {
     conduitFill: 'conduit fill',
     saddle4: '4 point saddle',
     shrink: 'shrink',
+    rollingOffset: 'rolling offset',
+    kicked90: 'kicked 90',
+    wireSize: 'wire size',
+    voltageDrop: 'voltage drop',
   };
   for (const page of SEO_TOOL_PAGES) {
     assert.ok(
@@ -109,8 +117,15 @@ test('isSeoToolPath：容忍尾斜杠与大小写，拒绝其它路径', () => {
   assert.equal(isSeoToolPath('/conduit-fill/'), true);
   assert.equal(isSeoToolPath('/4-point-saddle'), true);
   assert.equal(isSeoToolPath('/shrink'), true);
+  assert.equal(isSeoToolPath('/rolling-offset'), true);
+  assert.equal(isSeoToolPath('/rolling-offset/'), true);
+  assert.equal(isSeoToolPath('/kicked-90'), true);
+  assert.equal(isSeoToolPath('/wire-size'), true);
+  assert.equal(isSeoToolPath('/voltage-drop'), true);
   assert.equal(isSeoToolPath('/'), false);
   assert.equal(isSeoToolPath('/offset-calculator'), false);
+  assert.equal(isSeoToolPath('/rolling-offset-calculator'), false);
+  assert.equal(isSeoToolPath('/kick-90-calculator'), false);
   assert.equal(isSeoToolPath('/nope'), false);
 });
 
@@ -159,7 +174,7 @@ test('FAQPage JSON-LD 每个 FAQ 一个问题节点', () => {
 
 /* ---------------- 相关计算器内链（单一口径） ---------------- */
 
-test('buildRelatedLinks：恰好 6 条（其余 5 页 + 首页）且不自链', () => {
+test('buildRelatedLinks：恰好 10 条（其余 9 页 + 首页）且不自链', () => {
   for (const page of SEO_TOOL_PAGES) {
     const links = buildRelatedLinks(page);
     assert.equal(links.length, SEO_TOOL_PAGES.length, `${page.key} link count`);
@@ -182,14 +197,24 @@ test('buildRelatedLinks：恰好 6 条（其余 5 页 + 首页）且不自链', 
   }
 });
 
-test('related links 覆盖另外 5 个 slug 且指向正确路径', () => {
+test('related links 覆盖另外 9 个 slug 且指向正确路径', () => {
   const page = getSeoToolPage('offset');
   const toolLinks = buildRelatedLinks(page).filter(
     (link) => link.key !== 'home',
   );
   assert.deepEqual(
     toolLinks.map((link) => link.path).sort(),
-    ['/stub-up', '/3-point-saddle', '/conduit-fill', '/4-point-saddle', '/shrink'].sort(),
+    [
+      '/stub-up',
+      '/3-point-saddle',
+      '/conduit-fill',
+      '/4-point-saddle',
+      '/shrink',
+      '/rolling-offset',
+      '/kicked-90',
+      '/wire-size',
+      '/voltage-drop',
+    ].sort(),
   );
   const first = getSeoToolPage(toolLinks[0].key as SeoToolKey);
   assert.equal(toolLinks[0].title, first.h1);
@@ -226,6 +251,10 @@ const ES_KEYWORDS: Record<SeoToolKey, string> = {
   conduitFill: 'llenado',
   saddle4: 'silla',
   shrink: 'contracción',
+  rollingOffset: 'desplazamiento',
+  kicked90: 'kick',
+  wireSize: 'calibre',
+  voltageDrop: 'caída de tensión',
 };
 
 test('es 文案字段齐全：title/description/h1/tagline/faqs', () => {

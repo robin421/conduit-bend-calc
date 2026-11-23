@@ -3,11 +3,15 @@ import { test } from 'node:test';
 
 import {
   buildConduitFillCopyText,
+  buildKicked90CopyText,
   buildOffsetCopyText,
+  buildRollingOffsetCopyText,
   buildSaddleCopyText,
   buildShrinkCopyText,
   buildStubCopyText,
   buildThreePointSaddleCopyText,
+  buildVoltageDropCopyText,
+  buildWireSizeCopyText,
 } from './copyResult.ts';
 
 test('offset：包含间距 / shrink / 两个 mark 位置', () => {
@@ -124,5 +128,91 @@ test('conduit fill：输出最大根数与可选超载状态', () => {
   assert.equal(
     over,
     'NEC Conduit Fill (1/2" EMT, 12 AWG THHN): max 9 wires. 10 wires = 43.8% fill (limit 40%, OVERFILLED).',
+  );
+});
+
+test('rolling offset：包含 mark spacing / true offset / shrink / rotation', () => {
+  const text = buildRollingOffsetCopyText({
+    angle: 30,
+    trueOffset: 10,
+    spacing: 20,
+    shrink: 2.5,
+    rollAngleDeg: 53.13,
+    unit: 'decimal',
+  });
+  assert.equal(
+    text,
+    'Rolling offset at 30°: mark spacing 20", true offset 10", shrink 2.5", rotation 53.1°.',
+  );
+});
+
+test('kicked 90：包含 kick mark / stub mark / take-up / total gain', () => {
+  const text = buildKicked90CopyText({
+    sizeLabel: '1/2" EMT',
+    stubMark: 7,
+    takeUp: 5,
+    kickAngle: 30,
+    kickMarkFromBack: 8,
+    totalGain: 2.1,
+    unit: 'decimal',
+  });
+  assert.equal(
+    text,
+    'Kicked 90° in 1/2" EMT (30° kick): kick mark 8" from back of 90°, stub mark 7" from end (5" take-up), total gain 2.1".',
+  );
+});
+
+test('wire size：包含电流、连续负载说明、材质、温度列与最小线径', () => {
+  const text = buildWireSizeCopyText({
+    metalLabel: 'Copper',
+    wireLabel: '12 AWG',
+    amps: 16,
+    requiredAmps: 20,
+    continuous: true,
+    column: 60,
+    ampacity: 20,
+  });
+  assert.equal(
+    text,
+    'NEC Wire Size (16 A (×125% = 20 A), Copper, 60°C): minimum 12 AWG (20 A ampacity per Table 310.16).',
+  );
+});
+
+test('voltage drop：包含达标与超限建议升级线径', () => {
+  const ok = buildVoltageDropCopyText({
+    phase: 1,
+    volts: 120,
+    amps: 15,
+    distance: 50,
+    distanceUnit: 'ft',
+    metalLabel: 'Copper',
+    wireLabel: '12 AWG',
+    dropPercent: 2.48,
+    dropVolts: 2.97,
+    endVolts: 117.0,
+    limitPercent: 3,
+  });
+  assert.equal(
+    ok,
+    'NEC Voltage Drop (1φ 120V, 15 A, 50 ft, 12 AWG Copper): 2.48% (2.97 V drop, 117.0 V at load) — OK (≤3%).',
+  );
+
+  const over = buildVoltageDropCopyText({
+    phase: 3,
+    volts: 208,
+    amps: 40,
+    distance: 200,
+    distanceUnit: 'ft',
+    metalLabel: 'Copper',
+    wireLabel: '8 AWG',
+    dropPercent: 5.18,
+    dropVolts: 10.78,
+    endVolts: 197.2,
+    limitPercent: 3,
+    recommendedWire: '4 AWG',
+  });
+  assert.equal(
+    over,
+    'NEC Voltage Drop (3φ 208V, 40 A, 200 ft, 8 AWG Copper): 5.18% (10.78 V drop, 197.2 V at load) — OVER 3% limit (use 4 AWG).',
   );
 });

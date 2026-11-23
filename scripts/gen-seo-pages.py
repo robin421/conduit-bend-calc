@@ -28,6 +28,8 @@ REDIRECTED_SLUGS = {
     "3-point-saddle-calculator",
     "4-point-saddle-calculator",
     "conduit-shrink-calculator",
+    "rolling-offset-calculator",
+    "kick-90-calculator",
 }
 
 CANONICAL_TOOLS = [
@@ -37,6 +39,10 @@ CANONICAL_TOOLS = [
     ("conduit-fill", "NEC Conduit Fill Calculator"),
     ("4-point-saddle", "4-Point Saddle Calculator"),
     ("shrink", "Conduit Shrink Calculator"),
+    ("rolling-offset", "Rolling Offset Calculator"),
+    ("kicked-90", "Kicked 90° Calculator"),
+    ("wire-size", "NEC Wire Size Calculator"),
+    ("voltage-drop", "NEC Voltage Drop Calculator"),
 ]
 
 
@@ -498,9 +504,9 @@ beam, with a center bend and two side bends.</li>
 <li><strong>4-point saddle</strong> &mdash; two back-to-back offsets that box around a wide
 obstruction such as a duct or pipe rack.</li>
 <li><strong>Rolling offset</strong> &mdash; an offset that changes height and horizontal
-position at the same time, bent in two planes.</li>
+position at the same time, bent in two planes (<a href="/rolling-offset/">Rolling Offset Calculator</a>).</li>
 <li><strong>Kicked 90&deg;</strong> &mdash; a 90&deg; with a short kick at one end, common
-for entering panels and boxes.</li>
+for entering panels and boxes (<a href="/kicked-90/">Kicked 90&deg; Calculator</a>).</li>
 </ul>
 
 <h2>The three numbers behind every bend</h2>
@@ -1357,8 +1363,10 @@ from the end, arrow on the mark, bend to 90\u00b0.</p>
 <h2>A note on conduit fill</h2>
 <p>Sizing conduit for how many THHN conductors it can legally carry follows NEC Chapter 9
 Tables 1, 4, and 5 (40% fill for 3 or more wires). Use our free
-<a href="/conduit-fill/">NEC Conduit Fill Calculator</a> to check EMT, IMC, Rigid, and
-PVC Schedule 40 wire counts right alongside your bending marks.</p>
+<a href="/conduit-fill/">NEC Conduit Fill Calculator</a>,
+<a href="/wire-size/">NEC Wire Size Calculator</a>, and
+<a href="/voltage-drop/">NEC Voltage Drop Calculator</a> to verify conductor sizing
+and voltage drop right alongside your bending marks.</p>
 """,
     ),
     dict(
@@ -2228,6 +2236,14 @@ def render_faq_jsonld(faqs: list) -> str:
 
 def calculator_url_for_slug(slug: str, base_url: str) -> str:
     """Map each landing page slug to its canonical interactive calculator route."""
+    if "rolling" in slug:
+        return f"{base_url}/rolling-offset/"
+    if "kick" in slug:
+        return f"{base_url}/kicked-90/"
+    if "wire-size" in slug:
+        return f"{base_url}/wire-size/"
+    if "voltage-drop" in slug:
+        return f"{base_url}/voltage-drop/"
     if "4-point" in slug:
         return f"{base_url}/4-point-saddle/"
     if "3-point" in slug or "saddle" in slug:

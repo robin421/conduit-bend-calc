@@ -43,6 +43,10 @@ function entryAt(index: number, kind: 'offset' | 'shrink' = 'offset'): SeoHistor
 
 test('seoHistoryStorageKey：按工具页隔离存储键', () => {
   assert.equal(seoHistoryStorageKey('offset'), 'bendcalc:seo-history:offset:v1');
+  assert.equal(seoHistoryStorageKey('rollingOffset'), 'bendcalc:seo-history:rollingOffset:v1');
+  assert.equal(seoHistoryStorageKey('kicked90'), 'bendcalc:seo-history:kicked90:v1');
+  assert.equal(seoHistoryStorageKey('wireSize'), 'bendcalc:seo-history:wireSize:v1');
+  assert.equal(seoHistoryStorageKey('voltageDrop'), 'bendcalc:seo-history:voltageDrop:v1');
   assert.notEqual(seoHistoryStorageKey('offset'), seoHistoryStorageKey('shrink'));
 });
 

@@ -115,3 +115,87 @@ export function buildConduitFillCopyText(data: ConduitFillCopyData): string {
   }
   return `${base}.`;
 }
+
+export interface RollingOffsetCopyData {
+  angle: OffsetAngle;
+  trueOffset: number;
+  spacing: number;
+  shrink: number;
+  rollAngleDeg: number;
+  unit: UnitSystem;
+}
+
+export function buildRollingOffsetCopyText(data: RollingOffsetCopyData): string {
+  const rot = Math.round(data.rollAngleDeg * 10) / 10;
+  return (
+    `Rolling offset at ${data.angle}°: mark spacing ${len(data.spacing, data.unit)}, ` +
+    `true offset ${len(data.trueOffset, data.unit)}, shrink ${len(data.shrink, data.unit)}, ` +
+    `rotation ${rot}°. `
+  ).trim();
+}
+
+export interface Kicked90CopyData {
+  sizeLabel: string;
+  stubMark: number;
+  takeUp: number;
+  kickAngle: OffsetAngle;
+  kickMarkFromBack: number;
+  totalGain: number;
+  unit: UnitSystem;
+}
+
+export function buildKicked90CopyText(data: Kicked90CopyData): string {
+  return (
+    `Kicked 90° in ${data.sizeLabel} (${data.kickAngle}° kick): ` +
+    `kick mark ${len(data.kickMarkFromBack, data.unit)} from back of 90°, ` +
+    `stub mark ${len(data.stubMark, data.unit)} from end (${data.takeUp}" take-up), ` +
+    `total gain ${len(data.totalGain, data.unit)}.`
+  );
+}
+
+export interface WireSizeCopyData {
+  metalLabel: string;
+  wireLabel: string;
+  amps: number;
+  requiredAmps: number;
+  continuous: boolean;
+  column: number;
+  ampacity: number;
+}
+
+export function buildWireSizeCopyText(data: WireSizeCopyData): string {
+  const contNote = data.continuous ? ` (×125% = ${data.requiredAmps} A)` : '';
+  return (
+    `NEC Wire Size (${data.amps} A${contNote}, ${data.metalLabel}, ${data.column}°C): ` +
+    `minimum ${data.wireLabel} (${data.ampacity} A ampacity per Table 310.16).`
+  );
+}
+
+export interface VoltageDropCopyData {
+  phase: 1 | 3;
+  volts: number;
+  amps: number;
+  distance: number;
+  distanceUnit: 'ft' | 'm';
+  metalLabel: string;
+  wireLabel: string;
+  dropPercent: number;
+  dropVolts: number;
+  endVolts: number;
+  limitPercent: number;
+  recommendedWire?: string | null;
+}
+
+export function buildVoltageDropCopyText(data: VoltageDropCopyData): string {
+  const phaseLabel = data.phase === 3 ? '3φ' : '1φ';
+  const base =
+    `NEC Voltage Drop (${phaseLabel} ${data.volts}V, ${data.amps} A, ${data.distance} ${data.distanceUnit}, ` +
+    `${data.wireLabel} ${data.metalLabel}): ${data.dropPercent.toFixed(2)}% ` +
+    `(${data.dropVolts.toFixed(2)} V drop, ${data.endVolts.toFixed(1)} V at load)`;
+  if (data.dropPercent > data.limitPercent) {
+    return data.recommendedWire
+      ? `${base} — OVER ${data.limitPercent}% limit (use ${data.recommendedWire}).`
+      : `${base} — OVER ${data.limitPercent}% limit.`;
+  }
+  return `${base} — OK (≤${data.limitPercent}%).`;
+}

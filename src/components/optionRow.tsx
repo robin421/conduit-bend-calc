@@ -6,7 +6,7 @@ import { useTheme } from '../theme';
 interface OptionRowProps<T extends string | number> {
   label: string;
   options: readonly T[];
-  value: T;
+  value: T | null;
   onChange: (next: T) => void;
   /** 选项显示文案（缺省为 String(option)） */
   format?: (option: T) => string;

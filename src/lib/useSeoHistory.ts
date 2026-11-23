@@ -23,6 +23,10 @@ const HISTORY_KIND_TO_CALCULATOR: Record<SeoHistoryKind, string> = {
   conduitFill: 'conduit-fill',
   shrink: 'shrink',
   saddle4: '4-point-saddle',
+  rollingOffset: 'rolling-offset',
+  kicked90: 'kicked-90',
+  wireSize: 'wire-size',
+  voltageDrop: 'voltage-drop',
 };
 
 const stores = new Map<SeoHistoryKind, SeoHistoryStore>();

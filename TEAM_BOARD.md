@@ -52,7 +52,13 @@
 | T35 | 第 2 周 Web 增长研发：入站 UTM 会话归因（Amplitude SPA + 静态页）+ 上线 3 篇英文电工实算指南（含内联 SVG 标线图 + FAQ JSON-LD + `sitemap.xml` 28 URL） | developer | T34 | DONE | `amplitudeCore.ts`, `amplitude.ts`, `amplitude.test.ts`, `scripts/gen-seo-pages.py`, `scripts/inject-web-seo.py` | 主工作区物理核验 PASS（`tsc` 0 错、`434/434` 单测、3 篇 613–625 词实算指南 + 内联 SVG + 28 URL sitemap + 10 条 301 全过） |
 | T36 | 第 2 周短视频成片与分发包：生成 3 条 1080×1920 竖屏 30s MP4（含配音版+无声字幕版）+ 3 张封面图 + `marketing/week2-posting-kit.md` | designer | T34 | DONE | `scripts/generate_shorts_videos.py`, `marketing/shorts/*`, `marketing/week2-posting-kit.md` | 已同步主工作区（6 条 1080×1920 H.264 MP4 29.2s–32.1s + 3 张封面 + 社区分发包），待 T37 QA 终检 |
 | T37 | 第 2 周全量 QA 验收（`tsc` + 单测 + `web:build-seo` + `ego-browser` 3 篇新指南实测 + `ffprobe`/关键帧目检） | qa | T35, T36 | DONE | QA 验收报告 + `walkthrough.md`（Week 2 节） | PASS（`tsc` 0 错、`434/434` 单测、28 URL sitemap + 10 条 301、复验修复 BLOCKER-01 后 10/10 场景双端 UTM 落盘/透传与 0 错/0 泄露全过、6 条 MP4 `ffprobe` 与 3 张封面全过） |
-| T38 | 第 2 周生产部署 + Play 审核状态巡检 + GSC 5 个新 URL 主动请求编入索引 | ai-manager | T37 | PENDING | Cloudflare Pages 新版部署 + GSC 请求索引记录 | 待用户二次审批上线 |
+| T38 | 第 2 周生产部署 + Play 审核状态巡检 + GSC 5 个新 URL 主动请求编入索引 | ai-manager | T37 | DONE | `https://26b6c0f7.cbc-web.pages.dev` → `https://bendcalc.wattflow.net`；Play `2026-11-24` 已全量发布；GSC 5 URL 已提交请求索引 | PASS（3 篇实算指南 `HTTP 200` + 内联 SVG、28 URL sitemap、Play EN/ES 12 图与停实验已通过审核上线） |
+| T39 | `/goal` Wave 1 — Web SEO 全量 10 大交互计算器闭环（新增 `/rolling-offset/`、`/kicked-90/`、`/wire-size/`、`/voltage-drop/` + `/privacy.html` + 14 条 301 + 30 URL sitemap） | developer | T38 | DONE | `toolPages.ts`, `seoRoutes.ts`, `calculatorNav.ts`, 4 个新 SEO 工具屏, `scripts/*` | 主工作区复跑 PASS（`tsc` 0 错、`438/438` 单测、10 交互页 + `/privacy.html` + 14 条 301 + 30 URL sitemap） |
+| T40 | `/goal` Wave 2 — 原生 App `v1.12.0 (vc12)` 剩余核心屏全面西语化（`ConduitFill`/`BenderPicker`/`WireSize`/`VoltageDrop`/`Lookup`/`4Pt`/`Rolling`/`Kicked90`）+ 版本升级与日志 | developer | T39 | IN_PROGRESS | `src/i18n/dictionaries.ts`, 核心屏与组件, `package.json`, `app.json`, `android/app/build.gradle`, `CHANGELOG.md` | 执行中 |
+| T41 | `/goal` Wave 3 — Google Play 多地区扩量（新增 `es-419` 拉美/墨西哥 & `en-CA` 加拿大 + 重拍 100% 纯西语 #4/#5 截图） | designer | T40 | PENDING | `scripts/generate_store_assets.py`, `fastlane/metadata/android/{en-US,es-US,es-419,en-CA}/` | 待 T40 合并 |
+| T42 | `/goal` Wave 4 — 全量 QA 验收（`tsc` + 单测 + `web:build-seo` + `ego-browser` 10 工具页 & `/privacy.html` 双端 E2E） | qa | T40, T41 | PENDING | QA 验收报告 | 待 T40/T41 完成 |
+| T43 | `/goal` Wave 4 — 本地签名构建 `v1.12.0 (vc12)` AAB + 16 KB ELF 页对齐核验 + 4 语种 `fastlane validate_only` | ai-manager | T42 | PENDING | `dist/conduit-bend-calc-1.12.0-vc12.aab` | 待 T42 PASS |
+| T44 | `/goal` 最终发布 — Cloudflare Pages 部署 + Play `deploy` & `metadata` 上传送审 + GSC 30 URL Sitemap & 新页请求索引 | ai-manager | T43 | PENDING | 全端上线验活报告 + `walkthrough.md` 终版 | 待 T43 PASS |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

@@ -197,6 +197,10 @@ HOME_STATIC_HTML = f"""<!-- static-seo-home-start -->
         <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/conduit-fill/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">NEC Conduit Fill Calculator</a><span style="font-size:13px;color:#475569;">Max THHN wires and 40%/31%/53% fill check for EMT, IMC, Rigid, and PVC40.</span></li>
         <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/4-point-saddle/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">4-Point Saddle Calculator</a><span style="font-size:13px;color:#475569;">Four marks and total shrink over square obstacles and ductwork.</span></li>
         <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/shrink/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Conduit Shrink Calculator</a><span style="font-size:13px;color:#475569;">Shrink per inch and total run allowance before cutting.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/rolling-offset/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Rolling Offset Calculator</a><span style="font-size:13px;color:#475569;">True offset &radic;(rise&sup2; + roll&sup2;), mark spacing, rotation angle, and shrink.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/kicked-90/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Kicked 90&deg; Calculator</a><span style="font-size:13px;color:#475569;">90&deg; stub take-up mark, kick mark distance from back of 90&deg;, and total gain.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/wire-size/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">NEC Wire Size Calculator</a><span style="font-size:13px;color:#475569;">NEC Table 310.16 AWG ampacity for copper &amp; aluminum, 60/75/90&deg;C, and 125% load.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/voltage-drop/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">NEC Voltage Drop Calculator</a><span style="font-size:13px;color:#475569;">Single-phase and three-phase NEC 3% / 5% drop check with automatic AWG upsize.</span></li>
       </ul>
     </nav>
     <nav aria-label="Bending guides and charts" style="margin-bottom:20px;">
@@ -270,8 +274,111 @@ if os.path.exists(og_src):
 else:
     print("warning: assets/og-image.png not found, skipping", file=sys.stderr)
 
-# 隐私页（若已拷贝到 dist）：同样注入 GA4 基础代码，保证整站口径一致。
+# 生成隐私政策页 dist/privacy.html（修复全站页脚 /privacy.html 死链）。
 privacy_path = f"{EXPORT_DIR}/privacy.html"
+PRIVACY_HTML = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Privacy Policy — Conduit Bend Calc | WattFlow</title>
+<meta name="description" content="Privacy Policy for Conduit Bend Calc by WattFlow: offline-first electrical conduit calculator with no accounts, no PII collection, and anonymous low-cardinality telemetry." />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="{BASE_URL}/privacy.html" />
+<style>
+*, *::before, *::after {{ box-sizing: border-box; }}
+body {{
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #F5F8FB;
+  color: #0F2B46;
+  line-height: 1.65;
+}}
+.topbar {{
+  background: #0F2B46;
+  color: #FFFFFF;
+  border-bottom: 3px solid #F4C317;
+}}
+.topbar-inner {{
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}}
+.brand {{
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+}}
+.back-link {{
+  color: #F4C317;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: .9rem;
+}}
+main {{
+  max-width: 800px;
+  margin: 24px auto 40px;
+  padding: 24px;
+  background: #FFFFFF;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+}}
+h1 {{ margin: 0 0 8px; font-size: 1.6rem; color: #0F2B46; }}
+h2 {{ margin: 1.6rem 0 .5rem; font-size: 1.12rem; color: #0F2B46; }}
+p, li {{ color: #1E3A56; }}
+.muted {{ color: #52677B; font-size: .9rem; }}
+a {{ color: #0F2B46; font-weight: 600; }}
+footer {{
+  max-width: 800px;
+  margin: 0 auto 32px;
+  padding: 0 16px;
+  color: #52677B;
+  font-size: .85rem;
+}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{BASE_URL}/">Conduit Bend Calc</a>
+    <a class="back-link" href="{BASE_URL}/">All Calculators</a>
+  </div>
+</header>
+<main>
+  <h1>Privacy Policy</h1>
+  <p class="muted">Conduit Bend Calc &middot; Built by WattFlow &middot; Last updated: 2026</p>
+  <p>Conduit Bend Calc is designed as an offline-first electrical conduit bending and NEC reference calculator for field electricians. We collect as little data as possible and never sell your information.</p>
+
+  <h2>1. No Accounts and No Personal Information</h2>
+  <p>You do not need to create an account, sign in, or provide your name, phone number, address, or precise location to use the web calculators or Android app. Calculation inputs (offset heights, conduit sizes, amperages, distances), bend history, and saved bender calibration profiles stay strictly on your own device using local storage.</p>
+
+  <h2>2. Anonymous, Low-Cardinality Usage Telemetry</h2>
+  <p>To understand which calculators are used and keep the app reliable, we record anonymous, low-cardinality product events (such as which calculator screen was opened, unit system selected, and whether a calculation completed) via Amplitude, Google Analytics 4 (web), and Firebase Analytics / Crashlytics (Android). We never transmit your typed measurements, project notes, or personally identifiable information (PII) in analytics events.</p>
+
+  <h2>3. Optional Pro Unlock via Google Play Billing</h2>
+  <p>In the Android app, the optional one-time Pro upgrade is processed entirely by Google Play Billing. WattFlow never receives or stores your credit card number or billing details. Only your non-personal entitlement status is stored locally so Pro keeps working offline.</p>
+
+  <h2>4. Voluntary Feedback</h2>
+  <p>If you choose to submit a bug report or feature request through our <a href="{BASE_URL}/feedback">Feedback form</a>, we receive the message you write along with basic app diagnostics (app version, operating system, and language) and an optional email address if you choose to include one. Calculation history and payment details are never attached.</p>
+
+  <h2>5. Contact</h2>
+  <p>Questions or privacy requests can be sent anytime via <a href="{BASE_URL}/feedback">{BASE_URL}/feedback</a>.</p>
+</main>
+<footer>&copy; 2026 Conduit Bend Calc &middot; Built by WattFlow &middot; <a href="{BASE_URL}/">Back to Calculators</a></footer>
+</body>
+</html>
+"""
+with open(privacy_path, "w") as f:
+    f.write(PRIVACY_HTML)
+print("privacy.html wrote")
+
+# 隐私页注入 GA4 基础代码，保证整站口径一致。
 if GA4_SNIPPET and os.path.exists(privacy_path):
     with open(privacy_path) as f:
         privacy = f.read()
@@ -291,7 +398,7 @@ if CF_BEACON_SNIPPET and os.path.exists(privacy_path):
             f.write(privacy)
         print("CF beacon injected into privacy.html")
 
-# 6 个 SPA 工具页 shell（scripts/gen-seo-tool-shells.ts 生成 dist/<slug>/index.html）。
+# 10 个 SPA 工具页 shell（scripts/gen-seo-tool-shells.ts 生成 dist/<slug>/index.html）。
 # 若 shell 在 GA4 注入之后生成（见 CHANGELOG 构建顺序），它们已经继承了 index.html
 # 的 gtag；若在其之前生成，则此处补齐，保证新工具页无论构建顺序都能被 GA4 覆盖。
 TOOL_SHELL_SLUGS = [
@@ -301,6 +408,10 @@ TOOL_SHELL_SLUGS = [
     "conduit-fill",
     "4-point-saddle",
     "shrink",
+    "rolling-offset",
+    "kicked-90",
+    "wire-size",
+    "voltage-drop",
 ]
 if GA4_SNIPPET:
     for slug in TOOL_SHELL_SLUGS:
@@ -335,22 +446,25 @@ with open(f"{EXPORT_DIR}/robots.txt", "w") as f:
     f.write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n")
 
 # Standalone SEO landing pages generated by scripts/gen-seo-pages.py +
-# 6 interactive SPA tool shells generated by scripts/gen-seo-tool-shells.ts.
+# 10 interactive SPA tool shells generated by scripts/gen-seo-tool-shells.ts.
 # Duplicate static calculator slugs (offset-calculator/, stub-up-calculator/,
-# 3-point-saddle-calculator/, 4-point-saddle-calculator/, conduit-shrink-calculator/)
-# are 301-redirected in dist/_redirects and excluded from sitemap.xml.
+# 3-point-saddle-calculator/, 4-point-saddle-calculator/, conduit-shrink-calculator/,
+# rolling-offset-calculator/, kick-90-calculator/) are 301-redirected in
+# dist/_redirects and excluded from sitemap.xml.
 SEO_PATHS = [
-    # 6 Interactive SEO Tools (Top-4 first). Keep in sync with src/seo/toolPages.ts.
+    # 10 Interactive SEO Tools (Top-4 first). Keep in sync with src/seo/toolPages.ts.
     "offset/",
     "stub-up/",
     "3-point-saddle/",
     "conduit-fill/",
     "4-point-saddle/",
     "shrink/",
-    # Static SEO guides & charts (scripts/gen-seo-pages.py).
+    "rolling-offset/",
+    "kicked-90/",
+    "wire-size/",
+    "voltage-drop/",
+    # 19 Static SEO guides & charts (scripts/gen-seo-pages.py).
     "conduit-bending-calculator/",
-    "rolling-offset-calculator/",
-    "kick-90-calculator/",
     "90-degree-bend-calculator/",
     "conduit-bending-chart/",
     "parallel-offset-calculator/",
@@ -392,15 +506,6 @@ with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:
             f"    <lastmod>{today_iso}</lastmod>\n"
             "    <changefreq>monthly</changefreq>\n"
             "    <priority>0.8</priority>\n"
-            "  </url>\n"
-        )
-    if os.path.exists(privacy_path):
-        f.write(
-            "  <url>\n"
-            f"    <loc>{BASE_URL}/privacy.html</loc>\n"
-            f"    <lastmod>{today_iso}</lastmod>\n"
-            "    <changefreq>yearly</changefreq>\n"
-            "    <priority>0.3</priority>\n"
             "  </url>\n"
         )
     f.write("</urlset>\n")
@@ -463,10 +568,14 @@ redirects_content = """/offset-calculator /offset/ 301
 /4-point-saddle-calculator/ /4-point-saddle/ 301
 /conduit-shrink-calculator /shrink/ 301
 /conduit-shrink-calculator/ /shrink/ 301
+/rolling-offset-calculator /rolling-offset/ 301
+/rolling-offset-calculator/ /rolling-offset/ 301
+/kick-90-calculator /kicked-90/ 301
+/kick-90-calculator/ /kicked-90/ 301
 """
 with open(f"{EXPORT_DIR}/_redirects", "w") as f:
     f.write(redirects_content)
-print("Cloudflare Pages _redirects wrote (10 301 rules)")
+print("Cloudflare Pages _redirects wrote (14 301 rules)")
 
 # Bing IndexNow verification key file: dist/<INDEXNOW_KEY>.txt
 indexnow_key = (os.environ.get("INDEXNOW_KEY") or "").strip()
