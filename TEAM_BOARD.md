@@ -58,7 +58,7 @@
 | T41 | `/goal` Wave 3 — Google Play 多地区扩量（新增 `es-419` 拉美/墨西哥 & `en-CA` 加拿大 + 重拍 100% 纯西语新版截图） | designer | T40 | DONE | `scripts/generate_store_assets.py`, `assets/store-raw/es-US/`, `fastlane/metadata/android/{en-US,en-CA,es-US,es-419}/` | 主工作区生成+校验 PASS（4 语种 24 张唯一 1080×1920 RGB 新版图 + 4 张 Feature Graphic + `changelogs/12.txt`，西语 #1–#6 全面西语化，0 `tubería`） |
 | T42 | `/goal` Wave 4 — 全量 QA 验收（`tsc` + 单测 + `web:build-seo` + `ego-browser` 10 工具页 & `/privacy.html` 双端 E2E） | qa | T40, T41 | DONE | QA 验收报告 | PASS（10 交互页 + `/privacy.html` + 14 条 301 + 30 URL sitemap + 390/1440px 双端 0 错/0 溢出/0 Amplitude 泄露 + 4 语种 24 张商店图全过） |
 | T43 | `/goal` Wave 4 — 本地签名构建 `v1.12.0 (vc12)` AAB | ai-manager | T42 | BLOCKED | 源码/Gradle/Changelogs 100% 就绪 | 物理环境阻塞：`~/Library/Android/sdk` 指向的外置盘 `SheetMileBuild` 当前未挂载且直连 `dl.google.com` 不通，EAS 云端缺 `GOOGLE_SERVICES_JSON_B64`；挂载 `SheetMileBuild` 后单条命令可出包 |
-| T44 | `/goal` 最终发布 — Cloudflare Pages 部署 + Play 4 语种 `metadata` 上传送审 + GSC 30 URL Sitemap & 新页请求索引 | ai-manager | T42 | IN_PROGRESS | 线上验活报告 + `walkthrough.md` 终版 | 执行中 |
+| T44 | `/goal` 最终发布 — Cloudflare Pages 部署 + Play 4 语种 `metadata` 上传送审 + GSC 30 URL Sitemap & 新页请求索引 | ai-manager | T42 | DONE | `https://7c11d5a1.cbc-web.pages.dev` → `https://bendcalc.wattflow.net`；Play `en-US`/`en-CA`/`es-US`/`es-419` 审核中；GSC 30 URL & 9 新页已请求索引 | 线上实测 PASS（10 大交互计算器 + 3 实算指南 + `/privacy` + 14 条 301 + 30 URL sitemap + `assetlinks.json`/`BING`/`GA4` 全部生效；Play 4 语种 24 图送审成功） |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。
