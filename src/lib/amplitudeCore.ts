@@ -20,6 +20,41 @@ export const AMPLITUDE_DEVICE_ID_KEY = '@conduit_amplitude_device_id';
 export const AMPLITUDE_SESSION_KEY = '@conduit_amplitude_session';
 export const AMPLITUDE_ACTIVATED_KEY = '@conduit_amplitude_activated';
 
+const BOT_USER_AGENT_PATTERN = /Googlebot|Bingbot|HeadlessChrome|Playwright|Puppeteer/i;
+
+export interface AnalyticsExclusionOptions {
+  isDev?: boolean;
+  hostname?: string;
+  webdriver?: boolean;
+  userAgent?: string;
+  forceSend?: boolean;
+}
+
+/**
+ * 判断当前运行环境是否应屏蔽真实 Amplitude 上报（开发/预览/自动化/爬虫）。
+ * `forceSend: true` 时强制放行。
+ */
+export function isExcludedAnalyticsEnvironment(opts?: AnalyticsExclusionOptions): boolean {
+  if (!opts) return false;
+  if (opts.forceSend === true) return false;
+  if (opts.isDev === true) return true;
+  const host = (opts.hostname ?? '').trim().toLowerCase();
+  if (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === '0.0.0.0' ||
+    host.endsWith('.local') ||
+    host.endsWith('.pages.dev')
+  ) {
+    return true;
+  }
+  if (opts.webdriver === true) return true;
+  if (opts.userAgent && BOT_USER_AGENT_PATTERN.test(opts.userAgent)) {
+    return true;
+  }
+  return false;
+}
+
 /** 严格事件属性白名单：禁止上传任何 PII、用户输入尺寸、历史记录或支付凭证。 */
 const ALLOWED_EVENT_PROPERTY_KEYS = new Set<string>([
   'bend_type',
@@ -48,6 +83,10 @@ const ALLOWED_EVENT_PROPERTY_KEYS = new Set<string>([
   'delta_bucket',
   'has_personal_data',
   'has_hidden_history',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'cta_placement',
 ]);
 
 /** 严格用户属性白名单：仅允许低基数状态维度，禁止上传任何 PII、尺寸或收据。 */
@@ -95,6 +134,7 @@ export interface AmplitudeClientDeps {
   appVersion?: string;
   language?: string;
   uuid?: () => string;
+  isExcluded?: () => boolean;
 }
 
 export function generateAnonymousDeviceId(): string {
@@ -220,6 +260,14 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
   const appVersion = deps.appVersion ?? 'unknown';
   const language = deps.language ?? 'en';
   const uuid = deps.uuid ?? generateAnonymousDeviceId;
+  const checkExcluded = (): boolean => {
+    if (!deps.isExcluded) return false;
+    try {
+      return Boolean(deps.isExcluded());
+    } catch {
+      return false;
+    }
+  };
 
   let deviceId: string | null = null;
   let session: AmplitudeSessionState | null = null;
@@ -277,6 +325,7 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
   }
 
   async function sendEventInternal(eventType: string, eventProperties?: Record<string, unknown>): Promise<boolean> {
+    if (checkExcluded()) return false;
     if (!fetchFn || !apiKey) return false;
     const currentTime = now();
     const { deviceId: resolvedDeviceId, sessionId } = await ensureDeviceAndSession(currentTime);
@@ -329,6 +378,7 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
     },
     markActivationIfNeeded(eventProperties?: Record<string, unknown>): Promise<boolean> {
       return serialize(async () => {
+        if (checkExcluded()) return false;
         if (activated === true) return false;
         if (activated === null) {
           try {

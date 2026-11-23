@@ -1,405 +1,521 @@
 #!/usr/bin/env python3
 """
-Generate complete Google Play ASO Assets for Conduit Bend Calc:
+Generate complete Google Play ASO Assets for Conduit Bend Calc (v1.11.0+):
 - en-US & es-US metadata (title, short_description, full_description)
-- 6 x 1080x1920 24-bit RGB Store Screenshots for en-US & es-US
-- 1024x500 Feature Graphic for en-US & es-US
-- Full validation against Google Play character limits and asset constraints.
+- 6 x 1080x1920 24-bit RGB Store Screenshots for en-US & es-US (using real per-locale app captures)
+- 1024x500 24-bit RGB Feature Graphic for en-US & es-US aligned to src/brandPalette.ts (#0F2B46 / #F4C317)
+- Full validation against Google Play character limits, image dimensions, color mode, and zero duplicates.
 """
 from __future__ import annotations
 
-import os
-import sys
+import hashlib
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFont
 
 SCREENSHOT_WIDTH = 1080
 SCREENSHOT_HEIGHT = 1920
 FEATURE_WIDTH = 1024
 FEATURE_HEIGHT = 500
 
-BASE_DIR = Path("/Volumes/T7 Shield/MyDocument/conduit-bend-calc")
+# Strictly aligned with src/brandPalette.ts & src/theme.ts
+NAVY_BG = "#0F2B46"
+NAVY_DEEP = "#091D30"
+NAVY_SURFACE = "#15334F"
+NAVY_BORDER = "#2B4862"
+SAFETY_YELLOW = "#F4C317"
+TEXT_WHITE = "#FFFFFF"
+TEXT_MUTED = "#BED0DF"
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 METADATA_DIR = BASE_DIR / "fastlane" / "metadata" / "android"
+RAW_ASSETS_DIR = BASE_DIR / "assets" / "store-raw"
 
 LISTINGS = {
     "en-US": {
         "title": "Conduit Bender & EMT Pipe Calc",
-        "shortDescription": "Zero scrap pipe. Real 1/16\" tape marks for EMT, IMC & Rigid on the ladder.",
-        "fullDescription": """Stop wasting pipe on trial-and-error bends. Conduit Bender & EMT Pipe Calc is the fast, offline-first bending calculator built for commercial electricians, industrial electricians, and electrical apprentices.
+        "shortDescription": 'Fast conduit offsets, 90° stubs, saddles & NEC fill. 1/16" marks, 100% offline.',
+        "fullDescription": """Stop wasting pipe on trial-and-error bends. Conduit Bender & EMT Pipe Calc is the fast, 100% offline conduit bending and NEC electrical calculator built for commercial electricians, industrial electricians, and apprentices.
 
-Calculate exact mark-to-mark distances, shrink allowances, and cut marks in seconds. Read every result in real-world tape-measure fractions down to 1/16"—no mental decimal conversions while standing on a ladder.
+Calculate exact mark-to-mark spacing, shrink allowances, and stub-up marks in seconds. Read every measurement in real tape-measure fractions down to 1/16"—no mental decimal conversions while standing on a ladder.
+
+----------------------------------------
+CORE CONDUIT BENDING CALCULATORS
+----------------------------------------
+• Offset Bends: Enter obstacle height and angle (10°, 15°, 22.5°, 30°, 45°, 60°). Calculates exact mark spacing and pipe shrink instantly with a live bend diagram.
+• 90° Stub-Up: Enter target stub height and let the app apply take-up deduction for your exact first mark. Single-thumb presets for 1/2", 3/4", and 1" EMT.
+• 3-Point Saddle: Clear round pipes and narrow obstacles with exact center mark, side mark spacing, and center shrink.
+• 4-Point Saddle: Clear rectangular ducts and wide obstructions with dual-offset flat-top calculations.
+• Rolling Offset: Solve compound offsets across both rise and roll dimensions.
+• Kicked 90° Bends: Combine a 90° stub with an offset kick in one stick of conduit.
+
+----------------------------------------
+NEC 2023 CONDUIT FILL & ELECTRICAL TOOLS
+----------------------------------------
+• NEC Conduit Fill: Instant maximum conductor capacity and % fill check for EMT, IMC, Rigid (RMC), and PVC Schedule 40 from 1/2" to 4" trade sizes (14 AWG to 500 kcmil THHN/THWN-2).
+• 40% Fill Rule Compliance: Verify NEC 2023 Chapter 9 Tables 1, 4, and 5 (53% / 31% / 40% fill limits) right on the jobsite.
+• Wire Sizing & Ampacity: Copper and aluminum conductor sizing based on NEC 2023 ratings.
+• Voltage Drop Calculator: Fast single-phase and three-phase circuit calculations.
 
 ----------------------------------------
 CALIBRATED FOR YOUR BENDER
 ----------------------------------------
-Bender shoes vary between manufacturers. The app includes precision presets compatible with major hand benders:
-• Calibrated for Ideal® iron and aluminum benders
-• Compatible with Klein Tools® cast aluminum and steel series
-• Pre-configured for Greenlee® Site-Rite® series
-• Compatible with Milwaukee® and Gardner Bender models
-• Custom Bender Profiles (Pro): Dial in exact take-up, gain, and deduction values for worn shoes or hydraulic benders.
+Bender shoes vary by brand and model. Built-in shoe profiles include:
+• Ideal® hand benders (74-026 1/2" EMT, 74-027 3/4" EMT)
+• Klein Tools® hand benders (51603, 51604, 51605 EMT)
+• Greenlee® benders (1800 Rigid 1/2"–1", 555 EMT 1/2"–2")
+• Custom Bender Profiles & Guided Calibration (Pro): Dial in exact centerline radius, take-up, and gain for worn shoes or any other bender.
 
 ----------------------------------------
-CORE BENDING CALCULATORS
+BUILT FOR THE JOBSITE
 ----------------------------------------
-• 90° Stub-Up: Enter desired stub height; automatically applies take-up deduction for the exact first mark. Single-thumb presets for 1/2", 3/4", and 1" EMT.
-• Offset Bends: Enter obstruction height and bend angle (10°, 15°, 22.5°, 30°, 45°, 60°). Calculates multiplier spacing and total pipe shrink instantly.
-• 3-Point Saddle: Clear round obstacles. Enter diameter/height and bend angle (45° center with 22.5° sides, or 60°/30°).
-• 4-Point Saddle: Clear rectangular ducts and wide obstructions with dual offset calculations.
-• Kicked 90° Bends: Combine a 90° bend with an offset kick in a single stick of pipe.
-• Rolling Offset: Calculate compound offsets across both rise and roll dimensions.
-
-----------------------------------------
-NEW: NEC CONDUIT FILL & WIRE SIZING
-----------------------------------------
-• NEC Annex C Conduit Fill: Instant maximum conductor capacity for EMT, IMC, and Rigid conduits (Table C.1).
-• 40% Fill Rule Compliance: Verify multi-wire raceway fill instantly to avoid NEC code violations.
-• Wire Ampacity & Sizing: Copper and aluminum conductor sizing based on NEC 2023 ratings.
-• Voltage Drop Calculator: Accurate single-phase and three-phase run calculations.
-
-----------------------------------------
-FIELD-READY FEATURES
-----------------------------------------
-• Tape Measure Fractions: True fractional inches (e.g. 14 3/8", 22 5/16") with 1/16" precision. Metric mode (mm/cm) supported.
-• Multi-Conduit Support: Handles EMT, IMC, and Rigid heavy-wall steel in 1/2", 3/4", 1", and 1-1/4" trade sizes.
-• Trade Reference Tables: Quick access to multipliers, shrink tables, and NEC reference charts.
-• Visual Bend Diagrams: Graphical guides showing bender hook and arrow orientation.
-• Recent Bends History: Reopen recent runs on the job site with one tap.
+• Real 1/16" Tape Fractions: Switch effortlessly between Fraction (1/16"), Decimal inches, and Metric (mm).
+• Live SVG Bend Diagrams: Clear visual guides showing mark locations (M1, M2, M3), angles, and shrink.
+• Saved Calculation History: Review, export, or reopen recent bends with one tap.
+• Trade Reference Tables: Quick lookup for offset multipliers, shrink per inch, and take-up values.
+• Bilingual Interface: Instant English & Spanish (EN / ES) switcher built in.
 
 ----------------------------------------
 100% OFFLINE & PRIVACY-FIRST
 ----------------------------------------
-• No login or account required.
-• Works 100% offline in electrical rooms, utility basements, and high-rise sites with zero signal.
-• No ads. Clean interface designed for rapid one-handed use with work gloves.
+• Works 100% offline in electrical rooms, basements, and high-rise sites with zero signal.
+• No account or sign-in required.
+• Zero ads. High-contrast interface designed for fast one-handed use with work gloves.
 
-Bend with confidence. Save scrap pipe. Master the conduit trade with Conduit Bender & EMT Pipe Calc.
+Bend with confidence and cut scrap pipe with Conduit Bender & EMT Pipe Calc.
 
 ----------------------------------------
 TRADEMARK DISCLAIMER
 ----------------------------------------
-Independent calculator tool; not affiliated with or endorsed by Ideal Industries, Klein Tools, Greenlee, or Milwaukee Electric Tool Corp. All brand names belong to their respective owners."""
+Independent calculator tool; not affiliated with or endorsed by Ideal Industries, Klein Tools, or Greenlee. All brand names and trademarks belong to their respective owners."""
     },
     "es-US": {
         "title": "Doblador de Tubos EMT Conduit",
-        "shortDescription": "Cero tubos desperdiciados. Marcas en fracciones de 1/16\" para EMT, IMC y Rigid.",
-        "fullDescription": """Deja de desperdiciar tubería con curvas a prueba y error. Doblador de Tubos EMT Conduit es la calculadora rápida y 100% offline diseñada para electricistas comerciales, industriales y aprendices de electricidad.
+        "shortDescription": 'Offsets, curvas 90°, sillas y llenado NEC para tubo conduit. 1/16" y offline.',
+        "fullDescription": """Deja de desperdiciar tubo conduit con dobleces a prueba y error. Doblador de Tubos EMT Conduit es la calculadora rápida y 100% offline diseñada para electricistas comerciales, industriales y aprendices.
 
-Calcula distancias exactas entre marcas, encogimiento (shrink) y medidas de corte en segundos. Lee cada resultado en fracciones reales de cinta métrica de hasta 1/16"—sin conversiones decimales mentales arriba de la escalera.
+Calcula separación exacta entre marcas, contracción (shrink) y marcas de subida en segundos. Lee cada medida en fracciones reales de cinta métrica de hasta 1/16"—sin conversiones decimales mentales arriba de la escalera.
+
+----------------------------------------
+CALCULADORAS DE DOBLADO DE CONDUCTO
+----------------------------------------
+• Desplazamiento (Offset): Ingresa la altura del obstáculo y el ángulo (10°, 15°, 22.5°, 30°, 45°, 60°). Calcula distancia entre marcas y contracción al instante con diagrama de doblez.
+• Subida de 90° (Stub-Up): Ingresa la altura objetivo; aplica la deducción de take-up para darte la primera marca exacta. Preajustes rápidos para 1/2", 3/4" y 1" EMT.
+• Silla de 3 Puntos (3-Point Saddle): Libra conductos redondos y obstáculos angostos con marca central, marcas laterales y contracción.
+• Silla de 4 Puntos (4-Point Saddle): Libra ductos rectangulares y obstáculos anchos con parte superior plana.
+• Desplazamiento Compuesto (Rolling Offset): Calcula offsets combinados en altura y desplazamiento lateral.
+• Curva de 90° con Kick (Kicked 90°): Combina una subida de 90° con un desplazamiento en el mismo tubo conduit.
+
+----------------------------------------
+LLENADO NEC 2023 Y CALCULADORAS ELÉCTRICAS
+----------------------------------------
+• Llenado de Conducto NEC: Capacidad máxima de cables y porcentaje de llenado para EMT, IMC, Rigid (RMC) y PVC Cédula 40 de 1/2" a 4" (calibres 14 AWG a 500 kcmil THHN/THWN-2).
+• Regla del 40% NEC: Verifica las Tablas 1, 4 y 5 del Capítulo 9 del NEC 2023 (límites de 53%, 31% y 40%) directo en la obra.
+• Calibre de Cable y Ampacidad: Selección de conductores de cobre y aluminio según NEC 2023.
+• Caída de Tensión: Cálculos rápidos para circuitos monofásicos y trifásicos.
 
 ----------------------------------------
 CALIBRADO PARA TU DOBLADOR
 ----------------------------------------
-Las zapatas de doblado varían según el fabricante. La app incluye ajustes compatibles con los principales dobladores manuales:
-• Calibrado para dobladores de hierro y aluminio Ideal®
-• Compatible con series Klein Tools® de aluminio fundido y acero
-• Preconfigurado para series Greenlee® Site-Rite®
-• Compatible con modelos Milwaukee® y Gardner Bender
-• Perfiles Personalizados (Pro): Ajusta valores exactos de take-up, ganancia y deducción para dobladores desgastados o hidráulicos.
+Las zapatas cambian según marca y modelo. Incluye ajustes preconfigurados para:
+• Dobladores manuales Ideal® (74-026 1/2" EMT, 74-027 3/4" EMT)
+• Dobladores manuales Klein Tools® (51603, 51604, 51605 EMT)
+• Dobladores Greenlee® (1800 Rigid 1/2"–1", 555 EMT 1/2"–2")
+• Perfiles Personalizados y Calibración Guiada (Pro): Ajusta radio, take-up y ganancia exactos para zapatas desgastadas o cualquier otro doblador.
 
 ----------------------------------------
-CALCULADORAS PRINCIPALES DE DOBLADO
+DISEÑADO PARA LA OBRA
 ----------------------------------------
-• Curva de 90° (Stub-Up): Ingresa la altura deseada del stub; aplica la deducción de take-up para darte la primera marca exacta. Botones rápidos para EMT de 1/2", 3/4" y 1".
-• Curvas Offset (Desviaciones): Ingresa altura del obstáculo y ángulo (10°, 15°, 22.5°, 30°, 45°, 60°). Calcula separación entre marcas y shrink al instante.
-• Saddle de 3 Puntos: Libra obstáculos redondos (tuberías, canalizaciones). Ingresa diámetro/altura y ángulo (centro de 45° con lados de 22.5°, o 60°/30°).
-• Saddle de 4 Puntos: Libra ductos rectangulares y obstáculos anchos con cálculo de doble offset.
-• Curvas Kicked 90°: Combina una curva de 90° con un kick en un solo tramo de tubo.
-• Rolling Offset: Calcula offsets compuestos en dimensiones verticales y horizontales simultáneas.
-
-----------------------------------------
-NUEVO: LLENADO DE TUBOS NEC Y CALIBRE
-----------------------------------------
-• Llenado de Tubos NEC Anexo C: Capacidad máxima de conductores para tubería EMT, IMC y Rigid (Tabla C.1).
-• Regla de Llenado del 40%: Verifica el porcentaje de ocupación al instante para cumplir el código NEC.
-• Calibre y Ampacidad de Cable: Selección de conductores de cobre y aluminio según NEC 2023.
-• Calculadora de Caída de Tensión: Cálculos precisos monofásicos y trifásicos.
-
-----------------------------------------
-DISEÑADO PARA TRABAJO EN CAMPO
-----------------------------------------
-• Fracciones de Cinta Métrica: Formatea longitudes como fracciones reales en pulgadas (ej. 14 3/8", 22 5/16") con precisión de 1/16". Soporta modo métrico (mm/cm).
-• Soporte Multimaterial: EMT, IMC y Rigid en diámetros de 1/2", 3/4", 1" y 1-1/4".
-• Tablas de Referencia: Acceso directo a multiplicadores, tablas de shrink y código NEC.
-• Diagramas Visuales: Guía gráfica paso a paso de orientación de gancho y flecha.
-• Historial de Curvas: Recupera tus cálculos en la obra con un solo toque.
+• Fracciones de 1/16": Cambia en un toque entre Fracción (1/16"), Pulgadas decimales y Métrico (mm).
+• Diagramas Visuales de Doblez: Guías claras con marcas (M1, M2, M3), ángulos y contracción.
+• Historial Guardado: Consulta, exporta o vuelve a cargar tus cálculos recientes con un toque.
+• Tablas de Referencia: Consulta rápida de multiplicadores, contracción por pulgada y take-up.
+• Interfaz Bilingüe: Cambio instantáneo entre Español e Inglés (ES / EN).
 
 ----------------------------------------
 100% OFFLINE Y PRIVACIDAD TOTAL
 ----------------------------------------
-• Sin inicio de sesión ni registro requerido.
-• Funciona 100% sin internet en sótanos, cuartos de máquinas y obras sin señal celular.
-• Sin anuncios molestos. Diseñado para operar con guantes de trabajo.
+• Funciona 100% sin internet en cuartos eléctricos, sótanos y obras sin señal celular.
+• Sin registro ni cuentas.
+• Cero anuncios. Interfaz de alto contraste pensada para usarse con una mano y guantes de trabajo.
 
-Dobla con confianza, ahorra material y domina el oficio con Doblador de Tubos EMT Conduit.
+Dobla con precisión y ahorra tubo conduit con Doblador de Tubos EMT Conduit.
 
 ----------------------------------------
 AVISO DE MARCAS REGISTRADAS
 ----------------------------------------
-Herramienta independiente; no afiliada ni respaldada por Ideal Industries, Klein Tools, Greenlee o Milwaukee Electric Tool Corp. Todas las marcas registradas pertenecen a sus respectivos propietarios."""
-    }
+Herramienta independiente; no afiliada ni respaldada por Ideal Industries, Klein Tools o Greenlee. Todas las marcas registradas pertenecen a sus respectivos propietarios."""
+    },
 }
 
 STORYBOARD = [
     {
-        "filename": "01_hero.png",
-        "raw_img": Path("/tmp/bendcalc_stub_result.png"),
+        "filename": "01_offset.png",
+        "raw_name": "01_offset.png",
         "en": {
-            "headline": "Zero Scrap Pipe\nInstant 1/16\" Tape Marks",
-            "subtitle": "Calibrated bender marks for EMT, IMC & Rigid"
+            "eyebrow": "OFFSET BEND CALCULATOR",
+            "headline": "Fast Offset Marks\n& Shrink in Seconds",
+            "subtitle": '1/16" tape fractions + live bend diagram',
         },
         "es": {
-            "headline": "Cero Tubos Desperdiciados\nMarcas en Fracciones de 1/16\"",
-            "subtitle": "Medidas exactas para tubos EMT, IMC y Rigid"
-        }
+            "eyebrow": "CALCULADORA DE OFFSET",
+            "headline": "Offsets y Contracción\nen Segundos",
+            "subtitle": 'Fracciones de 1/16" + diagrama de doblez',
+        },
     },
     {
         "filename": "02_stub.png",
-        "raw_img": Path("/tmp/bendcalc_stub_result.png"),
+        "raw_name": "02_stub.png",
         "en": {
-            "headline": "90° Stub in Seconds\nSingle-Thumb Presets",
-            "subtitle": "True tape-measure fractions down to 1/16\""
+            "eyebrow": "90° STUB-UP CALCULATOR",
+            "headline": "Instant 90° Stub Marks\nwith EMT Presets",
+            "subtitle": 'Auto take-up for 1/2", 3/4" & 1" EMT',
         },
         "es": {
-            "headline": "Curvas de 90° al Instante\nBotones de Acceso Rápido",
-            "subtitle": "Fracciones reales de cinta métrica sin conversiones"
-        }
+            "eyebrow": "SUBIDA DE 90° (STUB-UP)",
+            "headline": "Marcas de 90° al Instante\ncon Preajustes EMT",
+            "subtitle": 'Take-up automático en 1/2", 3/4" y 1" EMT',
+        },
     },
     {
-        "filename": "03_offset.png",
-        "raw_img": Path("/tmp/bendcalc_offset_result.png"),
+        "filename": "03_saddle.png",
+        "raw_name": "03_saddle.png",
         "en": {
-            "headline": "Clear Every Obstacle\nSmart Offset & Shrink",
-            "subtitle": "Instant multiplier spacing & cut-back calculations"
+            "eyebrow": "3-POINT & 4-POINT SADDLES",
+            "headline": "Clear Any Obstacle\nwith Exact Saddle Marks",
+            "subtitle": "Center, side spacing & shrink at a glance",
         },
         "es": {
-            "headline": "Esquiva Cada Obstáculo\nOffsets y Shrink Precisos",
-            "subtitle": "Multiplicadores y encogimiento calculados al segundo"
-        }
+            "eyebrow": "SILLAS DE 3 Y 4 PUNTOS",
+            "headline": "Libra Cada Obstáculo\ncon Marcas Exactas",
+            "subtitle": "Centro, lados y contracción al instante",
+        },
     },
     {
-        "filename": "04_saddle.png",
-        "raw_img": Path("/tmp/bendcalc_saddle_result.png"),
+        "filename": "04_conduit_fill.png",
+        "raw_name": "04_conduit_fill.png",
         "en": {
-            "headline": "3 & 4-Point Saddles\nObstacle Clearances",
-            "subtitle": "Exact center, side marks and cut additions"
+            "eyebrow": "NEC 2023 CONDUIT FILL",
+            "headline": "Instant Wire Capacity\n& 40% Fill Rule Check",
+            "subtitle": "EMT, IMC, Rigid & PVC • 14 AWG–500 kcmil",
         },
         "es": {
-            "headline": "Saddle de 3 y 4 Puntos\nLibranza de Obstáculos",
-            "subtitle": "Marcas centrales, laterales y longitud adicional"
-        }
+            "eyebrow": "LLENADO DE CONDUCTO NEC 2023",
+            "headline": "Capacidad de Cables\ny Regla del 40% NEC",
+            "subtitle": "EMT, IMC, Rigid y PVC • 14 AWG a 500 kcmil",
+        },
     },
     {
-        "filename": "05_shrink.png",
-        "raw_img": Path("/tmp/bendcalc_shrink_raw.png"),
+        "filename": "05_history_calibration.png",
+        "raw_name": "05_bender_expanded.png",
         "en": {
-            "headline": "Conduit Shrink Tables\nAngles from 10° to 60°",
-            "subtitle": "Accurate cut-back additions for parallel runs"
+            "eyebrow": "BENDER CALIBRATION & HISTORY",
+            "headline": "Calibrated for Your\nIdeal, Klein & Greenlee",
+            "subtitle": "Built-in shoe presets, custom bender & history",
         },
         "es": {
-            "headline": "Tablas de Encogimiento\nÁngulos de 10° a 60°",
-            "subtitle": "Cálculo de adición de tubo para tuberías paralelas"
-        }
+            "eyebrow": "CALIBRACIÓN E HISTORIAL",
+            "headline": "Calibrado para tu\nIdeal, Klein y Greenlee",
+            "subtitle": "Zapatas de fábrica, perfil propio e historial",
+        },
     },
     {
-        "filename": "06_field_offline.png",
-        "raw_img": Path("/tmp/bendcalc_mobile_home.png"),
+        "filename": "06_offline_field.png",
+        "raw_name": "06_offline_field.png",
         "en": {
-            "headline": "100% Offline on Site\nZero Ads • No Login",
-            "subtitle": "Built for commercial electricians in electrical rooms"
+            "eyebrow": "100% OFFLINE • ZERO ADS",
+            "headline": "Built for the Jobsite\nWorks Without Signal",
+            "subtitle": "Full bending & NEC suite in English & Spanish",
         },
         "es": {
-            "headline": "100% Sin Conexión\nSin Anuncios • Sin Cuenta",
-            "subtitle": "Diseñado para electricistas en salas eléctricas"
-        }
-    }
+            "eyebrow": "100% SIN INTERNET • SIN ANUNCIOS",
+            "headline": "Hecho para la Obra\nFunciona Sin Señal",
+            "subtitle": "Suite de doblado y NEC en español e inglés",
+        },
+    },
 ]
 
 
-def get_font(size: int, bold: bool = True):
-    font_paths = [
-        "/System/Library/Fonts/SFPro-Bold.ttf",
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/System/Library/Fonts/PingFang.ttc",
-    ]
-    for p in font_paths:
-        if Path(p).is_file():
+def get_font(size: int, weight: str = "bold") -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """Load crisp Helvetica Neue / Avenir Next / Arial system fonts with full Spanish glyph support."""
+    candidates: list[tuple[str, int]] = []
+    if weight == "bold":
+        candidates = [
+            ("/System/Library/Fonts/HelveticaNeue.ttc", 1),
+            ("/System/Library/Fonts/Avenir Next.ttc", 0),
+            ("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 0),
+        ]
+    elif weight == "medium":
+        candidates = [
+            ("/System/Library/Fonts/HelveticaNeue.ttc", 10),
+            ("/System/Library/Fonts/Avenir Next.ttc", 5),
+            ("/System/Library/Fonts/Supplemental/Arial.ttf", 0),
+        ]
+    else:
+        candidates = [
+            ("/System/Library/Fonts/HelveticaNeue.ttc", 0),
+            ("/System/Library/Fonts/Supplemental/Arial.ttf", 0),
+        ]
+    for path_str, index in candidates:
+        if Path(path_str).is_file():
             try:
-                return ImageFont.truetype(p, size)
+                return ImageFont.truetype(path_str, size, index=index)
             except Exception:
                 continue
     return ImageFont.load_default()
 
 
-def add_rounded_corners(img: Image.Image, radius: int = 40):
+def add_rounded_corners(img: Image.Image, radius: int) -> tuple[Image.Image, Image.Image]:
     mask = Image.new("L", img.size, 0)
     draw = ImageDraw.Draw(mask)
-    draw.rounded_rectangle([(0, 0), img.size], radius=radius, fill=255)
+    draw.rounded_rectangle([(0, 0), (img.size[0] - 1, img.size[1] - 1)], radius=radius, fill=255)
     rounded = Image.new("RGBA", img.size)
     rounded.paste(img.convert("RGBA"), (0, 0), mask=mask)
     return rounded, mask
 
 
-def compose_screenshot(raw_path: Path, headline: str, subtitle: str, output_path: Path):
+def draw_centered_text(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    y: int,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    fill: str,
+    canvas_width: int,
+    line_gap: int = 12,
+) -> int:
+    cursor = y
+    for line in text.splitlines():
+        bbox = draw.textbbox((0, 0), line, font=font)
+        w = bbox[2] - bbox[0]
+        h = bbox[3] - bbox[1]
+        x = (canvas_width - w) // 2 - bbox[0]
+        draw.text((x, cursor - bbox[1]), line, font=font, fill=fill)
+        cursor += h + line_gap
+    return cursor
+
+
+def compose_screenshot(
+    raw_path: Path,
+    eyebrow: str,
+    headline: str,
+    subtitle: str,
+    output_path: Path,
+) -> None:
+    if not raw_path.is_file():
+        raise FileNotFoundError(f"Missing raw screenshot: {raw_path}")
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    canvas = Image.new("RGB", (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), "#12161F")
+    canvas = Image.new("RGB", (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), NAVY_BG)
     draw = ImageDraw.Draw(canvas)
 
-    h_font = get_font(52, bold=True)
-    s_font = get_font(28, bold=False)
+    # Top safety-yellow industrial accent stripe (exact brandPalette.yellow)
+    draw.rectangle([(0, 0), (SCREENSHOT_WIDTH, 10)], fill=SAFETY_YELLOW)
 
-    y_cursor = 100
-    for line in headline.splitlines():
-        bbox = draw.textbbox((0, 0), line, font=h_font)
-        w = bbox[2] - bbox[0]
-        x = (SCREENSHOT_WIDTH - w) // 2
-        draw.text((x + 2, y_cursor + 2), line, font=h_font, fill="#000000")
-        draw.text((x, y_cursor), line, font=h_font, fill="#FFFFFF")
-        y_cursor += (bbox[3] - bbox[1]) + 14
+    eyebrow_font = get_font(23, weight="bold")
+    headline_font = get_font(54, weight="bold")
+    subtitle_font = get_font(27, weight="medium")
 
-    if subtitle:
-        y_cursor += 6
-        for line in subtitle.splitlines():
-            bbox = draw.textbbox((0, 0), line, font=s_font)
-            w = bbox[2] - bbox[0]
-            x = (SCREENSHOT_WIDTH - w) // 2
-            draw.text((x, y_cursor), line, font=s_font, fill="#FF9100")
-            y_cursor += (bbox[3] - bbox[1]) + 10
+    y_cursor = 58
+    y_cursor = draw_centered_text(
+        draw, eyebrow, y_cursor, eyebrow_font, SAFETY_YELLOW, SCREENSHOT_WIDTH, line_gap=8
+    )
+    y_cursor += 10
+    y_cursor = draw_centered_text(
+        draw, headline, y_cursor, headline_font, TEXT_WHITE, SCREENSHOT_WIDTH, line_gap=12
+    )
+    y_cursor += 8
+    y_cursor = draw_centered_text(
+        draw, subtitle, y_cursor, subtitle_font, TEXT_MUTED, SCREENSHOT_WIDTH, line_gap=8
+    )
 
-    # Device Mockup Frame
+    # Crisp flat industrial device bezel — shows 100% of the app screen cleanly
     with Image.open(raw_path) as ss_img:
-        target_w = 820
+        screen_w = 720
         aspect = ss_img.height / ss_img.width
-        target_h = int(target_w * aspect)
-        ss_resized = ss_img.resize((target_w, target_h), Image.Resampling.LANCZOS)
-        rounded_ss, mask = add_rounded_corners(ss_resized, radius=44)
+        screen_h = int(round(screen_w * aspect))
+        ss_resized = ss_img.convert("RGB").resize((screen_w, screen_h), Image.Resampling.LANCZOS)
+        rounded_ss, mask = add_rounded_corners(ss_resized, radius=36)
 
-        shadow_padding = 40
-        card_w = target_w + shadow_padding * 2
-        card_h = target_h + shadow_padding * 2
-        shadow_canvas = Image.new("RGBA", (card_w, card_h), (0, 0, 0, 0))
+        bezel = 14
+        frame_w = screen_w + bezel * 2
+        frame_h = screen_h + bezel * 2
+        frame_x = (SCREENSHOT_WIDTH - frame_w) // 2
+        # Anchor cleanly below header with comfortable breathing room above bottom edge
+        available_top = y_cursor + 24
+        bottom_margin = 20
+        frame_y = max(available_top, SCREENSHOT_HEIGHT - frame_h - bottom_margin)
 
-        shadow_draw = ImageDraw.Draw(shadow_canvas)
-        shadow_draw.rounded_rectangle(
-            [(shadow_padding - 8, shadow_padding - 8), (shadow_padding + target_w + 8, shadow_padding + target_h + 8)],
+        # Flat industrial phone frame (deep navy bezel + crisp 2px border, zero blur clutter)
+        draw.rounded_rectangle(
+            [(frame_x, frame_y), (frame_x + frame_w, frame_y + frame_h)],
             radius=48,
-            fill=(0, 0, 0, 160)
+            fill=NAVY_DEEP,
+            outline=NAVY_BORDER,
+            width=3,
         )
-        shadow_canvas = shadow_canvas.filter(ImageFilter.GaussianBlur(24))
-        shadow_canvas.paste(rounded_ss, (shadow_padding, shadow_padding), mask=mask)
-
-        dest_x = (SCREENSHOT_WIDTH - card_w) // 2
-        dest_y = max(y_cursor + 35, SCREENSHOT_HEIGHT - target_h + 90)
-        canvas.paste(shadow_canvas, (dest_x, dest_y), mask=shadow_canvas)
+        canvas.paste(rounded_ss, (frame_x + bezel, frame_y + bezel), mask=mask)
 
     final_img = canvas.convert("RGB")
-    final_img.save(output_path, "PNG", quality=95)
-    print(f"[OK] Generated: {output_path} ({final_img.size})")
+    assert final_img.size == (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT)
+    assert final_img.mode == "RGB"
+    final_img.save(output_path, "PNG", optimize=True)
+    print(f"[OK] Generated: {output_path.relative_to(BASE_DIR)} ({final_img.size}, {final_img.mode})")
 
 
-def compose_feature_graphic(output_path: Path, headline: str, subtitle: str, icon_path: Path):
+def compose_feature_graphic(
+    output_path: Path,
+    eyebrow: str,
+    headline: str,
+    subtitle: str,
+    icon_path: Path,
+) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    canvas = Image.new("RGB", (FEATURE_WIDTH, FEATURE_HEIGHT), "#12161F")
+    canvas = Image.new("RGB", (FEATURE_WIDTH, FEATURE_HEIGHT), NAVY_BG)
     draw = ImageDraw.Draw(canvas)
 
-    # Accent top border
-    draw.rectangle([(0, 0), (FEATURE_WIDTH, 6)], fill="#FF9100")
+    # Safety-yellow top accent bar & subtle steel bottom rule
+    draw.rectangle([(0, 0), (FEATURE_WIDTH, 10)], fill=SAFETY_YELLOW)
+    draw.rectangle([(0, FEATURE_HEIGHT - 4), (FEATURE_WIDTH, FEATURE_HEIGHT)], fill=NAVY_BORDER)
 
-    h_font = get_font(52, bold=True)
-    s_font = get_font(24, bold=False)
+    eyebrow_font = get_font(21, weight="bold")
+    headline_font = get_font(48, weight="bold")
+    subtitle_font = get_font(23, weight="medium")
 
-    x_offset = 70
-    y_cursor = 135
+    x_offset = 56
+    icon_size = 296
+    dest_x = FEATURE_WIDTH - icon_size - 56
+    dest_y = (FEATURE_HEIGHT - icon_size) // 2 + 4
+    pad = 6
+    max_text_right = dest_x - pad - 36
+
+    y_cursor = 122
+
+    e_bbox = draw.textbbox((0, 0), eyebrow, font=eyebrow_font)
+    assert x_offset + (e_bbox[2] - e_bbox[0]) <= max_text_right, f"Feature eyebrow overflows: {eyebrow}"
+    draw.text((x_offset, y_cursor - e_bbox[1]), eyebrow, font=eyebrow_font, fill=SAFETY_YELLOW)
+    y_cursor += (e_bbox[3] - e_bbox[1]) + 22
 
     for line in headline.splitlines():
-        bbox = draw.textbbox((0, 0), line, font=h_font)
-        draw.text((x_offset + 2, y_cursor + 2), line, font=h_font, fill="#000000")
-        draw.text((x_offset, y_cursor), line, font=h_font, fill="#FFFFFF")
-        y_cursor += (bbox[3] - bbox[1]) + 12
+        bbox = draw.textbbox((0, 0), line, font=headline_font)
+        assert x_offset + (bbox[2] - bbox[0]) <= max_text_right, (
+            f"Feature headline collides with icon ({x_offset + bbox[2] - bbox[0]} > {max_text_right}): {line}"
+        )
+        draw.text((x_offset, y_cursor - bbox[1]), line, font=headline_font, fill=TEXT_WHITE)
+        y_cursor += (bbox[3] - bbox[1]) + 14
 
     y_cursor += 12
     for line in subtitle.splitlines():
-        bbox = draw.textbbox((0, 0), line, font=s_font)
-        draw.text((x_offset, y_cursor), line, font=s_font, fill="#FF9100")
+        bbox = draw.textbbox((0, 0), line, font=subtitle_font)
+        assert x_offset + (bbox[2] - bbox[0]) <= max_text_right, f"Feature subtitle collides with icon: {line}"
+        draw.text((x_offset, y_cursor - bbox[1]), line, font=subtitle_font, fill=TEXT_MUTED)
         y_cursor += (bbox[3] - bbox[1]) + 8
 
-    # Place app icon on the right
-    if icon_path.is_file():
-        with Image.open(icon_path) as icon_img:
-            icon_size = 320
-            icon_resized = icon_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
-            rounded_icon, icon_mask = add_rounded_corners(icon_resized, radius=64)
+    # Place crisp app icon on the right inside a clean bordered container
+    if not icon_path.is_file():
+        raise FileNotFoundError(f"Missing app icon: {icon_path}")
 
-            # Icon Drop Shadow
-            s_pad = 20
-            icon_shadow = Image.new("RGBA", (icon_size + s_pad*2, icon_size + s_pad*2), (0,0,0,0))
-            s_draw = ImageDraw.Draw(icon_shadow)
-            s_draw.rounded_rectangle([(s_pad, s_pad), (icon_size + s_pad, icon_size + s_pad)], radius=64, fill=(0,0,0,180))
-            icon_shadow = icon_shadow.filter(ImageFilter.GaussianBlur(16))
-            icon_shadow.paste(rounded_icon, (s_pad, s_pad), mask=icon_mask)
+    with Image.open(icon_path) as icon_img:
+        icon_resized = icon_img.convert("RGB").resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+        rounded_icon, icon_mask = add_rounded_corners(icon_resized, radius=58)
 
-            dest_x = FEATURE_WIDTH - icon_size - s_pad - 60
-            dest_y = (FEATURE_HEIGHT - icon_size) // 2 - s_pad
-            canvas.paste(icon_shadow, (dest_x, dest_y), mask=icon_shadow)
+        # Subtle flat industrial frame around icon so navy-on-navy edge stays sharp
+        draw.rounded_rectangle(
+            [(dest_x - pad, dest_y - pad), (dest_x + icon_size + pad, dest_y + icon_size + pad)],
+            radius=62,
+            fill=NAVY_DEEP,
+            outline=NAVY_BORDER,
+            width=3,
+        )
+        canvas.paste(rounded_icon, (dest_x, dest_y), mask=icon_mask)
 
     final_img = canvas.convert("RGB")
-    final_img.save(output_path, "PNG", quality=95)
-    print(f"[OK] Generated Feature Graphic: {output_path} ({final_img.size})")
+    assert final_img.size == (FEATURE_WIDTH, FEATURE_HEIGHT)
+    assert final_img.mode == "RGB"
+    final_img.save(output_path, "PNG", optimize=True)
+    print(f"[OK] Generated Feature Graphic: {output_path.relative_to(BASE_DIR)} ({final_img.size}, {final_img.mode})")
 
 
-def write_metadata_text():
+def write_metadata_text() -> None:
     for locale, data in LISTINGS.items():
         loc_dir = METADATA_DIR / locale
         loc_dir.mkdir(parents=True, exist_ok=True)
 
-        # Title
-        title_path = loc_dir / "title.txt"
-        title_path.write_text(data["title"], encoding="utf-8")
-        assert len(data["title"]) <= 30, f"{locale} title exceeds 30 chars: {len(data['title'])}"
+        title = data["title"]
+        short_desc = data["shortDescription"]
+        full_desc = data["fullDescription"]
 
-        # Short Description
-        short_path = loc_dir / "short_description.txt"
-        short_path.write_text(data["shortDescription"], encoding="utf-8")
-        assert len(data["shortDescription"]) <= 80, f"{locale} short desc exceeds 80 chars: {len(data['shortDescription'])}"
+        assert len(title) <= 30, f"{locale} title exceeds 30 chars: {len(title)}"
+        assert len(short_desc) <= 80, f"{locale} short desc exceeds 80 chars: {len(short_desc)}"
+        assert len(full_desc) <= 4000, f"{locale} full desc exceeds 4000 chars: {len(full_desc)}"
 
-        # Full Description
-        full_path = loc_dir / "full_description.txt"
-        full_path.write_text(data["fullDescription"], encoding="utf-8")
-        assert len(data["fullDescription"]) <= 4000, f"{locale} full desc exceeds 4000 chars: {len(data['fullDescription'])}"
+        (loc_dir / "title.txt").write_text(title, encoding="utf-8")
+        (loc_dir / "short_description.txt").write_text(short_desc, encoding="utf-8")
+        (loc_dir / "full_description.txt").write_text(full_desc, encoding="utf-8")
 
-        print(f"[OK] Metadata text written for {locale} (Title: {len(data['title'])}c, Short: {len(data['shortDescription'])}c, Full: {len(data['fullDescription'])}c)")
+        print(
+            f"[OK] Metadata text written for {locale} "
+            f"(Title: {len(title)}/30, Short: {len(short_desc)}/80, Full: {len(full_desc)}/4000)"
+        )
 
 
-def main():
+def clean_stale_screenshots(screenshots_dir: Path, expected_names: set[str]) -> None:
+    if not screenshots_dir.is_dir():
+        return
+    for existing in screenshots_dir.glob("*.png"):
+        if existing.name.startswith("._"):
+            continue
+        if existing.name not in expected_names:
+            existing.unlink(missing_ok=True)
+            print(f"[CLEAN] Removed stale screenshot: {existing.relative_to(BASE_DIR)}")
+
+
+def main() -> None:
     print("=== Step 1: Writing Fastlane Metadata Texts ===")
     write_metadata_text()
 
     icon_path = BASE_DIR / "assets" / "icon.png"
+    expected_filenames = {item["filename"] for item in STORYBOARD}
 
     for locale in ["en-US", "es-US"]:
         print(f"\n=== Step 2: Generating Screenshots for {locale} ===")
         lang_key = "en" if locale == "en-US" else "es"
         screenshots_dir = METADATA_DIR / locale / "images" / "phoneScreenshots"
+        clean_stale_screenshots(screenshots_dir, expected_filenames)
 
+        hashes: dict[str, str] = {}
         for item in STORYBOARD:
             out_file = screenshots_dir / item["filename"]
-            raw_img = item["raw_img"]
-            headline = item[lang_key]["headline"]
-            subtitle = item[lang_key]["subtitle"]
-            compose_screenshot(raw_img, headline, subtitle, out_file)
+            raw_img = RAW_ASSETS_DIR / locale / item["raw_name"]
+            copy = item[lang_key]
+            compose_screenshot(
+                raw_path=raw_img,
+                eyebrow=copy["eyebrow"],
+                headline=copy["headline"],
+                subtitle=copy["subtitle"],
+                output_path=out_file,
+            )
+            digest = hashlib.sha256(out_file.read_bytes()).hexdigest()
+            assert digest not in hashes, f"Duplicate screenshot detected in {locale}: {item['filename']} == {hashes[digest]}"
+            hashes[digest] = item["filename"]
+
+        actual_files = sorted(
+            p.name for p in screenshots_dir.glob("*.png") if not p.name.startswith("._")
+        )
+        assert len(actual_files) == 6, f"Expected 6 screenshots in {locale}, found {len(actual_files)}: {actual_files}"
 
         print(f"\n=== Step 3: Generating Feature Graphic for {locale} ===")
         feature_out = METADATA_DIR / locale / "images" / "featureGraphic.png"
         if locale == "en-US":
+            f_eye = '1/16" TAPE MARKS • 100% OFFLINE'
             f_head = "CONDUIT BENDER\n& EMT PIPE CALC"
-            f_sub = "Zero Scrap Pipe • 1/16\" Marks • 100% Offline"
+            f_sub = "Offsets • 90° Stubs • Saddles • NEC Fill"
         else:
-            f_head = "DOBLADOR DE TUBOS\nEMT & CONDUIT"
-            f_sub = "Cero Desperdicio • Fracciones 1/16\" • 100% Offline"
-        compose_feature_graphic(feature_out, f_head, f_sub, icon_path)
+            f_eye = 'FRACCIONES 1/16" • 100% OFFLINE'
+            f_head = "DOBLADOR DE TUBOS\nEMT Y CONDUIT"
+            f_sub = "Offsets • Curvas 90° • Sillas • Llenado NEC"
+        compose_feature_graphic(feature_out, f_eye, f_head, f_sub, icon_path)
 
     print("\n[SUCCESS] All Google Play Store Assets Generated & Validated!")
+
 
 if __name__ == "__main__":
     main()

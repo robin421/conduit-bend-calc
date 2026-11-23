@@ -17,22 +17,31 @@ import {
   type SeoToolKey,
 } from './toolPages.ts';
 
-const EXPECTED_KEYS: SeoToolKey[] = ['offset', 'saddle4', 'shrink', 'stubUp'];
+const EXPECTED_KEYS: SeoToolKey[] = [
+  'offset',
+  'stubUp',
+  'saddle3',
+  'conduitFill',
+  'saddle4',
+  'shrink',
+];
 
-test('SEO_TOOL_PAGES：恰好 4 个 P0 页面且 key 覆盖', () => {
-  assert.equal(SEO_TOOL_PAGES.length, 4);
+test('SEO_TOOL_PAGES：6 个交互式 SEO 工具页且 Top-4 优先排序', () => {
+  assert.equal(SEO_TOOL_PAGES.length, 6);
   assert.deepEqual(
-    SEO_TOOL_PAGES.map((page) => page.key).sort(),
-    [...EXPECTED_KEYS].sort(),
+    SEO_TOOL_PAGES.map((page) => page.key),
+    EXPECTED_KEYS,
   );
 });
 
 test('title ≤ 60 字符且包含目标关键词', () => {
   const keywords: Record<SeoToolKey, string> = {
     offset: 'offset',
+    stubUp: 'stub',
+    saddle3: '3 point saddle',
+    conduitFill: 'conduit fill',
     saddle4: '4 point saddle',
     shrink: 'shrink',
-    stubUp: 'stub',
   };
   for (const page of SEO_TOOL_PAGES) {
     assert.ok(
@@ -93,9 +102,13 @@ test('isSeoToolPath：容忍尾斜杠与大小写，拒绝其它路径', () => {
   assert.equal(isSeoToolPath('/offset'), true);
   assert.equal(isSeoToolPath('/offset/'), true);
   assert.equal(isSeoToolPath('/Offset'), true);
+  assert.equal(isSeoToolPath('/stub-up'), true);
+  assert.equal(isSeoToolPath('/3-point-saddle'), true);
+  assert.equal(isSeoToolPath('/3-point-saddle/'), true);
+  assert.equal(isSeoToolPath('/conduit-fill'), true);
+  assert.equal(isSeoToolPath('/conduit-fill/'), true);
   assert.equal(isSeoToolPath('/4-point-saddle'), true);
   assert.equal(isSeoToolPath('/shrink'), true);
-  assert.equal(isSeoToolPath('/stub-up'), true);
   assert.equal(isSeoToolPath('/'), false);
   assert.equal(isSeoToolPath('/offset-calculator'), false);
   assert.equal(isSeoToolPath('/nope'), false);
@@ -146,10 +159,10 @@ test('FAQPage JSON-LD 每个 FAQ 一个问题节点', () => {
 
 /* ---------------- 相关计算器内链（单一口径） ---------------- */
 
-test('buildRelatedLinks：恰好 4 条（其余 3 页 + 首页）且不自链', () => {
+test('buildRelatedLinks：恰好 6 条（其余 5 页 + 首页）且不自链', () => {
   for (const page of SEO_TOOL_PAGES) {
     const links = buildRelatedLinks(page);
-    assert.equal(links.length, 4, `${page.key} link count`);
+    assert.equal(links.length, SEO_TOOL_PAGES.length, `${page.key} link count`);
     const keys = links.map((link) => link.key);
     assert.ok(!keys.includes(page.key), `${page.key} links to itself`);
     assert.equal(keys[keys.length - 1], 'home');
@@ -169,14 +182,14 @@ test('buildRelatedLinks：恰好 4 条（其余 3 页 + 首页）且不自链', 
   }
 });
 
-test('related links 覆盖另外 3 个 slug 且指向正确路径', () => {
+test('related links 覆盖另外 5 个 slug 且指向正确路径', () => {
   const page = getSeoToolPage('offset');
   const toolLinks = buildRelatedLinks(page).filter(
     (link) => link.key !== 'home',
   );
   assert.deepEqual(
     toolLinks.map((link) => link.path).sort(),
-    ['/4-point-saddle', '/shrink', '/stub-up'].sort(),
+    ['/stub-up', '/3-point-saddle', '/conduit-fill', '/4-point-saddle', '/shrink'].sort(),
   );
   const first = getSeoToolPage(toolLinks[0].key as SeoToolKey);
   assert.equal(toolLinks[0].title, first.h1);
@@ -208,9 +221,11 @@ test('文案不含 emoji（title / tagline / FAQ / related）', () => {
 
 const ES_KEYWORDS: Record<SeoToolKey, string> = {
   offset: 'desplazamiento',
+  stubUp: 'subida',
+  saddle3: 'silla',
+  conduitFill: 'llenado',
   saddle4: 'silla',
   shrink: 'contracción',
-  stubUp: 'subida',
 };
 
 test('es 文案字段齐全：title/description/h1/tagline/faqs', () => {

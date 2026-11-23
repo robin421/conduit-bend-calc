@@ -95,14 +95,20 @@ const RootTabsScreen = lazyScreen(() => import('./rootTabs'));
 const OffsetToolScreen = lazyScreen(
   () => import('../screens/seoTools/offsetToolScreen'),
 );
+const StubUpToolScreen = lazyScreen(
+  () => import('../screens/seoTools/stubUpToolScreen'),
+);
+const ThreePointSaddleToolScreen = lazyScreen(
+  () => import('../screens/seoTools/threePointSaddleToolScreen'),
+);
+const ConduitFillToolScreen = lazyScreen(
+  () => import('../screens/seoTools/conduitFillToolScreen'),
+);
 const FourPointSaddleToolScreen = lazyScreen(
   () => import('../screens/seoTools/fourPointSaddleToolScreen'),
 );
 const ShrinkToolScreen = lazyScreen(
   () => import('../screens/seoTools/shrinkToolScreen'),
-);
-const StubUpToolScreen = lazyScreen(
-  () => import('../screens/seoTools/stubUpToolScreen'),
 );
 const FeedbackScreen = lazyScreen(
   () => import('../screens/feedbackScreen'),
@@ -123,9 +129,11 @@ export default function RootStack() {
     >
       <Stack.Screen name="RootTabs" component={RootTabsScreen} />
       <Stack.Screen name="SeoOffset" component={OffsetToolScreen} />
+      <Stack.Screen name="SeoStubUp" component={StubUpToolScreen} />
+      <Stack.Screen name="SeoSaddle3" component={ThreePointSaddleToolScreen} />
+      <Stack.Screen name="SeoConduitFill" component={ConduitFillToolScreen} />
       <Stack.Screen name="SeoSaddle4" component={FourPointSaddleToolScreen} />
       <Stack.Screen name="SeoShrink" component={ShrinkToolScreen} />
-      <Stack.Screen name="SeoStubUp" component={StubUpToolScreen} />
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
     </Stack.Navigator>
   );

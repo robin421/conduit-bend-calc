@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  buildConduitFillCopyText,
   buildOffsetCopyText,
   buildSaddleCopyText,
   buildShrinkCopyText,
   buildStubCopyText,
+  buildThreePointSaddleCopyText,
 } from './copyResult.ts';
 
 test('offset：包含间距 / shrink / 两个 mark 位置', () => {
@@ -83,5 +85,44 @@ test('stub：包含 mark 位置与 take-up', () => {
   assert.equal(
     text,
     '90° stub in 1/2" EMT: mark the conduit at 7" from the end (5" take-up).',
+  );
+});
+
+test('3-point saddle：包含中心/侧角、侧间距、总跨度与中心 shrink', () => {
+  const text = buildThreePointSaddleCopyText({
+    centerAngle: 45,
+    sideSpacing: 10,
+    span: 20,
+    shrink: 0.75,
+    unit: 'decimal',
+  });
+  assert.equal(
+    text,
+    '3-point saddle (45° center / 22.5° sides): side marks 10" from center, total span 20", center shrink 0.75".',
+  );
+});
+
+test('conduit fill：输出最大根数与可选超载状态', () => {
+  const base = buildConduitFillCopyText({
+    racewayLabel: 'EMT',
+    tradeSize: '3/4',
+    wireLabel: '12 AWG',
+    maxConductors: 16,
+  });
+  assert.equal(base, 'NEC Conduit Fill (3/4" EMT, 12 AWG THHN): max 16 wires.');
+
+  const over = buildConduitFillCopyText({
+    racewayLabel: 'EMT',
+    tradeSize: '1/2',
+    wireLabel: '12 AWG',
+    maxConductors: 9,
+    count: 10,
+    fillPercent: 43.75,
+    allowedPercent: 40,
+    fits: false,
+  });
+  assert.equal(
+    over,
+    'NEC Conduit Fill (1/2" EMT, 12 AWG THHN): max 9 wires. 10 wires = 43.8% fill (limit 40%, OVERFILLED).',
   );
 });

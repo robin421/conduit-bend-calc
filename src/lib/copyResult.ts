@@ -72,3 +72,46 @@ export interface StubCopyData {
 export function buildStubCopyText(data: StubCopyData): string {
   return `90° stub in ${data.sizeLabel}: mark the conduit at ${len(data.mark, data.unit)} from the end (${data.takeUp}" take-up).`;
 }
+
+export interface ThreePointSaddleCopyData {
+  centerAngle: OffsetAngle;
+  sideSpacing: number;
+  span: number;
+  shrink: number;
+  unit: UnitSystem;
+}
+
+export function buildThreePointSaddleCopyText(data: ThreePointSaddleCopyData): string {
+  const sideAngle = data.centerAngle / 2;
+  return (
+    `3-point saddle (${data.centerAngle}° center / ${sideAngle}° sides): ` +
+    `side marks ${len(data.sideSpacing, data.unit)} from center, ` +
+    `total span ${len(data.span, data.unit)}, center shrink ${len(data.shrink, data.unit)}.`
+  );
+}
+
+export interface ConduitFillCopyData {
+  racewayLabel: string;
+  tradeSize: string;
+  wireLabel: string;
+  maxConductors: number;
+  count?: number;
+  fillPercent?: number;
+  allowedPercent?: number;
+  fits?: boolean;
+}
+
+export function buildConduitFillCopyText(data: ConduitFillCopyData): string {
+  const base =
+    `NEC Conduit Fill (${data.tradeSize}" ${data.racewayLabel}, ${data.wireLabel} THHN): ` +
+    `max ${data.maxConductors} wires`;
+  if (
+    data.count !== undefined &&
+    data.fillPercent !== undefined &&
+    data.allowedPercent !== undefined
+  ) {
+    const status = data.fits === false ? 'OVERFILLED' : 'OK';
+    return `${base}. ${data.count} wires = ${data.fillPercent.toFixed(1)}% fill (limit ${data.allowedPercent}%, ${status}).`;
+  }
+  return `${base}.`;
+}

@@ -19,7 +19,7 @@ import {
   DOWNLOAD_BANNER_DISMISS_DAYS,
   DOWNLOAD_BANNER_DISMISS_KEY,
 } from '../lib/downloadBannerCopy';
-import { GOOGLE_PLAY_URL } from '../lib/homeContent';
+import { buildGooglePlayUrl } from '../lib/homeContent';
 import { isMobileNavViewport, workspaceMaxWidth } from '../seo/calculatorNav';
 import { isSeoToolPath } from '../seo/toolPages';
 import { logAmplitudeEvent } from '../lib/amplitude';
@@ -68,6 +68,18 @@ function writeDismissedNow(): void {
   }
 }
 
+function resolvePageSlug(): string {
+  if (typeof window === 'undefined' || !window.location) {
+    return 'home';
+  }
+  const cleaned = window.location.pathname
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/[^a-z0-9_-]/g, '_');
+  return cleaned || 'home';
+}
+
 function isSeoRoute(): boolean {
   if (typeof window === 'undefined' || !window.location) {
     return false;
@@ -114,6 +126,13 @@ export default function DownloadBanner() {
   };
 
   const device = detectClientDevice();
+  const pageSlug = resolvePageSlug();
+  const playUrl = buildGooglePlayUrl({
+    source: 'web_seo',
+    medium: 'banner',
+    campaign: pageSlug,
+    content: 'top_banner',
+  });
   const bannerCopy = getDownloadBannerCopy(device);
   const mobile = isMobileNavViewport(width);
   const containerMaxWidth = workspaceMaxWidth(width);
@@ -188,12 +207,19 @@ export default function DownloadBanner() {
             <AnchorText
               accessibilityRole="link"
               accessibilityLabel="Get the Conduit Bend Calc app on Google Play"
-              href={GOOGLE_PLAY_URL}
+              href={playUrl}
               hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
               onPress={() => {
                 // gtag 同步 push 到 dataLayer，不阻塞 <a> 默认跳转。
                 trackEvent('google_play_click', { source: 'banner' });
-                logAmplitudeEvent('google_play_cta_clicked', { source: 'download_banner' });
+                logAmplitudeEvent('google_play_cta_clicked', {
+                  source: 'download_banner',
+                  page_slug: pageSlug,
+                  utm_source: 'web_seo',
+                  utm_medium: 'banner',
+                  utm_campaign: pageSlug,
+                  cta_placement: 'top_banner',
+                });
               }}
               style={
                 [

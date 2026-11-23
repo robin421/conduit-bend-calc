@@ -8,13 +8,17 @@ import type { SeoToolKey } from '../seo/toolPages.ts';
 
 export type SeoScreenName =
   | 'SeoOffset'
+  | 'SeoStubUp'
+  | 'SeoSaddle3'
+  | 'SeoConduitFill'
   | 'SeoSaddle4'
-  | 'SeoShrink'
-  | 'SeoStubUp';
+  | 'SeoShrink';
 
 export const SEO_TOOL_SCREENS: Record<SeoToolKey, SeoScreenName> = {
   offset: 'SeoOffset',
+  stubUp: 'SeoStubUp',
+  saddle3: 'SeoSaddle3',
+  conduitFill: 'SeoConduitFill',
   saddle4: 'SeoSaddle4',
   shrink: 'SeoShrink',
-  stubUp: 'SeoStubUp',
 };

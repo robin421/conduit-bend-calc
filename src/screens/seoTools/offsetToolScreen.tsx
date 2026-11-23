@@ -28,7 +28,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Keyboard, Pressable, Text, View } from 'react-native';
 
+import type { DiagramInput } from '../../calculators/diagrams/diagrams';
 import { calculateOffset } from '../../calculators/offset/offset';
+import BendDiagram from '../../components/bendDiagram';
 import ImperialInput from '../../components/imperialInput';
 import type { OffsetAngle } from '../../constants';
 import {
@@ -50,6 +52,7 @@ import {
   formatSeoLength,
   RelatedCalculators,
   OffsetMultiplierTable,
+  SeoAppCtaCard,
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
@@ -63,6 +66,7 @@ import {
   SeoResultCard,
   SeoUnitToggle,
   SeoWorkspace,
+  useSeoAmplitudeCalculation,
   type SeoQuickPreset,
 } from './seoLayout';
 
@@ -153,6 +157,20 @@ export default function OffsetToolScreen() {
     [activeInput],
   );
 
+  const diagramInput = useMemo<DiagramInput | null>(() => {
+    if (!result || !activeInput) {
+      return null;
+    }
+    return {
+      kind: 'offset',
+      unit,
+      height: activeInput.heightInches,
+      thetaDeg: activeInput.angle,
+      spacingDisplay: result.distanceBetweenBends,
+      shrinkDisplay: result.shrink,
+    };
+  }, [activeInput, result, unit]);
+
   const spacing = result ? result.distanceBetweenBends : null;
   const mark1 = activeInput ? (activeInput.startInches ?? 0) : 0;
   const mark2 = spacing !== null ? mark1 + spacing : null;
@@ -161,8 +179,17 @@ export default function OffsetToolScreen() {
     ? `${committed.heightInches}|${committed.startInches ?? ''}|${committed.angle}`
     : null;
 
-  useCalculatorAnalytics('offset', committedSignature);
+  useCalculatorAnalytics('offset', committedSignature, {
+    unitSystem: unit === 'metric' ? 'metric' : 'imperial',
+  });
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
+  useSeoAmplitudeCalculation({
+    calculator: 'offset',
+    toolName: TOOL_NAME,
+    pageSlug: PAGE.slug,
+    signature: committedSignature,
+    unitMode: unit,
+  });
 
   // 按下 Calculate 得到有效结果后写入历史（相同输入不重复写）。
   const committedResult = useMemo(
@@ -345,6 +372,11 @@ export default function OffsetToolScreen() {
                 },
               ]}
             />
+            {diagramInput ? (
+              <SeoCard style={{ padding: theme.spacing.sm }}>
+                <BendDiagram input={diagramInput} height={150} />
+              </SeoCard>
+            ) : null}
             <SeoCopyButton text={copyText} disabled={!result} toolName={TOOL_NAME} />
           </View>
         }
@@ -358,6 +390,8 @@ export default function OffsetToolScreen() {
         onClear={clear}
         toolName={TOOL_NAME}
       />
+
+      <SeoAppCtaCard toolSlug={PAGE.slug} toolName={TOOL_NAME} />
 
       <SeoCollapsibleSection title={t('offset.whatTitle')}>
         <SeoParagraph>{copy.tagline}</SeoParagraph>

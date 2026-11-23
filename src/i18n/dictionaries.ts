@@ -14,9 +14,11 @@ import { DEFAULT_LANG, type Lang } from './lang.ts';
 export const en = {
   // 计算器导航 / 抽屉
   'nav.offset': 'Offset',
+  'nav.stubUp': '90° Stub',
+  'nav.saddle3': '3-Point Saddle',
+  'nav.conduitFill': 'Conduit Fill',
   'nav.saddle4': '4-Point Saddle',
   'nav.shrink': 'Shrink',
-  'nav.stubUp': '90° Stub',
   'nav.home': 'All calculators',
   'nav.allCalculatorsLink': 'All conduit bending calculators',
 
@@ -113,6 +115,50 @@ export const en = {
   'stub.takeUpHintFormatted': '{takeUp} take-up',
   'stub.whatTitle': 'What is a stub-up?',
   'stub.chartTitle': 'Take-up chart (hand benders, EMT)',
+
+  // /3-point-saddle
+  'saddle3.seoHint': 'Enter obstacle height, pick 45° or 60° center bend, tap Save to history.',
+  'saddle3.heightLabel': 'Obstacle height (OD)',
+  'saddle3.preset45Hint': '22.5° sides · × 2.5',
+  'saddle3.preset60Hint': '30° sides · × 2.0',
+  'saddle3.markSpacing': 'Side mark spacing (from center)',
+  'saddle3.totalSpan': 'Mark 1 → Mark 3 (total span)',
+  'saddle3.centerShrink': 'Center mark shrink (add to center)',
+  'saddle3.anglesLabel': 'Center / side bend angles',
+  'saddle3.marksFromCenter': 'Marks left → right of center',
+  'saddle3.whatTitle': 'What is a 3-point saddle?',
+  'saddle3.chartTitle': '3-point saddle multiplier & shrink chart',
+  'saddle3.tableCenter': 'Center bend',
+  'saddle3.tableSides': 'Side bends',
+
+  // /conduit-fill
+  'conduitFill.seoHint': 'Pick raceway, trade size, and THHN wire size — enter wire count to check NEC fill %.',
+  'conduitFill.racewayLabel': 'Raceway type',
+  'conduitFill.tradeLabel': 'Trade size (inches)',
+  'conduitFill.wireLabel': 'Wire size (THHN / THWN-2)',
+  'conduitFill.countLabel': 'Number of wires (optional)',
+  'conduitFill.countPlaceholder': 'e.g. 9',
+  'conduitFill.countError': 'Enter a whole number of wires (1–999)',
+  'conduitFill.maxConductorsHeadline': 'Max {wire} THHN in {trade}" {raceway}',
+  'conduitFill.wiresUnit': '{count} wires',
+  'conduitFill.yourFill': 'Your fill ({count} wires)',
+  'conduitFill.allowedFill': 'NEC allowed fill',
+  'conduitFill.racewayArea': 'Raceway area (100%)',
+  'conduitFill.wireArea': 'One conductor area',
+  'conduitFill.overfilled': 'Overfilled: {count} × {wire} THHN exceeds NEC limit ({allowed}%) for {trade}" {raceway}.',
+  'conduitFill.zeroFit': 'Even one conductor of this size does not fit. Go up a trade size.',
+  'conduitFill.necNote': 'NEC 2023 Chapter 9 Tables 1, 4 & 5 (PVC = Sch 40): 53% for 1 wire, 31% for 2 wires, 40% for 3+ wires (Note 7 rounding). Nipples ≤24" may fill to 60%.',
+  'conduitFill.whatTitle': 'How NEC conduit fill works',
+  'conduitFill.chartTitle': 'NEC Table C.1 quick chart (EMT, THHN)',
+  'conduitFill.tableTrade': 'EMT size',
+
+  // Web SEO Value-First App CTA
+  'appCta.eyebrow': 'FREE ANDROID APP · JOBSITE READY',
+  'appCta.title': 'Take Conduit Bend Calc offline on the jobsite',
+  'appCta.bullet1': '100% offline in basements, vaults, and electrical rooms — zero signal required.',
+  'appCta.bullet2': 'Saved bend history on your phone for quick repeat offsets and stubs.',
+  'appCta.bullet3': 'Custom bender shoe calibration for Ideal, Klein, and Greenlee heads.',
+  'appCta.button': 'Get Free App on Google Play',
 
   // feedback
   'feedback.cardTitle': 'Report a problem or suggest an improvement',
@@ -484,9 +530,11 @@ export type TranslationKey = keyof typeof en;
  */
 export const es: Record<TranslationKey, string> = {
   'nav.offset': 'Desplazamiento',
+  'nav.stubUp': 'Subida de 90°',
+  'nav.saddle3': 'Silla 3 pts',
+  'nav.conduitFill': 'Llenado NEC',
   'nav.saddle4': 'Silla de 4 puntos',
   'nav.shrink': 'Contracción',
-  'nav.stubUp': 'Subida de 90°',
   'nav.home': 'Todas las calculadoras',
   'nav.allCalculatorsLink':
     'Todas las calculadoras de doblado de conducto',
@@ -582,6 +630,50 @@ export const es: Record<TranslationKey, string> = {
   'stub.takeUpHintFormatted': 'recogida de {takeUp}',
   'stub.whatTitle': '¿Qué es una subida de 90°?',
   'stub.chartTitle': 'Tabla de recogida (dobladores manuales, EMT)',
+
+  // /3-point-saddle
+  'saddle3.seoHint': 'Ingresa la altura del obstáculo, elige centro de 45° o 60° y guarda en el historial.',
+  'saddle3.heightLabel': 'Altura del obstáculo (DE)',
+  'saddle3.preset45Hint': 'lados 22.5° · × 2.5',
+  'saddle3.preset60Hint': 'lados 30° · × 2.0',
+  'saddle3.markSpacing': 'Distancia lateral (desde el centro)',
+  'saddle3.totalSpan': 'Marca 1 → Marca 3 (largo total)',
+  'saddle3.centerShrink': 'Contracción central (sumar al centro)',
+  'saddle3.anglesLabel': 'Ángulos centro / lados',
+  'saddle3.marksFromCenter': 'Marcas de izquierda a derecha del centro',
+  'saddle3.whatTitle': '¿Qué es una silla de 3 puntos?',
+  'saddle3.chartTitle': 'Tabla de multiplicador y contracción (3 puntos)',
+  'saddle3.tableCenter': 'Doblez central',
+  'saddle3.tableSides': 'Doblez lateral',
+
+  // /conduit-fill
+  'conduitFill.seoHint': 'Elige conducto, tamaño comercial y calibre THHN — agrega cantidad de cables para verificar el % NEC.',
+  'conduitFill.racewayLabel': 'Tipo de conducto',
+  'conduitFill.tradeLabel': 'Tamaño comercial (pulg.)',
+  'conduitFill.wireLabel': 'Calibre del cable (THHN / THWN-2)',
+  'conduitFill.countLabel': 'Cantidad de cables (opcional)',
+  'conduitFill.countPlaceholder': 'p. ej. 9',
+  'conduitFill.countError': 'Ingresa un número entero de cables (1–999)',
+  'conduitFill.maxConductorsHeadline': 'Máx. {wire} THHN en {trade}" {raceway}',
+  'conduitFill.wiresUnit': '{count} cables',
+  'conduitFill.yourFill': 'Tu llenado ({count} cables)',
+  'conduitFill.allowedFill': 'Llenado permitido NEC',
+  'conduitFill.racewayArea': 'Área del conducto (100%)',
+  'conduitFill.wireArea': 'Área de un conductor',
+  'conduitFill.overfilled': 'Excedido: {count} × {wire} THHN supera el límite NEC ({allowed}%) para {trade}" {raceway}.',
+  'conduitFill.zeroFit': 'Ni siquiera un conductor de este calibre cabe. Sube al siguiente tamaño comercial.',
+  'conduitFill.necNote': 'NEC 2023 Cap. 9 Tablas 1, 4 y 5 (PVC = Cédula 40): 53% para 1 cable, 31% para 2, 40% para 3 o más (redondeo Nota 7). Niples ≤24" permiten hasta 60%.',
+  'conduitFill.whatTitle': 'Cómo funciona el llenado de conducto NEC',
+  'conduitFill.chartTitle': 'Tabla rápida NEC C.1 (EMT, THHN)',
+  'conduitFill.tableTrade': 'Tamaño EMT',
+
+  // Web SEO Value-First App CTA
+  'appCta.eyebrow': 'APP ANDROID GRATIS · LISTA PARA OBRA',
+  'appCta.title': 'Lleva Conduit Bend Calc sin conexión a la obra',
+  'appCta.bullet1': '100% sin conexión en sótanos y cuartos eléctricos — sin señal.',
+  'appCta.bullet2': 'Historial de dobleces guardado en tu teléfono para repetir al instante.',
+  'appCta.bullet3': 'Calibración personalizada de tu doblador Ideal, Klein o Greenlee.',
+  'appCta.button': 'Descargar app gratis en Google Play',
 
   // feedback
   'feedback.cardTitle': 'Reportar un problema o sugerir una mejora',

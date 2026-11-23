@@ -23,6 +23,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Keyboard, Text, View } from 'react-native';
 
+import type { DiagramInput } from '../../calculators/diagrams/diagrams';
+import BendDiagram from '../../components/bendDiagram';
 import ImperialInput from '../../components/imperialInput';
 import { TAKE_UP_OPTIONS } from '../../constants';
 import type { EmtTakeUpSize } from '../../constants';
@@ -47,6 +49,7 @@ import {
   FaqSection,
   formatSeoLength,
   RelatedCalculators,
+  SeoAppCtaCard,
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
@@ -62,6 +65,7 @@ import {
   SeoUnitToggle,
   SeoWorkspace,
   TakeUpTable,
+  useSeoAmplitudeCalculation,
   type SeoQuickPreset,
 } from './seoLayout';
 
@@ -153,6 +157,18 @@ export default function StubUpToolScreen() {
       : activeInput.heightInches - activeTakeUp;
   const tooShort = mark !== null && mark <= 0;
 
+  const diagramInput = useMemo<DiagramInput | null>(() => {
+    if (!activeInput || mark === null || tooShort) {
+      return null;
+    }
+    return {
+      kind: 'stub',
+      unit,
+      stubHeight: activeInput.heightInches,
+      markPoint: mark,
+    };
+  }, [activeInput, mark, tooShort, unit]);
+
   const committedTakeUp =
     committed === null
       ? null
@@ -167,9 +183,20 @@ export default function StubUpToolScreen() {
   const committedSignature = committed
     ? `${committed.heightInches}|${committed.size}`
     : null;
+  const validCommittedSignature =
+    committedSignature && !committedTooShort ? committedSignature : null;
 
-  useCalculatorAnalytics('stub', committedSignature);
+  useCalculatorAnalytics('stub', committedSignature, {
+    unitSystem: unit === 'metric' ? 'metric' : 'imperial',
+  });
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
+  useSeoAmplitudeCalculation({
+    calculator: 'stub',
+    toolName: TOOL_NAME,
+    pageSlug: PAGE.slug,
+    signature: validCommittedSignature,
+    unitMode: unit,
+  });
 
   useEffect(() => {
     if (!committed || committedMark === null || committedTakeUp === null || !committedSignature) {
@@ -311,6 +338,11 @@ export default function StubUpToolScreen() {
                 })}
               </Text>
             ) : null}
+            {diagramInput ? (
+              <SeoCard style={{ padding: theme.spacing.sm }}>
+                <BendDiagram input={diagramInput} height={150} />
+              </SeoCard>
+            ) : null}
             <SeoCopyButton
               text={copyText}
               disabled={!copyText}
@@ -328,6 +360,8 @@ export default function StubUpToolScreen() {
         onClear={clear}
         toolName={TOOL_NAME}
       />
+
+      <SeoAppCtaCard toolSlug={PAGE.slug} toolName={TOOL_NAME} />
 
       <SeoCollapsibleSection title={t('stub.whatTitle')}>
         <SeoParagraph>{copy.tagline}</SeoParagraph>

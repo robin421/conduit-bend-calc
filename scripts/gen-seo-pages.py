@@ -17,9 +17,37 @@ import html
 import os
 import re
 import sys
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 PLAY_URL = "https://play.google.com/store/apps/details?id=com.robin421.conduitbendcalc"
+
+# Legacy static calculator slugs superseded by interactive SPA tool pages (301 in _redirects).
+REDIRECTED_SLUGS = {
+    "offset-calculator",
+    "stub-up-calculator",
+    "3-point-saddle-calculator",
+    "4-point-saddle-calculator",
+    "conduit-shrink-calculator",
+}
+
+CANONICAL_TOOLS = [
+    ("offset", "Offset Bend Calculator"),
+    ("stub-up", "90° Stub-Up Calculator"),
+    ("3-point-saddle", "3-Point Saddle Calculator"),
+    ("conduit-fill", "NEC Conduit Fill Calculator"),
+    ("4-point-saddle", "4-Point Saddle Calculator"),
+    ("shrink", "Conduit Shrink Calculator"),
+]
+
+
+def build_play_url(slug: str, placement: str) -> str:
+    clean_slug = re.sub(r"[^a-z0-9_-]", "", slug.lower())
+    clean_placement = re.sub(r"[^a-z0-9_-]", "", placement.lower())
+    referrer = (
+        f"utm_source=web_seo&utm_medium=article_cta"
+        f"&utm_campaign={clean_slug}&utm_content={clean_placement}"
+    )
+    return f"{PLAY_URL}&referrer={quote(referrer, safe='')}"
 
 BASE_CSS = """
 *, *::before, *::after { box-sizing: border-box; }
@@ -118,6 +146,31 @@ h3 { font-size: 1rem; margin-top: 1.2rem; color: #0F2B46; }
 }
 .hero-cta:hover, .topbar-cta:hover {
   background: #E2B410;
+}
+.quick-tools {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #D9E2EB;
+}
+.quick-tool-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 12px;
+  background: #F5F8FB;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+  color: #0F2B46;
+  font-size: .88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.quick-tool-link:hover {
+  border-color: #806000;
+  background: #FFFFFF;
 }
 .table-wrap {
   overflow-x: auto;
@@ -232,7 +285,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <aside class="side-col">
 <div class="cta">
 <p><strong>Try it free:</strong> <a href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','sidebar_cta')">{cta_label}</a> &mdash; instant mark spacing &amp; shrink, no sign-up.</p>
-<p><a href="{play_url}" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','seo_page')">Get Conduit Bend Calc on Google Play</a> for bender calibration and Pro tools.</p>
+<p><a href="{play_url}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','sidebar_play_cta')">Get Conduit Bend Calc on Google Play</a> for 100% offline use and custom bender calibration.</p>
 </div>
 <nav class="related" aria-label="Related calculators">
 <p><strong>Related:</strong></p>
@@ -261,6 +314,16 @@ AMPLITUDE_TEMPLATE = """<script>
   var KEY={api_key};
   var SLUG={page_slug};
   var LS_KEY='@conduit_amplitude_device_id';
+  function isExcluded(){{
+    try{{
+      var h=(window.location&&window.location.hostname||'').toLowerCase();
+      if(h==='localhost'||h==='127.0.0.1'||h==='0.0.0.0'||h.endsWith('.local')||h.endsWith('.pages.dev'))return true;
+      if(navigator.webdriver)return true;
+      if(/Googlebot|Bingbot|HeadlessChrome|Playwright|Puppeteer/i.test(navigator.userAgent||''))return true;
+    }}catch(_){{}}
+    return false;
+  }}
+  if(isExcluded()){{window.__ampTrack=function(){{}};return;}}
   function getDeviceId(){{
     try{{
       var id=window.localStorage&&window.localStorage.getItem(LS_KEY);
@@ -275,6 +338,13 @@ AMPLITUDE_TEMPLATE = """<script>
     try{{
       if(!navigator.sendBeacon)return;
       var now=Date.now();
+      var props={{page_slug:SLUG,source:src}};
+      if(ev==='google_play_cta_clicked'){{
+        props.utm_source='web_seo';
+        props.utm_medium='article_cta';
+        props.utm_campaign=SLUG;
+        props.cta_placement=src;
+      }}
       var body=JSON.stringify({{
         api_key:KEY,
         events:[{{
@@ -284,7 +354,7 @@ AMPLITUDE_TEMPLATE = """<script>
           time:now,
           platform:'web',
           language:navigator.language||'en',
-          event_properties:{{page_slug:SLUG,source:src}}
+          event_properties:props
         }}]
       }});
       navigator.sendBeacon('https://api2.amplitude.com/2/httpapi',body);
@@ -645,11 +715,16 @@ shrink of two tall offsets surprises a lot of people on their first 4-point sadd
 PAGES += [
     dict(
         slug="kick-90-calculator",
-        title="Kicked 90\u00b0 Calculator \u2014 Layout & Mark Spacing",
-        desc="Free kicked 90\u00b0 calculator: mark spacing from the 90\u00b0 tangent start, "
-             "kick angle, straight section and total gain for clean panel entries.",
-        h1="Kicked 90\u00b0 Calculator",
-        cta_label="Open the free kicked 90\u00b0 calculator",
+        title="90\u00b0 Kick Multiplier Chart & Free Kick 90 Calculator",
+        desc="Free 90\u00b0 kick calculator & multiplier chart: find mark spacing, developed "
+             "length, kick angle, and total gain for EMT panel entries.",
+        h1="90\u00b0 Kick Calculator & Multiplier Chart",
+        cta_label="Open the free 90\u00b0 stub & kick calculator",
+        quick_links=[
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/offset/", "Offset Multiplier Calculator"),
+            ("/", "Kicked 90° Calculator (Full App)"),
+        ],
         body="""
 <p>A kicked 90\u00b0 is a 90\u00b0 bend with a short angled <em>kick</em> at one end &mdash;
 the bend you reach for when a stub has to enter a panel or box whose knockout is not
@@ -756,11 +831,17 @@ The calculator's feasibility check warns you before a bend is too tight to make.
     ),
     dict(
         slug="conduit-bending-chart",
-        title="Conduit Bending Chart \u2014 Multipliers & Shrink",
-        desc="Master conduit bending chart: multipliers and shrink per inch for 10\u00b0\u201360\u00b0, "
-             "take-up reference, and how to pick the right bend angle.",
-        h1="Conduit Bending Chart",
-        cta_label="Open the free conduit bending calculator",
+        title="EMT Conduit Bending Chart: Multipliers, Shrink & Take-Up",
+        desc="Free EMT conduit bending chart: 10\u00b0\u201360\u00b0 offset multipliers, shrink "
+             "per inch, and 90\u00b0 stub take-up table, plus instant interactive calculators.",
+        h1="EMT Conduit Bending Chart: Multipliers, Shrink & Take-Up",
+        cta_label="Open the free offset bend calculator",
+        quick_links=[
+            ("/offset/", "Offset Bend Calculator"),
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/conduit-fill/", "NEC Conduit Fill Calculator"),
+        ],
         body="""
 <p>This is the chart electricians tape inside their gang box lid: every multiplier and
 shrink factor for the bend angles you will actually use, on one page. Bookmark it.</p>
@@ -1049,11 +1130,16 @@ own bender \u2014 the app's calibration tool exists for exactly this.</p>
     ),
     dict(
         slug="hand-bender-markings",
-        title="Conduit Bender Marks: Arrow, Star & Rim Notch Guide",
-        desc="What the arrow, star, rim notch, and degree scale on your conduit bender "
-             "mean \u2014 and how to read each mark for stub-ups, offsets, and saddles.",
-        h1="Reading Your Conduit Bender: Every Mark Explained",
-        cta_label="Open the free conduit bending calculator",
+        title="Hand Bender Marks: Arrow, Star & Rim Notch Cheat Sheet",
+        desc="Master hand bender markings: arrow, star, rim notch & degree scale "
+             "cheat sheet for EMT. Includes free 90\u00b0 stub-up & 3-point saddle calculators.",
+        h1="Hand Bender Markings: Arrow, Star & Rim Notch Cheat Sheet",
+        cta_label="Open the free 90\u00b0 stub-up calculator",
+        quick_links=[
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/offset/", "Offset Bend Calculator"),
+        ],
         body="""
 <p>A hand bender head is covered in marks that look like decoration until someone tells
 you the system. There are four: the arrow, the star, the rim notch, and the degree
@@ -1151,10 +1237,10 @@ head stamped 3/4&quot;, check its 6&quot; take-up stamp, and your stub-up math b
 from the end, arrow on the mark, bend to 90\u00b0.</p>
 
 <h2>A note on conduit fill</h2>
-<p>Sizing conduit for how many wires it can legally carry (conduit fill, NEC Chapter 9
-tables) is a separate calculation from bending. This site and the companion app
-focus on <strong>bend geometry</strong> \u2014 marks, multipliers, shrink, and
-calibration \u2014 and do not include a conduit fill calculator.</p>
+<p>Sizing conduit for how many THHN conductors it can legally carry follows NEC Chapter 9
+Tables 1, 4, and 5 (40% fill for 3 or more wires). Use our free
+<a href="/conduit-fill/">NEC Conduit Fill Calculator</a> to check EMT, IMC, Rigid, and
+PVC Schedule 40 wire counts right alongside your bending marks.</p>
 """,
     ),
     dict(
@@ -1646,19 +1732,29 @@ def render_faq_jsonld(faqs: list) -> str:
 
 
 def calculator_url_for_slug(slug: str, base_url: str) -> str:
-    """Map each landing page slug to its corresponding interactive calculator route."""
+    """Map each landing page slug to its canonical interactive calculator route."""
     if "4-point" in slug:
-        return f"{base_url}/4-point-saddle"
+        return f"{base_url}/4-point-saddle/"
+    if "3-point" in slug or "saddle" in slug:
+        return f"{base_url}/3-point-saddle/"
+    if "fill" in slug or "emt-sizes" in slug:
+        return f"{base_url}/conduit-fill/"
     if "shrink" in slug:
-        return f"{base_url}/shrink"
-    if "stub" in slug or "deduct" in slug or "take-up" in slug:
-        return f"{base_url}/stub-up"
-    if "offset" in slug or "multiplier" in slug or "parallel" in slug or "dogleg" in slug:
-        return f"{base_url}/offset"
+        return f"{base_url}/shrink/"
+    if "stub" in slug or "deduct" in slug or "take-up" in slug or "hand-bender" in slug or "90-degree" in slug:
+        return f"{base_url}/stub-up/"
+    if "offset" in slug or "multiplier" in slug or "parallel" in slug or "dogleg" in slug or "chart" in slug:
+        return f"{base_url}/offset/"
     return f"{base_url}/"
 
 
-def enhance_body_html(body_html: str, tool_url: str, cta_label: str) -> str:
+def enhance_body_html(
+    body_html: str,
+    tool_url: str,
+    cta_label: str,
+    base_url: str,
+    quick_links: list | None = None,
+) -> str:
     """Wrap tables in .table-wrap and inject a hero CTA bar after the lead paragraph."""
     wrapped = re.sub(
         r"(<table\b[^>]*>.*?</table>)",
@@ -1666,10 +1762,20 @@ def enhance_body_html(body_html: str, tool_url: str, cta_label: str) -> str:
         body_html,
         flags=re.DOTALL,
     )
+    quick_html = ""
+    if quick_links:
+        pills = "".join(
+            f'<a class="quick-tool-link" href="{base_url}{path}" '
+            f'onclick="if(window.__ampTrack)window.__ampTrack(\'seo_landing_cta_clicked\',\'quick_tool_link\')">'
+            f'{html.escape(label)} &rarr;</a>'
+            for path, label in quick_links
+        )
+        quick_html = f'<div class="quick-tools">{pills}</div>'
     hero_cta = (
         f'\n<div class="hero-cta-bar">'
         f'<span class="muted">Free interactive tool &mdash; no sign-up</span>'
         f'<a class="hero-cta" href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack(\'seo_landing_cta_clicked\',\'hero_cta\')">{html.escape(cta_label)} &rarr;</a>'
+        f'{quick_html}'
         f'</div>\n'
     )
     if "</p>" in wrapped:
@@ -1681,11 +1787,17 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
     canonical = f"{base_url}/{page['slug']}/"
     host = urlparse(base_url).netloc or "bendcalc.wattflow.net"
     tool_url = calculator_url_for_slug(page["slug"], base_url)
-    related = "\n".join(
+    play_url = build_play_url(page["slug"], "sidebar_play_cta")
+    canonical_tool_links = [
+        f'  <li><a href="{base_url}/{tool_slug}/">{html.escape(label)}</a></li>'
+        for tool_slug, label in CANONICAL_TOOLS
+    ]
+    guide_links = [
         f'  <li><a href="{base_url}/{p["slug"]}/">{html.escape(p["h1"])}</a></li>'
         for p in PAGES
-        if p["slug"] != page["slug"]
-    )
+        if p["slug"] != page["slug"] and p["slug"] not in REDIRECTED_SLUGS
+    ]
+    related = "\n".join(canonical_tool_links + guide_links)
     import json
     ga4 = GA4_TEMPLATE.format(gid=html.escape(ga4_id)) if ga4_id else ""
     amp_script = AMPLITUDE_TEMPLATE.format(
@@ -1694,7 +1806,13 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
     )
     faqs = page.get("faqs", [])
     raw_body = page["body"] + render_faq_section(faqs)
-    body = enhance_body_html(raw_body, tool_url, page["cta_label"])
+    body = enhance_body_html(
+        raw_body,
+        tool_url,
+        page["cta_label"],
+        base_url,
+        page.get("quick_links"),
+    )
     return PAGE_TEMPLATE.format(
         title=html.escape(page["title"]),
         desc=html.escape(page["desc"]),
@@ -1706,7 +1824,7 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         cta_label=html.escape(page["cta_label"]),
         tool_url=tool_url,
         base=base_url,
-        play_url=PLAY_URL,
+        play_url=html.escape(play_url),
         related=related,
         css=BASE_CSS.strip(),
         ga4=ga4,
@@ -1729,21 +1847,24 @@ def main() -> None:
     base_url = args[1].rstrip("/")
     ga4_id = ga4_flag or os.environ.get("GA4_ID") or None
 
+    active_pages = [p for p in PAGES if p["slug"] not in REDIRECTED_SLUGS]
+
     # Sanity checks: title/description lengths and body word counts.
-    for page in PAGES:
+    for page in active_pages:
         assert len(page["title"]) <= 60, f"title too long ({len(page['title'])}): {page['slug']}"
         assert len(page["desc"]) <= 160, f"desc too long ({len(page['desc'])}): {page['slug']}"
         full_body = page["body"] + render_faq_section(page.get("faqs", []))
         wc = word_count(full_body)
         assert 250 <= wc <= 650, f"word count {wc} out of range: {page['slug']}"
 
-    for page in PAGES:
+    for page in active_pages:
         out_dir = os.path.join(export_dir, page["slug"])
         os.makedirs(out_dir, exist_ok=True)
         out_path = os.path.join(out_dir, "index.html")
         with open(out_path, "w") as f:
             f.write(render_page(page, base_url, ga4_id))
         print(f"wrote {out_path} ({word_count(page['body'])} words, ga4={'on' if ga4_id else 'off'})")
+    print(f"SEO landing pages: {len(active_pages)} active ({len(REDIRECTED_SLUGS)} deduplicated via _redirects)")
 
 
 if __name__ == "__main__":

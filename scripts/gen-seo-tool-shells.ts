@@ -17,6 +17,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { buildGooglePlayUrl } from '../src/lib/homeContent.ts';
 import {
   buildCanonicalUrl,
   buildFaqPageJsonLd,
@@ -168,6 +169,44 @@ function buildCheatSheetHtml(key: (typeof SEO_TOOL_PAGES)[number]['key']): strin
         '  <p><strong>Rule of thumb:</strong> Add total shrink to your measured center-to-center run length before cutting conduit.</p>',
         '</section>',
       ].join('\n');
+    case 'saddle3':
+      return [
+        '<section class="cheat-sheet" style="margin:2rem 0;">',
+        '  <h2>3-Point Saddle Bend Multiplier &amp; Center Shrink Chart</h2>',
+        '  <p>Standard field multipliers and center mark shrink constants for jumping round pipes and narrow obstacles:</p>',
+        '  <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:1rem 0;">',
+        '    <thead>',
+        '      <tr style="background:#f2f2f2;"><th>Center Bend</th><th>Side Bends</th><th>Side Mark Spacing</th><th>Center Shrink / Inch</th><th>Example (4" Obstacle)</th></tr>',
+        '    </thead>',
+        '    <tbody>',
+        '      <tr><td>45° (Standard)</td><td>22.5° / 22.5°</td><td>Height × 2.5</td><td>3/16" (0.188")</td><td>Sides: 10" · Span: 20" · Shrink: 3/4"</td></tr>',
+        '      <tr><td>60° (Tight)</td><td>30° / 30°</td><td>Height × 2.0</td><td>1/4" (0.250")</td><td>Sides: 8" · Span: 16" · Shrink: 1"</td></tr>',
+        '    </tbody>',
+        '  </table>',
+        '  <p><strong>Bender Marks:</strong> Place the center mark on the <em>rim notch</em> (teardrop) for the center bend, then flip the conduit and align the two outer marks with the <em>arrow</em> for the opposite side bends.</p>',
+        '</section>',
+      ].join('\n');
+    case 'conduitFill':
+      return [
+        '<section class="cheat-sheet" style="margin:2rem 0;">',
+        '  <h2>NEC 2023 Conduit Fill Table C.1 Quick Chart (EMT · THHN / THWN-2)</h2>',
+        '  <p>Maximum number of same-size THHN / THWN-2 conductors in EMT per NEC Chapter 9 Table 1 (40% fill for 3+ wires, 31% for 2 wires, 53% for 1 wire, Note 7 rounding):</p>',
+        '  <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:1rem 0;">',
+        '    <thead>',
+        '      <tr style="background:#f2f2f2;"><th>EMT Trade Size</th><th>14 AWG</th><th>12 AWG</th><th>10 AWG</th><th>8 AWG</th><th>6 AWG</th><th>4 AWG</th></tr>',
+        '    </thead>',
+        '    <tbody>',
+        '      <tr><td>1/2"</td><td>12</td><td>9</td><td>5</td><td>3</td><td>2</td><td>1</td></tr>',
+        '      <tr><td>3/4"</td><td>22</td><td>16</td><td>10</td><td>6</td><td>4</td><td>2</td></tr>',
+        '      <tr><td>1"</td><td>35</td><td>26</td><td>16</td><td>9</td><td>7</td><td>4</td></tr>',
+        '      <tr><td>1-1/4"</td><td>61</td><td>45</td><td>28</td><td>16</td><td>12</td><td>7</td></tr>',
+        '      <tr><td>1-1/2"</td><td>84</td><td>61</td><td>38</td><td>22</td><td>16</td><td>10</td></tr>',
+        '      <tr><td>2"</td><td>138</td><td>101</td><td>63</td><td>36</td><td>26</td><td>16</td></tr>',
+        '    </tbody>',
+        '  </table>',
+        '  <p><strong>NEC Rule:</strong> Supports EMT, IMC, Rigid (RMC), and PVC Schedule 40 from 1/2" to 4" across 14 AWG to 500 kcmil. Nipples &le; 24" may fill up to 60%.</p>',
+        '</section>',
+      ].join('\n');
     case 'saddle4':
       return [
         '<section class="cheat-sheet" style="margin:2rem 0;">',
@@ -239,6 +278,12 @@ function buildRelatedSectionHtml(page: (typeof SEO_TOOL_PAGES)[number]): string 
  * React 首次 render 会平滑接管并替换。
  */
 function buildStaticPageContentHtml(page: (typeof SEO_TOOL_PAGES)[number]): string {
+  const playUrl = buildGooglePlayUrl({
+    source: 'web_seo',
+    medium: 'tool_shell',
+    campaign: page.slug,
+    content: 'static_fallback',
+  });
   return [
     '<div class="static-seo-shell" style="min-height:100vh;background:#F5F8FB;color:#0F2B46;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.55;">',
     '  <header style="background:#0F2B46;color:#FFFFFF;padding:14px 24px;border-bottom:3px solid #F4C317;">',
@@ -251,6 +296,10 @@ function buildStaticPageContentHtml(page: (typeof SEO_TOOL_PAGES)[number]): stri
     `    <h1 style="margin-top:0;">${escapeHtml(page.h1)}</h1>`,
     `    <p class="tagline" style="font-size:1.05rem;color:#475569;">${escapeHtml(page.tagline)}</p>`,
     buildCheatSheetHtml(page.key),
+    '    <section class="app-cta" style="margin:1.5rem 0;padding:16px;background:#F5F8FB;border:1px solid #D9E2EB;border-radius:8px;">',
+    '      <p style="margin:0 0 8px;font-weight:700;">Use Conduit Bend Calc 100% offline on the jobsite</p>',
+    `      <p style="margin:0;"><a href="${escapeHtml(playUrl)}" rel="noopener noreferrer" style="display:inline-block;background:#F4C317;color:#0F2B46;font-weight:700;padding:10px 16px;border-radius:8px;text-decoration:none;">Get Free Android App on Google Play</a></p>`,
+    '    </section>',
     buildFaqsHtml(page.faqs),
     buildRelatedSectionHtml(page),
     '  </article>',
@@ -313,7 +362,7 @@ function main(): void {
     console.log(`wrote ${outPath} (title ${page.title.length}, desc ${page.description.length})`);
   }
 
-  console.log(`SEO tool shells: 4 pages, base=${baseUrl || SEO_SITE_URL}`);
+  console.log(`SEO tool shells: ${SEO_TOOL_PAGES.length} pages, base=${baseUrl || SEO_SITE_URL}`);
 }
 
 main();

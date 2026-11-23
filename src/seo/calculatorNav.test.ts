@@ -18,8 +18,12 @@ import {
 } from './calculatorNav.ts';
 import { SEO_TOOL_PAGES } from './toolPages.ts';
 
-test('切换条 = 4 个交互式工具页 + 回首页入口', () => {
+test('切换条 = 6 个交互式工具页（Top-4 优先）+ 回首页入口', () => {
   assert.equal(CALCULATOR_NAV.length, SEO_TOOL_PAGES.length + 1);
+  assert.deepEqual(
+    CALCULATOR_NAV.map((item) => item.key),
+    ['offset', 'stubUp', 'saddle3', 'conduitFill', 'saddle4', 'shrink', 'home'],
+  );
   assert.equal(CALCULATOR_NAV[CALCULATOR_NAV.length - 1].key, 'home');
   assert.equal(CALCULATOR_NAV[CALCULATOR_NAV.length - 1].path, '/');
   assert.equal(CALCULATOR_NAV[CALCULATOR_NAV.length - 1].screen, 'RootTabs');

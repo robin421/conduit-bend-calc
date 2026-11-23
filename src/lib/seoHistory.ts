@@ -10,13 +10,19 @@
  *   （Web 端即 localStorage，工地上断网也能读上次算过的数）。
  */
 
-import type { EmtTakeUpSize, OffsetAngle } from '../constants.ts';
+import type { EmtTakeUpSize, OffsetAngle, RacewayType, TradeSize, WireSize } from '../constants.ts';
 import type { UnitSystem } from './units.ts';
 
 /** 每个 SEO 工具页保留的历史条数。 */
 export const SEO_HISTORY_LIMIT = 5;
 
-export type SeoHistoryKind = 'offset' | 'saddle4' | 'shrink' | 'stubUp';
+export type SeoHistoryKind =
+  | 'offset'
+  | 'stubUp'
+  | 'saddle3'
+  | 'conduitFill'
+  | 'saddle4'
+  | 'shrink';
 
 export type ShrinkMode = 'offset' | 'saddle';
 
@@ -31,6 +37,11 @@ export interface SeoHistoryParams {
   unit?: UnitSystem;
   /** 可选输入区（如 offset 的起点）在记录时是否展开，回填时一并恢复。 */
   startTextOpen?: boolean;
+  /** Conduit fill 参数。 */
+  raceway?: RacewayType;
+  trade?: TradeSize;
+  wire?: WireSize;
+  countText?: string;
 }
 
 export interface SeoHistoryEntry {

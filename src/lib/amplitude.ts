@@ -7,12 +7,14 @@ import {
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
+  isExcludedAnalyticsEnvironment,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
   sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
   type AmplitudeUserProperties,
+  type AnalyticsExclusionOptions,
 } from './amplitudeCore';
 
 export {
@@ -20,12 +22,14 @@ export {
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
+  isExcludedAnalyticsEnvironment,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
   sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
   type AmplitudeUserProperties,
+  type AnalyticsExclusionOptions,
 };
 
 function resolveLanguage(): string {
@@ -44,12 +48,36 @@ function resolveApiKey(): string {
   return resolveAmplitudeApiKey(Platform.OS, envKey);
 }
 
+function isCurrentEnvironmentExcluded(): boolean {
+  const isDev = typeof __DEV__ !== 'undefined' && Boolean(__DEV__);
+  const hostname =
+    typeof window !== 'undefined' && window.location
+      ? window.location.hostname
+      : undefined;
+  const webdriver =
+    typeof navigator !== 'undefined' &&
+    Boolean((navigator as { webdriver?: boolean }).webdriver);
+  const userAgent =
+    typeof navigator !== 'undefined' ? navigator.userAgent : undefined;
+  const forceSend =
+    typeof process !== 'undefined' &&
+    process.env?.EXPO_PUBLIC_AMPLITUDE_FORCE_SEND === '1';
+  return isExcludedAnalyticsEnvironment({
+    isDev,
+    hostname,
+    webdriver,
+    userAgent,
+    forceSend,
+  });
+}
+
 const client = createAmplitudeClient({
   storage: AsyncStorage,
   apiKey: resolveApiKey(),
   platform: Platform.OS,
   appVersion: appConfig.expo.version,
   language: resolveLanguage(),
+  isExcluded: isCurrentEnvironmentExcluded,
 });
 
 /** 初始化 Amplitude（读取/生成匿名 device_id 与 session_id）；静默容错。 */

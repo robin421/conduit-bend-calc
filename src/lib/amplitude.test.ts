@@ -9,6 +9,7 @@ import {
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
+  isExcludedAnalyticsEnvironment,
   parseSessionState,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
@@ -355,5 +356,77 @@ test('buildAmplitudeHttpBody 与 createAmplitudeClient：缓存并附带白名�
     is_pro: true,
     unit_system: 'fractional',
     app_lang: 'es',
+  });
+});
+
+test('isExcludedAnalyticsEnvironment：屏蔽 dev / localhost / pages.dev / webdriver / bots，forceSend 可覆盖', () => {
+  assert.equal(isExcludedAnalyticsEnvironment(), false);
+  assert.equal(isExcludedAnalyticsEnvironment({ hostname: 'bendcalc.wattflow.net', userAgent: 'Mozilla/5.0' }), false);
+
+  // 开发模式
+  assert.equal(isExcludedAnalyticsEnvironment({ isDev: true }), true);
+
+  // 本地与预览域名
+  assert.equal(isExcludedAnalyticsEnvironment({ hostname: 'localhost' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ hostname: '127.0.0.1' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ hostname: '0.0.0.0' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ hostname: 'macbook.local' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ hostname: 'abc123.conduit-bend-calc.pages.dev' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ hostname: 'LOCALHOST' }), true);
+
+  // 自动化与爬虫
+  assert.equal(isExcludedAnalyticsEnvironment({ webdriver: true }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1)' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ userAgent: 'Mozilla/5.0 (compatible; Bingbot/2.0)' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ userAgent: 'HeadlessChrome/120.0' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ userAgent: 'Playwright/1.45' }), true);
+  assert.equal(isExcludedAnalyticsEnvironment({ userAgent: 'Puppeteer/22.0' }), true);
+
+  // forceSend 强制放行
+  assert.equal(
+    isExcludedAnalyticsEnvironment({
+      isDev: true,
+      hostname: 'localhost',
+      webdriver: true,
+      userAgent: 'HeadlessChrome/120.0',
+      forceSend: true,
+    }),
+    false,
+  );
+});
+
+test('createAmplitudeClient：命中 isExcluded 时阻止所有真实上报且不写入激活标记', async () => {
+  const storage = createMemoryStorage();
+  let fetchCalls = 0;
+  const client = createAmplitudeClient({
+    storage,
+    isExcluded: () => true,
+    fetchFn: (async () => {
+      fetchCalls += 1;
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch,
+  });
+
+  assert.equal(await client.logEvent('calculation_completed', { calculator: 'offset' }), false);
+  assert.equal(await client.logScreenView('SeoOffset'), false);
+  assert.equal(await client.markActivationIfNeeded({ calculator: 'offset' }), false);
+  assert.equal(fetchCalls, 0);
+  assert.equal(storage.data[AMPLITUDE_ACTIVATED_KEY], undefined);
+});
+
+test('sanitizeEventProperties：放行 UTM 与 cta_placement 归因白名单字段', () => {
+  const cleaned = sanitizeEventProperties({
+    utm_source: 'web_seo',
+    utm_medium: 'tool_cta',
+    utm_campaign: '3-point-saddle',
+    cta_placement: 'below_result',
+    email: 'drop@example.com',
+  });
+
+  assert.deepEqual(cleaned, {
+    utm_source: 'web_seo',
+    utm_medium: 'tool_cta',
+    utm_campaign: '3-point-saddle',
+    cta_placement: 'below_result',
   });
 });

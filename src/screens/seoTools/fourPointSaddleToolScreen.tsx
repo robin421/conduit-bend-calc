@@ -20,7 +20,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Keyboard, Text, View } from 'react-native';
 
+import type { DiagramInput } from '../../calculators/diagrams/diagrams';
 import { calculateFourPointSaddle } from '../../calculators/saddle/saddle';
+import BendDiagram from '../../components/bendDiagram';
 import ImperialInput from '../../components/imperialInput';
 import type { OffsetAngle } from '../../constants';
 import {
@@ -42,6 +44,7 @@ import {
   formatSeoLength,
   RelatedCalculators,
   OffsetMultiplierTable,
+  SeoAppCtaCard,
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
@@ -55,6 +58,7 @@ import {
   SeoResultCard,
   SeoUnitToggle,
   SeoWorkspace,
+  useSeoAmplitudeCalculation,
   type SeoQuickPreset,
 } from './seoLayout';
 
@@ -147,6 +151,20 @@ export default function FourPointSaddleToolScreen() {
     [activeInput],
   );
 
+  const diagramInput = useMemo<DiagramInput | null>(() => {
+    if (!result || !activeInput) {
+      return null;
+    }
+    return {
+      kind: 'saddle4',
+      unit,
+      height: activeInput.heightInches,
+      thetaDeg: activeInput.angle,
+      legSpacingDisplay: result.markSpacingInches,
+      flatWidth: activeInput.widthInches,
+    };
+  }, [activeInput, result, unit]);
+
   const marksLine = result
     ? result.marks
         .map((mark) => {
@@ -165,8 +183,17 @@ export default function FourPointSaddleToolScreen() {
     ? `${committed.heightInches}|${committed.widthInches}|${committed.angle}`
     : null;
 
-  useCalculatorAnalytics('saddle4', committedSignature);
+  useCalculatorAnalytics('saddle4', committedSignature, {
+    unitSystem: unit === 'metric' ? 'metric' : 'imperial',
+  });
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
+  useSeoAmplitudeCalculation({
+    calculator: 'saddle4',
+    toolName: TOOL_NAME,
+    pageSlug: PAGE.slug,
+    signature: committedSignature,
+    unitMode: unit,
+  });
 
   const committedResult = useMemo(
     () =>
@@ -335,6 +362,11 @@ export default function FourPointSaddleToolScreen() {
                 },
               ]}
             />
+            {diagramInput ? (
+              <SeoCard style={{ padding: theme.spacing.sm }}>
+                <BendDiagram input={diagramInput} height={150} />
+              </SeoCard>
+            ) : null}
             <SeoCopyButton text={copyText} disabled={!result} toolName={TOOL_NAME} />
           </View>
         }
@@ -348,6 +380,8 @@ export default function FourPointSaddleToolScreen() {
         onClear={clear}
         toolName={TOOL_NAME}
       />
+
+      <SeoAppCtaCard toolSlug={PAGE.slug} toolName={TOOL_NAME} />
 
       <SeoCollapsibleSection title={t('saddle.whatTitle')}>
         <SeoParagraph>{copy.tagline}</SeoParagraph>

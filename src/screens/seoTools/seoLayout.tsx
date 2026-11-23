@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -42,18 +43,22 @@ import type { RootStackParamList } from '../../navigation/rootStack';
 import { SEO_TOOL_SCREENS, type SeoScreenName } from '../../navigation/seoRoutes';
 import { buildRelatedLinks, getRelatedCalculatorsTitle, type SeoToolKey, type SeoToolPageMeta } from '../../seo/toolPages';
 import {
+  trackEvent,
   trackInternalLinkClick,
   trackSeoToolCopy,
   trackSeoToolFaqExpand,
   trackSeoToolHistoryRefill,
   trackSeoToolPreset,
   trackSeoToolUnitChange,
+  type CalculatorSlug,
   type SeoToolName,
 } from '../../lib/analytics';
-import { logAmplitudeEvent } from '../../lib/amplitude';
+import { logAmplitudeEvent, trackAmplitudeActivationIfNeeded } from '../../lib/amplitude';
 import { copyToClipboard } from '../../lib/clipboard';
+import { buildGooglePlayUrl } from '../../lib/homeContent';
 import type { SeoHistoryEntry } from '../../lib/seoHistory';
-import { formatLength } from '../../lib/units';
+import { formatLength, type UnitSystem } from '../../lib/units';
+import { useDebouncedCalculationCompleted } from '../../lib/useDebouncedCalculationCompleted';
 import { useTheme, type Theme } from '../../theme';
 
 /** Web 端无阴影 Hover / Focus-visible 样式辅助。 */
@@ -1538,6 +1543,180 @@ export function RelatedCalculators({
   );
 }
 
+/**
+ * SEO 工具页 Amplitude 计算完成上报（1000ms 防抖 + 卸载 flush + 签名去重，零 PII）。
+ * 同步触发首次激活事件 activation_completed。
+ */
+export function useSeoAmplitudeCalculation(params: {
+  calculator: CalculatorSlug;
+  toolName: SeoToolName;
+  pageSlug: string;
+  signature: string | null;
+  unitMode: UnitSystem;
+}): void {
+  const { calculator, toolName, pageSlug, signature, unitMode } = params;
+  const unitSystem = unitMode === 'metric' ? 'metric' : 'imperial';
+  useDebouncedCalculationCompleted(
+    calculator,
+    signature,
+    unitSystem,
+    (bendType, opts) => {
+      logAmplitudeEvent('calculation_completed', {
+        calculator: bendType,
+        tool_name: toolName,
+        unit_system: opts.unitSystem,
+        unit_mode: opts.unitMode ?? unitMode,
+        page_slug: pageSlug,
+      });
+      trackAmplitudeActivationIfNeeded({
+        calculator: bendType,
+        tool_name: toolName,
+        page_slug: pageSlug,
+      });
+    },
+    unitMode,
+  );
+}
+
+/**
+ * Value-First Android App 下载卡：置于计算工作区/历史下方，绝不遮挡或限制免费计算结果。
+ * 突出 3 项真实工地优势（断网离线、本地历史、自定义弯管器鞋模校准），并携带标准 UTM 归因链接。
+ */
+export function SeoAppCtaCard({
+  toolSlug,
+  toolName,
+}: {
+  toolSlug: string;
+  toolName: SeoToolName;
+}) {
+  const theme = useTheme();
+  const { t } = useI18n();
+  const playUrl = buildGooglePlayUrl({
+    source: 'web_seo',
+    medium: 'tool_cta',
+    campaign: toolSlug,
+    content: 'below_result',
+  });
+
+  const handlePress = useCallback(() => {
+    trackEvent('google_play_click', {
+      source: 'seo_tool_cta',
+      tool_name: toolName,
+    });
+    logAmplitudeEvent('google_play_cta_clicked', {
+      source: 'seo_tool_cta',
+      page_slug: toolSlug,
+      utm_source: 'web_seo',
+      utm_medium: 'tool_cta',
+      utm_campaign: toolSlug,
+      cta_placement: 'below_result',
+    });
+  }, [toolName, toolSlug]);
+
+  const bullets = [t('appCta.bullet1'), t('appCta.bullet2'), t('appCta.bullet3')];
+
+  return (
+    <View
+      style={[
+        styles.appCtaCard,
+        styles.readingMeasure,
+        {
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+          borderRadius: theme.radius,
+          padding: theme.spacing.md,
+          gap: theme.spacing.sm,
+        },
+      ]}
+    >
+      <Text
+        style={{
+          color: theme.colors.accentText,
+          fontSize: 12,
+          fontWeight: theme.fontWeight.semibold,
+          letterSpacing: 0.4,
+        }}
+      >
+        {t('appCta.eyebrow')}
+      </Text>
+      <SeoHeading level={2} style={{ fontSize: 18 }}>
+        {t('appCta.title')}
+      </SeoHeading>
+      <View style={{ gap: 6 }}>
+        {bullets.map((line) => (
+          <View key={line} style={styles.appCtaBulletRow}>
+            <Text
+              style={{
+                color: theme.colors.accentText,
+                fontSize: theme.fontSize.secondary,
+                fontWeight: theme.fontWeight.semibold,
+              }}
+            >
+              •
+            </Text>
+            <Text
+              style={{
+                flex: 1,
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSize.secondary,
+                lineHeight: 20,
+              }}
+            >
+              {line}
+            </Text>
+          </View>
+        ))}
+      </View>
+      {Platform.OS === 'web' ? (
+        <AnchorText
+          accessibilityRole="link"
+          href={playUrl}
+          hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
+          onPress={handlePress}
+          style={
+            [
+              styles.appCtaButton,
+              styles.appCtaButtonText,
+              {
+                backgroundColor: theme.colors.accent,
+                color: theme.colors.onAccent,
+                borderRadius: theme.radius,
+              },
+            ] as StyleProp<TextStyle>
+          }
+        >
+          {t('appCta.button')}
+        </AnchorText>
+      ) : (
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => {
+            handlePress();
+            void Linking.openURL(playUrl).catch(() => undefined);
+          }}
+          style={(state) => [
+            styles.appCtaButton,
+            {
+              backgroundColor: theme.colors.accent,
+              borderRadius: theme.radius,
+              opacity: state.pressed ? 0.88 : 1,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.appCtaButtonText,
+              { color: theme.colors.onAccent },
+            ]}
+          >
+            {t('appCta.button')}
+          </Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 /** 把英寸数按当前单位系统格式化为单字符串。 */
 export function formatSeoLength(inches: number, unit: 'fractional' | 'decimal' | 'metric'): string {
   return formatLength(inches, unit);
@@ -1573,7 +1752,7 @@ const styles = StyleSheet.create({
   },
   subNavBar: {
     width: '100%',
-    height: 40,
+    minHeight: 40,
     borderBottomWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1723,8 +1902,8 @@ const styles = StyleSheet.create({
   },
   switcherWrap: {
     width: '100%',
-    height: '100%',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'stretch',
     gap: 4,
   },
@@ -1776,5 +1955,27 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingHorizontal: 10,
     paddingBottom: 16,
+  },
+  appCtaCard: {
+    borderWidth: 1,
+  },
+  appCtaBulletRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  appCtaButton: {
+    minHeight: 48,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    display: 'flex' as unknown as TextStyle['display'],
+    textAlign: 'center',
+  },
+  appCtaButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

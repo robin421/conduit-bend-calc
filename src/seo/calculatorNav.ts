@@ -30,12 +30,14 @@ export interface CalculatorNavItem {
 /** 工具页在切换条上的短标签 key（页面 h1 太长，不适合芯片）。 */
 const SHORT_LABEL_KEYS: Record<SeoToolKey, TranslationKey> = {
   offset: 'nav.offset',
+  stubUp: 'nav.stubUp',
+  saddle3: 'nav.saddle3',
+  conduitFill: 'nav.conduitFill',
   saddle4: 'nav.saddle4',
   shrink: 'nav.shrink',
-  stubUp: 'nav.stubUp',
 };
 
-/** 4 个交互式工具页 + 回首页入口。顺序即切换条展示顺序。 */
+/** 6 个交互式工具页（Top-4 优先）+ 回首页入口。顺序即切换条展示顺序。 */
 export const CALCULATOR_NAV: readonly CalculatorNavItem[] = [
   ...SEO_TOOL_PAGES.map((page) => ({
     key: page.key as string,

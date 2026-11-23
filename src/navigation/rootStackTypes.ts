@@ -9,8 +9,10 @@ import type { RootTabParamList } from './rootTabs';
 export type RootStackParamList = {
   RootTabs: NavigatorScreenParams<RootTabParamList> | undefined;
   SeoOffset: undefined;
+  SeoStubUp: undefined;
+  SeoSaddle3: undefined;
+  SeoConduitFill: undefined;
   SeoSaddle4: undefined;
   SeoShrink: undefined;
-  SeoStubUp: undefined;
   Feedback: undefined;
 };

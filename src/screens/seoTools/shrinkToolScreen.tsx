@@ -41,6 +41,7 @@ import {
   formatSeoLength,
   RelatedCalculators,
   OffsetMultiplierTable,
+  SeoAppCtaCard,
   SeoCalculateButton,
   SeoCalcLayout,
   SeoCard,
@@ -54,6 +55,7 @@ import {
   SeoResultCard,
   SeoUnitToggle,
   SeoWorkspace,
+  useSeoAmplitudeCalculation,
   type SeoQuickPreset,
 } from './seoLayout';
 
@@ -161,8 +163,17 @@ export default function ShrinkToolScreen() {
     ? `${committed.heightInches}|${committed.angle}|${committed.mode}`
     : null;
 
-  useCalculatorAnalytics('shrink', committedSignature);
+  useCalculatorAnalytics('shrink', committedSignature, {
+    unitSystem: unit === 'metric' ? 'metric' : 'imperial',
+  });
   useSeoToolCalculateAnalytics(TOOL_NAME, committedSignature);
+  useSeoAmplitudeCalculation({
+    calculator: 'shrink',
+    toolName: TOOL_NAME,
+    pageSlug: PAGE.slug,
+    signature: committedSignature,
+    unitMode: unit,
+  });
 
   const committedResult = useMemo(
     () => (committed ? calculateOffset(committed.heightInches, committed.angle) : null),
@@ -354,6 +365,8 @@ export default function ShrinkToolScreen() {
         onClear={clear}
         toolName={TOOL_NAME}
       />
+
+      <SeoAppCtaCard toolSlug={PAGE.slug} toolName={TOOL_NAME} />
 
       <SeoCollapsibleSection title={t('shrink.whatTitle')}>
         <SeoParagraph>{copy.tagline}</SeoParagraph>

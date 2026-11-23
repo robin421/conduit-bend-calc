@@ -19,6 +19,8 @@ import {
 const HISTORY_KIND_TO_CALCULATOR: Record<SeoHistoryKind, string> = {
   offset: 'offset',
   stubUp: 'stub-up',
+  saddle3: '3-point-saddle',
+  conduitFill: 'conduit-fill',
   shrink: 'shrink',
   saddle4: '4-point-saddle',
 };

@@ -21,13 +21,27 @@ import json
 import os
 import re
 import sys
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 EXPORT_DIR = sys.argv[1].rstrip("/")
 BASE_URL = sys.argv[2].rstrip("/")
 BASE_HOST = urlparse(BASE_URL).netloc or "bendcalc.wattflow.net"
 ANDROID_PACKAGE = "com.robin421.conduitbendcalc"
 PLAY_URL = f"https://play.google.com/store/apps/details?id={ANDROID_PACKAGE}"
+
+
+def build_play_url(campaign: str, content: str, medium: str = "home_static") -> str:
+    clean_campaign = re.sub(r"[^a-z0-9_-]", "", campaign.lower())
+    clean_content = re.sub(r"[^a-z0-9_-]", "", content.lower())
+    clean_medium = re.sub(r"[^a-z0-9_-]", "", medium.lower())
+    referrer = (
+        f"utm_source=web_seo&utm_medium={clean_medium}"
+        f"&utm_campaign={clean_campaign}&utm_content={clean_content}"
+    )
+    return f"{PLAY_URL}&referrer={quote(referrer, safe='')}"
+
+
+PLAY_URL_HOME = build_play_url("home", "home_static")
 
 GA4_TEMPLATE = """<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>
 <script>
@@ -178,9 +192,11 @@ HOME_STATIC_HTML = f"""<!-- static-seo-home-start -->
       <h2 style="font-size:16px;margin:0 0 12px;color:#0F2B46;">Interactive Calculators</h2>
       <ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
         <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/offset/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Offset Bend Calculator</a><span style="font-size:13px;color:#475569;">Mark spacing and shrink for 10&deg;, 15&deg;, 22.5&deg;, 30&deg;, 45&deg;, and 60&deg; offsets.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/stub-up/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">90&deg; Stub-Up Calculator</a><span style="font-size:13px;color:#475569;">Take-up deduct and mark placement for EMT, IMC, and Rigid conduit.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/3-point-saddle/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">3-Point Saddle Calculator</a><span style="font-size:13px;color:#475569;">45&deg;/22.5&deg; and 60&deg;/30&deg; center shrink, side spacing, and bend diagram.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/conduit-fill/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">NEC Conduit Fill Calculator</a><span style="font-size:13px;color:#475569;">Max THHN wires and 40%/31%/53% fill check for EMT, IMC, Rigid, and PVC40.</span></li>
         <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/4-point-saddle/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">4-Point Saddle Calculator</a><span style="font-size:13px;color:#475569;">Four marks and total shrink over square obstacles and ductwork.</span></li>
         <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/shrink/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Conduit Shrink Calculator</a><span style="font-size:13px;color:#475569;">Shrink per inch and total run allowance before cutting.</span></li>
-        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/stub-up/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">90&deg; Stub-Up Calculator</a><span style="font-size:13px;color:#475569;">Take-up deduct and mark placement for EMT, IMC, and Rigid conduit.</span></li>
       </ul>
     </nav>
     <nav aria-label="Bending guides and charts" style="margin-bottom:20px;">
@@ -188,12 +204,13 @@ HOME_STATIC_HTML = f"""<!-- static-seo-home-start -->
       <ul style="list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;">
         <li><a href="/conduit-bending-calculator/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Conduit Bending Calculator Guide</a></li>
         <li><a href="/conduit-bending-chart/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Conduit Bending Multiplier &amp; Shrink Chart</a></li>
+        <li><a href="/hand-bender-markings/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Hand Bender Markings Guide</a></li>
         <li><a href="/conduit-bending-formula/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Conduit Bending Formulas</a></li>
         <li><a href="/how-to-bend-emt-conduit/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">How to Bend EMT Conduit</a></li>
         <li><a href="/offset-multiplier-guide/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Offset Multiplier Guide</a></li>
       </ul>
     </nav>
-    <p style="margin:0;"><a href="{PLAY_URL}" style="display:inline-block;background:#F4C317;color:#0F2B46;font-weight:700;padding:10px 16px;border-radius:8px;text-decoration:none;">Get Conduit Bend Calc on Google Play</a></p>
+    <p style="margin:0;"><a href="{html.escape(PLAY_URL_HOME)}" style="display:inline-block;background:#F4C317;color:#0F2B46;font-weight:700;padding:10px 16px;border-radius:8px;text-decoration:none;">Get Conduit Bend Calc on Google Play</a></p>
   </main>
 </div>
 <!-- static-seo-home-end -->"""
@@ -274,10 +291,17 @@ if CF_BEACON_SNIPPET and os.path.exists(privacy_path):
             f.write(privacy)
         print("CF beacon injected into privacy.html")
 
-# 4 个 SPA 工具页 shell（scripts/gen-seo-tool-shells.ts 生成 dist/<slug>/index.html）。
+# 6 个 SPA 工具页 shell（scripts/gen-seo-tool-shells.ts 生成 dist/<slug>/index.html）。
 # 若 shell 在 GA4 注入之后生成（见 CHANGELOG 构建顺序），它们已经继承了 index.html
 # 的 gtag；若在其之前生成，则此处补齐，保证新工具页无论构建顺序都能被 GA4 覆盖。
-TOOL_SHELL_SLUGS = ["offset", "4-point-saddle", "shrink", "stub-up"]
+TOOL_SHELL_SLUGS = [
+    "offset",
+    "stub-up",
+    "3-point-saddle",
+    "conduit-fill",
+    "4-point-saddle",
+    "shrink",
+]
 if GA4_SNIPPET:
     for slug in TOOL_SHELL_SLUGS:
         shell_path = f"{EXPORT_DIR}/{slug}/index.html"
@@ -310,37 +334,33 @@ if CF_BEACON_SNIPPET:
 with open(f"{EXPORT_DIR}/robots.txt", "w") as f:
     f.write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n")
 
-# Standalone SEO landing pages generated by scripts/gen-seo-pages.py
-# (dist/<slug>/index.html). Keep in sync with that script's page list.
+# Standalone SEO landing pages generated by scripts/gen-seo-pages.py +
+# 6 interactive SPA tool shells generated by scripts/gen-seo-tool-shells.ts.
+# Duplicate static calculator slugs (offset-calculator/, stub-up-calculator/,
+# 3-point-saddle-calculator/, 4-point-saddle-calculator/, conduit-shrink-calculator/)
+# are 301-redirected in dist/_redirects and excluded from sitemap.xml.
 SEO_PATHS = [
+    # 6 Interactive SEO Tools (Top-4 first). Keep in sync with src/seo/toolPages.ts.
+    "offset/",
+    "stub-up/",
+    "3-point-saddle/",
+    "conduit-fill/",
+    "4-point-saddle/",
+    "shrink/",
+    # Static SEO guides & charts (scripts/gen-seo-pages.py).
     "conduit-bending-calculator/",
-    "offset-calculator/",
     "rolling-offset-calculator/",
-    "stub-up-calculator/",
-    "3-point-saddle-calculator/",
-    "4-point-saddle-calculator/",
-    # Batch 2 (2026-09-29). Keep in sync with scripts/gen-seo-pages.py page list.
     "kick-90-calculator/",
     "90-degree-bend-calculator/",
     "conduit-bending-chart/",
-    "conduit-shrink-calculator/",
     "parallel-offset-calculator/",
     "how-to-bend-emt-conduit/",
-    # Batch 4 (2026-10-04, P0 interactive tools). Generated as SPA shells by
-    # scripts/gen-seo-tool-shells.ts (not content pages by gen-seo-pages.py),
-    # but they share the same sitemap. Keep in sync with src/seo/toolPages.ts.
-    "offset/",
-    "4-point-saddle/",
-    "shrink/",
-    "stub-up/",
-    # Batch 3 (2026-09-29). Keep in sync with scripts/gen-seo-pages.py page list.
     "conduit-bending-formula/",
     "hand-bender-markings/",
     "emt-sizes-chart/",
     "box-offset-bend/",
     "how-to-bend-3-4-emt/",
     "emt-vs-rigid-bending/",
-    # Batch 5 (2026-10-08, AI-search Q&A). Keep in sync with scripts/gen-seo-pages.py.
     "offset-multiplier-guide/",
     "conduit-bending-gain/",
     "conduit-bending-deduct/",
@@ -427,6 +447,22 @@ headers_content = """/.well-known/assetlinks.json
 with open(f"{EXPORT_DIR}/_headers", "w") as f:
     f.write(headers_content)
 print("Cloudflare Pages _headers wrote")
+
+# Cloudflare Pages 301 permanent redirects: deduplicate legacy static calculator slugs
+redirects_content = """/offset-calculator /offset/ 301
+/offset-calculator/ /offset/ 301
+/stub-up-calculator /stub-up/ 301
+/stub-up-calculator/ /stub-up/ 301
+/3-point-saddle-calculator /3-point-saddle/ 301
+/3-point-saddle-calculator/ /3-point-saddle/ 301
+/4-point-saddle-calculator /4-point-saddle/ 301
+/4-point-saddle-calculator/ /4-point-saddle/ 301
+/conduit-shrink-calculator /shrink/ 301
+/conduit-shrink-calculator/ /shrink/ 301
+"""
+with open(f"{EXPORT_DIR}/_redirects", "w") as f:
+    f.write(redirects_content)
+print("Cloudflare Pages _redirects wrote (10 301 rules)")
 
 # Bing IndexNow verification key file: dist/<INDEXNOW_KEY>.txt
 indexnow_key = (os.environ.get("INDEXNOW_KEY") or "").strip()

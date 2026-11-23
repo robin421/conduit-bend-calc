@@ -17,7 +17,13 @@
 import { en, es } from '../i18n/dictionaries.ts';
 import { DEFAULT_LANG, type Lang } from '../i18n/lang.ts';
 
-export type SeoToolKey = 'offset' | 'saddle4' | 'shrink' | 'stubUp';
+export type SeoToolKey =
+  | 'offset'
+  | 'stubUp'
+  | 'saddle3'
+  | 'conduitFill'
+  | 'saddle4'
+  | 'shrink';
 
 export interface SeoFaqItem {
   question: string;
@@ -118,6 +124,225 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
           answer:
             'Sí. La calculadora de desplazamientos tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la distancia entre marcas y la contracción siguen el material que elijas. Cambia el selector de material y los resultados coincidirán con las especificaciones de la dobladora que tienes en la mano.',
+        },
+      ],
+    },
+  },
+  {
+    key: 'stubUp',
+    path: '/stub-up',
+    slug: 'stub-up',
+    title: '90 Degree Stub Up Calculator — Take-Up Chart | WattFlow',
+    description:
+      'Free 90 degree stub up calculator for EMT and rigid conduit: enter stub height to get the mark location, plus the take-up chart for 1/2", 3/4", and 1".',
+    h1: '90° Stub-Up Calculator',
+    tagline:
+      'A stub-up is a single 90° bend that brings conduit to an exact height out of a slab or into a panel. Mark at the target height minus the bender take-up.',
+    faqs: [
+      {
+        question: 'How do you calculate a 90 degree stub up?',
+        answer:
+          'Subtract the bender take-up from the target height to find the mark. For 1/2" EMT with a 5" take-up and a 12" target stub, mark at 12" − 5" = 7" from the end of the conduit. Put the bender arrow on the mark, bend to 90°, and the back of the bend lands at the target height.',
+      },
+      {
+        question: 'What is take-up on a conduit bender?',
+        answer:
+          'Take-up is how far the bender head starts the bend before the arrow mark, measured from the end of the conduit to the back of the finished 90°. It is a property of the bender head and conduit size, not a formula, which is why manufacturers stamp it on the bender.',
+      },
+      {
+        question: 'How much take-up for 1/2 inch EMT?',
+        answer:
+          'A standard hand bender takes up 5" on 1/2" EMT. Take-up is 6" for 3/4" EMT and 8" for 1" EMT. Ideal and Klein hand benders agree on these values, but always confirm against the markings on the bender in your hands.',
+      },
+      {
+        question: 'Why is my stub up too short or too tall?',
+        answer:
+          'A consistent error on every stub usually means the take-up value you used does not match your bender, or the arrow drifted off the mark while bending. Bend one test stub on scrap, measure the error, and apply that correction. If the conduit slipped, keep firmer foot pressure so the arrow stays on the mark.',
+      },
+      {
+        question: 'Does this calculator work for Rigid conduit (not just EMT)?',
+        answer:
+          'Yes. The stub-up calculator is bender-aware and supports both EMT and Rigid/IMC conduit, so the take-up and mark location follow the material you select. Choose the material toggle and the stub matches the bender spec in your hand.',
+      },
+    ],
+    es: {
+      title: 'Calculadora de subida de 90° — Recogida | WattFlow',
+      description:
+        'Calculadora gratuita de subida de 90° para EMT y conducto rígido: introduce la altura y el tamaño para obtener la marca y la tabla de recogida.',
+      h1: 'Calculadora de subida a 90°',
+      tagline:
+        'Una subida de 90° es un solo doblez que lleva el conducto a una altura exacta desde una losa o hasta un panel. Marca a la altura objetivo menos la recogida de la dobladora.',
+      faqs: [
+        {
+          question: '¿Cómo se calcula una subida de 90 grados?',
+          answer:
+            'Resta la recogida de la dobladora a la altura objetivo para hallar la marca. Para EMT de 1/2" con una recogida de 5" y una subida objetivo de 12", marca a 12" − 5" = 7" desde el extremo del conducto. Coloca la flecha de la dobladora en la marca, dobla a 90° y la parte posterior del doblez quedará a la altura objetivo.',
+        },
+        {
+          question: '¿Qué es la recogida en una dobladora de conducto?',
+          answer:
+            'La recogida es cuánto antes de la marca empieza el cabezal de la dobladora el doblez, medido desde el extremo del conducto hasta la parte posterior del codo de 90° terminado. Es una propiedad del cabezal y del tamaño del conducto, no una fórmula, por eso los fabricantes la graban en la dobladora.',
+        },
+        {
+          question: '¿Cuánta recogida tiene el EMT de 1/2 pulgada?',
+          answer:
+            'Una dobladora manual estándar recoge 5" en EMT de 1/2". La recogida es 6" para EMT de 3/4" y 8" para EMT de 1". Las dobladoras manuales Ideal y Klein coinciden en estos valores, pero confírmalos siempre con las marcas de la dobladora que tienes en la mano.',
+        },
+        {
+          question: '¿Por qué mi subida queda demasiado corta o demasiado alta?',
+          answer:
+            'Un error constante en todas las subidas suele significar que la recogida que usaste no coincide con tu dobladora, o que la flecha se movió de la marca al doblar. Dobla una subida de prueba en un recorte, mide el error y aplica esa corrección. Si el conducto resbaló, presiona con más firmeza con el pie para que la flecha no se mueva de la marca.',
+        },
+        {
+          question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
+          answer:
+            'Sí. La calculadora de subida de 90° tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la recogida y la marca siguen el material que elijas. Cambia el selector de material y la subida coincidirá con las especificaciones de la dobladora que tienes en la mano.',
+        },
+      ],
+    },
+  },
+  {
+    key: 'saddle3',
+    path: '/3-point-saddle',
+    slug: '3-point-saddle',
+    title: '3 Point Saddle Bend Calculator — EMT & Rigid | WattFlow',
+    description:
+      'Free 3-point saddle bend calculator for EMT & rigid conduit: 45°/22.5° and 60°/30° center mark shrink, side spacing (2.5×H), and bend diagram.',
+    h1: '3-Point Saddle Bend Calculator',
+    tagline:
+      'A 3-point saddle jumps conduit over a narrow pipe or beam using one center bend (45° or 60°) and two opposite half-angle side bends (22.5° or 30°).',
+    faqs: [
+      {
+        question: 'How do you calculate a 3-point saddle bend?',
+        answer:
+          'For a standard 45° center / 22.5° side saddle, multiply the obstacle height by 2.5 to get the distance from the center mark to each outer bend mark, and add 3/16" per inch of height to the center mark for shrink. For a steeper 60° center / 30° side saddle, multiply height by 2.0 and add 1/4" per inch of height for shrink.',
+      },
+      {
+        question: 'Why is the 3-point saddle multiplier 2.5 instead of 2.6?',
+        answer:
+          'Pure trigonometry (csc 22.5°) gives 2.613, while trade convention uses 2.5× height for 45°/22.5° saddles. Because the bends are close together and the conduit curves through the shoe, 2.5× height lands cleanly over round obstacles without over-spanning.',
+      },
+      {
+        question: 'Which bender mark do you use for a 3-point saddle?',
+        answer:
+          'Place the center mark on the bender rim notch (or teardrop) to bend the center 45° (or 60°). Then flip the conduit and align each outer mark with the bender arrow to bend the two 22.5° (or 30°) return bends in the opposite direction.',
+      },
+      {
+        question: 'How much does a 3-point saddle shrink?',
+        answer:
+          'A 45° center 3-point saddle shrinks by 3/16" per inch of obstacle height, and a 60° center saddle shrinks by 1/4" per inch. Add that shrink to your center mark distance when measuring from a fixed point so the saddle peak lands directly over the obstacle.',
+      },
+      {
+        question: 'When should I use a 3-point saddle vs a 4-point saddle?',
+        answer:
+          'Use a 3-point saddle for small, round, or narrow obstacles such as another conduit, pipe, or rod up to roughly 4–6" wide. Switch to a 4-point saddle for wide ductwork, beams, or cable trays where the conduit needs a flat top section.',
+      },
+    ],
+    es: {
+      title: 'Calculadora silla de 3 puntos — Conducto | WattFlow',
+      description:
+        'Calculadora gratuita de silla de 3 puntos para conducto EMT y rígido: distancia entre marcas (2.5×H), contracción central y diagrama para 45° y 60°.',
+      h1: 'Calculadora de silla de 3 puntos',
+      tagline:
+        'Una silla de 3 puntos salta un obstáculo angosto con un doblez central (45° o 60°) y dos dobleces laterales opuestos a la mitad del ángulo (22.5° o 30°).',
+      faqs: [
+        {
+          question: '¿Cómo se calcula una silla de conducto de 3 puntos?',
+          answer:
+            'Para una silla estándar de 45° en el centro y 22.5° a los lados, multiplica la altura del obstáculo por 2.5 para obtener la distancia del centro a cada marca lateral y suma 3/16" por pulgada de altura a la marca central por contracción. Para 60°/30°, multiplica la altura por 2.0 y suma 1/4" por pulgada.',
+        },
+        {
+          question: '¿Por qué se usa 2.5 en vez de 2.6 en la silla de 3 puntos?',
+          answer:
+            'La trigonometría pura (csc 22.5°) da 2.613, pero la práctica de campo usa 2.5× la altura para sillas de 45°/22.5°. Como los dobleces quedan cerca y el conducto sigue el radio del cabezal, 2.5× altura ajusta de forma precisa sobre obstáculos redondos.',
+        },
+        {
+          question: '¿Qué marca de la dobladora se usa para la silla de 3 puntos?',
+          answer:
+            'Alinea la marca central con la muesca del borde (rim notch) para doblar el centro a 45° (o 60°). Luego gira el conducto y alinea cada marca lateral con la flecha de la dobladora para hacer los dos dobleces opuestos de 22.5° (o 30°).',
+        },
+        {
+          question: '¿Cuánto conducto contrae una silla de 3 puntos?',
+          answer:
+            'Una silla de 3 puntos de 45° en el centro contrae 3/16" por cada pulgada de altura del obstáculo, y una de 60° contrae 1/4" por pulgada. Suma esa contracción a la marca central cuando midas desde un punto fijo para que la cresta quede centrada sobre el obstáculo.',
+        },
+        {
+          question: '¿Cuándo conviene usar una silla de 3 puntos en lugar de 4 puntos?',
+          answer:
+            'Usa una silla de 3 puntos para obstáculos angostos o redondos como otro conducto o varilla de hasta unas 4–6" de ancho. Cambia a una silla de 4 puntos para ductos anchos o vigas donde el conducto deba pasar plano por encima.',
+        },
+      ],
+    },
+  },
+  {
+    key: 'conduitFill',
+    path: '/conduit-fill',
+    slug: 'conduit-fill',
+    title: 'Conduit Fill Calculator — NEC 40% Table C.1 | WattFlow',
+    description:
+      'Free NEC conduit fill calculator for EMT, IMC, Rigid, and PVC40: max THHN conductors, 40%/31%/53% fill check, and Chapter 9 Table C.1 chart.',
+    h1: 'NEC Conduit Fill Calculator',
+    tagline:
+      'Calculate maximum THHN/THWN-2 conductors and check NEC Chapter 9 fill percentage (40%, 31%, or 53%) for EMT, IMC, Rigid, and PVC Schedule 40.',
+    faqs: [
+      {
+        question: 'What is the NEC 40% conduit fill rule?',
+        answer:
+          'NEC Chapter 9 Table 1 limits raceway fill to 53% for 1 conductor, 31% for 2 conductors, and 40% for 3 or more conductors. The 40% limit keeps wire pulling tension manageable and prevents insulation damage and overheating.',
+      },
+      {
+        question: 'How many 12 AWG THHN wires fit in 1/2" and 3/4" EMT?',
+        answer:
+          'Under NEC Annex C Table C.1, 1/2" EMT holds up to 9 conductors of 12 AWG THHN/THWN-2, and 3/4" EMT holds up to 16 conductors of 12 AWG THHN/THWN-2. Remember to check NEC 310.15(C)(1) ampacity derating when more than 3 current-carrying conductors share a raceway.',
+      },
+      {
+        question: 'How does NEC Chapter 9 Note 7 rounding work?',
+        answer:
+          'When calculating maximum same-size conductors, NEC Chapter 9 Note 7 allows rounding up to the next whole number if the decimal fraction is 0.8 or greater. For example, 3/4" EMT with 8 AWG THHN yields 5.82 conductors at 40%, which rounds up to 6 conductors.',
+      },
+      {
+        question: 'When can conduit be filled up to 60%?',
+        answer:
+          'NEC Chapter 9 Note 4 allows up to 60% fill for conduit nipples that do not exceed 24 inches in length between boxes, cabinets, or enclosures, and ampacity adjustment factors do not apply to those short nipples.',
+      },
+      {
+        question: 'Does this conduit fill calculator support IMC, Rigid, and PVC?',
+        answer:
+          'Yes. Select EMT, IMC, Rigid (RMC), or PVC Schedule 40 across trade sizes from 1/2" through 4" and wire sizes from 14 AWG to 500 kcmil THHN/THWN-2 using NEC 2023 Chapter 9 Tables 4 and 5 internal areas.',
+      },
+    ],
+    es: {
+      title: 'Calculadora de llenado de conducto NEC 40% | WattFlow',
+      description:
+        'Calculadora gratuita de llenado de conducto NEC para EMT, IMC, rígido y PVC40: máximo de cables THHN y verificación 40%/31%/53% según Cap. 9.',
+      h1: 'Calculadora de llenado de conducto NEC',
+      tagline:
+        'Calcula el máximo de conductores THHN/THWN-2 y verifica el porcentaje de llenado del Capítulo 9 NEC (40%, 31% o 53%) en EMT, IMC, rígido y PVC 40.',
+      faqs: [
+        {
+          question: '¿Cuál es la regla NEC del 40% de llenado de conducto?',
+          answer:
+            'La Tabla 1 del Capítulo 9 del NEC limita el llenado del conducto al 53% para 1 conductor, 31% para 2 conductores y 40% para 3 o más conductores. El límite del 40% facilita el jalado de cable y evita daños al aislamiento y sobrecalentamiento.',
+        },
+        {
+          question: '¿Cuántos cables 12 AWG THHN caben en conducto EMT de 1/2" y 3/4"?',
+          answer:
+            'Según el Anexo C Tabla C.1 del NEC, en EMT de 1/2" caben hasta 9 cables 12 AWG THHN/THWN-2, y en EMT de 3/4" caben hasta 16 cables 12 AWG THHN/THWN-2. Recuerda revisar la reducción de ampacidad NEC 310.15(C)(1) con más de 3 conductores portadores de corriente.',
+        },
+        {
+          question: '¿Cómo funciona el redondeo de la Nota 7 del Capítulo 9 del NEC?',
+          answer:
+            'Al calcular el máximo de conductores del mismo calibre, la Nota 7 del Capítulo 9 permite redondear al entero superior si la parte decimal es 0.8 o mayor. Por ejemplo, 5.82 conductores de 8 AWG THHN en EMT de 3/4" se redondean a 6.',
+        },
+        {
+          question: '¿Cuándo se permite llenar un conducto hasta el 60%?',
+          answer:
+            'La Nota 4 del Capítulo 9 del NEC permite hasta un 60% de llenado en niples de conducto que no excedan 24 pulgadas de longitud entre cajas o gabinetes, sin aplicar factores de ajuste de ampacidad.',
+        },
+        {
+          question: '¿Esta calculadora admite conducto IMC, rígido y PVC?',
+          answer:
+            'Sí. Puedes elegir conducto EMT, IMC, rígido (RMC) o PVC Cédula 40 desde 1/2" hasta 4" y calibres THHN/THWN-2 desde 14 AWG hasta 500 kcmil usando las áreas de las Tablas 4 y 5 del Capítulo 9 NEC 2023.',
         },
       ],
     },
@@ -264,79 +489,6 @@ export const SEO_TOOL_PAGES: readonly SeoToolPageMeta[] = [
           question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
           answer:
             'Sí. La calculadora de contracción tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la longitud que consume cada doblez sigue el material que elijas. Cambia el selector de material y los valores coincidirán con las especificaciones de la dobladora que tienes en la mano.',
-        },
-      ],
-    },
-  },
-  {
-    key: 'stubUp',
-    path: '/stub-up',
-    slug: 'stub-up',
-    title: '90 Degree Stub Up Calculator — Take-Up Chart | WattFlow',
-    description:
-      'Free 90 degree stub up calculator for EMT and rigid conduit: enter stub height to get the mark location, plus the take-up chart for 1/2", 3/4", and 1".',
-    h1: '90° Stub-Up Calculator',
-    tagline:
-      'A stub-up is a single 90° bend that brings conduit to an exact height out of a slab or into a panel. Mark at the target height minus the bender take-up.',
-    faqs: [
-      {
-        question: 'How do you calculate a 90 degree stub up?',
-        answer:
-          'Subtract the bender take-up from the target height to find the mark. For 1/2" EMT with a 5" take-up and a 12" target stub, mark at 12" − 5" = 7" from the end of the conduit. Put the bender arrow on the mark, bend to 90°, and the back of the bend lands at the target height.',
-      },
-      {
-        question: 'What is take-up on a conduit bender?',
-        answer:
-          'Take-up is how far the bender head starts the bend before the arrow mark, measured from the end of the conduit to the back of the finished 90°. It is a property of the bender head and conduit size, not a formula, which is why manufacturers stamp it on the bender.',
-      },
-      {
-        question: 'How much take-up for 1/2 inch EMT?',
-        answer:
-          'A standard hand bender takes up 5" on 1/2" EMT. Take-up is 6" for 3/4" EMT and 8" for 1" EMT. Ideal and Klein hand benders agree on these values, but always confirm against the markings on the bender in your hands.',
-      },
-      {
-        question: 'Why is my stub up too short or too tall?',
-        answer:
-          'A consistent error on every stub usually means the take-up value you used does not match your bender, or the arrow drifted off the mark while bending. Bend one test stub on scrap, measure the error, and apply that correction. If the conduit slipped, keep firmer foot pressure so the arrow stays on the mark.',
-      },
-      {
-        question: 'Does this calculator work for Rigid conduit (not just EMT)?',
-        answer:
-          'Yes. The stub-up calculator is bender-aware and supports both EMT and Rigid/IMC conduit, so the take-up and mark location follow the material you select. Choose the material toggle and the stub matches the bender spec in your hand.',
-      },
-    ],
-    es: {
-      title: 'Calculadora de subida de 90° — Recogida | WattFlow',
-      description:
-        'Calculadora gratuita de subida de 90° para EMT y conducto rígido: introduce la altura y el tamaño para obtener la marca y la tabla de recogida.',
-      h1: 'Calculadora de subida a 90°',
-      tagline:
-        'Una subida de 90° es un solo doblez que lleva el conducto a una altura exacta desde una losa o hasta un panel. Marca a la altura objetivo menos la recogida de la dobladora.',
-      faqs: [
-        {
-          question: '¿Cómo se calcula una subida de 90 grados?',
-          answer:
-            'Resta la recogida de la dobladora a la altura objetivo para hallar la marca. Para EMT de 1/2" con una recogida de 5" y una subida objetivo de 12", marca a 12" − 5" = 7" desde el extremo del conducto. Coloca la flecha de la dobladora en la marca, dobla a 90° y la parte posterior del doblez quedará a la altura objetivo.',
-        },
-        {
-          question: '¿Qué es la recogida en una dobladora de conducto?',
-          answer:
-            'La recogida es cuánto antes de la marca empieza el cabezal de la dobladora el doblez, medido desde el extremo del conducto hasta la parte posterior del codo de 90° terminado. Es una propiedad del cabezal y del tamaño del conducto, no una fórmula, por eso los fabricantes la graban en la dobladora.',
-        },
-        {
-          question: '¿Cuánta recogida tiene el EMT de 1/2 pulgada?',
-          answer:
-            'Una dobladora manual estándar recoge 5" en EMT de 1/2". La recogida es 6" para EMT de 3/4" y 8" para EMT de 1". Las dobladoras manuales Ideal y Klein coinciden en estos valores, pero confírmalos siempre con las marcas de la dobladora que tienes en la mano.',
-        },
-        {
-          question: '¿Por qué mi subida queda demasiado corta o demasiado alta?',
-          answer:
-            'Un error constante en todas las subidas suele significar que la recogida que usaste no coincide con tu dobladora, o que la flecha se movió de la marca al doblar. Dobla una subida de prueba en un recorte, mide el error y aplica esa corrección. Si el conducto resbaló, presiona con más firmeza con el pie para que la flecha no se mueva de la marca.',
-        },
-        {
-          question: '¿Esta calculadora funciona para conducto rígido (no solo EMT)?',
-          answer:
-            'Sí. La calculadora de subida de 90° tiene en cuenta la dobladora y admite tanto EMT como conducto rígido/IMC, así que la recogida y la marca siguen el material que elijas. Cambia el selector de material y la subida coincidirá con las especificaciones de la dobladora que tienes en la mano.',
         },
       ],
     },
