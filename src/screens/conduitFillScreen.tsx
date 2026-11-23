@@ -11,6 +11,7 @@ import WebCalcShell from '../components/webCalcShell';
 import { RACEWAY_TYPES, TRADE_SIZES, WIRE_SIZES, wireSizeLabel } from '../constants';
 import type { RacewayType, TradeSize, WireSize } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
+import { useI18n } from '../i18n';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
@@ -23,6 +24,7 @@ const tradeLabel = (s: TradeSize) => s.replace('-', '\u2011');
 
 export default function ConduitFillScreen() {
   const theme = useTheme();
+  const { t } = useI18n();
   const [m, setM] = useScreenMemory('conduitFill', {
     raceway: 'EMT' as RacewayType,
     trade: '3/4' as TradeSize,
@@ -30,7 +32,7 @@ export default function ConduitFillScreen() {
     countText: '',
   });
   const count = parseNumberInput(m.countText);
-  const countError = count !== null && (!Number.isInteger(count) || count < 1) ? 'Enter a whole number of wires' : undefined;
+  const countError = count !== null && (!Number.isInteger(count) || count < 1) ? t('conduitFill.countErrorWhole') : undefined;
 
   const result = useMemo(
     () => calculateConduitFill(m.raceway, m.trade, m.wire, count !== null && !countError ? count : undefined),
@@ -45,35 +47,44 @@ export default function ConduitFillScreen() {
 
   const warnings: LayoutWarning[] = [];
   if (result?.fits === false) {
-    warnings.push({ level: 'error', message: `Too full: ${count} × ${wireSizeLabel(m.wire)} THHN exceeds NEC fill for ${m.trade}" ${RACEWAY_LABEL[m.raceway]}.` });
+    warnings.push({
+      level: 'error',
+      message: t('conduitFill.overfilled', {
+        count: count ?? 0,
+        wire: wireSizeLabel(m.wire),
+        allowed: Math.round((result.allowedFraction ?? 0) * 100),
+        trade: m.trade,
+        raceway: RACEWAY_LABEL[m.raceway],
+      }),
+    });
   }
   if (result && result.maxConductors === 0) {
-    warnings.push({ level: 'error', message: 'Even one conductor of this size does not fit. Go up a trade size.' });
+    warnings.push({ level: 'error', message: t('conduitFill.zeroFit') });
   }
 
   const rows = result
     ? [
         ...(result.fillFraction !== undefined
           ? [
-              { label: 'Your fill', value: `${(result.fillFraction * 100).toFixed(1)}`, unit: '%' },
-              { label: 'Allowed fill', value: `${Math.round((result.allowedFraction ?? 0) * 100)}`, unit: '%' },
+              { label: t('conduitFill.yourFillShort'), value: `${(result.fillFraction * 100).toFixed(1)}`, unit: '%' },
+              { label: t('conduitFill.allowedFillShort'), value: `${Math.round((result.allowedFraction ?? 0) * 100)}`, unit: '%' },
             ]
           : []),
-        { label: 'Raceway area (100%)', value: result.racewayAreaSqIn.toFixed(3), unit: 'in²' },
-        { label: 'One conductor', value: result.wireAreaSqIn.toFixed(4), unit: 'in²' },
+        { label: t('conduitFill.racewayArea'), value: result.racewayAreaSqIn.toFixed(3), unit: 'in²' },
+        { label: t('conduitFill.oneConductor'), value: result.wireAreaSqIn.toFixed(4), unit: 'in²' },
       ]
     : [];
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-      <OptionRow label="Raceway" options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => { noteReviewInteraction(); setM((p) => ({ ...p, raceway })); }} />
-      <OptionRow label="Trade size (in)" options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => { noteReviewInteraction(); setM((p) => ({ ...p, trade })); }} />
-      <OptionRow label="Wire (THHN / THWN-2)" options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => { noteReviewInteraction(); setM((p) => ({ ...p, wire })); }} />
+      <OptionRow label={t('conduitFill.racewayShort')} options={RACEWAY_TYPES} value={m.raceway} format={(r) => RACEWAY_LABEL[r]} onChange={(raceway) => { noteReviewInteraction(); setM((p) => ({ ...p, raceway })); }} />
+      <OptionRow label={t('conduitFill.tradeShort')} options={TRADE_SIZES} value={m.trade} perRow={5} format={tradeLabel} onChange={(trade) => { noteReviewInteraction(); setM((p) => ({ ...p, trade })); }} />
+      <OptionRow label={t('conduitFill.wireShort')} options={WIRE_SIZES} value={m.wire} perRow={6} onChange={(wire) => { noteReviewInteraction(); setM((p) => ({ ...p, wire })); }} />
       <NumberField
-        label="Number of wires (optional)"
+        label={t('conduitFill.countLabel')}
         value={m.countText}
         onChangeText={(countText) => { noteReviewInteraction(); setM((p) => ({ ...p, countText })); }}
-        placeholder="e.g. 9"
+        placeholder={t('conduitFill.countPlaceholder')}
         integer
         error={countError}
       />
@@ -83,20 +94,27 @@ export default function ConduitFillScreen() {
   const rightColumn = (
     <>
       <ResultGroup
-        hero={{ label: `Max ${wireSizeLabel(m.wire)} THHN in ${m.trade}" ${RACEWAY_LABEL[m.raceway]}`, value: result ? String(result.maxConductors) : undefined, unit: 'wires' }}
+        hero={{
+          label: t('conduitFill.maxConductorsHeadline', {
+            wire: wireSizeLabel(m.wire),
+            trade: m.trade,
+            raceway: RACEWAY_LABEL[m.raceway],
+          }),
+          value: result ? String(result.maxConductors) : undefined,
+          unit: t('conduitFill.wiresUnitShort'),
+        }}
         rows={rows}
       />
       <WarningBar warnings={warnings} />
       <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-        NEC 2023 Chapter 9 Tables 1, 4 and 5 (PVC = Schedule 40): 53% for one wire, 31% for two, 40% for three or more (Note 7 rounding).
-        All wires the same size. Nipples under 24" may fill to 60%. Check the code edition your AHJ enforces.
+        {t('conduitFill.necNoteNative')}
       </Text>
     </>
   );
 
   return (
     <WebCalcShell
-      title="Conduit Fill"
+      title={t('home.tool.conduitFill.name')}
       spacing="md"
       left={leftColumn}
       right={rightColumn}

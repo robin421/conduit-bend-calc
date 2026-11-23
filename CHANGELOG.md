@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.12.0] - 2026-11-24
+
+### Complete Native Spanish (`es`) Localization (T40)
+- Localize all remaining native calculator screens in Spanish: Conduit Fill, Wire Size, Voltage Drop, Quick Reference (Lookup), 4-Point Saddle, 3-Point Saddle mark instructions, Rolling Offset, and Kicked 90°.
+- Localize shared interactive components across all bend screens: Bender Setup picker (`BenderPicker`), bend diagram toggle (`BendGuide`), bend feasibility panel (`FeasibilityPanel`), and calibration feedback (`ExpectedActualFeedback`).
+- Maintain consistent trade Spanish terminology (`conducto`, `doblador`, `recogida`, `contracción`) with 100% EN/ES dictionary key parity.
+
+### Analytics & Release
+- Keep production analytics telemetry clean and bump release version to `1.12.0` (`versionCode: 12`).
+
 ## v1.11.0 — Paywall Conversion, Amplitude Telemetry & Native Spanish Localization (T19–T21)
 
 ### Analytics & Paywall Conversion (T19)

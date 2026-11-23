@@ -5,6 +5,7 @@ import Card from '../components/card';
 import RatingCard from '../components/ratingCard';
 import FeedbackCard from '../components/feedbackCard';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../constants';
+import { useI18n } from '../i18n';
 import { formatLength } from '../lib/units';
 import { useUnitSystem } from '../lib/unitStore';
 import { isWideDesktopViewport, workspaceMaxWidth } from '../seo/calculatorNav';
@@ -18,6 +19,7 @@ function Section({
   children: React.ReactNode;
 }) {
   const theme = useTheme();
+  const { t } = useI18n();
   const [open, setOpen] = useState(true);
   const rippleColor = theme.colors.pressFeedback;
 
@@ -25,7 +27,11 @@ function Section({
     <Card style={styles.section}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${title}, tap to ${open ? 'collapse' : 'expand'}`}
+        accessibilityLabel={
+          open
+            ? t('lookup.sectionCollapseA11y', { title })
+            : t('lookup.sectionExpandA11y', { title })
+        }
         accessibilityState={{ expanded: open }}
         onPress={() => setOpen((v) => !v)}
         android_ripple={{ color: rippleColor }}
@@ -114,6 +120,7 @@ function gcd(a: number, b: number): number {
 
 export default function LookupScreen() {
   const theme = useTheme();
+  const { t } = useI18n();
   const { width } = useWindowDimensions();
   const { unit } = useUnitSystem();
   const isWideWeb = Platform.OS === 'web' && isWideDesktopViewport(width);
@@ -127,15 +134,18 @@ export default function LookupScreen() {
         { maxWidth, padding: isWideWeb ? 24 : 16 },
       ]}
     >
-      <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Quick Reference</Text>
+      <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{t('lookup.title')}</Text>
       <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-        Field constants · works fully offline
+        {t('lookup.subtitle')}
       </Text>
 
       <View style={isWideWeb ? styles.wideGrid : undefined}>
         <View style={isWideWeb ? styles.wideCell : undefined}>
-          <Section title="Offset angle multipliers">
-            <TableHeader cols={['Angle', 'Multiplier', 'Shrink/in']} theme={theme} />
+          <Section title={t('lookup.offsetSection')}>
+            <TableHeader
+              cols={[t('table.angle'), t('table.multiplier'), t('lookup.shrinkPerInShort')]}
+              theme={theme}
+            />
             {OFFSET_ANGLES.map((angle, i) => {
               const c = OFFSET_CONSTANTS[angle];
               return (
@@ -148,14 +158,14 @@ export default function LookupScreen() {
               );
             })}
             <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
-              Spacing = obstacle height × multiplier; shrink = height × shrink/in
+              {t('lookup.offsetFormulaNote')}
             </Text>
           </Section>
         </View>
 
         <View style={isWideWeb ? styles.wideCell : undefined}>
-          <Section title="90° Stub Take-up (EMT)">
-            <TableHeader cols={['Size', 'Take-up']} theme={theme} />
+          <Section title={t('lookup.stubSection')}>
+            <TableHeader cols={[t('lookup.sizeCol'), t('table.takeUp')]} theme={theme} />
             {TAKE_UP_OPTIONS.map((opt, i) => (
               <TableRow
                 key={opt.size}
@@ -165,22 +175,21 @@ export default function LookupScreen() {
               />
             ))}
             <Text style={[styles.note, { color: theme.colors.textSecondary }]}>
-              Mark = target height − take-up
+              {t('lookup.stubFormulaNote')}
             </Text>
           </Section>
         </View>
 
         <View style={isWideWeb ? styles.wideCell : undefined}>
-          <Section title="Saddle notes">
+          <Section title={t('lookup.saddleSection')}>
             <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-              4-point saddles reuse the multipliers above:
+              {t('lookup.saddleIntro')}
             </Text>
             <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-              · 3-point: side spacing = height × multiplier of half the center
-              angle (45° center → 2.5)
+              {t('lookup.saddle3Note')}
             </Text>
             <Text style={[styles.body, { color: theme.colors.textPrimary }]}>
-              · 4-point: outer marks = half obstacle width + height × multiplier
+              {t('lookup.saddle4Note')}
             </Text>
           </Section>
         </View>

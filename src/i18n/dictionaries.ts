@@ -67,10 +67,12 @@ export const en = {
   'placeholder.mm100': 'e.g. 100 mm',
   'placeholder.mm150': 'e.g. 150 mm',
   'placeholder.mm200': 'e.g. 200 mm',
+  'placeholder.mm250': 'e.g. 250 mm',
   'placeholder.mm300': 'e.g. 300 mm',
   'placeholder.inch4': 'e.g. 4"',
   'placeholder.inch6': 'e.g. 6"',
   'placeholder.inch8': 'e.g. 8"',
+  'placeholder.inch10': 'e.g. 10"',
   'placeholder.inch12': 'e.g. 12"',
 
   // /offset
@@ -612,6 +614,120 @@ export const en = {
   'rating.opening': 'Opening Google Play…',
   'rating.error':
     'Could not open Google Play. Check your connection and try again.',
+
+  // BendGuide / BenderPicker / Feasibility / ExpectedActual
+  'bendGuide.showDiagram': 'Show bend diagram',
+  'bendGuide.hideDiagram': 'Hide bend diagram',
+  'benderPicker.collapseA11y': 'Collapse bender picker',
+  'benderPicker.expandA11y': 'Expand to change bender',
+  'benderPicker.specCaption': 'R {r}" · take-up {takeUp}"',
+  'benderPicker.specCaptionHook': 'R {r}" · take-up {takeUp}" (hook front-edge datum)',
+  'benderPicker.brandLabel': 'Brand',
+  'benderPicker.modelLabel': 'Model',
+  'benderPicker.myBendersLabel': 'My Benders',
+  'benderPicker.createManuallyLabel': 'Create manually (R / take-up)',
+  'benderPicker.namePlaceholder': 'Name, e.g. My bender (field-tested)',
+  'benderPicker.rPlaceholder': 'R (inches)',
+  'benderPicker.takeUpPlaceholder': 'take-up (inches)',
+  'benderPicker.customError':
+    'Enter a name, R and take-up — R / take-up must be numbers greater than 0',
+  'benderPicker.saveAndUse': 'Save & use',
+  'benderPicker.proOnlyNote': 'Custom benders are a Pro feature.',
+  'benderPicker.unlockPro': 'Unlock Pro',
+  'feasibility.status.feasible': 'Bend feasible',
+  'feasibility.status.tight': 'Tight bend',
+  'feasibility.status.impossible': 'Bend not possible',
+  'feasibility.freeImpossible':
+    'Do not bend this layout: the selected bender geometry does not fit. Change the dimensions or bender and check again.',
+  'feasibility.freeTight':
+    'Tight bend: check the selected bender and available straight length before bending.',
+  'feasibility.seeAlternatives': 'See Alternatives with Pro',
+  'feasibility.remainingStraight': 'Remaining straight',
+  'feasibility.minConduit': 'Minimum conduit required',
+  'expectedActual.title': 'Did it match?',
+  'expectedActual.body':
+    '{label}: expected {value} {unit}. Enter what you measured to make the next one closer.',
+  'expectedActual.inputLabel': 'Actual measurement',
+  'expectedActual.updateButton': 'Update Bender Calibration',
+  'expectedActual.updatedMessage':
+    'Correction updated by {delta}". Tap Update again after your next bend.',
+  'expectedActual.undo': 'Undo',
+  'expectedActual.reset': 'Reset Calibration',
+
+  // Native Conduit Fill / Wire Size / Voltage Drop / Reference / Saddles / Rolling / Kicked 90
+  'conduitFill.racewayShort': 'Raceway',
+  'conduitFill.tradeShort': 'Trade size (in)',
+  'conduitFill.wireShort': 'Wire (THHN / THWN-2)',
+  'conduitFill.countErrorWhole': 'Enter a whole number of wires',
+  'conduitFill.wiresUnitShort': 'wires',
+  'conduitFill.yourFillShort': 'Your fill',
+  'conduitFill.allowedFillShort': 'Allowed fill',
+  'conduitFill.oneConductor': 'One conductor',
+  'conduitFill.necNoteNative':
+    'NEC 2023 Chapter 9 Tables 1, 4 and 5 (PVC = Schedule 40): 53% for one wire, 31% for two, 40% for three or more (Note 7 rounding). All wires the same size. Nipples under 24" may fill to 60%. Check the code edition your AHJ enforces.',
+  'wireSize.ampsErrorPositive': 'Enter the load in amps',
+  'wireSize.autoShort': 'Auto',
+  'wireSize.loadLabel': 'Load',
+  'wireSize.conductorShort': 'Conductor',
+  'wireSize.terminationLabel': 'Termination rating',
+  'wireSize.enterLoadHint': 'Enter the load',
+  'voltageDrop.oneWayLength': 'One-way length',
+  'voltageDrop.enterLoadLengthHint': 'Enter load and length',
+  'lookup.title': 'Quick Reference',
+  'lookup.subtitle': 'Field constants · works fully offline',
+  'lookup.sectionCollapseA11y': '{title}, tap to collapse',
+  'lookup.sectionExpandA11y': '{title}, tap to expand',
+  'lookup.offsetSection': 'Offset angle multipliers',
+  'lookup.shrinkPerInShort': 'Shrink/in',
+  'lookup.offsetFormulaNote':
+    'Spacing = obstacle height × multiplier; shrink = height × shrink/in',
+  'lookup.stubSection': '90° Stub Take-up (EMT)',
+  'lookup.sizeCol': 'Size',
+  'lookup.stubFormulaNote': 'Mark = target height − take-up',
+  'lookup.saddleSection': 'Saddle notes',
+  'lookup.saddleIntro': '4-point saddles reuse the multipliers above:',
+  'lookup.saddle3Note':
+    '· 3-point: side spacing = height × multiplier of half the center angle (45° center → 2.5)',
+  'lookup.saddle4Note':
+    '· 4-point: outer marks = half obstacle width + height × multiplier',
+  'calc.markLayout': 'Mark layout',
+  'calc.markNumber': 'Mark {n}',
+  'calc.start': 'Start',
+  'saddle3.mark2Label': 'Mark 2 (center)',
+  'saddle3.mark1Instruction':
+    'Left bend point: measure "bend spacing" left from the center mark — use the arrow',
+  'saddle3.mark2Instruction':
+    'Saddle center: align with the obstacle center — use the rim notch',
+  'saddle3.mark3Instruction':
+    'Right bend point: measure "bend spacing" right from the center mark — use the arrow',
+  'saddle4.mark1Instruction':
+    'Left bend point: measure "bend spacing" outward from the left obstacle edge — use the arrow',
+  'saddle4.mark2Instruction': 'Left obstacle edge',
+  'saddle4.mark3Instruction': 'Right obstacle edge',
+  'saddle4.mark4Instruction':
+    'Right bend point: measure "bend spacing" outward from the right obstacle edge — use the arrow',
+  'rolling.riseShort': 'Rise',
+  'rolling.rollShort': 'Roll',
+  'rolling.trueOffsetShort': 'True offset',
+  'rolling.benderRotationShort': 'Bender rotation',
+  'rolling.layoutNote':
+    'Rotate the bender to the rotation angle first, then mark the spacing',
+  'kicked90.kickAngleError': 'Kick angle must be a number between 0–90',
+  'kicked90.kickAngleInputLabel': 'Kick angle κ (degrees, typically 10–30)',
+  'kicked90.kickAnglePlaceholder': 'e.g. 15',
+  'kicked90.straightLengthLabel':
+    'Straight L between bends (tangent to tangent)',
+  'kicked90.totalGainHero': 'Total gain (for conduit length)',
+  'kicked90.totalGainShort': 'Total gain',
+  'kicked90.markLayoutTitle': 'Mark layout (developed length along conduit)',
+  'kicked90.mark1Label': 'Mark 1 (start of 90° bend)',
+  'kicked90.mark1Instruction':
+    'Tangent start of the 90° bend — reference point',
+  'kicked90.mark2Label': 'Mark 2 (start of kick bend)',
+  'kicked90.mark2Instruction':
+    'Tangent start of the kick bend: measure developed length from Mark 1',
+  'kicked90.layoutNote':
+    'Bend 90° first, measure {distance} along the conduit from Mark 1 to Mark 2, then bend {angle}°',
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -671,10 +787,12 @@ export const es: Record<TranslationKey, string> = {
   'placeholder.mm100': 'p. ej. 100 mm',
   'placeholder.mm150': 'p. ej. 150 mm',
   'placeholder.mm200': 'p. ej. 200 mm',
+  'placeholder.mm250': 'p. ej. 250 mm',
   'placeholder.mm300': 'p. ej. 300 mm',
   'placeholder.inch4': 'p. ej. 4"',
   'placeholder.inch6': 'p. ej. 6"',
   'placeholder.inch8': 'p. ej. 8"',
+  'placeholder.inch10': 'p. ej. 10"',
   'placeholder.inch12': 'p. ej. 12"',
 
   'offset.hint': 'Ingrese la altura, elija un ángulo y pulse Calcular.',
@@ -1232,6 +1350,121 @@ export const es: Record<TranslationKey, string> = {
   'rating.opening': 'Abriendo Google Play…',
   'rating.error':
     'No se pudo abrir Google Play. Revisa tu conexión e inténtalo de nuevo.',
+
+  // BendGuide / BenderPicker / Feasibility / ExpectedActual
+  'bendGuide.showDiagram': 'Mostrar diagrama de doblez',
+  'bendGuide.hideDiagram': 'Ocultar diagrama de doblez',
+  'benderPicker.collapseA11y': 'Contraer selector de doblador',
+  'benderPicker.expandA11y': 'Expandir para cambiar de doblador',
+  'benderPicker.specCaption': 'R {r}" · recogida {takeUp}"',
+  'benderPicker.specCaptionHook': 'R {r}" · recogida {takeUp}" (ref.: frente del gancho)',
+  'benderPicker.brandLabel': 'Marca',
+  'benderPicker.modelLabel': 'Modelo',
+  'benderPicker.myBendersLabel': 'Mis dobladores',
+  'benderPicker.createManuallyLabel': 'Crear manualmente (R / recogida)',
+  'benderPicker.namePlaceholder': 'Nombre, p. ej. Mi doblador (probado en obra)',
+  'benderPicker.rPlaceholder': 'R (pulgadas)',
+  'benderPicker.takeUpPlaceholder': 'recogida (pulgadas)',
+  'benderPicker.customError':
+    'Ingresa un nombre, R y recogida — R y recogida deben ser números mayores que 0',
+  'benderPicker.saveAndUse': 'Guardar y usar',
+  'benderPicker.proOnlyNote': 'Los dobladores personalizados son una función Pro.',
+  'benderPicker.unlockPro': 'Desbloquear Pro',
+  'feasibility.status.feasible': 'Doblez viable',
+  'feasibility.status.tight': 'Doblez ajustado',
+  'feasibility.status.impossible': 'Doblez no viable',
+  'feasibility.freeImpossible':
+    'No dobles este trazado: la geometría del doblador seleccionado no cabe. Cambia las medidas o el doblador y revisa de nuevo.',
+  'feasibility.freeTight':
+    'Doblez ajustado: revisa el doblador seleccionado y el tramo recto disponible antes de doblar.',
+  'feasibility.seeAlternatives': 'Ver alternativas con Pro',
+  'feasibility.remainingStraight': 'Tramo recto restante',
+  'feasibility.minConduit': 'Conducto mínimo requerido',
+  'expectedActual.title': '¿Coincidió la medida?',
+  'expectedActual.body':
+    '{label}: esperado {value} {unit}. Ingresa lo que mediste para ajustar el próximo doblez.',
+  'expectedActual.inputLabel': 'Medida real',
+  'expectedActual.updateButton': 'Actualizar calibración del doblador',
+  'expectedActual.updatedMessage':
+    'Corrección actualizada en {delta}". Toca Actualizar de nuevo tras tu próximo doblez.',
+  'expectedActual.undo': 'Deshacer',
+  'expectedActual.reset': 'Restablecer calibración',
+
+  // Native Conduit Fill / Wire Size / Voltage Drop / Reference / Saddles / Rolling / Kicked 90
+  'conduitFill.racewayShort': 'Conducto',
+  'conduitFill.tradeShort': 'Tamaño comercial (pulg.)',
+  'conduitFill.wireShort': 'Cable (THHN / THWN-2)',
+  'conduitFill.countErrorWhole': 'Ingresa un número entero de cables',
+  'conduitFill.wiresUnitShort': 'cables',
+  'conduitFill.yourFillShort': 'Tu llenado',
+  'conduitFill.allowedFillShort': 'Llenado permitido',
+  'conduitFill.oneConductor': 'Un conductor',
+  'conduitFill.necNoteNative':
+    'NEC 2023 Cap. 9 Tablas 1, 4 y 5 (PVC = Cédula 40): 53% para un cable, 31% para dos, 40% para tres o más (redondeo Nota 7). Todos los cables del mismo calibre. Niples menores de 24" permiten hasta 60%. Verifica la edición del código que aplica tu inspector (AHJ).',
+  'wireSize.ampsErrorPositive': 'Ingresa la carga en amperios',
+  'wireSize.autoShort': 'Auto',
+  'wireSize.loadLabel': 'Carga',
+  'wireSize.conductorShort': 'Conductor',
+  'wireSize.terminationLabel': 'Temperatura de terminales',
+  'wireSize.enterLoadHint': 'Ingresa la carga',
+  'voltageDrop.oneWayLength': 'Distancia de ida',
+  'voltageDrop.enterLoadLengthHint': 'Ingresa carga y distancia',
+  'lookup.title': 'Referencia rápida',
+  'lookup.subtitle': 'Constantes de obra · 100% sin conexión',
+  'lookup.sectionCollapseA11y': '{title}, toca para contraer',
+  'lookup.sectionExpandA11y': '{title}, toca para expandir',
+  'lookup.offsetSection': 'Multiplicadores de desplazamiento',
+  'lookup.shrinkPerInShort': 'Contrac./pulg.',
+  'lookup.offsetFormulaNote':
+    'Distancia = altura del obstáculo × multiplicador; contracción = altura × contrac./pulg.',
+  'lookup.stubSection': 'Recogida de subida de 90° (EMT)',
+  'lookup.sizeCol': 'Tamaño',
+  'lookup.stubFormulaNote': 'Marca = altura objetivo − recogida',
+  'lookup.saddleSection': 'Notas de sillas',
+  'lookup.saddleIntro': 'Las sillas de 4 puntos usan los mismos multiplicadores de arriba:',
+  'lookup.saddle3Note':
+    '· 3 puntos: distancia lateral = altura × multiplicador de la mitad del ángulo central (centro 45° → 2.5)',
+  'lookup.saddle4Note':
+    '· 4 puntos: marcas exteriores = mitad del ancho del obstáculo + altura × multiplicador',
+  'calc.markLayout': 'Trazado de marcas',
+  'calc.markNumber': 'Marca {n}',
+  'calc.start': 'Inicio',
+  'saddle3.mark2Label': 'Marca 2 (centro)',
+  'saddle3.mark1Instruction':
+    'Punto de doblez izquierdo: mide la "distancia entre dobleces" a la izquierda desde el centro — usa la flecha',
+  'saddle3.mark2Instruction':
+    'Centro de la silla: alinea con el centro del obstáculo — usa la muesca del borde',
+  'saddle3.mark3Instruction':
+    'Punto de doblez derecho: mide la "distancia entre dobleces" a la derecha desde el centro — usa la flecha',
+  'saddle4.mark1Instruction':
+    'Punto de doblez izquierdo: mide la "distancia entre dobleces" hacia afuera desde el borde izquierdo — usa la flecha',
+  'saddle4.mark2Instruction': 'Borde izquierdo del obstáculo',
+  'saddle4.mark3Instruction': 'Borde derecho del obstáculo',
+  'saddle4.mark4Instruction':
+    'Punto de doblez derecho: mide la "distancia entre dobleces" hacia afuera desde el borde derecho — usa la flecha',
+  'rolling.riseShort': 'Subida',
+  'rolling.rollShort': 'Avance lateral',
+  'rolling.trueOffsetShort': 'Desplazamiento real',
+  'rolling.benderRotationShort': 'Rotación del doblador',
+  'rolling.layoutNote':
+    'Primero gira el doblador al ángulo de rotación y luego marca la distancia entre dobleces',
+  'kicked90.kickAngleError': 'El ángulo del kick debe ser un número entre 0 y 90',
+  'kicked90.kickAngleInputLabel': 'Ángulo del kick κ (grados, normalmente 10–30)',
+  'kicked90.kickAnglePlaceholder': 'p. ej. 15',
+  'kicked90.straightLengthLabel':
+    'Tramo recto L entre dobleces (tangente a tangente)',
+  'kicked90.totalGainHero': 'Ganancia total (para largo de conducto)',
+  'kicked90.totalGainShort': 'Ganancia total',
+  'kicked90.markLayoutTitle':
+    'Trazado de marcas (longitud desarrollada en el conducto)',
+  'kicked90.mark1Label': 'Marca 1 (inicio del doblez de 90°)',
+  'kicked90.mark1Instruction':
+    'Inicio tangente del doblez de 90° — punto de referencia',
+  'kicked90.mark2Label': 'Marca 2 (inicio del doblez kick)',
+  'kicked90.mark2Instruction':
+    'Inicio tangente del doblez kick: mide la longitud desarrollada desde Marca 1',
+  'kicked90.layoutNote':
+    'Dobla primero 90°, mide {distance} a lo largo del conducto desde Marca 1 hasta Marca 2 y luego dobla {angle}°',
 };
 
 export const DICTIONARIES: Record<Lang, Record<TranslationKey, string>> = {

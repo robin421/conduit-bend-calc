@@ -21,6 +21,7 @@ import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
 import { OffsetAngle, OFFSET_ANGLES } from '../constants';
 import { offsetFeasibility } from '../calculators/feasibility/feasibility';
+import { useI18n } from '../i18n';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
 import { useProAccess } from '../lib/proStore';
@@ -53,6 +54,7 @@ function formatDeg(value: number): string {
 
 export default function RollingOffsetScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('rollingOffset', {
@@ -209,7 +211,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
     setRollInches(null);
   }, [setMemory]);
 
-  const hint = result ? undefined : 'Enter values to see results';
+  const hint = result ? undefined : t('calc.enterValuesHint');
 
   const calibratedSpacing =
     result !== null ? applyCalibrationOffset(result.spacingDisplay, activeProfile) : null;
@@ -234,21 +236,21 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
       </View>
       <View style={{ marginTop: theme.spacing.sm }}>
         <ImperialInput
-          label="Rise"
+          label={t('rolling.riseShort')}
           value={riseText}
           onChangeText={(text) => { noteReviewInteraction(); setRiseText(text); }}
           onParsedChange={setRiseInches}
           unit={unit}
-          placeholder={unit === 'metric' ? 'e.g. 150 mm' : 'e.g. 6"'}
+          placeholder={unit === 'metric' ? t('placeholder.mm150') : t('placeholder.inch6')}
         />
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
-            label="Roll"
+            label={t('rolling.rollShort')}
             value={rollText}
             onChangeText={(text) => { noteReviewInteraction(); setRollText(text); }}
             onParsedChange={setRollInches}
             unit={unit}
-            placeholder={unit === 'metric' ? 'e.g. 200 mm' : 'e.g. 8"'}
+            placeholder={unit === 'metric' ? t('placeholder.mm200') : t('placeholder.inch8')}
           />
         </View>
       </View>
@@ -261,7 +263,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
           marginBottom: theme.spacing.sm,
         }}
       >
-        Bend angle
+        {t('calc.bendAngle')}
       </Text>
       <View style={styles.angleRow}>
         {OFFSET_ANGLES.map((value) => (
@@ -283,7 +285,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
     <>
       <ResultGroup
         hero={{
-          label: 'Mark spacing',
+          label: t('rolling.markSpacing'),
           value: spacingMeasurement?.value,
           unit: spacingMeasurement?.unit,
         }}
@@ -291,17 +293,17 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
           result
             ? [
                 {
-                  label: 'True offset',
+                  label: t('rolling.trueOffsetShort'),
                   value: trueOffsetMeasurement?.value,
                   unit: trueOffsetMeasurement?.unit,
                 },
                 {
-                  label: 'Bender rotation',
+                  label: t('rolling.benderRotationShort'),
                   value: formatDeg(result.rollAngleDeg),
                   unit: '°',
                 },
                 {
-                  label: 'Shrink',
+                  label: t('shrink.shrink'),
                   value: shrinkMeasurement?.value,
                   unit: shrinkMeasurement?.unit,
                 },
@@ -334,7 +336,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Mark layout
+            {t('calc.markLayout')}
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -345,7 +347,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
                   fontWeight: theme.fontWeight.semibold,
                 }}
               >
-                {mark.label}
+                {t('calc.markNumber', { n: mark.id })}
               </Text>
               <Text
                 style={{
@@ -355,7 +357,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {mark.id === 1 ? 'Start' : `+${formatLength(mark.fromStartInches, unit)}`}
+                {mark.id === 1 ? t('calc.start') : `+${formatLength(mark.fromStartInches, unit)}`}
               </Text>
             </View>
           ))}
@@ -365,7 +367,7 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Rotate the bender to the rotation angle first, then mark the spacing
+            {t('rolling.layoutNote')}
           </Text>
         </Card>
       ) : null}
@@ -382,15 +384,15 @@ export default function RollingOffsetScreen({ route, navigation }: Props) {
       <ExpectedActualFeedback
         profile={activeProfile}
         expectedInches={calibratedSpacing}
-        label="Mark spacing"
+        label={t('rolling.markSpacing')}
         unit={unit}
       />
 
-      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
+      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
     </>
   );
 
-  return <WebCalcShell title="Rolling Offset" left={leftColumn} right={rightColumn} />;
+  return <WebCalcShell title={t('home.tool.rollingOffset.name')} left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({

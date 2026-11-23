@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { FeasibilityResult } from '../calculators/feasibility/feasibility';
+import { useI18n, type TranslationKey } from '../i18n';
 import { useTheme } from '../theme';
 import { formatMeasurement, type UnitSystem } from '../lib/units';
 import BigButton from './bigButton';
@@ -20,10 +21,10 @@ const STATUS_ICON: Record<FeasibilityResult['status'], string> = {
   impossible: '✕',
 };
 
-const STATUS_LABEL: Record<FeasibilityResult['status'], string> = {
-  feasible: 'Bend feasible',
-  tight: 'Tight bend',
-  impossible: 'Bend not possible',
+const STATUS_LABEL_KEY: Record<FeasibilityResult['status'], TranslationKey> = {
+  feasible: 'feasibility.status.feasible',
+  tight: 'feasibility.status.tight',
+  impossible: 'feasibility.status.impossible',
 };
 
 /**
@@ -38,6 +39,7 @@ export default function FeasibilityPanel({
   onCheckFeasibility,
 }: FeasibilityPanelProps) {
   const theme = useTheme();
+  const { t } = useI18n();
 
   if (!result) {
     return null;
@@ -64,11 +66,11 @@ export default function FeasibilityPanel({
           }}
         >
           {result.status === 'impossible'
-            ? 'Do not bend this layout: the selected bender geometry does not fit. Change the dimensions or bender and check again.'
-            : 'Tight bend: check the selected bender and available straight length before bending.'}
+            ? t('feasibility.freeImpossible')
+            : t('feasibility.freeTight')}
         </Text>
         <BigButton
-          title="See Alternatives with Pro"
+          title={t('feasibility.seeAlternatives')}
           variant="secondary"
           onPress={onCheckFeasibility}
         />
@@ -101,7 +103,7 @@ export default function FeasibilityPanel({
             fontWeight: theme.fontWeight.semibold,
           }}
         >
-          {STATUS_LABEL[result.status]}
+          {t(STATUS_LABEL_KEY[result.status])}
         </Text>
       </View>
       {result.messages.map((message, index) => (
@@ -119,7 +121,7 @@ export default function FeasibilityPanel({
       {straightMeasurement ? (
         <View style={styles.row}>
           <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-            Remaining straight
+            {t('feasibility.remainingStraight')}
           </Text>
           <Text
             style={{
@@ -136,7 +138,7 @@ export default function FeasibilityPanel({
       {minimumMeasurement ? (
         <View style={styles.row}>
           <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-            Minimum conduit required
+            {t('feasibility.minConduit')}
           </Text>
           <Text
             style={{

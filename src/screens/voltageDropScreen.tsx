@@ -12,6 +12,7 @@ import WebCalcShell from '../components/webCalcShell';
 import { DC_RESISTANCE_OHM_PER_KFT, VOLTAGE_DROP_LIMITS, WIRE_SIZES, wireSizeLabel } from '../constants';
 import type { ConductorMetal, WireSize } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
+import { useI18n } from '../i18n';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
@@ -25,6 +26,7 @@ const LIMITS = ['branch', 'total'] as const;
 
 export default function VoltageDropScreen() {
   const theme = useTheme();
+  const { t } = useI18n();
   const { unit } = useUnitSystem();
   const metric = unit === 'metric';
   const [m, setM] = useScreenMemory('voltageDrop', {
@@ -39,8 +41,8 @@ export default function VoltageDropScreen() {
 
   const amps = parseNumberInput(m.ampsText);
   const length = parseNumberInput(m.lengthText);
-  const ampsError = amps !== null && !(amps > 0) ? 'Enter the load in amps' : undefined;
-  const lengthError = length !== null && !(length > 0) ? 'Enter the one-way length' : undefined;
+  const ampsError = amps !== null && !(amps > 0) ? t('wireSize.ampsErrorPositive') : undefined;
+  const lengthError = length !== null && !(length > 0) ? t('voltageDrop.distanceError') : undefined;
   const lengthFt = length !== null && length > 0 ? (metric ? length * FT_PER_M : length) : null;
   const sizes = WIRE_SIZES.filter((s) => DC_RESISTANCE_OHM_PER_KFT[m.metal][s] !== undefined);
   const size = sizes.includes(m.size) ? m.size : sizes[0];
@@ -64,52 +66,57 @@ export default function VoltageDropScreen() {
 
   const warnings: LayoutWarning[] = [];
   if (result && result.dropFraction > limit) {
+    const limitPct = Math.round(limit * 100);
+    const metalLabel =
+      m.metal === 'copper' ? t('wireSize.copper').toLowerCase() : t('wireSize.aluminum').toLowerCase();
     warnings.push({
       level: 'warning',
       message: suggestion
-        ? `Over ${limit * 100}%. Use ${wireSizeLabel(suggestion)} ${m.metal} to stay within ${limit * 100}%.`
-        : `Over ${limit * 100}% even with 500 kcmil. Shorten the run or raise the voltage.`,
+        ? t('voltageDrop.overLimitAlert', {
+            limit: limitPct,
+            wire: wireSizeLabel(suggestion),
+            metal: metalLabel,
+          })
+        : t('voltageDrop.over500Alert', { limit: limitPct }),
     });
   }
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-      <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
-      <OptionRow label="System" options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? 'Single-phase' : 'Three-phase')} onChange={(phase) => { noteReviewInteraction(); setM((p) => ({ ...p, phase })); }} />
-      <OptionRow label="Voltage (V)" options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => { noteReviewInteraction(); setM((p) => ({ ...p, volts })); }} />
-      <OptionRow label="Wire size" options={sizes} value={size} perRow={6} onChange={(s) => { noteReviewInteraction(); setM((p) => ({ ...p, size: s })); }} />
-      <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 16" error={ampsError} />
-      <NumberField label="One-way length" unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => { noteReviewInteraction(); setM((p) => ({ ...p, lengthText })); }} placeholder={metric ? 'e.g. 30' : 'e.g. 100'} error={lengthError} />
-      <OptionRow label="Limit" options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? 'Branch 3%' : 'Feeder + branch 5%')} onChange={(l) => { noteReviewInteraction(); setM((p) => ({ ...p, limit: l })); }} />
+      <OptionRow label={t('wireSize.conductorShort')} options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? t('wireSize.copper') : t('wireSize.aluminum'))} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
+      <OptionRow label={t('voltageDrop.phaseLabel')} options={[1, 3] as const} value={m.phase} format={(x) => (x === 1 ? t('voltageDrop.phase1') : t('voltageDrop.phase3'))} onChange={(phase) => { noteReviewInteraction(); setM((p) => ({ ...p, phase })); }} />
+      <OptionRow label={t('voltageDrop.voltageLabel')} options={VOLTAGES} value={m.volts} perRow={5} onChange={(volts) => { noteReviewInteraction(); setM((p) => ({ ...p, volts })); }} />
+      <OptionRow label={t('voltageDrop.wireLabel')} options={sizes} value={size} perRow={6} onChange={(s) => { noteReviewInteraction(); setM((p) => ({ ...p, size: s })); }} />
+      <NumberField label={t('wireSize.loadLabel')} unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder={t('voltageDrop.ampsPlaceholder')} error={ampsError} />
+      <NumberField label={t('voltageDrop.oneWayLength')} unit={metric ? 'm' : 'ft'} value={m.lengthText} onChangeText={(lengthText) => { noteReviewInteraction(); setM((p) => ({ ...p, lengthText })); }} placeholder={metric ? t('voltageDrop.distancePlaceholderM') : t('voltageDrop.distancePlaceholderFt')} error={lengthError} />
+      <OptionRow label={t('voltageDrop.limitLabel')} options={LIMITS} value={m.limit} format={(x) => (x === 'branch' ? t('voltageDrop.limitBranch') : t('voltageDrop.limitTotal'))} onChange={(l) => { noteReviewInteraction(); setM((p) => ({ ...p, limit: l })); }} />
     </Card>
   );
 
   const rightColumn = (
     <>
       <ResultGroup
-        hero={{ label: 'Voltage drop', value: result ? (result.dropFraction * 100).toFixed(2) : undefined, unit: '%' }}
+        hero={{ label: t('home.tool.voltageDrop.name'), value: result ? (result.dropFraction * 100).toFixed(2) : undefined, unit: '%' }}
         rows={
           result
             ? [
-                { label: 'Drop', value: result.dropVolts.toFixed(2), unit: 'V' },
-                { label: 'Voltage at load', value: result.endVolts.toFixed(1), unit: 'V' },
+                { label: t('voltageDrop.dropVoltsRow'), value: result.dropVolts.toFixed(2), unit: 'V' },
+                { label: t('voltageDrop.endVoltsRow'), value: result.endVolts.toFixed(1), unit: 'V' },
               ]
             : []
         }
-        hint="Enter load and length"
+        hint={t('voltageDrop.enterLoadLengthHint')}
       />
       <WarningBar warnings={warnings} />
       <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-        NEC Chapter 9 Table 8 DC resistance at 75°C. Single-phase VD = 2·L·R·I, three-phase VD = 1.732·L·R·I.
-        Reactance is ignored, so large AC conductors at low power factor read slightly low. 3% / 5% are
-        recommendations (210.19(A) Informational Note), not requirements.
+        {t('voltageDrop.necNote')}
       </Text>
     </>
   );
 
   return (
     <WebCalcShell
-      title="Voltage Drop"
+      title={t('home.tool.voltageDrop.name')}
       spacing="md"
       left={leftColumn}
       right={rightColumn}

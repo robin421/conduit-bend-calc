@@ -256,3 +256,33 @@ test('核心链路词条（paywall / home / history / tabs / calc）在 en / es 
     'Guardar y aplicar a todas las calculadoras de doblado',
   );
 });
+
+test('T40 全量原生屏词条（Conduit Fill / BenderPicker / BendGuide / Wire / VD / Lookup / Saddle / Rolling / Kicked90）在 en / es 完整且支持插值', () => {
+  assert.equal(translate('en', 'bendGuide.showDiagram'), 'Show bend diagram');
+  assert.equal(translate('es', 'bendGuide.showDiagram'), 'Mostrar diagrama de doblez');
+  assert.equal(translate('es', 'bendGuide.hideDiagram'), 'Ocultar diagrama de doblez');
+  assert.equal(
+    translate('es', 'benderPicker.specCaptionHook', { r: '6.5', takeUp: '6' }),
+    'R 6.5" · recogida 6" (ref.: frente del gancho)',
+  );
+  assert.equal(translate('es', 'benderPicker.unlockPro'), 'Desbloquear Pro');
+  assert.equal(translate('es', 'conduitFill.racewayShort'), 'Conducto');
+  assert.equal(translate('es', 'conduitFill.wiresUnitShort'), 'cables');
+  assert.equal(
+    translate('es', 'conduitFill.maxConductorsHeadline', {
+      wire: '12 AWG',
+      trade: '3/4',
+      raceway: 'EMT',
+    }),
+    'Máx. 12 AWG THHN en 3/4" EMT',
+  );
+  assert.equal(translate('es', 'wireSize.terminationLabel'), 'Temperatura de terminales');
+  assert.equal(translate('es', 'voltageDrop.oneWayLength'), 'Distancia de ida');
+  assert.equal(translate('es', 'lookup.title'), 'Referencia rápida');
+  assert.equal(translate('es', 'lookup.stubSection'), 'Recogida de subida de 90° (EMT)');
+  assert.equal(translate('es', 'rolling.benderRotationShort'), 'Rotación del doblador');
+  assert.equal(
+    translate('es', 'kicked90.layoutNote', { distance: '12"', angle: 15 }),
+    'Dobla primero 90°, mide 12" a lo largo del conducto desde Marca 1 hasta Marca 2 y luego dobla 15°',
+  );
+});

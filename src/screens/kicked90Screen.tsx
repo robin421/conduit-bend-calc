@@ -20,6 +20,7 @@ import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
 import { kicked90Feasibility } from '../calculators/feasibility/feasibility';
+import { useI18n } from '../i18n';
 import { useBenderSpec } from '../lib/benderSpecStore';
 import { useBenderProfiles } from '../lib/benderProfileStore';
 import { useProAccess } from '../lib/proStore';
@@ -58,6 +59,7 @@ function parseKickAngle(text: string): number | null {
 
 export default function Kicked90Screen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { t } = useI18n();
   const focused = useIsFocused();
   const { unit } = useUnitSystem();
   const [memory, setMemory] = useScreenMemory('kicked90', {
@@ -201,7 +203,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
 
   let hint: string | undefined;
   if (kickAngle === null || lengthInches === null) {
-    hint = kickInvalid ? 'Kick angle must be a number between 0–90' : 'Enter values to see results';
+    hint = kickInvalid ? t('kicked90.kickAngleError') : t('calc.enterValuesHint');
   }
 
   const calibratedGain =
@@ -231,12 +233,12 @@ export default function Kicked90Screen({ route, navigation }: Props) {
             marginBottom: theme.spacing.sm,
           }}
         >
-          Kick angle κ (degrees, typically 10–30)
+          {t('kicked90.kickAngleInputLabel')}
         </Text>
         <TextInput
           value={kickText}
           onChangeText={(text) => { noteReviewInteraction(); setKickText(text); }}
-          placeholder="e.g. 15"
+          placeholder={t('kicked90.kickAnglePlaceholder')}
           placeholderTextColor={theme.colors.textSecondary}
           selectionColor={theme.colors.selection}
           cursorColor={theme.colors.accentText}
@@ -260,12 +262,12 @@ export default function Kicked90Screen({ route, navigation }: Props) {
         />
         <View style={{ marginTop: theme.spacing.sm }}>
           <ImperialInput
-            label="Straight L between bends (tangent to tangent)"
+            label={t('kicked90.straightLengthLabel')}
             value={lengthText}
             onChangeText={(text) => { noteReviewInteraction(); setLengthText(text); }}
             onParsedChange={setLengthInches}
             unit={unit}
-            placeholder={unit === 'metric' ? 'e.g. 250 mm' : 'e.g. 10"'}
+            placeholder={unit === 'metric' ? t('placeholder.mm250') : t('placeholder.inch10')}
           />
         </View>
       </View>
@@ -276,7 +278,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
     <>
       <ResultGroup
         hero={{
-          label: 'Total gain (for conduit length)',
+          label: t('kicked90.totalGainHero'),
           value: gainMeasurement?.value,
           unit: gainMeasurement?.unit,
         }}
@@ -306,7 +308,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Mark layout (developed length along conduit)
+            {t('kicked90.markLayoutTitle')}
           </Text>
           {result.marks.map((mark) => (
             <View key={mark.id} style={styles.markRow}>
@@ -318,7 +320,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
                     fontWeight: theme.fontWeight.semibold,
                   }}
                 >
-                  {mark.label}
+                  {mark.id === 1 ? t('kicked90.mark1Label') : t('kicked90.mark2Label')}
                 </Text>
                 <Text
                   style={{
@@ -327,7 +329,9 @@ export default function Kicked90Screen({ route, navigation }: Props) {
                     marginTop: 2,
                   }}
                 >
-                  {mark.instruction}
+                  {mark.id === 1
+                    ? t('kicked90.mark1Instruction')
+                    : t('kicked90.mark2Instruction')}
                 </Text>
               </View>
               <Text
@@ -340,7 +344,7 @@ export default function Kicked90Screen({ route, navigation }: Props) {
                 }}
               >
                 {mark.developedInches === 0
-                  ? 'Start'
+                  ? t('calc.start')
                   : `+${formatLength(mark.developedInches, unit)}`}
               </Text>
             </View>
@@ -351,10 +355,10 @@ export default function Kicked90Screen({ route, navigation }: Props) {
               fontSize: theme.fontSize.secondary,
             }}
           >
-            {`Bend 90° first, measure ${formatLength(
-              result.marks[1]?.developedInches ?? 0,
-              unit,
-            )} along the conduit from Mark 1 to Mark 2, then bend ${result.kickAngleDeg}°`}
+            {t('kicked90.layoutNote', {
+              distance: formatLength(result.marks[1]?.developedInches ?? 0, unit),
+              angle: result.kickAngleDeg,
+            })}
           </Text>
         </Card>
       ) : null}
@@ -371,15 +375,15 @@ export default function Kicked90Screen({ route, navigation }: Props) {
       <ExpectedActualFeedback
         profile={activeProfile}
         expectedInches={calibratedGain}
-        label="Total gain"
+        label={t('kicked90.totalGainShort')}
         unit={unit}
       />
 
-      <BigButton title="Clear" variant="secondary" onPress={handleClear} />
+      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
     </>
   );
 
-  return <WebCalcShell title="Kicked 90°" left={leftColumn} right={rightColumn} />;
+  return <WebCalcShell title={t('home.tool.kicked90.name')} left={leftColumn} right={rightColumn} />;
 }
 
 const styles = StyleSheet.create({

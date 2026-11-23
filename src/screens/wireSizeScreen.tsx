@@ -11,6 +11,7 @@ import WebCalcShell from '../components/webCalcShell';
 import { CONTINUOUS_LOAD_FACTOR, TEMP_COLUMNS, wireSizeLabel } from '../constants';
 import type { ConductorMetal, TempColumn } from '../constants';
 import type { LayoutWarning } from '../calculators/warnings/warnings';
+import { useI18n } from '../i18n';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
@@ -22,6 +23,7 @@ type ColumnChoice = (typeof COLUMN_CHOICES)[number];
 
 export default function WireSizeScreen() {
   const theme = useTheme();
+  const { t } = useI18n();
   const [m, setM] = useScreenMemory('wireSize', {
     metal: 'copper' as ConductorMetal,
     continuous: 'no' as 'no' | 'yes',
@@ -29,7 +31,7 @@ export default function WireSizeScreen() {
     ampsText: '',
   });
   const amps = parseNumberInput(m.ampsText);
-  const ampsError = amps !== null && !(amps > 0) ? 'Enter the load in amps' : undefined;
+  const ampsError = amps !== null && !(amps > 0) ? t('wireSize.ampsErrorPositive') : undefined;
   const continuous = m.continuous === 'yes';
 
   const result = useMemo(() => {
@@ -44,51 +46,55 @@ export default function WireSizeScreen() {
 
   const warnings: LayoutWarning[] = [];
   if (amps !== null && !ampsError && !result) {
-    warnings.push({ level: 'error', message: 'Beyond 500 kcmil. Use parallel conductors and size them with your engineer.' });
+    warnings.push({ level: 'error', message: t('wireSize.over500Error') });
   }
   if (result?.smallConductorRuleApplied) {
-    warnings.push({ level: 'info', message: `Sized up by NEC 240.4(D): 14 AWG Cu max 15 A, 12 AWG Cu 20 A, 10 AWG Cu 30 A.` });
+    warnings.push({ level: 'info', message: t('wireSize.smallRuleNote') });
   }
   if (result?.column === 90) {
-    warnings.push({ level: 'warning', message: '90°C is only for derating. Terminations limit the final ampacity to 60°C or 75°C (110.14(C)).' });
+    warnings.push({ level: 'warning', message: t('wireSize.temp90Warning') });
   }
 
-  const autoLabel = amps !== null && amps > 0 ? `Auto (${defaultTempColumn(continuous ? amps * CONTINUOUS_LOAD_FACTOR : amps)}°C)` : 'Auto';
+  const autoLabel =
+    amps !== null && amps > 0
+      ? t('wireSize.tempAuto', {
+          col: defaultTempColumn(continuous ? amps * CONTINUOUS_LOAD_FACTOR : amps),
+        })
+      : t('wireSize.autoShort');
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.md, gap: theme.spacing.md }}>
-      <NumberField label="Load" unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder="e.g. 20" error={ampsError} />
-      <OptionRow label="Conductor" options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? 'Copper' : 'Aluminum')} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
-      <OptionRow label="Continuous load (3 h or more)" options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? 'Yes, ×125%' : 'No')} onChange={(c) => { noteReviewInteraction(); setM((p) => ({ ...p, continuous: c })); }} />
-      <OptionRow label="Termination rating" options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => { noteReviewInteraction(); setM((p) => ({ ...p, column })) }} />
+      <NumberField label={t('wireSize.loadLabel')} unit="A" value={m.ampsText} onChangeText={(ampsText) => { noteReviewInteraction(); setM((p) => ({ ...p, ampsText })); }} placeholder={t('wireSize.ampsPlaceholder')} error={ampsError} />
+      <OptionRow label={t('wireSize.conductorShort')} options={['copper', 'aluminum'] as const} value={m.metal} format={(x) => (x === 'copper' ? t('wireSize.copper') : t('wireSize.aluminum'))} onChange={(metal) => { noteReviewInteraction(); setM((p) => ({ ...p, metal })); }} />
+      <OptionRow label={t('wireSize.continuousLabel')} options={['no', 'yes'] as const} value={m.continuous} format={(x) => (x === 'yes' ? t('wireSize.continuousYes') : t('wireSize.continuousNo'))} onChange={(c) => { noteReviewInteraction(); setM((p) => ({ ...p, continuous: c })); }} />
+      <OptionRow label={t('wireSize.terminationLabel')} options={COLUMN_CHOICES} value={m.column} format={(c) => (c === 'auto' ? autoLabel : `${c}°C`)} onChange={(column) => { noteReviewInteraction(); setM((p) => ({ ...p, column })) }} />
     </Card>
   );
 
   const rightColumn = (
     <>
       <ResultGroup
-        hero={{ label: 'Minimum wire size', value: result ? wireSizeLabel(result.size) : undefined }}
+        hero={{ label: t('wireSize.headline'), value: result ? wireSizeLabel(result.size) : undefined }}
         rows={
           result
             ? [
-                { label: `Ampacity at ${result.column}°C`, value: String(result.ampacity), unit: 'A' },
-                { label: 'Sized for', value: Number.isInteger(result.requiredAmps) ? String(result.requiredAmps) : result.requiredAmps.toFixed(1), unit: 'A' },
+                { label: t('wireSize.ampacityRow', { col: result.column }), value: String(result.ampacity), unit: 'A' },
+                { label: t('wireSize.designLoadRow'), value: Number.isInteger(result.requiredAmps) ? String(result.requiredAmps) : result.requiredAmps.toFixed(1), unit: 'A' },
               ]
             : []
         }
-        hint="Enter the load"
+        hint={t('wireSize.enterLoadHint')}
       />
       <WarningBar warnings={warnings} />
       <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
-        NEC 2023 Table 310.16: up to three current-carrying conductors, 30°C ambient. More wires in the raceway or
-        hotter ambient need correction and adjustment (310.15). Check voltage drop on long runs.
+        {t('wireSize.necNote')}
       </Text>
     </>
   );
 
   return (
     <WebCalcShell
-      title="Wire Size"
+      title={t('home.tool.wireSize.name')}
       spacing="md"
       left={leftColumn}
       right={rightColumn}

@@ -11,6 +11,7 @@ import {
   listPresetModels,
 } from '../calculators/geometry/benderSpecs';
 import type { BenderBrand, BenderSpec } from '../constants';
+import { useI18n } from '../i18n';
 import { matchesConduitType, type ConduitType } from '../lib/profile';
 import { useProAccess } from '../lib/proStore';
 import { useTheme } from '../theme';
@@ -101,6 +102,7 @@ export default function BenderPicker({
   startCustom = false,
 }: BenderPickerProps) {
   const theme = useTheme();
+  const { t } = useI18n();
   const { access } = useProAccess();
   const createMode = resolveCustomCreateMode(access, onUnlockPro !== undefined);
   const [activeBrand, setActiveBrand] = useState<BenderBrand>(startCustom ? 'Custom' : spec.brand);
@@ -172,7 +174,7 @@ export default function BenderPicker({
       Number(customTakeUp),
     );
     if (!created) {
-      setCustomError('Enter a name, R and take-up — R / take-up must be numbers greater than 0');
+      setCustomError(t('benderPicker.customError'));
       return;
     }
     setCustomError(null);
@@ -182,10 +184,15 @@ export default function BenderPicker({
     onCreateCustom(created);
   };
 
-
-  const specCaption = `R ${formatNum(spec.centerlineRadius)}" · take-up ${formatNum(
-    spec.takeUp,
-  )}"${isHookDatum(spec) ? '(hook front-edge datum)' : ''}`;
+  const specCaption = isHookDatum(spec)
+    ? t('benderPicker.specCaptionHook', {
+        r: formatNum(spec.centerlineRadius),
+        takeUp: formatNum(spec.takeUp),
+      })
+    : t('benderPicker.specCaption', {
+        r: formatNum(spec.centerlineRadius),
+        takeUp: formatNum(spec.takeUp),
+      });
 
   const rippleColor = theme.colors.pressFeedback;
 
@@ -193,7 +200,9 @@ export default function BenderPicker({
     <View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={expanded ? 'Collapse bender picker' : 'Expand to change bender'}
+        accessibilityLabel={
+          expanded ? t('benderPicker.collapseA11y') : t('benderPicker.expandA11y')
+        }
         onPress={() => setExpanded((value) => !value)}
         android_ripple={{ color: rippleColor }}
         style={({ pressed }) => [
@@ -211,7 +220,7 @@ export default function BenderPicker({
               fontSize: theme.fontSize.secondary,
             }}
           >
-            Bender
+            {t('calc.bender')}
           </Text>
           <Text
             numberOfLines={1}
@@ -248,7 +257,7 @@ export default function BenderPicker({
         {brands.map((value) => (
           <BigButton
             key={value}
-            title={value === 'Custom' ? 'My Bender' : value}
+            title={value === 'Custom' ? t('tabs.myBender') : value}
             size="selection"
             selected={brand === value}
             onPress={() => handleBrandPress(value)}
@@ -259,7 +268,7 @@ export default function BenderPicker({
 
       {brand !== 'Custom' ? (
         <View>
-          <SectionLabel>Model</SectionLabel>
+          <SectionLabel>{t('benderPicker.modelLabel')}</SectionLabel>
           <View style={styles.row}>
             {presetModels.map((model) => (
               <BigButton
@@ -272,7 +281,7 @@ export default function BenderPicker({
               />
             ))}
           </View>
-          <SectionLabel>Conduit size</SectionLabel>
+          <SectionLabel>{t('table.conduitSize')}</SectionLabel>
           <View style={styles.row}>
             {presetConduits.map((conduit) => (
               <BigButton
@@ -290,7 +299,8 @@ export default function BenderPicker({
         <View>
           {customSpecs.length > 0 ? (
             <View>
-              <SectionLabel>My Benders</SectionLabel>              <View style={styles.row}>
+              <SectionLabel>{t('benderPicker.myBendersLabel')}</SectionLabel>
+              <View style={styles.row}>
                 {customSpecs.map((custom) => (
                   <BigButton
                     key={custom.customName ?? custom.conduit}
@@ -310,11 +320,11 @@ export default function BenderPicker({
           ) : null}
           {createMode === 'form' ? (
             <View>
-          <SectionLabel>Create manually (R / take-up)</SectionLabel>
+          <SectionLabel>{t('benderPicker.createManuallyLabel')}</SectionLabel>
           <TextInput
             value={customName}
             onChangeText={setCustomName}
-            placeholder="Name, e.g. My bender (field-tested)"
+            placeholder={t('benderPicker.namePlaceholder')}
             placeholderTextColor={theme.colors.textSecondary}
             selectionColor={theme.colors.selection}
             cursorColor={theme.colors.accentText}
@@ -337,7 +347,7 @@ export default function BenderPicker({
             <TextInput
               value={customR}
               onChangeText={setCustomR}
-              placeholder="R (inches)"
+              placeholder={t('benderPicker.rPlaceholder')}
               placeholderTextColor={theme.colors.textSecondary}
               selectionColor={theme.colors.selection}
               cursorColor={theme.colors.accentText}
@@ -361,7 +371,7 @@ export default function BenderPicker({
             <TextInput
               value={customTakeUp}
               onChangeText={setCustomTakeUp}
-              placeholder="take-up (inches)"
+              placeholder={t('benderPicker.takeUpPlaceholder')}
               placeholderTextColor={theme.colors.textSecondary}
               selectionColor={theme.colors.selection}
               cursorColor={theme.colors.accentText}
@@ -396,7 +406,7 @@ export default function BenderPicker({
           ) : null}
           <View style={{ marginTop: theme.spacing.sm }}>
             <BigButton
-              title="Save & use"
+              title={t('benderPicker.saveAndUse')}
               variant="secondary"
               onPress={handleSaveCustom}
             />
@@ -404,17 +414,17 @@ export default function BenderPicker({
             </View>
           ) : createMode === 'locked' ? (
             <View>
-              <SectionLabel>Create manually (R / take-up)</SectionLabel>
+              <SectionLabel>{t('benderPicker.createManuallyLabel')}</SectionLabel>
               <Text
                 style={{
                   color: theme.colors.textSecondary,
                   fontSize: theme.fontSize.secondary,
                 }}
               >
-                Custom benders are a Pro feature.
+                {t('benderPicker.proOnlyNote')}
               </Text>
               <View style={{ marginTop: theme.spacing.sm }}>
-                <BigButton title="Unlock Pro" onPress={() => onUnlockPro?.()} />
+                <BigButton title={t('benderPicker.unlockPro')} onPress={() => onUnlockPro?.()} />
               </View>
             </View>
           ) : null}

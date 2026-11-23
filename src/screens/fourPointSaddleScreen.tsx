@@ -332,38 +332,48 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
           >
             {t('calc.markLayoutSpan', { span: formatLength(result.spanInches, unit) })}
           </Text>
-          {result.marks.map((mark) => (
-            <View key={mark.id} style={styles.markRow}>
-              <Text
-                style={{
-                  color: theme.colors.textPrimary,
-                  fontSize: theme.fontSize.body,
-                  fontWeight: theme.fontWeight.semibold,
-                }}
-              >
-                {mark.label}
-              </Text>
-              <Text
-                style={{
-                  color: theme.colors.primaryText,
-                  fontSize: theme.fontSize.body,
-                  fontWeight: theme.fontWeight.semibold,
-                  fontVariant: ['tabular-nums'],
-                }}
-              >
-                {formatFromCenter(mark.fromCenterInches, unit, t('calc.center'))}
-              </Text>
-              <Text
-                style={{
-                  color: theme.colors.textSecondary,
-                  fontSize: theme.fontSize.secondary,
-                  marginTop: theme.spacing.xs,
-                }}
-              >
-                {mark.instruction}
-              </Text>
-            </View>
-          ))}
+          {result.marks.map((mark) => {
+            const instructionKey =
+              mark.id === 1
+                ? 'saddle4.mark1Instruction'
+                : mark.id === 2
+                  ? 'saddle4.mark2Instruction'
+                  : mark.id === 3
+                    ? 'saddle4.mark3Instruction'
+                    : 'saddle4.mark4Instruction';
+            return (
+              <View key={mark.id} style={styles.markRow}>
+                <Text
+                  style={{
+                    color: theme.colors.textPrimary,
+                    fontSize: theme.fontSize.body,
+                    fontWeight: theme.fontWeight.semibold,
+                  }}
+                >
+                  {t('calc.markNumber', { n: mark.id })}
+                </Text>
+                <Text
+                  style={{
+                    color: theme.colors.primaryText,
+                    fontSize: theme.fontSize.body,
+                    fontWeight: theme.fontWeight.semibold,
+                    fontVariant: ['tabular-nums'],
+                  }}
+                >
+                  {formatFromCenter(mark.fromCenterInches, unit, t('calc.center'))}
+                </Text>
+                <Text
+                  style={{
+                    color: theme.colors.textSecondary,
+                    fontSize: theme.fontSize.secondary,
+                    marginTop: theme.spacing.xs,
+                  }}
+                >
+                  {t(instructionKey)}
+                </Text>
+              </View>
+            );
+          })}
           <Text
             style={{
               color: theme.colors.textSecondary,

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { applyExpectedActualCorrection } from '../calculators/calibration/calibration';
+import { useI18n } from '../i18n';
 import type { BenderProfile } from '../lib/profile';
 import { setProfileCalibrationOffset } from '../lib/benderProfileStore';
 import { useProAccess } from '../lib/proStore';
@@ -32,6 +33,7 @@ export default function ExpectedActualFeedback({
   unit,
 }: ExpectedActualFeedbackProps) {
   const theme = useTheme();
+  const { t } = useI18n();
   const { access } = useProAccess();
   const [actualText, setActualText] = useState('');
   const [actualInches, setActualInches] = useState<number | null>(null);
@@ -105,7 +107,7 @@ export default function ExpectedActualFeedback({
           fontWeight: theme.fontWeight.semibold,
         }}
       >
-        Did it match?
+        {t('expectedActual.title')}
       </Text>
       <Text
         style={{
@@ -114,17 +116,21 @@ export default function ExpectedActualFeedback({
           lineHeight: 20,
         }}
       >
-        {`${label}: expected ${expectedMeasurement?.value ?? '—'} ${expectedMeasurement?.unit ?? ''}. Enter what you measured to make the next one closer.`}
+        {t('expectedActual.body', {
+          label,
+          value: expectedMeasurement?.value ?? '—',
+          unit: expectedMeasurement?.unit ?? '',
+        })}
       </Text>
       <ImperialInput
-        label="Actual measurement"
+        label={t('expectedActual.inputLabel')}
         value={actualText}
         onChangeText={setActualText}
         onParsedChange={setActualInches}
         unit={unit}
       />
       <BigButton
-        title="Update Bender Calibration"
+        title={t('expectedActual.updateButton')}
         onPress={handleUpdate}
         disabled={!pending}
       />
@@ -136,19 +142,19 @@ export default function ExpectedActualFeedback({
               fontSize: theme.fontSize.secondary,
             }}
           >
-            {`Correction updated by ${lastUpdate.error >= 0 ? '+' : ''}${(
-              Math.round(lastUpdate.error * 1000) / 1000
-            ).toString()}". Tap Update again after your next bend.`}
+            {t('expectedActual.updatedMessage', {
+              delta: `${lastUpdate.error >= 0 ? '+' : ''}${String(Math.round(lastUpdate.error * 1000) / 1000)}`,
+            })}
           </Text>
           <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
             <BigButton
-              title="Undo"
+              title={t('expectedActual.undo')}
               variant="secondary"
               onPress={handleUndo}
               style={styles.action}
             />
             <BigButton
-              title="Reset Calibration"
+              title={t('expectedActual.reset')}
               variant="secondary"
               onPress={handleReset}
               style={styles.action}
@@ -158,7 +164,7 @@ export default function ExpectedActualFeedback({
       ) : profile.calibrationOffset !== 0 ? (
         <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
           <BigButton
-            title="Reset Calibration"
+            title={t('expectedActual.reset')}
             variant="secondary"
             onPress={handleReset}
             style={styles.action}
