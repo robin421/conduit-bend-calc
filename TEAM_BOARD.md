@@ -48,6 +48,7 @@
 | T31 | Google Play ASO 素材重制（`en-US` & `es-US` 12 张 1080×1920 新版原生界面截图 + 精修短/长描述，保留高势能标题） | designer | T29 | DONE | `scripts/generate_store_assets.py`, `assets/store-raw/`, `fastlane/metadata/android/{en-US,es-US}/` | 物理生成+目检+`fastlane metadata validate_only:true` 全部 PASS（12 张唯一 SHA-256 1080×1920 RGB 新版原生图 + 2 张 Feature Graphic + 合规文案） |
 | T32 | 3 篇电工现场实算案例与社区合规分发包（Offset / 90° Stub / 3-Point Saddle + Reddit/论坛/Shorts + 第 15/30 天复盘模板） | growth | T29 | DONE | `docs/growth/2026-11-field-guides-and-distribution.md` | 物理核验 PASS（594 行，数学常数与 `constants.ts`/`saddle.ts`/`BENDER_SPECS` 100% 核对一致，含完整 UTM 规范与 Day 15/30 决策表） |
 | T33 | 增长迭代全量 QA 验收（`tsc` + 单测 + `web:build-seo` + `ego-browser` 390/1440px E2E + 商店图逐张目检 + `fastlane validate_only`） | qa | T30, T31 | DONE | QA 验收报告 + `walkthrough.md` + 生产上线请示清单 | PASS（`tsc` 0 错、`429/429` 单测、10 条 301 + 25 URL 去重 sitemap、390/1440px 双端 0 错/0 溢出/Amplitude 0 脏流量泄露、12 张 1080×1920 唯一商店图 + `fastlane validate_only:true` 全过） |
+| T34 | 生产环境正式上线（Cloudflare Pages `cbc-web` 部署 + GSC Sitemap 刷新 + Play 停旧实验 + `fastlane metadata` 送审） | ai-manager | T33 | DONE | `https://13a100b4.cbc-web.pages.dev` → `https://bendcalc.wattflow.net`；Play Console 审核中 | 线上实测 PASS（5 组 `HTTP/2 301`、`/3-point-saddle/` & `/conduit-fill/`、`25` URL sitemap、`assetlinks.json` & Bing 验证保留、GSC 已重新提交、Play EN/ES 12 图+文案+停止 `Screenshots v6 - scenario` 合并送审） |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。
