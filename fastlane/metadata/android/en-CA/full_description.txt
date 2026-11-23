@@ -1,0 +1,50 @@
+Stop wasting pipe on trial-and-error bends. Conduit Bender & EMT Pipe Calc is the fast, 100% offline conduit bending and electrical calculator built for Canadian commercial electricians, industrial electricians, and apprentices.
+
+Switch seamlessly between Metric (mm/cm), real 1/16" tape-measure fractions, and decimal inches in one tap. Calculate exact mark-to-mark spacing, shrink allowances, and 90° stub-up marks for EMT, IMC, and Rigid conduit in seconds—no mental conversions while working off a ladder.
+
+----------------------------------------
+CORE CONDUIT BENDING CALCULATORS
+----------------------------------------
+• Offset Bends: Enter obstacle height and bend angle (10°, 15°, 22.5°, 30°, 45°, 60°). Get exact mark-to-mark spacing and shrink instantly with a live bend diagram.
+• 90° Stub-Up: Enter target stub height and apply take-up deduction automatically for your exact first mark. Quick presets for 1/2", 3/4", and 1" EMT plus Rigid / IMC support.
+• 3-Point Saddle: Clear round pipes and narrow obstacles with exact centre mark, side spacing, and centre shrink.
+• 4-Point Saddle: Clear rectangular ducts and wide obstructions with dual-offset flat-top mark layouts.
+• Rolling Offset: Solve compound offsets across both rise and roll dimensions.
+• Kicked 90° Bends: Combine a 90° stub-up with an offset kick in one stick of conduit.
+
+----------------------------------------
+METRIC (mm/cm) & 1/16" TAPE FRACTIONS
+----------------------------------------
+• Instant Unit Switching: Work in Metric (mm/cm), Fraction (1/16" tape-measure marks), or Decimal inches on every calculator.
+• EMT, IMC, Rigid & PVC Support: Built for everyday Canadian commercial and industrial conduit runs.
+• Live SVG Bend Diagrams: Visual guides showing mark locations (M1, M2, M3), angles, and shrink at a glance.
+
+----------------------------------------
+CONDUIT FILL & ELECTRICAL CALCULATORS
+----------------------------------------
+• NEC 2023 Conduit Fill: Instant maximum conductor capacity and % fill check for EMT, IMC, Rigid (RMC), and PVC Schedule 40 from 1/2" to 4" trade sizes (14 AWG to 500 kcmil THHN/THWN-2, Chapter 9 Tables 1, 4 & 5 — 53% / 31% / 40% fill limits).
+• Wire Sizing & Ampacity: Copper and aluminum conductor sizing reference based on NEC 2023 ratings.
+• Voltage Drop Calculator: Fast single-phase and three-phase circuit voltage drop calculations.
+
+----------------------------------------
+CALIBRATED FOR YOUR BENDER
+----------------------------------------
+Bender shoes vary by brand and wear. Built-in shoe profiles include:
+• Ideal® hand benders (74-026 1/2" EMT, 74-027 3/4" EMT)
+• Klein Tools® hand benders (51603, 51604, 51605 EMT)
+• Greenlee® benders (1800 Rigid 1/2"–1", 555 EMT 1/2"–2")
+• Custom Bender Profiles & Guided Calibration (Pro): Measure and dial in exact centreline radius, take-up, and gain for worn shoes or any other bender.
+
+----------------------------------------
+100% OFFLINE & JOBSITE-READY
+----------------------------------------
+• Works 100% offline in electrical rooms, mechanical shafts, basements, and high-rise sites with zero signal.
+• Saved Calculation History & Trade Reference Tables (multipliers, shrink, take-up).
+• Zero ads. No sign-in required. High-contrast layout built for one-handed use with work gloves.
+
+Bend accurately in Metric (mm/cm) or 1/16" fractions and cut scrap conduit with Conduit Bender & EMT Pipe Calc.
+
+----------------------------------------
+TRADEMARK DISCLAIMER
+----------------------------------------
+Independent calculator tool; not affiliated with or endorsed by Ideal Industries, Klein Tools, or Greenlee. All brand names and trademarks belong to their respective owners.

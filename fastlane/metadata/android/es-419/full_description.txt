@@ -1,0 +1,52 @@
+Deja de desperdiciar tubo conduit con dobleces a prueba y error. Doblador de Tubos EMT Conduit es la calculadora rápida y 100% offline creada para electricistas comerciales, industriales y aprendices en México y Latinoamérica.
+
+Calcula separación exacta entre marcas, contracción (shrink) y marcas de subida de 90° en segundos. Cambia con un toque entre fracciones reales de cinta métrica (1/16"), pulgadas decimales y milímetros (mm/cm)—sin hacer conversiones mentales arriba de la escalera.
+
+----------------------------------------
+CALCULADORAS DE DOBLADO DE CONDUIT
+----------------------------------------
+• Desplazamiento (Offset): Ingresa la altura del obstáculo y el ángulo (10°, 15°, 22.5°, 30°, 45°, 60°). Obtén la distancia entre marcas y la contracción al instante con diagrama visual de doblez.
+• Subida de 90° (Stub-Up): Ingresa la altura final y aplica automáticamente la recogida (take-up) para darte la primera marca exacta. Preajustes rápidos para 1/2", 3/4" y 1" EMT, además de soporte para IMC y Rigid.
+• Silla de 3 Puntos (3-Point Saddle): Libra obstáculos angostos y conductos redondos con marca central, marcas laterales y contracción exacta.
+• Silla de 4 Puntos (4-Point Saddle): Libra ductos rectangulares y obstáculos anchos con doble desplazamiento y parte superior plana.
+• Desplazamiento Compuesto (Rolling Offset): Resuelve desplazamientos combinados en altura y recorrido lateral.
+• Curva de 90° con Patada (Kicked 90°): Combina una subida de 90° con un desplazamiento en el mismo tramo de tubo conduit.
+
+----------------------------------------
+LLENADO NEC 2023 Y HERRAMIENTAS ELÉCTRICAS
+----------------------------------------
+• Llenado de Conducto NEC: Capacidad máxima de cables y porcentaje de llenado para tubo EMT, IMC, Rigid (RMC) y PVC Cédula 40 desde 1/2" hasta 4" (calibres 14 AWG a 500 kcmil THHN/THWN-2).
+• Regla del 40% NEC: Verifica las Tablas 1, 4 y 5 del Capítulo 9 del NEC 2023 (límites de 53%, 31% y 40%) directo en la obra.
+• Calibre de Cable y Ampacidad: Selección de conductores de cobre y aluminio con referencia NEC 2023.
+• Caída de Voltaje: Cálculo rápido para circuitos monofásicos y trifásicos.
+
+----------------------------------------
+CALIBRADO PARA TU DOBLADOR
+----------------------------------------
+Cada zapata varía según marca y desgaste. Incluye perfiles preconfigurados para:
+• Dobladores manuales Ideal® (74-026 1/2" EMT, 74-027 3/4" EMT)
+• Dobladores manuales Klein Tools® (51603, 51604, 51605 EMT)
+• Dobladores Greenlee® (1800 Rigid 1/2"–1", 555 EMT 1/2"–2")
+• Perfiles Propios y Calibración Guiada (Pro): Mide tu doblador gratis y guarda radio, recogida (take-up) y ganancia exactos para zapatas desgastadas o cualquier otro doblador.
+
+----------------------------------------
+FRACCIONES 1/16" Y MILÍMETROS (mm/cm) EN OBRA
+----------------------------------------
+• Cambio Rápido de Unidades: Trabaja en Fracciones de 1/16", Pulgadas decimales o Métrico (mm/cm) en todas las calculadoras.
+• Diagramas Visuales de Doblez: Guías claras con marcas (M1, M2, M3), ángulos y contracción.
+• Historial y Tablas de Referencia: Guarda tus cálculos recientes y consulta multiplicadores, contracción y recogida en un toque.
+• Interfaz en Español e Inglés: Cambia entre ES y EN al instante.
+
+----------------------------------------
+100% OFFLINE Y SIN ANUNCIOS
+----------------------------------------
+• Funciona 100% sin internet en cuartos eléctricos, sótanos, plantas industriales y obras sin señal.
+• Sin registro, sin cuentas y cero anuncios.
+• Pantalla de alto contraste diseñada para usarse con una sola mano y guantes de trabajo.
+
+Dobla con precisión en 1/16" o milímetros y ahorra material con Doblador de Tubos EMT Conduit.
+
+----------------------------------------
+AVISO DE MARCAS REGISTRADAS
+----------------------------------------
+Herramienta independiente; no afiliada ni respaldada por Ideal Industries, Klein Tools o Greenlee. Todas las marcas registradas pertenecen a sus respectivos propietarios.

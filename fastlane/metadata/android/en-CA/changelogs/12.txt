@@ -1,0 +1,3 @@
+• Complete Spanish (ES) localization across every calculator and tool: Conduit Fill, Wire Size, Voltage Drop, 4-Point Saddle, Rolling Offset, Kicked 90°, Quick Reference, Bender Setup & bend diagrams
+• Consistent trade terminology throughout all screens, instructions, and warnings
+• Clean production analytics telemetry and stability improvements

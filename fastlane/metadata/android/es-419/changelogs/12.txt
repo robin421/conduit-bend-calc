@@ -1,0 +1,3 @@
+• Localización completa al español (ES) en todas las calculadoras y herramientas: Llenado de conducto, Calibre de cable, Caída de voltaje, Silla de 4 puntos, Desplazamiento compuesto, 90° con patada, Referencia rápida, Ajuste de doblador y diagramas de doblez
+• Terminología eléctrica consistente de obra en pantallas, instrucciones y alertas
+• Telemetría de producción limpia y mejoras de estabilidad

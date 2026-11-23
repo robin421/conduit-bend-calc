@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Generate complete Google Play ASO Assets for Conduit Bend Calc (v1.11.0+):
-- en-US & es-US metadata (title, short_description, full_description)
-- 6 x 1080x1920 24-bit RGB Store Screenshots for en-US & es-US (using real per-locale app captures)
-- 1024x500 24-bit RGB Feature Graphic for en-US & es-US aligned to src/brandPalette.ts (#0F2B46 / #F4C317)
-- Full validation against Google Play character limits, image dimensions, color mode, and zero duplicates.
+Generate complete Google Play ASO Assets for Conduit Bend Calc (v1.12.0+):
+- 4-locale metadata: en-US, en-CA, es-US, es-419 (title, short_description, full_description)
+- 6 x 1080x1920 24-bit RGB Store Screenshots for all 4 locales (using real per-locale app captures)
+- 1024x500 24-bit RGB Feature Graphic for all 4 locales aligned to src/brandPalette.ts (#0F2B46 / #F4C317)
+- Full validation against Google Play character limits, forbidden Spanish terms, image dimensions, color mode, and zero duplicates.
 """
 from __future__ import annotations
 
@@ -88,6 +88,60 @@ TRADEMARK DISCLAIMER
 ----------------------------------------
 Independent calculator tool; not affiliated with or endorsed by Ideal Industries, Klein Tools, or Greenlee. All brand names and trademarks belong to their respective owners."""
     },
+    "en-CA": {
+        "title": "Conduit Bender & EMT Pipe Calc",
+        "shortDescription": 'EMT, IMC & Rigid offsets, 90° stubs & fill. Metric mm/cm & 1/16" marks, offline.',
+        "fullDescription": """Stop wasting pipe on trial-and-error bends. Conduit Bender & EMT Pipe Calc is the fast, 100% offline conduit bending and electrical calculator built for Canadian commercial electricians, industrial electricians, and apprentices.
+
+Switch seamlessly between Metric (mm/cm), real 1/16" tape-measure fractions, and decimal inches in one tap. Calculate exact mark-to-mark spacing, shrink allowances, and 90° stub-up marks for EMT, IMC, and Rigid conduit in seconds—no mental conversions while working off a ladder.
+
+----------------------------------------
+CORE CONDUIT BENDING CALCULATORS
+----------------------------------------
+• Offset Bends: Enter obstacle height and bend angle (10°, 15°, 22.5°, 30°, 45°, 60°). Get exact mark-to-mark spacing and shrink instantly with a live bend diagram.
+• 90° Stub-Up: Enter target stub height and apply take-up deduction automatically for your exact first mark. Quick presets for 1/2", 3/4", and 1" EMT plus Rigid / IMC support.
+• 3-Point Saddle: Clear round pipes and narrow obstacles with exact centre mark, side spacing, and centre shrink.
+• 4-Point Saddle: Clear rectangular ducts and wide obstructions with dual-offset flat-top mark layouts.
+• Rolling Offset: Solve compound offsets across both rise and roll dimensions.
+• Kicked 90° Bends: Combine a 90° stub-up with an offset kick in one stick of conduit.
+
+----------------------------------------
+METRIC (mm/cm) & 1/16" TAPE FRACTIONS
+----------------------------------------
+• Instant Unit Switching: Work in Metric (mm/cm), Fraction (1/16" tape-measure marks), or Decimal inches on every calculator.
+• EMT, IMC, Rigid & PVC Support: Built for everyday Canadian commercial and industrial conduit runs.
+• Live SVG Bend Diagrams: Visual guides showing mark locations (M1, M2, M3), angles, and shrink at a glance.
+
+----------------------------------------
+CONDUIT FILL & ELECTRICAL CALCULATORS
+----------------------------------------
+• NEC 2023 Conduit Fill: Instant maximum conductor capacity and % fill check for EMT, IMC, Rigid (RMC), and PVC Schedule 40 from 1/2" to 4" trade sizes (14 AWG to 500 kcmil THHN/THWN-2, Chapter 9 Tables 1, 4 & 5 — 53% / 31% / 40% fill limits).
+• Wire Sizing & Ampacity: Copper and aluminum conductor sizing reference based on NEC 2023 ratings.
+• Voltage Drop Calculator: Fast single-phase and three-phase circuit voltage drop calculations.
+
+----------------------------------------
+CALIBRATED FOR YOUR BENDER
+----------------------------------------
+Bender shoes vary by brand and wear. Built-in shoe profiles include:
+• Ideal® hand benders (74-026 1/2" EMT, 74-027 3/4" EMT)
+• Klein Tools® hand benders (51603, 51604, 51605 EMT)
+• Greenlee® benders (1800 Rigid 1/2"–1", 555 EMT 1/2"–2")
+• Custom Bender Profiles & Guided Calibration (Pro): Measure and dial in exact centreline radius, take-up, and gain for worn shoes or any other bender.
+
+----------------------------------------
+100% OFFLINE & JOBSITE-READY
+----------------------------------------
+• Works 100% offline in electrical rooms, mechanical shafts, basements, and high-rise sites with zero signal.
+• Saved Calculation History & Trade Reference Tables (multipliers, shrink, take-up).
+• Zero ads. No sign-in required. High-contrast layout built for one-handed use with work gloves.
+
+Bend accurately in Metric (mm/cm) or 1/16" fractions and cut scrap conduit with Conduit Bender & EMT Pipe Calc.
+
+----------------------------------------
+TRADEMARK DISCLAIMER
+----------------------------------------
+Independent calculator tool; not affiliated with or endorsed by Ideal Industries, Klein Tools, or Greenlee. All brand names and trademarks belong to their respective owners."""
+    },
     "es-US": {
         "title": "Doblador de Tubos EMT Conduit",
         "shortDescription": 'Offsets, curvas 90°, sillas y llenado NEC para tubo conduit. 1/16" y offline.',
@@ -145,21 +199,87 @@ AVISO DE MARCAS REGISTRADAS
 ----------------------------------------
 Herramienta independiente; no afiliada ni respaldada por Ideal Industries, Klein Tools o Greenlee. Todas las marcas registradas pertenecen a sus respectivos propietarios."""
     },
+    "es-419": {
+        "title": "Doblador de Tubos EMT Conduit",
+        "shortDescription": 'Offsets, curvas 90° y llenado NEC en EMT/IMC/Rigid. 1/16" y mm/cm, offline.',
+        "fullDescription": """Deja de desperdiciar tubo conduit con dobleces a prueba y error. Doblador de Tubos EMT Conduit es la calculadora rápida y 100% offline creada para electricistas comerciales, industriales y aprendices en México y Latinoamérica.
+
+Calcula separación exacta entre marcas, contracción (shrink) y marcas de subida de 90° en segundos. Cambia con un toque entre fracciones reales de cinta métrica (1/16"), pulgadas decimales y milímetros (mm/cm)—sin hacer conversiones mentales arriba de la escalera.
+
+----------------------------------------
+CALCULADORAS DE DOBLADO DE CONDUIT
+----------------------------------------
+• Desplazamiento (Offset): Ingresa la altura del obstáculo y el ángulo (10°, 15°, 22.5°, 30°, 45°, 60°). Obtén la distancia entre marcas y la contracción al instante con diagrama visual de doblez.
+• Subida de 90° (Stub-Up): Ingresa la altura final y aplica automáticamente la recogida (take-up) para darte la primera marca exacta. Preajustes rápidos para 1/2", 3/4" y 1" EMT, además de soporte para IMC y Rigid.
+• Silla de 3 Puntos (3-Point Saddle): Libra obstáculos angostos y conductos redondos con marca central, marcas laterales y contracción exacta.
+• Silla de 4 Puntos (4-Point Saddle): Libra ductos rectangulares y obstáculos anchos con doble desplazamiento y parte superior plana.
+• Desplazamiento Compuesto (Rolling Offset): Resuelve desplazamientos combinados en altura y recorrido lateral.
+• Curva de 90° con Patada (Kicked 90°): Combina una subida de 90° con un desplazamiento en el mismo tramo de tubo conduit.
+
+----------------------------------------
+LLENADO NEC 2023 Y HERRAMIENTAS ELÉCTRICAS
+----------------------------------------
+• Llenado de Conducto NEC: Capacidad máxima de cables y porcentaje de llenado para tubo EMT, IMC, Rigid (RMC) y PVC Cédula 40 desde 1/2" hasta 4" (calibres 14 AWG a 500 kcmil THHN/THWN-2).
+• Regla del 40% NEC: Verifica las Tablas 1, 4 y 5 del Capítulo 9 del NEC 2023 (límites de 53%, 31% y 40%) directo en la obra.
+• Calibre de Cable y Ampacidad: Selección de conductores de cobre y aluminio con referencia NEC 2023.
+• Caída de Voltaje: Cálculo rápido para circuitos monofásicos y trifásicos.
+
+----------------------------------------
+CALIBRADO PARA TU DOBLADOR
+----------------------------------------
+Cada zapata varía según marca y desgaste. Incluye perfiles preconfigurados para:
+• Dobladores manuales Ideal® (74-026 1/2" EMT, 74-027 3/4" EMT)
+• Dobladores manuales Klein Tools® (51603, 51604, 51605 EMT)
+• Dobladores Greenlee® (1800 Rigid 1/2"–1", 555 EMT 1/2"–2")
+• Perfiles Propios y Calibración Guiada (Pro): Mide tu doblador gratis y guarda radio, recogida (take-up) y ganancia exactos para zapatas desgastadas o cualquier otro doblador.
+
+----------------------------------------
+FRACCIONES 1/16" Y MILÍMETROS (mm/cm) EN OBRA
+----------------------------------------
+• Cambio Rápido de Unidades: Trabaja en Fracciones de 1/16", Pulgadas decimales o Métrico (mm/cm) en todas las calculadoras.
+• Diagramas Visuales de Doblez: Guías claras con marcas (M1, M2, M3), ángulos y contracción.
+• Historial y Tablas de Referencia: Guarda tus cálculos recientes y consulta multiplicadores, contracción y recogida en un toque.
+• Interfaz en Español e Inglés: Cambia entre ES y EN al instante.
+
+----------------------------------------
+100% OFFLINE Y SIN ANUNCIOS
+----------------------------------------
+• Funciona 100% sin internet en cuartos eléctricos, sótanos, plantas industriales y obras sin señal.
+• Sin registro, sin cuentas y cero anuncios.
+• Pantalla de alto contraste diseñada para usarse con una sola mano y guantes de trabajo.
+
+Dobla con precisión en 1/16" o milímetros y ahorra material con Doblador de Tubos EMT Conduit.
+
+----------------------------------------
+AVISO DE MARCAS REGISTRADAS
+----------------------------------------
+Herramienta independiente; no afiliada ni respaldada por Ideal Industries, Klein Tools o Greenlee. Todas las marcas registradas pertenecen a sus respectivos propietarios."""
+    },
 }
 
 STORYBOARD = [
     {
         "filename": "01_offset.png",
         "raw_name": "01_offset.png",
-        "en": {
+        "en-US": {
             "eyebrow": "OFFSET BEND CALCULATOR",
             "headline": "Fast Offset Marks\n& Shrink in Seconds",
             "subtitle": '1/16" tape fractions + live bend diagram',
         },
-        "es": {
+        "en-CA": {
+            "eyebrow": "OFFSET BEND CALCULATOR",
+            "headline": "Fast Offset Marks\n& Shrink in Seconds",
+            "subtitle": '1/16" fractions & Metric mm/cm + live diagram',
+        },
+        "es-US": {
             "eyebrow": "CALCULADORA DE OFFSET",
             "headline": "Offsets y Contracción\nen Segundos",
             "subtitle": 'Fracciones de 1/16" + diagrama de doblez',
+        },
+        "es-419": {
+            "eyebrow": "CALCULADORA DE OFFSET",
+            "headline": "Offsets y Contracción\nen Segundos",
+            "subtitle": 'Fracciones 1/16" y mm/cm + diagrama visual',
         },
     },
     {
@@ -173,7 +293,7 @@ STORYBOARD = [
         "es": {
             "eyebrow": "SUBIDA DE 90° (STUB-UP)",
             "headline": "Marcas de 90° al Instante\ncon Preajustes EMT",
-            "subtitle": 'Take-up automático en 1/2", 3/4" y 1" EMT',
+            "subtitle": 'Recogida automática en 1/2", 3/4" y 1" EMT',
         },
     },
     {
@@ -221,10 +341,15 @@ STORYBOARD = [
     {
         "filename": "06_offline_field.png",
         "raw_name": "06_offline_field.png",
-        "en": {
+        "en-US": {
             "eyebrow": "100% OFFLINE • ZERO ADS",
             "headline": "Built for the Jobsite\nWorks Without Signal",
             "subtitle": "Full bending & NEC suite in English & Spanish",
+        },
+        "en-CA": {
+            "eyebrow": "100% OFFLINE • ZERO ADS",
+            "headline": "Built for the Jobsite\nWorks Without Signal",
+            "subtitle": 'EMT, IMC & Rigid • Metric mm/cm & 1/16" marks',
         },
         "es": {
             "eyebrow": "100% SIN INTERNET • SIN ANUNCIOS",
@@ -233,6 +358,31 @@ STORYBOARD = [
         },
     },
 ]
+
+LOCALES = ["en-US", "en-CA", "es-US", "es-419"]
+
+FEATURE_GRAPHICS = {
+    "en-US": (
+        '1/16" TAPE MARKS • 100% OFFLINE',
+        "CONDUIT BENDER\n& EMT PIPE CALC",
+        "Offsets • 90° Stubs • Saddles • NEC Fill",
+    ),
+    "en-CA": (
+        '1/16" & METRIC mm • 100% OFFLINE',
+        "CONDUIT BENDER\n& EMT PIPE CALC",
+        "EMT, IMC, Rigid • Offsets, 90° & Fill",
+    ),
+    "es-US": (
+        'FRACCIONES 1/16" • 100% OFFLINE',
+        "DOBLADOR DE TUBOS\nEMT Y CONDUIT",
+        "Offsets • Curvas 90° • Sillas • Llenado NEC",
+    ),
+    "es-419": (
+        '1/16" Y MILÍMETROS • 100% OFFLINE',
+        "DOBLADOR DE TUBOS\nEMT Y CONDUIT",
+        "Offsets • Curvas 90° • Sillas • Llenado NEC",
+    ),
+}
 
 
 def get_font(size: int, weight: str = "bold") -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -447,6 +597,12 @@ def write_metadata_text() -> None:
         assert len(short_desc) <= 80, f"{locale} short desc exceeds 80 chars: {len(short_desc)}"
         assert len(full_desc) <= 4000, f"{locale} full desc exceeds 4000 chars: {len(full_desc)}"
 
+        if locale.startswith("es-"):
+            combined = f"{title}\n{short_desc}\n{full_desc}".lower()
+            assert "tubería" not in combined and "tuberia" not in combined, (
+                f"{locale} metadata contains forbidden term 'tubería'/'tuberia'"
+            )
+
         (loc_dir / "title.txt").write_text(title, encoding="utf-8")
         (loc_dir / "short_description.txt").write_text(short_desc, encoding="utf-8")
         (loc_dir / "full_description.txt").write_text(full_desc, encoding="utf-8")
@@ -475,17 +631,18 @@ def main() -> None:
     icon_path = BASE_DIR / "assets" / "icon.png"
     expected_filenames = {item["filename"] for item in STORYBOARD}
 
-    for locale in ["en-US", "es-US"]:
+    for locale in LOCALES:
         print(f"\n=== Step 2: Generating Screenshots for {locale} ===")
-        lang_key = "en" if locale == "en-US" else "es"
+        lang_key = "en" if locale.startswith("en-") else "es"
+        raw_locale = "en-US" if locale.startswith("en-") else "es-US"
         screenshots_dir = METADATA_DIR / locale / "images" / "phoneScreenshots"
         clean_stale_screenshots(screenshots_dir, expected_filenames)
 
         hashes: dict[str, str] = {}
         for item in STORYBOARD:
             out_file = screenshots_dir / item["filename"]
-            raw_img = RAW_ASSETS_DIR / locale / item["raw_name"]
-            copy = item[lang_key]
+            raw_img = RAW_ASSETS_DIR / raw_locale / item["raw_name"]
+            copy = item.get(locale) or item[lang_key]
             compose_screenshot(
                 raw_path=raw_img,
                 eyebrow=copy["eyebrow"],
@@ -504,14 +661,7 @@ def main() -> None:
 
         print(f"\n=== Step 3: Generating Feature Graphic for {locale} ===")
         feature_out = METADATA_DIR / locale / "images" / "featureGraphic.png"
-        if locale == "en-US":
-            f_eye = '1/16" TAPE MARKS • 100% OFFLINE'
-            f_head = "CONDUIT BENDER\n& EMT PIPE CALC"
-            f_sub = "Offsets • 90° Stubs • Saddles • NEC Fill"
-        else:
-            f_eye = 'FRACCIONES 1/16" • 100% OFFLINE'
-            f_head = "DOBLADOR DE TUBOS\nEMT Y CONDUIT"
-            f_sub = "Offsets • Curvas 90° • Sillas • Llenado NEC"
+        f_eye, f_head, f_sub = FEATURE_GRAPHICS[locale]
         compose_feature_graphic(feature_out, f_eye, f_head, f_sub, icon_path)
 
     print("\n[SUCCESS] All Google Play Store Assets Generated & Validated!")
