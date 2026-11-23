@@ -4,32 +4,40 @@ import { Platform } from 'react-native';
 import appConfig from '../../app.json';
 import {
   AMPLITUDE_API_ENDPOINT,
+  AMPLITUDE_UTM_STORAGE_KEY,
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
   isExcludedAnalyticsEnvironment,
+  parseIncomingUtmParams,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
+  sanitizeIncomingUtmParams,
   sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
   type AmplitudeUserProperties,
   type AnalyticsExclusionOptions,
+  type IncomingUtmParams,
 } from './amplitudeCore';
 
 export {
   AMPLITUDE_API_ENDPOINT,
+  AMPLITUDE_UTM_STORAGE_KEY,
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
   isExcludedAnalyticsEnvironment,
+  parseIncomingUtmParams,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
+  sanitizeIncomingUtmParams,
   sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
   type AmplitudeEventProperties,
   type AmplitudeUserProperties,
   type AnalyticsExclusionOptions,
+  type IncomingUtmParams,
 };
 
 function resolveLanguage(): string {
@@ -71,6 +79,38 @@ function isCurrentEnvironmentExcluded(): boolean {
   });
 }
 
+let cachedWebSessionUtm: IncomingUtmParams | undefined;
+
+function resolveWebSessionUtm(): Record<string, unknown> | undefined {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    return undefined;
+  }
+  const search = window.location?.search ?? '';
+  const fromUrl = parseIncomingUtmParams(search);
+  if (Object.keys(fromUrl).length > 0) {
+    cachedWebSessionUtm = fromUrl;
+    try {
+      window.sessionStorage?.setItem(AMPLITUDE_UTM_STORAGE_KEY, JSON.stringify(fromUrl));
+    } catch {
+      /* ignore privacy mode / storage write errors */
+    }
+    return fromUrl as Record<string, unknown>;
+  }
+  try {
+    const raw = window.sessionStorage?.getItem(AMPLITUDE_UTM_STORAGE_KEY);
+    if (raw) {
+      const parsed = sanitizeIncomingUtmParams(JSON.parse(raw));
+      if (Object.keys(parsed).length > 0) {
+        cachedWebSessionUtm = parsed;
+        return parsed as Record<string, unknown>;
+      }
+    }
+  } catch {
+    /* ignore privacy mode / corrupted JSON */
+  }
+  return cachedWebSessionUtm as Record<string, unknown> | undefined;
+}
+
 const client = createAmplitudeClient({
   storage: AsyncStorage,
   apiKey: resolveApiKey(),
@@ -78,10 +118,12 @@ const client = createAmplitudeClient({
   appVersion: appConfig.expo.version,
   language: resolveLanguage(),
   isExcluded: isCurrentEnvironmentExcluded,
+  defaultEventProperties: resolveWebSessionUtm,
 });
 
 /** 初始化 Amplitude（读取/生成匿名 device_id 与 session_id）；静默容错。 */
 export function initAmplitude(): Promise<void> {
+  resolveWebSessionUtm();
   return client.init();
 }
 

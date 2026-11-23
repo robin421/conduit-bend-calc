@@ -366,6 +366,10 @@ SEO_PATHS = [
     "conduit-bending-deduct/",
     "conduit-bending-mistakes/",
     "conduit-bend-radius/",
+    # Worked Electrician Field Guides (T35).
+    "6-inch-offset-3-4-emt-30-degrees/",
+    "1-2-emt-90-stub-up-take-up-fix/",
+    "3-point-saddle-3-inch-pipe-marks/",
 ]
 
 today_iso = datetime.date.today().isoformat()

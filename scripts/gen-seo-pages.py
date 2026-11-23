@@ -184,6 +184,66 @@ th, td { border-bottom: 1px solid #D9E2EB; padding: .55rem .7rem; text-align: le
 tr:last-child td { border-bottom: none; }
 th { background: #F5F8FB; font-weight: 600; color: #0F2B46; }
 .table-wrap td { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.diagram-card {
+  margin: 1rem 0;
+  padding: 12px;
+  background: #FFFFFF;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+}
+.diagram-card svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.diagram-caption {
+  margin: 8px 0 0;
+  font-size: .85rem;
+  color: #52677B;
+}
+.callout-box {
+  margin: 1rem 0;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border: 1px solid #D9E2EB;
+  border-left: 4px solid #F4C317;
+  border-radius: 8px;
+}
+.callout-box p { margin: .4rem 0; }
+.callout-box p:first-child { margin-top: 0; }
+.callout-box p:last-child { margin-bottom: 0; }
+.inline-cta-box {
+  margin: 1.4rem 0;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  border: 1px solid #D9E2EB;
+  border-radius: 8px;
+}
+.inline-cta-box p { margin: .4rem 0; }
+.inline-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.inline-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 16px;
+  background: #F5F8FB;
+  color: #0F2B46;
+  border: 1px solid #D9E2EB;
+  font-weight: 700;
+  font-size: .92rem;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.inline-cta-secondary:hover {
+  border-color: #806000;
+  background: #FFFFFF;
+}
 .cta {
   border: 1px solid #D9E2EB;
   border-radius: 8px;
@@ -314,6 +374,7 @@ AMPLITUDE_TEMPLATE = """<script>
   var KEY={api_key};
   var SLUG={page_slug};
   var LS_KEY='@conduit_amplitude_device_id';
+  var UTM_KEY='@conduit_amplitude_utm';
   function isExcluded(){{
     try{{
       var h=(window.location&&window.location.hostname||'').toLowerCase();
@@ -323,6 +384,44 @@ AMPLITUDE_TEMPLATE = """<script>
     }}catch(_){{}}
     return false;
   }}
+  function cleanUtm(v){{
+    if(typeof v!=='string')return '';
+    return v.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);
+  }}
+  function getSessionUtm(){{
+    var keys=['utm_source','utm_medium','utm_campaign'];
+    var out={{}};
+    var hasUrl=false;
+    try{{
+      if(window.location&&window.location.search&&typeof URLSearchParams==='function'){{
+        var sp=new URLSearchParams(window.location.search);
+        for(var i=0;i<keys.length;i++){{
+          var k=keys[i];
+          var c=cleanUtm(sp.get(k)||'');
+          if(c){{out[k]=c;hasUrl=true;}}
+        }}
+      }}
+    }}catch(_){{}}
+    if(hasUrl){{
+      try{{if(window.sessionStorage)window.sessionStorage.setItem(UTM_KEY,JSON.stringify(out));}}catch(_){{}}
+      return out;
+    }}
+    try{{
+      var raw=window.sessionStorage&&window.sessionStorage.getItem(UTM_KEY);
+      if(raw){{
+        var parsed=JSON.parse(raw);
+        if(parsed&&typeof parsed==='object'){{
+          for(var j=0;j<keys.length;j++){{
+            var kk=keys[j];
+            var cc=cleanUtm(parsed[kk]||'');
+            if(cc)out[kk]=cc;
+          }}
+        }}
+      }}
+    }}catch(_){{}}
+    return out;
+  }}
+  var sessionUtm=getSessionUtm();
   if(isExcluded()){{window.__ampTrack=function(){{}};return;}}
   function getDeviceId(){{
     try{{
@@ -344,6 +443,10 @@ AMPLITUDE_TEMPLATE = """<script>
         props.utm_medium='article_cta';
         props.utm_campaign=SLUG;
         props.cta_placement=src;
+      }}else{{
+        if(sessionUtm.utm_source)props.utm_source=sessionUtm.utm_source;
+        if(sessionUtm.utm_medium)props.utm_medium=sessionUtm.utm_medium;
+        if(sessionUtm.utm_campaign)props.utm_campaign=sessionUtm.utm_campaign;
       }}
       var body=JSON.stringify({{
         api_key:KEY,
@@ -842,6 +945,11 @@ The calculator's feasibility check warns you before a bend is too tight to make.
             ("/3-point-saddle/", "3-Point Saddle Calculator"),
             ("/conduit-fill/", "NEC Conduit Fill Calculator"),
         ],
+        related=[
+            ("/6-inch-offset-3-4-emt-30-degrees/", '6" Offset in 3/4" EMT at 30°: Exact Marks & Shrink'),
+            ("/1-2-emt-90-stub-up-take-up-fix/", 'Why Your 1/2" EMT 90° Stub Lands Short (+ Take-Up Fix)'),
+            ("/3-point-saddle-3-inch-pipe-marks/", '3-Point Saddle Over a 3" Pipe: 45°/22.5° Marks & Shrink'),
+        ],
         body="""
 <p>This is the chart electricians tape inside their gang box lid: every multiplier and
 shrink factor for the bend angles you will actually use, on one page. Bookmark it.</p>
@@ -1015,6 +1123,11 @@ cuts. For racks of three-plus conduits, mark all the sticks before bending any o
              "stub-up, and the safety habits that prevent kinks and miscuts.",
         h1="How to Bend EMT Conduit: A Beginner's Guide",
         cta_label="Open the free conduit bending calculator",
+        related=[
+            ("/6-inch-offset-3-4-emt-30-degrees/", '6" Offset in 3/4" EMT at 30°: Exact Marks & Shrink'),
+            ("/1-2-emt-90-stub-up-take-up-fix/", 'Why Your 1/2" EMT 90° Stub Lands Short (+ Take-Up Fix)'),
+            ("/3-point-saddle-3-inch-pipe-marks/", '3-Point Saddle Over a 3" Pipe: 45°/22.5° Marks & Shrink'),
+        ],
         body="""
 <p>Bending EMT is the first hands-on skill most electrical apprentices learn, and it is
 almost entirely about <em>marking correctly</em>. The bender does the bending; your
@@ -1140,6 +1253,11 @@ own bender \u2014 the app's calibration tool exists for exactly this.</p>
             ("/3-point-saddle/", "3-Point Saddle Calculator"),
             ("/offset/", "Offset Bend Calculator"),
         ],
+        related=[
+            ("/1-2-emt-90-stub-up-take-up-fix/", 'Why Your 1/2" EMT 90° Stub Lands Short (+ Take-Up Fix)'),
+            ("/3-point-saddle-3-inch-pipe-marks/", '3-Point Saddle Over a 3" Pipe: 45°/22.5° Marks & Shrink'),
+            ("/6-inch-offset-3-4-emt-30-degrees/", '6" Offset in 3/4" EMT at 30°: Exact Marks & Shrink'),
+        ],
         body="""
 <p>A hand bender head is covered in marks that look like decoration until someone tells
 you the system. There are four: the arrow, the star, the rim notch, and the degree
@@ -1250,6 +1368,11 @@ PVC Schedule 40 wire counts right alongside your bending marks.</p>
              "box knockout. Marks, spacing math, and field tips.",
         h1="Box Offset Bend: The 10\u00b0 Mini Offset",
         cta_label="Open the free conduit bending calculator",
+        related=[
+            ("/6-inch-offset-3-4-emt-30-degrees/", '6" Offset in 3/4" EMT at 30°: Exact Marks & Shrink'),
+            ("/1-2-emt-90-stub-up-take-up-fix/", 'Why Your 1/2" EMT 90° Stub Lands Short (+ Take-Up Fix)'),
+            ("/3-point-saddle-3-inch-pipe-marks/", '3-Point Saddle Over a 3" Pipe: 45°/22.5° Marks & Shrink'),
+        ],
         body="""
 <p>A box offset is a tiny, two-bend offset \u2014 usually just two 10\u00b0 bends \u2014
 that kicks the conduit sideways by the depth of a box knockout or surface-mounted
@@ -1689,6 +1812,378 @@ generic chart.</p>
     ),
 ]
 
+# ---------------------------------------------------------------------------
+# Batch 6 (T35, 2026-11-23): Three Worked Electrician Field Guides with exact
+# tape-measure mark tables, crisp inline SVG bend diagrams, 4-point rookie
+# checks, and page-specific FAQPage JSON-LD.
+# ---------------------------------------------------------------------------
+_GUIDE1_PLAY = html.escape(build_play_url("6-inch-offset-3-4-emt-30-degrees", "inline_play_cta"))
+_GUIDE2_PLAY = html.escape(build_play_url("1-2-emt-90-stub-up-take-up-fix", "inline_play_cta"))
+_GUIDE3_PLAY = html.escape(build_play_url("3-point-saddle-3-inch-pipe-marks", "inline_play_cta"))
+
+PAGES += [
+    dict(
+        slug="6-inch-offset-3-4-emt-30-degrees",
+        title='6" Offset in 3/4" EMT at 30\u00b0: Exact Marks & Shrink',
+        desc='Step-by-step tape-measure marks for a 6" offset in 3/4" EMT at 30\u00b0: '
+             '12" mark spacing, 1-1/2" shrink allowance, cut-length correction, and dogleg checks.',
+        h1='6" Offset in 3/4" EMT at 30\u00b0: Exact Marks & Shrink',
+        cta_label="Open the Offset Bend Calculator",
+        quick_links=[
+            ("/offset/", "Offset Bend Calculator"),
+            ("/shrink/", "Conduit Shrink Calculator"),
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/conduit-fill/", "NEC Conduit Fill Calculator"),
+        ],
+        related=[
+            ("/1-2-emt-90-stub-up-take-up-fix/", 'Why Your 1/2" EMT 90° Stub Lands Short (+ Take-Up Fix)'),
+            ("/3-point-saddle-3-inch-pipe-marks/", '3-Point Saddle Over a 3" Pipe: 45°/22.5° Marks & Shrink'),
+            ("/offset/", "Offset Bend Calculator"),
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/conduit-fill/", "NEC Conduit Fill Calculator"),
+        ],
+        body=f"""
+<p>Measure <strong>36&quot;</strong> from the last coupling to a structural I-beam, bend a
+<strong>6&quot; offset at 30&deg;</strong> in <strong>3/4&quot; EMT</strong>, carry it up
+the lift, and your second bend hits the flange <strong>1-1/2&quot; too early</strong>. You
+did not misread the tape &mdash; you forgot <em>shrink</em>. Here is the complete
+tape-measure layout so every 6&quot; offset clears dead on the first pull.</p>
+
+<h2>Worked jobsite setup</h2>
+<ul>
+<li><strong>Conduit &amp; bender:</strong> 3/4&quot; EMT on a standard 3/4&quot; hand bender
+(e.g., Ideal 74-027 or Klein 51604; both 6&quot; stub take-up).</li>
+<li><strong>Offset rise (obstacle height):</strong> 6&quot; at a <strong>30&deg;</strong>
+bend angle (easiest math, smooth wire pull, stays well inside the NEC 360&deg; limit).</li>
+<li><strong>Fixed coupling to obstacle face:</strong> 36&quot;.</li>
+<li><strong>Total straight-line run (coupling to panel):</strong> 84&quot; (7&#39;-0&quot;).</li>
+</ul>
+
+<h2>The two 30&deg; constants (and full angle chart)</h2>
+<p>For a 30&deg; offset, the multiplier is <strong>2.0</strong> (csc&nbsp;30&deg; = 2.0),
+giving <strong>6&quot; &times; 2.0 = 12&quot;</strong> between bend marks. Shrink is
+<strong>1/4&quot; per inch</strong> of rise, giving
+<strong>6&quot; &times; 1/4&quot; = 1-1/2&quot;</strong> (1.5&quot;) total shrink.</p>
+<table>
+<tr><th>Offset Angle</th><th>Multiplier</th><th>Shrink / Inch</th><th>Shrink for 6&quot; Offset</th></tr>
+<tr><td>10&deg;</td><td>6.0</td><td>1/16&quot;</td><td>3/8&quot;</td></tr>
+<tr><td>15&deg;</td><td>3.9</td><td>1/8&quot;</td><td>3/4&quot;</td></tr>
+<tr><td>22.5&deg;</td><td>2.6</td><td>3/16&quot;</td><td>1-1/8&quot;</td></tr>
+<tr><td><strong>30&deg;</strong></td><td><strong>2.0</strong></td><td><strong>1/4&quot;</strong></td><td><strong>1-1/2&quot;</strong></td></tr>
+<tr><td>45&deg;</td><td>1.4</td><td>3/8&quot;</td><td>2-1/4&quot;</td></tr>
+<tr><td>60&deg;</td><td>1.2</td><td>1/2&quot;</td><td>3&quot;</td></tr>
+</table>
+
+<h2>Step-by-step tape-measure mark table</h2>
+<p>Hook your tape on the <strong>fixed end</strong> (0&quot; at the existing coupling or box)
+and wrap each pencil mark all the way around the 3/4&quot; EMT so you can read it cleanly
+after rotating 180&deg;.</p>
+<table>
+<tr><th>Layout Step</th><th>Formula</th><th>Tape Reading</th><th>Bender Reference</th></tr>
+<tr><td>Mark 1 (obstacle side)</td><td>36&quot; + 1-1/2&quot; shrink</td><td><strong>37-1/2&quot;</strong></td><td>Arrow &rarr; 30&deg;</td></tr>
+<tr><td>Mark 2 (fixed-end side)</td><td>37-1/2&quot; &minus; 12&quot; spacing</td><td><strong>25-1/2&quot;</strong></td><td>Arrow &rarr; 30&deg;</td></tr>
+<tr><td>Spacing check</td><td>37-1/2&quot; &minus; 25-1/2&quot;</td><td><strong>12&quot;</strong></td><td>Exact 6&quot; &times; 2.0</td></tr>
+<tr><td>Pre-bend cut (84&quot; run)</td><td>84&quot; + 1-1/2&quot; shrink</td><td><strong>85-1/2&quot;</strong></td><td>Or bend full 10&#39; stick &amp; trim</td></tr>
+</table>
+
+<div class="diagram-card">
+<svg viewBox="0 0 640 220" role="img" aria-label="6 inch offset bend diagram in 3/4 inch EMT at 30 degrees showing Mark 2 at 25-1/2 inches, Mark 1 at 37-1/2 inches, 12 inch spacing, and 1-1/2 inch shrink">
+  <rect x="0" y="0" width="640" height="220" fill="#FFFFFF" />
+  <text x="20" y="24" fill="#52677B" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">3/4&quot; EMT &middot; 6&quot; Offset @ 30&deg; &middot; Shrink +1-1/2&quot; &middot; Pre-Bend Cut 85-1/2&quot;</text>
+  <line x1="40" y1="164" x2="600" y2="164" stroke="#D9E2EB" stroke-width="1.5" stroke-dasharray="5 4" />
+  <rect x="372" y="108" width="224" height="56" fill="#E8EEF4" stroke="#52677B" stroke-width="1.5" />
+  <text x="484" y="140" text-anchor="middle" fill="#0F2B46" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">Obstacle (6&quot; High, 36&quot; from End)</text>
+  <path d="M 44 164 L 236 164 L 356 95 L 596 95" fill="none" stroke="#0F2B46" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <line x1="44" y1="152" x2="44" y2="176" stroke="#52677B" stroke-width="2" />
+  <text x="44" y="194" text-anchor="middle" fill="#52677B" font-size="11" font-weight="600" style="font-variant-numeric:tabular-nums">0&quot; Fixed End</text>
+  <line x1="236" y1="150" x2="236" y2="178" stroke="#C62828" stroke-width="3" />
+  <text x="236" y="196" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Mark 2: 25-1/2&quot;</text>
+  <text x="236" y="211" text-anchor="middle" fill="#52677B" font-size="11">Arrow (30&deg;)</text>
+  <line x1="356" y1="81" x2="356" y2="109" stroke="#C62828" stroke-width="3" />
+  <text x="356" y="57" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Mark 1: 37-1/2&quot;</text>
+  <text x="356" y="72" text-anchor="middle" fill="#52677B" font-size="11">Arrow (30&deg; &middot; 36&quot; + 1-1/2&quot; shrink)</text>
+  <line x1="244" y1="142" x2="344" y2="84" stroke="#52677B" stroke-width="1.5" stroke-dasharray="3 3" />
+  <text x="276" y="106" text-anchor="end" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">12&quot; Spacing</text>
+  <text x="276" y="121" text-anchor="end" fill="#52677B" font-size="11">(6&quot; &times; 2.0)</text>
+  <line x1="608" y1="95" x2="608" y2="164" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="602" y1="95" x2="614" y2="95" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="602" y1="164" x2="614" y2="164" stroke="#0F2B46" stroke-width="1.5" />
+  <text x="616" y="133" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">6&quot;</text>
+</svg>
+<p class="diagram-caption">Keep the bender hook facing the same direction on both arrow marks and roll the pipe 180&deg; between bends for zero dogleg.</p>
+</div>
+
+<h2>Bending sequence (zero dogleg)</h2>
+<ol>
+<li><strong>First 30&deg; bend:</strong> Line the bender <strong>arrow</strong> on <strong>25-1/2&quot;</strong>, hold heavy foot pressure on the heel so the pipe cannot creep, and pull cleanly to the <strong>30&deg;</strong> rim line.</li>
+<li><strong>Rotate 180&deg; and slide to 37-1/2&quot;:</strong> Keep the bender hook facing the <em>same direction</em> along the stick, slide to <strong>37-1/2&quot;</strong>, and roll the conduit <strong>180&deg;</strong>.</li>
+<li><strong>Sight for dogleg:</strong> Stand behind the handle and align the bent leg dead-center with the bender handle before pulling &mdash; even a 2&deg; twist throws the far end off the wall by an inch.</li>
+<li><strong>Second 30&deg; bend &amp; floor check:</strong> Pull the arrow on <strong>37-1/2&quot;</strong> back to <strong>30&deg;</strong> until both legs lie parallel and flat on concrete with a clean <strong>6&quot;</strong> rise.</li>
+</ol>
+
+<h2>4-point rookie mistake check</h2>
+<ul>
+<li><strong>Forgot shrink:</strong> Marking at 36&quot; and 24&quot; lands the offset at 34-1/2&quot; &mdash; 1-1/2&quot; into the beam.</li>
+<li><strong>Used the star or rim notch instead of the arrow:</strong> Standard offsets use the <strong>arrow</strong> on both marks so tangent-point spacing stays exact.</li>
+<li><strong>Flipped the bender direction between bends:</strong> Reversing which way the hook faces shifts the tangent points and ruins the 6&quot; rise.</li>
+<li><strong>Over-bent past 30&deg; on 3/4&quot; EMT:</strong> Ease into the 30&deg; rim mark and verify on a flat slab or digital torpedo level.</li>
+</ul>
+
+<div class="inline-cta-box">
+<p><strong>Need marks for an oddball height like 4-5/8&quot; at 22.5&deg; or Rigid conduit?</strong> Plug it straight into the browser calculator or run 100% offline in mechanical rooms.</p>
+<div class="inline-cta-actions">
+<a class="hero-cta" href="/offset/" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','inline_tool_cta')">Open Offset Bend Calculator &rarr;</a>
+<a class="inline-cta-secondary" href="{_GUIDE1_PLAY}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','inline_play_cta')">Get Offline Android App on Google Play</a>
+</div>
+</div>
+""",
+        faqs=[
+            ('How far apart are the marks for a 6" offset at 30 degrees?',
+             '12 inches apart. The 30&deg; multiplier (csc 30&deg;) is exactly 2.0, so 6&quot; &times; 2.0 = 12&quot; between bend marks on both 1/2&quot; and 3/4&quot; EMT.'),
+            ('How much shrink does a 6" offset at 30 degrees have?',
+             '1-1/2 inches (1.5&quot;). A 30&deg; offset shrinks 1/4&quot; per inch of offset rise, so 6&quot; &times; 1/4&quot; = 1-1/2&quot;. Add 1-1/2&quot; to your obstacle distance when placing Mark 1 and to any pre-bend cut length.'),
+            ('Should I cut 3/4" EMT to 85-1/2" before bending an 84" run?',
+             'If you must pre-cut, add the 1-1/2&quot; shrink (84&quot; + 1-1/2&quot; = 85-1/2&quot;). On a full 10&#39;-0&quot; stick, it is even safer to leave the far tail uncut until both 30&deg; bends are finished, then trim the finished run to 84&quot;.'),
+            ('Which bender mark do I use for a 30-degree offset?',
+             'Use the arrow on both marks (25-1/2&quot; and 37-1/2&quot;) and keep the bender hook facing the same direction along the pipe for both bends so the spacing stays at 12&quot;.'),
+        ],
+    ),
+    dict(
+        slug="1-2-emt-90-stub-up-take-up-fix",
+        title='Why Your 1/2" EMT 90\u00b0 Stub Lands Short (+ Take-Up Fix)',
+        desc='Worked 14-3/8" stub-up on 1/2" EMT (5" take-up = 9-3/8" mark), Ideal vs '
+             'Klein vs Greenlee shoe differences, back-of-90 check, and 12" scrap calibration.',
+        h1='Why Your 1/2" EMT 90\u00b0 Stub Lands Short (+ Take-Up Fix)',
+        cta_label="Open the 90° Stub-Up Calculator",
+        quick_links=[
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/offset/", "Offset Bend Calculator"),
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/conduit-fill/", "NEC Conduit Fill Calculator"),
+        ],
+        related=[
+            ("/6-inch-offset-3-4-emt-30-degrees/", '6" Offset in 3/4" EMT at 30°: Exact Marks & Shrink'),
+            ("/3-point-saddle-3-inch-pipe-marks/", '3-Point Saddle Over a 3" Pipe: 45°/22.5° Marks & Shrink'),
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/offset/", "Offset Bend Calculator"),
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/conduit-fill/", "NEC Conduit Fill Calculator"),
+        ],
+        body=f"""
+<p>Every apprentice learns the rule on day one: subtract <strong>5&quot;</strong> take-up
+for a <strong>1/2&quot; EMT 90&deg; stub-up</strong>. You need a <strong>14-3/8&quot;</strong>
+stub into a disconnect, mark at <strong>9-3/8&quot;</strong>, pull 90&deg;, stand it on
+the slab &mdash; and your tape reads 14-1/8&quot; or 14-3/4&quot;. Here is why benders
+disagree and the 60-second scrap calibration that locks every stub to 1/16&quot;.</p>
+
+<h2>Worked example: 14-3/8&quot; stub-up in 1/2&quot; EMT</h2>
+<p>Target finished stub height <strong>H = 14-3/8&quot;</strong> (14.375&quot;), measured
+from the <strong>outside back of the 90&deg;</strong> to the cut top of the vertical leg.
+With standard <strong>5&quot;</strong> take-up:
+<strong>Mark from End = 14-3/8&quot; &minus; 5&quot; = 9-3/8&quot;</strong>.</p>
+<table>
+<tr><th>EMT Trade Size</th><th>Standard Take-Up</th><th>Mark for 14-3/8&quot; Stub</th><th>Datum</th></tr>
+<tr><td><strong>1/2&quot; EMT</strong></td><td><strong>5&quot;</strong></td><td><strong>9-3/8&quot;</strong></td><td>Arrow</td></tr>
+<tr><td>3/4&quot; EMT</td><td>6&quot;</td><td>8-3/8&quot;</td><td>Arrow</td></tr>
+<tr><td>1&quot; EMT</td><td>8&quot;</td><td>6-3/8&quot;</td><td>Arrow</td></tr>
+</table>
+
+<div class="diagram-card">
+<svg viewBox="0 0 640 230" role="img" aria-label="14-3/8 inch 90 degree stub-up diagram in 1/2 inch EMT showing 9-3/8 inch arrow mark from cut end, 5 inch take-up to back of 90 floor datum, and 12 inch scrap calibration formula">
+  <rect x="0" y="0" width="640" height="230" fill="#FFFFFF" />
+  <text x="20" y="22" fill="#52677B" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">1/2&quot; EMT 90&deg; Stub-Up &middot; Target 14-3/8&quot; &minus; 5&quot; Take-Up = 9-3/8&quot; Mark</text>
+  <line x1="36" y1="192" x2="604" y2="192" stroke="#52677B" stroke-width="2" />
+  <text x="598" y="210" text-anchor="end" fill="#52677B" font-size="11" font-weight="600">Floor / Back-of-90&deg; Datum (Measure Here)</text>
+  <path d="M 430 188 L 216 188 A 62 62 0 0 1 154 126 L 154 38" fill="none" stroke="#0F2B46" stroke-width="7" stroke-linecap="round" />
+  <line x1="140" y1="126" x2="168" y2="126" stroke="#C62828" stroke-width="3" />
+  <text x="176" y="122" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Arrow Mark: 9-3/8&quot;</text>
+  <text x="176" y="137" fill="#52677B" font-size="11">measured from top cut end</text>
+  <line x1="104" y1="38" x2="104" y2="192" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="98" y1="38" x2="110" y2="38" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="98" y1="192" x2="110" y2="192" stroke="#0F2B46" stroke-width="1.5" />
+  <text x="94" y="110" text-anchor="end" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">14-3/8&quot;</text>
+  <text x="94" y="125" text-anchor="end" fill="#52677B" font-size="11">Back-of-90&deg;</text>
+  <line x1="130" y1="126" x2="130" y2="192" stroke="#C62828" stroke-width="1.5" stroke-dasharray="3 2" />
+  <text x="124" y="164" text-anchor="end" fill="#C62828" font-size="11" font-weight="700" style="font-variant-numeric:tabular-nums">5&quot; Take-Up</text>
+  <rect x="366" y="42" width="248" height="114" rx="6" fill="#F5F8FB" stroke="#D9E2EB" stroke-width="1.5" />
+  <text x="380" y="64" fill="#0F2B46" font-size="12" font-weight="700">60-Second 12&quot; Calibration</text>
+  <text x="380" y="84" fill="#52677B" font-size="11.5" style="font-variant-numeric:tabular-nums">1. Mark 12&quot; on scrap, bend 90&deg;</text>
+  <text x="380" y="102" fill="#52677B" font-size="11.5" style="font-variant-numeric:tabular-nums">2. Measure floor-to-top height (S)</text>
+  <text x="380" y="122" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Actual Take-Up = S &minus; 12&quot;</text>
+  <text x="380" y="141" fill="#C62828" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">Ex: 17-3/8&quot; &minus; 12&quot; = 5-3/8&quot; &rarr; Mark 9&quot;</text>
+</svg>
+<p class="diagram-caption">Insert the 9-3/8&quot; tail forward through the bender hook, align the arrow on the mark, and measure finished height from the flat floor slab.</p>
+</div>
+
+<h2>Why Ideal, Klein, and Greenlee do not always match</h2>
+<p>Two benders both stamped &ldquo;5&quot; Take-Up&rdquo; still have different shoe radii, and
+mechanical or electric benders change the <strong>reference datum</strong> from the arrow
+to the <strong>hook front edge</strong>:</p>
+<table>
+<tr><th>Bender Model</th><th>Conduit</th><th>Centerline Radius (R)</th><th>Take-Up / Deduct</th><th>Reference Datum</th></tr>
+<tr><td><strong>Ideal 74-026</strong></td><td>1/2&quot; EMT</td><td>4-5/16&quot; (4.3125&quot;)</td><td>5&quot;</td><td>Arrow</td></tr>
+<tr><td><strong>Klein 51603</strong></td><td>1/2&quot; EMT</td><td>4-5/8&quot; (4.625&quot;)</td><td>5&quot;</td><td>Arrow</td></tr>
+<tr><td><strong>Greenlee 555</strong> (electric)</td><td>1/2&quot; EMT</td><td>4-5/16&quot; (4.3125&quot;)</td><td>7&quot;</td><td>Hook front edge</td></tr>
+<tr><td><strong>Greenlee 1800</strong> (mech.)</td><td>1/2&quot; Rigid</td><td>2-5/8&quot; (2.625&quot;)</td><td>5-1/2&quot; (min stub 6-1/2&quot;)</td><td>Hook front edge</td></tr>
+</table>
+<p>Klein 51603&#39;s centerline radius is <strong>5/16&quot; larger</strong> than Ideal 74-026&#39;s,
+so gain and back-to-back behavior differ. And mixing a hand-bender arrow deduct (5&quot;)
+with a Greenlee 555 hook deduct (7&quot;) puts you <strong>2&quot; off</strong> immediately.</p>
+
+<h2>The 60-second 12&quot; scrap-pipe calibration check</h2>
+<ol>
+<li>Mark <strong>12&quot;</strong> from the square-cut end on a scrap piece of 1/2&quot; EMT (24&quot;+ long).</li>
+<li>Put the <strong>arrow</strong> on 12&quot;, apply heavy heel pressure, and bend a dead-square <strong>90&deg;</strong> verified with a magnetic torpedo level (over-pull ~91&deg;&ndash;92&deg; for springback).</li>
+<li>Stand the bend on a flat concrete slab and measure floor-to-top back-of-90 height (<em>S</em>).</li>
+<li>Compute <strong>Actual Take-Up = S &minus; 12&quot;</strong>. Example: if <em>S</em> = <strong>17-3/8&quot;</strong>, your real take-up is <strong>5-3/8&quot;</strong> &mdash; so your 14-3/8&quot; stub marks at <strong>14-3/8&quot; &minus; 5-3/8&quot; = 9&quot;</strong>.</li>
+</ol>
+<div class="callout-box">
+<p><strong>Bonus gain &amp; radius check:</strong> Cut scrap to exactly <strong>24&quot;</strong>, bend a 90&deg; in the middle, and measure legs <em>A</em> and <em>B</em> from the back of the 90&deg; to each end. Exact 90&deg; gain is <strong>G = A + B &minus; 24&quot;</strong>, and real centerline radius is <strong>R = G &divide; 0.4292</strong>.</p>
+</div>
+
+<h2>4-point rookie mistake check</h2>
+<ul>
+<li><strong>Tail pointed the wrong way:</strong> The measured 9-3/8&quot; tail must pass forward through the hook, not back toward the handle.</li>
+<li><strong>Measured to the inside corner:</strong> Stub height is always measured from the outside heel (flat floor slab) to the cut end of the vertical leg.</li>
+<li><strong>Under-bent at 87&deg;&ndash;88&deg; or light foot pressure:</strong> Letting the shoe slip shifts your arrow mark, and a shallow 90&deg; rocks on the floor and reads wrong.</li>
+<li><strong>Wrong brand datum:</strong> Using a 5&quot; hand-bender deduct on a Greenlee 555 (7&quot; hook datum) or Greenlee 1800 (5-1/2&quot; hook datum on 1/2&quot; Rigid) ruins the cut immediately.</li>
+</ul>
+
+<div class="inline-cta-box">
+<p><strong>Run any EMT or Rigid/IMC stub-up instantly</strong> &mdash; or use the guided 12&quot; scrap calibration flow in our offline Android app.</p>
+<div class="inline-cta-actions">
+<a class="hero-cta" href="/stub-up/" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','inline_tool_cta')">Open 90&deg; Stub-Up Calculator &rarr;</a>
+<a class="inline-cta-secondary" href="{_GUIDE2_PLAY}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','inline_play_cta')">Get Offline Android App on Google Play</a>
+</div>
+</div>
+""",
+        faqs=[
+            ('Where do I mark 1/2" EMT for a 14-3/8" 90-degree stub-up?',
+             'At 9-3/8&quot; from the cut end on a standard 1/2&quot; EMT hand bender (14-3/8&quot; &minus; 5&quot; take-up = 9-3/8&quot;). Feed the 9-3/8&quot; tail through the hook and line the bender arrow directly on the mark.'),
+            ('Why does my 1/2" EMT 90-degree stub land 1/4" to 3/8" short?',
+             'Common causes are a worn gang-box shoe whose real take-up has drifted (e.g., 5-3/8&quot; instead of 5&quot;), insufficient foot pressure allowing the pipe to walk during the pull, or over-bending slightly past 90&deg;. A 12&quot; scrap test reveals your exact take-up in 60 seconds.'),
+            ('What is the difference between Ideal 74-026, Klein 51603, and Greenlee 555?',
+             'Ideal 74-026 (R = 4-5/16&quot;) and Klein 51603 (R = 4-5/8&quot;) both use a 5&quot; arrow take-up for 1/2&quot; EMT but have different bend radii. The electric Greenlee 555 uses a 7&quot; deduct measured from the hook front edge, not an arrow.'),
+            ('How do I check a 90-degree stub height accurately on site?',
+             'Stand the bent conduit upright on a flat concrete slab so the horizontal leg rests flush, confirm the vertical leg is plumb at 90&deg; with a torpedo level, and butt your tape flat on the floor beside the vertical leg to read straight to the top cut edge.'),
+        ],
+    ),
+    dict(
+        slug="3-point-saddle-3-inch-pipe-marks",
+        title='3-Point Saddle Over a 3" Pipe: 45\u00b0/22.5\u00b0 Marks & Shrink',
+        desc='Lay out a 3-point saddle over a 3" obstacle in 60 seconds: 2.5 spacing '
+             'multiplier (7-1/2" side marks), 3/16"/in shrink (9/16"), and rim-notch/arrow steps.',
+        h1='3-Point Saddle Over a 3" Pipe: 45\u00b0/22.5\u00b0 Marks & Shrink',
+        cta_label="Open the 3-Point Saddle Calculator",
+        quick_links=[
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/4-point-saddle/", "4-Point Saddle Calculator"),
+            ("/offset/", "Offset Bend Calculator"),
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/conduit-fill/", "NEC Conduit Fill Calculator"),
+        ],
+        related=[
+            ("/6-inch-offset-3-4-emt-30-degrees/", '6" Offset in 3/4" EMT at 30°: Exact Marks & Shrink'),
+            ("/1-2-emt-90-stub-up-take-up-fix/", 'Why Your 1/2" EMT 90° Stub Lands Short (+ Take-Up Fix)'),
+            ("/3-point-saddle/", "3-Point Saddle Calculator"),
+            ("/offset/", "Offset Bend Calculator"),
+            ("/stub-up/", "90° Stub-Up Calculator"),
+            ("/conduit-fill/", "NEC Conduit Fill Calculator"),
+        ],
+        body=f"""
+<p>A 3-point saddle is one <strong>45&deg; center bend</strong> flanked by two
+<strong>22.5&deg; return bends</strong> (22.5&deg; + 22.5&deg; = 45&deg;). Memorize two
+trade constants &mdash; <strong>2.5</strong> for side spacing and
+<strong>3/16&quot; per inch</strong> for center shrink &mdash; and you can lay out a clean
+hop over a <strong>3&quot;</strong> obstacle in under 60 seconds.</p>
+
+<h2>Worked jobsite setup &amp; exact math</h2>
+<ul>
+<li><strong>Required saddle clearance (H):</strong> 3&quot; (e.g., clearing a 3&quot; OD tube or 2-1/2&quot; EMT at 2.875&quot; OD with 1/8&quot; air gap).</li>
+<li><strong>Distance from fixed coupling/box (0&quot;) to obstacle center:</strong> 36&quot;.</li>
+<li><strong>Side spacing (2.5&times; trade multiplier):</strong> 3&quot; &times; 2.5 = <strong>7-1/2&quot;</strong> each side (<strong>15&quot;</strong> total span; geometric csc&nbsp;22.5&deg; &asymp; 2.613, rounded to 2.5 for shoe-radius fit).</li>
+<li><strong>Center mark shrink (3/16&quot; per inch):</strong> 3&quot; &times; 3/16&quot; = <strong>9/16&quot;</strong> (0.5625&quot;).</li>
+</ul>
+
+<h2>Step-by-step tape-measure mark table (0&quot; = fixed end)</h2>
+<table>
+<tr><th>Mark</th><th>Formula</th><th>Tape Reading</th><th>Bend &amp; Bender Reference</th></tr>
+<tr><td>Mark 1 (Left side)</td><td>36-9/16&quot; &minus; 7-1/2&quot;</td><td><strong>29-1/16&quot;</strong></td><td>22.5&deg; &middot; Arrow (hook facing center)</td></tr>
+<tr><td><strong>Mark 2 (Center C)</strong></td><td>36&quot; + 9/16&quot; shrink</td><td><strong>36-9/16&quot;</strong></td><td><strong>45&deg; &middot; Rim Notch (bend first)</strong></td></tr>
+<tr><td>Mark 3 (Right side)</td><td>36-9/16&quot; + 7-1/2&quot;</td><td><strong>44-1/16&quot;</strong></td><td>22.5&deg; &middot; Arrow (hook facing center)</td></tr>
+<tr><td>Total span check</td><td>44-1/16&quot; &minus; 29-1/16&quot;</td><td><strong>15&quot;</strong></td><td>7-1/2&quot; left + 7-1/2&quot; right</td></tr>
+</table>
+
+<div class="callout-box">
+<p><strong>Jobsite Sanity Check &mdash; Nominal 3&quot; Trade Pipe Is 3-1/2&quot; OD!</strong></p>
+<p>Nominal 3&quot; EMT, Rigid, and Schedule 40 steel pipe all measure <strong>3-1/2&quot; (3.5&quot;) outside diameter</strong>. Always put your tape on the pipe: at <strong>H = 3-1/2&quot;</strong>, side spacing is 3.5&quot; &times; 2.5 = <strong>8-3/4&quot;</strong> (<strong>17-1/2&quot;</strong> total span) and center shrink is 3.5&quot; &times; 3/16&quot; = <strong>21/32&quot;</strong> (&asymp; <strong>5/8&quot;</strong> on a tape).</p>
+</div>
+
+<div class="diagram-card">
+<svg viewBox="0 0 640 225" role="img" aria-label="3-point saddle bend diagram over a 3 inch obstacle showing Mark 1 at 29-1/16 inches, Center Mark 2 at 36-9/16 inches on rim notch, Mark 3 at 44-1/16 inches, 7-1/2 inch side spacing, and 15 inch total span">
+  <rect x="0" y="0" width="640" height="225" fill="#FFFFFF" />
+  <text x="20" y="22" fill="#52677B" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">45&deg; / 22.5&deg; 3-Point Saddle &middot; 3&quot; Clearance &middot; 2.5&times; Spacing (7-1/2&quot;) &middot; Shrink +9/16&quot;</text>
+  <line x1="36" y1="168" x2="604" y2="168" stroke="#D9E2EB" stroke-width="1.5" stroke-dasharray="5 4" />
+  <circle cx="320" cy="144" r="24" fill="#E8EEF4" stroke="#52677B" stroke-width="2" />
+  <text x="320" y="148" text-anchor="middle" fill="#0F2B46" font-size="11" font-weight="700" style="font-variant-numeric:tabular-nums">3&quot; H</text>
+  <path d="M 44 168 L 190 168 L 320 112 L 450 168 L 596 168" fill="none" stroke="#0F2B46" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <line x1="44" y1="156" x2="44" y2="180" stroke="#52677B" stroke-width="2" />
+  <text x="44" y="196" text-anchor="middle" fill="#52677B" font-size="11" font-weight="600">0&quot; End</text>
+  <line x1="190" y1="154" x2="190" y2="182" stroke="#C62828" stroke-width="3" />
+  <text x="190" y="199" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Mark 1: 29-1/16&quot;</text>
+  <text x="190" y="214" text-anchor="middle" fill="#52677B" font-size="11">Arrow 22.5&deg; (hook &rarr; C)</text>
+  <line x1="320" y1="98" x2="320" y2="126" stroke="#C62828" stroke-width="3" />
+  <text x="320" y="64" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Mark 2 (C): 36-9/16&quot;</text>
+  <text x="320" y="79" text-anchor="middle" fill="#52677B" font-size="11">Rim Notch 45&deg; (36&quot; + 9/16&quot; shrink)</text>
+  <line x1="450" y1="154" x2="450" y2="182" stroke="#C62828" stroke-width="3" />
+  <text x="450" y="199" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Mark 3: 44-1/16&quot;</text>
+  <text x="450" y="214" text-anchor="middle" fill="#52677B" font-size="11">Arrow 22.5&deg; (hook &larr; C)</text>
+  <text x="242" y="128" text-anchor="end" fill="#0F2B46" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">7-1/2&quot;</text>
+  <text x="398" y="128" text-anchor="start" fill="#0F2B46" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">7-1/2&quot;</text>
+  <text x="320" y="196" text-anchor="middle" fill="#0F2B46" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">15&quot; Total Span</text>
+</svg>
+<p class="diagram-caption">Bend the 45&deg; center peak first on the rim notch, then flip and bend both 22.5&deg; return bends on the arrow with the bender hook facing inward toward center.</p>
+</div>
+
+<h2>Bending sequence: rim notch first, then arrows</h2>
+<ol>
+<li><strong>Bend 1 &mdash; Center 45&deg; (Rim Notch):</strong> Center Mark 2 (<strong>36-9/16&quot;</strong>, labeled <em>C</em>) on the bender&#39;s teardrop <strong>rim notch</strong> and pull a clean <strong>45&deg;</strong> bend.</li>
+<li><strong>Bend 2 &mdash; Left 22.5&deg; (Arrow, Hook Facing Center):</strong> Rotate the pipe <strong>180&deg;</strong> in plane, slide the bender to Mark 1 (<strong>29-1/16&quot;</strong>) with the <strong>hook facing inward toward the 45&deg; peak</strong>, align the <strong>arrow</strong>, sight for zero dogleg, and pull to <strong>22.5&deg;</strong>.</li>
+<li><strong>Bend 3 &mdash; Right 22.5&deg; (Arrow, Hook Facing Center):</strong> Flip end-for-end so the hook again faces inward toward center, align the <strong>arrow</strong> on Mark 3 (<strong>44-1/16&quot;</strong>), sight flat, and pull <strong>22.5&deg;</strong>.</li>
+<li><strong>Flat-floor check:</strong> Both outer legs must lie collinear and flat on concrete with <strong>3&quot;</strong> clear under the peak.</li>
+</ol>
+
+<h2>4-point rookie mistake check</h2>
+<ul>
+<li><strong>Used nominal pipe size instead of actual OD:</strong> Nominal 3&quot; pipe is 3-1/2&quot; OD &mdash; always measure across the outside diameter first.</li>
+<li><strong>Put the center bend on the arrow instead of the rim notch:</strong> The 45&deg; center peak must sit on the teardrop rim notch so the peak lands over the obstacle center.</li>
+<li><strong>Pointed the bender hook outward on the 22.5&deg; side bends:</strong> Both side bends must face inward toward the 45&deg; peak so the saddle closes symmetrically.</li>
+<li><strong>Used a 3-point saddle on an obstacle wider than ~6&quot;:</strong> For HVAC ducts or multi-pipe racks, switch to a <a href="/4-point-saddle/">4-Point Saddle Calculator</a> (two matching offsets where shrink applies twice).</li>
+</ul>
+
+<div class="inline-cta-box">
+<p><strong>Verify any 3-point saddle height (3&quot;, 3-1/2&quot;, or metric mm)</strong> with a live diagram in your browser or offline on Android.</p>
+<div class="inline-cta-actions">
+<a class="hero-cta" href="/3-point-saddle/" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','inline_tool_cta')">Open 3-Point Saddle Calculator &rarr;</a>
+<a class="inline-cta-secondary" href="{_GUIDE3_PLAY}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','inline_play_cta')">Get Offline Android App on Google Play</a>
+</div>
+</div>
+""",
+        faqs=[
+            ('What is the multiplier for a 45-degree / 22.5-degree 3-point saddle?',
+             '2.5 inches per inch of obstacle height on each side of the center mark. For a 3&quot; clearance height, place the two 22.5&deg; side marks 7-1/2&quot; left and right of center (15&quot; total span).'),
+            ('How much does a 3-point saddle shrink over a 3" obstacle?',
+             '9/16 inch (0.5625&quot;). A 45&deg;/22.5&deg; 3-point saddle shrinks 3/16&quot; per inch of height, so 3&quot; &times; 3/16&quot; = 9/16&quot;. Push your center mark forward by 9/16&quot; (from 36&quot; to 36-9/16&quot;) before laying out the side marks.'),
+            ('Is a nominal 3" pipe actually 3 inches wide?',
+             'No. Nominal 3&quot; EMT, Rigid, and Schedule 40 steel pipe measure 3-1/2&quot; (3.5&quot;) outside diameter. For a nominal 3&quot; pipe, calculate with H = 3-1/2&quot; (or 3-3/4&quot; with clearance): 8-3/4&quot; side spacing and 21/32&quot; (&asymp; 5/8&quot;) shrink.'),
+            ('Which bender marks do I use for a 3-point saddle?',
+             'Bend the 45&deg; center mark first on the teardrop rim notch, then flip the conduit and bend both 22.5&deg; side marks on the arrow with the bender hook facing inward toward the center bend.'),
+        ],
+    ),
+]
+
 def word_count(html_body: str) -> int:
     text = re.sub(r"<[^>]+>", " ", html_body)
     text = html.unescape(text)
@@ -1788,16 +2283,26 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
     host = urlparse(base_url).netloc or "bendcalc.wattflow.net"
     tool_url = calculator_url_for_slug(page["slug"], base_url)
     play_url = build_play_url(page["slug"], "sidebar_play_cta")
-    canonical_tool_links = [
-        f'  <li><a href="{base_url}/{tool_slug}/">{html.escape(label)}</a></li>'
-        for tool_slug, label in CANONICAL_TOOLS
-    ]
-    guide_links = [
-        f'  <li><a href="{base_url}/{p["slug"]}/">{html.escape(p["h1"])}</a></li>'
-        for p in PAGES
-        if p["slug"] != page["slug"] and p["slug"] not in REDIRECTED_SLUGS
-    ]
-    related = "\n".join(canonical_tool_links + guide_links)
+    seen_paths: set[str] = {f"/{page['slug']}/"}
+    related_items: list[str] = []
+
+    def add_related(path: str, label: str) -> None:
+        norm = path if path.startswith("/") else f"/{path}"
+        if not norm.endswith("/"):
+            norm += "/"
+        if norm in seen_paths:
+            return
+        seen_paths.add(norm)
+        related_items.append(f'  <li><a href="{base_url}{norm}">{html.escape(label)}</a></li>')
+
+    for path, label in page.get("related", []):
+        add_related(path, label)
+    for tool_slug, label in CANONICAL_TOOLS:
+        add_related(f"/{tool_slug}/", label)
+    for p in PAGES:
+        if p["slug"] != page["slug"] and p["slug"] not in REDIRECTED_SLUGS:
+            add_related(f"/{p['slug']}/", p["h1"])
+    related = "\n".join(related_items)
     import json
     ga4 = GA4_TEMPLATE.format(gid=html.escape(ga4_id)) if ga4_id else ""
     amp_script = AMPLITUDE_TEMPLATE.format(
@@ -1855,7 +2360,7 @@ def main() -> None:
         assert len(page["desc"]) <= 160, f"desc too long ({len(page['desc'])}): {page['slug']}"
         full_body = page["body"] + render_faq_section(page.get("faqs", []))
         wc = word_count(full_body)
-        assert 250 <= wc <= 650, f"word count {wc} out of range: {page['slug']}"
+        assert 250 <= wc <= 1500, f"word count {wc} out of range: {page['slug']}"
 
     for page in active_pages:
         out_dir = os.path.join(export_dir, page["slug"])

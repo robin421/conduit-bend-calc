@@ -19,6 +19,74 @@ export function resolveAmplitudeApiKey(platform: string, envKey?: string): strin
 export const AMPLITUDE_DEVICE_ID_KEY = '@conduit_amplitude_device_id';
 export const AMPLITUDE_SESSION_KEY = '@conduit_amplitude_session';
 export const AMPLITUDE_ACTIVATED_KEY = '@conduit_amplitude_activated';
+export const AMPLITUDE_UTM_STORAGE_KEY = '@conduit_amplitude_utm';
+
+export interface IncomingUtmParams {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+}
+
+const INCOMING_UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign'] as const;
+const MAX_UTM_VALUE_LEN = 40;
+
+function sanitizeUtmValue(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const cleaned = raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '')
+    .slice(0, MAX_UTM_VALUE_LEN);
+  return cleaned.length > 0 ? cleaned : undefined;
+}
+
+/**
+ * 仅解析白名单入站 UTM（utm_source / utm_medium / utm_campaign），
+ * 统一转为小写 `[a-z0-9_-]` 并截断至 40 字符，忽略其余参数（零 PII 风险）。
+ */
+export function parseIncomingUtmParams(search: string): IncomingUtmParams {
+  const result: IncomingUtmParams = {};
+  if (typeof search !== 'string' || search.trim().length === 0) {
+    return result;
+  }
+  const withoutHash = search.split('#')[0] ?? '';
+  const queryStart = withoutHash.indexOf('?');
+  const rawQuery = queryStart >= 0 ? withoutHash.slice(queryStart + 1) : withoutHash;
+  if (rawQuery.trim().length === 0) {
+    return result;
+  }
+  try {
+    const params = new URLSearchParams(rawQuery);
+    for (const key of INCOMING_UTM_KEYS) {
+      const value = params.get(key);
+      if (value !== null) {
+        const cleaned = sanitizeUtmValue(value);
+        if (cleaned) {
+          result[key] = cleaned;
+        }
+      }
+    }
+  } catch {
+    return result;
+  }
+  return result;
+}
+
+/** 清洗从 sessionStorage 读回的 UTM 对象，确保仅包含合法白名单键值。 */
+export function sanitizeIncomingUtmParams(raw: unknown): IncomingUtmParams {
+  const result: IncomingUtmParams = {};
+  if (!raw || typeof raw !== 'object') {
+    return result;
+  }
+  const record = raw as Record<string, unknown>;
+  for (const key of INCOMING_UTM_KEYS) {
+    const cleaned = sanitizeUtmValue(record[key]);
+    if (cleaned) {
+      result[key] = cleaned;
+    }
+  }
+  return result;
+}
 
 const BOT_USER_AGENT_PATTERN = /Googlebot|Bingbot|HeadlessChrome|Playwright|Puppeteer/i;
 
@@ -135,6 +203,7 @@ export interface AmplitudeClientDeps {
   language?: string;
   uuid?: () => string;
   isExcluded?: () => boolean;
+  defaultEventProperties?: () => Record<string, unknown> | undefined;
 }
 
 export function generateAnonymousDeviceId(): string {
@@ -268,6 +337,15 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
       return false;
     }
   };
+  const resolveDefaultEventProperties = (): Record<string, unknown> | undefined => {
+    if (!deps.defaultEventProperties) return undefined;
+    try {
+      const defaults = deps.defaultEventProperties();
+      return defaults && typeof defaults === 'object' ? defaults : undefined;
+    } catch {
+      return undefined;
+    }
+  };
 
   let deviceId: string | null = null;
   let session: AmplitudeSessionState | null = null;
@@ -329,6 +407,18 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
     if (!fetchFn || !apiKey) return false;
     const currentTime = now();
     const { deviceId: resolvedDeviceId, sessionId } = await ensureDeviceAndSession(currentTime);
+    const defaultProps = resolveDefaultEventProperties();
+    let mergedEventProperties: Record<string, unknown> | undefined;
+    if (defaultProps && eventProperties) {
+      mergedEventProperties = { ...defaultProps };
+      for (const [key, value] of Object.entries(eventProperties)) {
+        if (value !== undefined) {
+          mergedEventProperties[key] = value;
+        }
+      }
+    } else {
+      mergedEventProperties = eventProperties ?? defaultProps;
+    }
     const body = buildAmplitudeHttpBody({
       apiKey,
       deviceId: resolvedDeviceId,
@@ -338,7 +428,7 @@ export function createAmplitudeClient(deps: AmplitudeClientDeps) {
       platform,
       appVersion,
       language,
-      eventProperties,
+      eventProperties: mergedEventProperties,
       userProperties: Object.keys(userProperties).length > 0 ? userProperties : undefined,
     });
     try {

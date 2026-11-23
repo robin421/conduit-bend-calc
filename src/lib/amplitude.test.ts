@@ -6,14 +6,17 @@ import {
   AMPLITUDE_API_ENDPOINT,
   AMPLITUDE_DEVICE_ID_KEY,
   AMPLITUDE_SESSION_TIMEOUT_MS,
+  AMPLITUDE_UTM_STORAGE_KEY,
   buildAmplitudeHttpBody,
   createAmplitudeClient,
   DEFAULT_AMPLITUDE_API_KEY,
   isExcludedAnalyticsEnvironment,
+  parseIncomingUtmParams,
   parseSessionState,
   resolveAmplitudeApiKey,
   sanitizeEventProperties,
   sanitizeEventType,
+  sanitizeIncomingUtmParams,
   sanitizeUserProperties,
   WEB_AMPLITUDE_API_KEY,
 } from './amplitudeCore.ts';
@@ -429,4 +432,163 @@ test('sanitizeEventProperties：放行 UTM 与 cta_placement 归因白名单字�
     utm_campaign: '3-point-saddle',
     cta_placement: 'below_result',
   });
+});
+
+test('parseIncomingUtmParams：解析标准 UTM、转小写、剔除非白名单字符并截断 40 字符', () => {
+  assert.equal(AMPLITUDE_UTM_STORAGE_KEY, '@conduit_amplitude_utm');
+
+  assert.deepEqual(
+    parseIncomingUtmParams(
+      '?utm_source=youtube_shorts&utm_medium=short_video&utm_campaign=t32_offset_6in_30deg',
+    ),
+    {
+      utm_source: 'youtube_shorts',
+      utm_medium: 'short_video',
+      utm_campaign: 't32_offset_6in_30deg',
+    },
+  );
+
+  // 无前导问号、大小写混合、特殊字符清洗、40 字符截断、忽略非白名单与 PII 参数
+  const longCampaign = 'T32_Campaign-' + 'A'.repeat(60);
+  const parsed = parseIncomingUtmParams(
+    `utm_source=YouTube%20Shorts!&utm_medium=Short/Video$2026&utm_campaign=${longCampaign}&utm_term=ignore&utm_content=ignore&email=user@example.com&gclid=12345#section`,
+  );
+  assert.deepEqual(parsed, {
+    utm_source: 'youtubeshorts',
+    utm_medium: 'shortvideo2026',
+    utm_campaign: ('t32_campaign-' + 'a'.repeat(60)).slice(0, 40),
+  });
+  assert.equal(parsed.utm_campaign?.length, 40);
+});
+
+test('parseIncomingUtmParams：忽略空值、纯非法字符与畸形查询串且不抛异常', () => {
+  assert.deepEqual(parseIncomingUtmParams(''), {});
+  assert.deepEqual(parseIncomingUtmParams('?'), {});
+  assert.deepEqual(parseIncomingUtmParams('???===&&&'), {});
+  assert.deepEqual(parseIncomingUtmParams('?utm_source=&utm_medium=   &utm_campaign=!!!@@@'), {});
+  assert.deepEqual(parseIncomingUtmParams('?email=test@example.com&foo=bar'), {});
+  // 畸形百分号编码应静默清洗而非抛出 URIError
+  assert.deepEqual(
+    parseIncomingUtmParams('?utm_source=%E0%A4%FFreddit&utm_medium=community_post'),
+    {
+      utm_source: 'reddit',
+      utm_medium: 'community_post',
+    },
+  );
+  assert.deepEqual(
+    parseIncomingUtmParams('?utm_source=%E0%A4%80&utm_medium=short_video'),
+    {
+      utm_medium: 'short_video',
+    },
+  );
+});
+
+test('sanitizeIncomingUtmParams：清洗 sessionStorage 读回对象并剔除非白名单键', () => {
+  assert.deepEqual(
+    sanitizeIncomingUtmParams({
+      utm_source: 'FIELD_GUIDE!!',
+      utm_medium: 'organic_article',
+      utm_campaign: 't32_saddle3_3in_pipe',
+      email: 'leak@example.com',
+      extra: 123,
+    }),
+    {
+      utm_source: 'field_guide',
+      utm_medium: 'organic_article',
+      utm_campaign: 't32_saddle3_3in_pipe',
+    },
+  );
+  assert.deepEqual(sanitizeIncomingUtmParams(null), {});
+  assert.deepEqual(sanitizeIncomingUtmParams('bad-string'), {});
+});
+
+test('createAmplitudeClient：defaultEventProperties 自动合并会话 UTM，显式事件属性优先覆盖', async () => {
+  const storage = createMemoryStorage();
+  const payloads: Array<any> = [];
+
+  const client = createAmplitudeClient({
+    storage,
+    platform: 'web',
+    uuid: () => 'anon-uuid-utm',
+    defaultEventProperties: () => ({
+      utm_source: 'youtube_shorts',
+      utm_medium: 'short_video',
+      utm_campaign: 't32_offset_6in_30deg',
+      email: 'should-be-stripped@example.com',
+    }),
+    fetchFn: (async (_url: string, init?: RequestInit) => {
+      payloads.push(JSON.parse(String(init?.body ?? '{}')));
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch,
+  });
+
+  // 1) screen_view 自动携带入站 UTM，且过滤非白名单字段
+  await client.logScreenView('SeoOffset');
+  assert.deepEqual(payloads[0].events[0].event_properties, {
+    screen_name: 'SeoOffset',
+    utm_source: 'youtube_shorts',
+    utm_medium: 'short_video',
+    utm_campaign: 't32_offset_6in_30deg',
+  });
+
+  // 2) calculation_completed 自动携带入站 UTM，undefined 不会覆盖默认值
+  await client.logEvent('calculation_completed', {
+    calculator: 'offset',
+    utm_source: undefined,
+  });
+  assert.deepEqual(payloads[1].events[0].event_properties, {
+    calculator: 'offset',
+    utm_source: 'youtube_shorts',
+    utm_medium: 'short_video',
+    utm_campaign: 't32_offset_6in_30deg',
+  });
+
+  // 3) activation_completed 自动携带入站 UTM
+  await client.markActivationIfNeeded({ tool_name: 'offset', platform: 'web' });
+  assert.deepEqual(payloads[2].events[0].event_properties, {
+    tool_name: 'offset',
+    platform: 'web',
+    utm_source: 'youtube_shorts',
+    utm_medium: 'short_video',
+    utm_campaign: 't32_offset_6in_30deg',
+  });
+
+  // 4) google_play_cta_clicked 的显式出站 UTM 属性优先覆盖会话入站 UTM
+  await client.logEvent('google_play_cta_clicked', {
+    source: 'seo_tool_cta',
+    page_slug: 'offset',
+    utm_source: 'web_seo',
+    utm_medium: 'tool_cta',
+    utm_campaign: 'offset',
+    cta_placement: 'below_result',
+  });
+  assert.deepEqual(payloads[3].events[0].event_properties, {
+    source: 'seo_tool_cta',
+    page_slug: 'offset',
+    utm_source: 'web_seo',
+    utm_medium: 'tool_cta',
+    utm_campaign: 'offset',
+    cta_placement: 'below_result',
+  });
+});
+
+test('createAmplitudeClient：defaultEventProperties 抛异常时静默降级', async () => {
+  const storage = createMemoryStorage();
+  const payloads: Array<any> = [];
+
+  const client = createAmplitudeClient({
+    storage,
+    uuid: () => 'anon-uuid-utm-err',
+    defaultEventProperties: () => {
+      throw new Error('sessionStorage blocked');
+    },
+    fetchFn: (async (_url: string, init?: RequestInit) => {
+      payloads.push(JSON.parse(String(init?.body ?? '{}')));
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch,
+  });
+
+  const ok = await client.logEvent('calculation_completed', { calculator: 'stub-up' });
+  assert.equal(ok, true);
+  assert.deepEqual(payloads[0].events[0].event_properties, { calculator: 'stub-up' });
 });
