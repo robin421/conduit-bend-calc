@@ -3,8 +3,10 @@ import { test } from 'node:test';
 
 import {
   applyWebDocumentTitle,
+  getWebDocumentTitle,
   shouldApplyWebDocumentTitle,
   WEB_DOCUMENT_TITLE,
+  WEB_DOCUMENT_TITLE_ES,
 } from './documentTitle.ts';
 
 test('WEB_DOCUMENT_TITLE: 使用约定的 SEO 标题，并带 WattFlow 品牌后缀', () => {
@@ -36,12 +38,22 @@ test('applyWebDocumentTitle: 允许覆盖标题', () => {
   assert.equal(doc.title, 'Custom Title');
 });
 
-test('shouldApplyWebDocumentTitle: 首页/App 路由写标题，SEO 工具页不写', () => {
+test('shouldApplyWebDocumentTitle: 首页/App 路由写标题，SEO 工具页（含 /es/<slug>/）不写', () => {
   assert.equal(shouldApplyWebDocumentTitle('/'), true);
+  assert.equal(shouldApplyWebDocumentTitle('/es/'), true);
   assert.equal(shouldApplyWebDocumentTitle('/reference'), true);
   assert.equal(shouldApplyWebDocumentTitle('/offset'), false);
   assert.equal(shouldApplyWebDocumentTitle('/offset/'), false);
+  assert.equal(shouldApplyWebDocumentTitle('/es/offset/'), false);
   assert.equal(shouldApplyWebDocumentTitle('/4-point-saddle'), false);
   assert.equal(shouldApplyWebDocumentTitle('/shrink'), false);
   assert.equal(shouldApplyWebDocumentTitle('/stub-up'), false);
+});
+
+test('WEB_DOCUMENT_TITLE_ES / getWebDocumentTitle：西语首页标题 ≤60 字符且带 WattFlow', () => {
+  assert.ok(WEB_DOCUMENT_TITLE_ES.length <= 60);
+  assert.ok(WEB_DOCUMENT_TITLE_ES.endsWith('| WattFlow'));
+  assert.doesNotMatch(WEB_DOCUMENT_TITLE_ES, /tuber/i);
+  assert.equal(getWebDocumentTitle('en'), WEB_DOCUMENT_TITLE);
+  assert.equal(getWebDocumentTitle('es'), WEB_DOCUMENT_TITLE_ES);
 });

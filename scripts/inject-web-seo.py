@@ -42,6 +42,7 @@ def build_play_url(campaign: str, content: str, medium: str = "home_static") -> 
 
 
 PLAY_URL_HOME = build_play_url("home", "home_static")
+PLAY_URL_HOME_ES = build_play_url("home_es", "home_static")
 
 GA4_TEMPLATE = """<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>
 <script>
@@ -159,6 +160,9 @@ SEO_BLOCK = f"""<title>{html.escape(TITLE)}</title>
 <meta name="description" content="{html.escape(DESC)}" />
 <meta name="keywords" content="{html.escape(KEYWORDS)}" />
 <link rel="canonical" href="{BASE_URL}/" />
+<link rel="alternate" hreflang="en" href="{BASE_URL}/" />
+<link rel="alternate" hreflang="es" href="{BASE_URL}/es/" />
+<link rel="alternate" hreflang="x-default" href="{BASE_URL}/" />
 <link rel="alternate" href="android-app://{ANDROID_PACKAGE}/https/{BASE_HOST}/" />
 <meta property="al:android:package" content="{ANDROID_PACKAGE}" />
 <meta property="al:android:url" content="{BASE_URL}/" />
@@ -175,6 +179,79 @@ SEO_BLOCK = f"""<title>{html.escape(TITLE)}</title>
 <meta name="twitter:description" content="{html.escape(DESC)}" />
 {jsonld_tag(WEBSITE_JSONLD)}
 {jsonld_tag(MOBILE_APP_JSONLD)}
+"""
+
+TITLE_ES = "Calculadora de Doblez Conduit EMT y NEC | WattFlow"
+DESC_ES = (
+    "Calculadora gratis de doblado de tubo conduit EMT y rígido: desplazamiento, "
+    "doblez de 90°, silla de 3 y 4 puntos, contracción y llenado NEC."
+)
+KEYWORDS_ES = (
+    "calculadora de offset conduit, doblador de tubo conduit, silla de 3 puntos conduit, "
+    "calculadora de llenado de conducto nec, doblez de 90 grados EMT, desplazamiento conducto"
+)
+assert len(TITLE_ES) <= 60, f"TITLE_ES too long: {len(TITLE_ES)}"
+assert len(DESC_ES) <= 160, f"DESC_ES too long: {len(DESC_ES)}"
+
+WEBSITE_JSONLD_ES = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Conduit Bend Calc",
+    "inLanguage": "es",
+    "url": f"{BASE_URL}/es/",
+    "publisher": {
+        "@type": "Organization",
+        "name": "WattFlow",
+        "url": "https://wattflow.net",
+    },
+}
+
+MOBILE_APP_JSONLD_ES = {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Conduit Bend Calc",
+    "inLanguage": "es",
+    "operatingSystem": "Android",
+    "applicationCategory": "UtilitiesApplication",
+    "installUrl": PLAY_URL_HOME_ES,
+    "downloadUrl": PLAY_URL_HOME_ES,
+    "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Calculadora gratuita de doblado de conducto EMT y rígido con calibración opcional Pro de doblador.",
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "WattFlow",
+        "url": "https://wattflow.net",
+    },
+}
+
+SEO_BLOCK_ES = f"""<title>{html.escape(TITLE_ES)}</title>
+<meta name="description" content="{html.escape(DESC_ES)}" />
+<meta name="keywords" content="{html.escape(KEYWORDS_ES)}" />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="{BASE_URL}/es/" />
+<link rel="alternate" hreflang="en" href="{BASE_URL}/" />
+<link rel="alternate" hreflang="es" href="{BASE_URL}/es/" />
+<link rel="alternate" hreflang="x-default" href="{BASE_URL}/" />
+<link rel="alternate" href="android-app://{ANDROID_PACKAGE}/https/{BASE_HOST}/es/" />
+<meta property="al:android:package" content="{ANDROID_PACKAGE}" />
+<meta property="al:android:url" content="{BASE_URL}/es/" />
+<meta property="al:android:app_name" content="Conduit Bend Calc" />
+{VERIFY_TAGS}<meta property="og:type" content="website" />
+<meta property="og:site_name" content="WattFlow" />
+<meta property="og:title" content="{html.escape(TITLE_ES)}" />
+<meta property="og:description" content="{html.escape(DESC_ES)}" />
+<meta property="og:url" content="{BASE_URL}/es/" />
+<meta property="og:image" content="{BASE_URL}/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="{BASE_URL}/og-image.png" />
+<meta name="twitter:title" content="{html.escape(TITLE_ES)}" />
+<meta name="twitter:description" content="{html.escape(DESC_ES)}" />
+{jsonld_tag(WEBSITE_JSONLD_ES)}
+{jsonld_tag(MOBILE_APP_JSONLD_ES)}
 """
 
 HOME_STATIC_HTML = f"""<!-- static-seo-home-start -->
@@ -219,50 +296,118 @@ HOME_STATIC_HTML = f"""<!-- static-seo-home-start -->
 </div>
 <!-- static-seo-home-end -->"""
 
+HOME_STATIC_HTML_ES = f"""<!-- static-seo-home-start -->
+<div class="static-seo-home" style="min-height:100vh;background:#F5F8FB;color:#0F2B46;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.5;">
+  <header style="background:#0F2B46;color:#FFFFFF;padding:14px 24px;border-bottom:3px solid #F4C317;">
+    <div style="max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <strong style="font-size:18px;letter-spacing:0.2px;">Conduit Bend Calc</strong>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:#F4C317;font-weight:600;">Calculadora EMT · IMC · Rígido y NEC</span>
+        <a href="/" style="color:#FFFFFF;font-size:13px;font-weight:600;text-decoration:underline;">English</a>
+      </div>
+    </div>
+  </header>
+  <main style="max-width:1120px;margin:0 auto;padding:24px;">
+    <h1 style="margin:0 0 8px;font-size:24px;line-height:1.25;color:#0F2B46;">Conduit Bend Calc — Calculadora de Doblado de Tubo Conduit y NEC</h1>
+    <p style="margin:0 0 20px;color:#475569;max-width:760px;">Calculadora gratuita de doblado de conducto EMT, IMC y rígido para electricistas: desplazamiento (offset), doblez de 90&deg;, silla de 3 y 4 puntos, desplazamiento compuesto, codo 90&deg; con kick, contracción, llenado de conducto NEC, calibre de cable y caída de tensión en pulgadas o milímetros.</p>
+    <nav aria-label="Calculadoras interactivas de doblado" style="margin-bottom:24px;">
+      <h2 style="font-size:16px;margin:0 0 12px;color:#0F2B46;">Calculadoras interactivas</h2>
+      <ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/offset/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de desplazamiento (Offset)</a><span style="font-size:13px;color:#475569;">Distancia entre marcas y contracción a 10&deg;, 15&deg;, 22.5&deg;, 30&deg;, 45&deg; y 60&deg;.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/stub-up/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de doblez de 90&deg; (Stub-Up)</a><span style="font-size:13px;color:#475569;">Deducción (recogida) y marca exacta para conducto EMT, IMC y rígido.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/3-point-saddle/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de silla de 3 puntos</a><span style="font-size:13px;color:#475569;">Contracción central, distancia lateral (2.5&times;H) y diagrama a 45&deg;/22.5&deg; y 60&deg;/30&deg;.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/conduit-fill/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de llenado de conducto NEC</a><span style="font-size:13px;color:#475569;">Máximo de cables THHN y verificación 40%/31%/53% para EMT, IMC, rígido y PVC40.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/4-point-saddle/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de silla de 4 puntos</a><span style="font-size:13px;color:#475569;">Cuatro marcas y contracción total para librar ductos anchos y vigas.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/shrink/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de contracción de conducto</a><span style="font-size:13px;color:#475569;">Contracción por pulgada y compensación total antes de cortar el tubo conduit.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/rolling-offset/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de desplazamiento compuesto</a><span style="font-size:13px;color:#475569;">Desplazamiento real &radic;(subida&sup2; + avance&sup2;), rotación del doblador y contracción.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/kicked-90/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de codo 90&deg; con kick</a><span style="font-size:13px;color:#475569;">Marca de subida de 90&deg; con deducción, distancia del kick y ganancia total.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/wire-size/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de calibre de cable NEC</a><span style="font-size:13px;color:#475569;">Ampacidad NEC Tabla 310.16 para cobre y aluminio, 60/75/90&deg;C y carga continua 125%.</span></li>
+        <li style="background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:14px;"><a href="/es/voltage-drop/" style="color:#0F2B46;font-weight:700;text-decoration:none;display:block;margin-bottom:4px;">Calculadora de caída de tensión NEC</a><span style="font-size:13px;color:#475569;">Verificación monofásica y trifásica NEC 3% / 5% con sugerencia automática de calibre AWG.</span></li>
+      </ul>
+    </nav>
+    <nav aria-label="Guías prácticas de obra en español" style="margin-bottom:20px;">
+      <h2 style="font-size:16px;margin:0 0 10px;color:#0F2B46;">Guías prácticas de obra</h2>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;">
+        <li><a href="/es/offset-6-pulgadas-emt-3-4-30-grados/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Offset de 6&quot; en EMT 3/4&quot; a 30&deg;: Marcas y Contracción</a></li>
+        <li><a href="/es/doblez-90-emt-1-2-ajuste-deduccion/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Doblez de 90&deg; en EMT 1/2&quot;: Ajuste de Deducción</a></li>
+        <li><a href="/es/silla-3-puntos-tubo-3-pulgadas-marcas/" style="display:inline-block;background:#FFFFFF;border:1px solid #D9E2EB;border-radius:8px;padding:8px 12px;color:#0F2B46;font-size:14px;text-decoration:none;">Silla de 3 Puntos Sobre Tubo de 3&quot;: Marcas 45&deg;/22.5&deg;</a></li>
+      </ul>
+    </nav>
+    <p style="margin:0;"><a href="{html.escape(PLAY_URL_HOME_ES)}" rel="noopener noreferrer" style="display:inline-block;background:#F4C317;color:#0F2B46;font-weight:700;padding:10px 16px;border-radius:8px;text-decoration:none;">Descargar Conduit Bend Calc en Google Play</a></p>
+  </main>
+</div>
+<!-- static-seo-home-end -->"""
+
 index_path = f"{EXPORT_DIR}/index.html"
 with open(index_path) as f:
-    content = f.read()
+    raw_shell = f.read()
 
 # 幂等：剥离旧的 SEO / App Links / 验证 / JSON-LD 标签，重复跑不再叠加。
-content = re.sub(r"<title>.*?</title>\s*", "", content, flags=re.DOTALL)
-content = re.sub(
-    r'<meta\s+(?:name="(?:description|keywords|google-site-verification|msvalidate\.01|twitter:[^"]*)"|property="(?:og:[^"]*|al:android:[^"]*)")[^>]*/?>\s*',
-    "",
-    content,
-)
-content = re.sub(
-    r'<link\s+rel="(?:canonical|alternate)"[^>]*/?>\s*',
-    "",
-    content,
-)
-content = re.sub(
-    r'<script\s+type="application/ld\+json">.*?</script>\s*',
-    "",
-    content,
-    flags=re.DOTALL,
-)
-content = content.replace("</head>", SEO_BLOCK + "</head>", 1)
-if GA4_SNIPPET and "googletagmanager.com/gtag/js" not in content:
-    content = content.replace("</head>", GA4_SNIPPET + "</head>", 1)
-if CF_BEACON_SNIPPET and "cloudflareinsights.com/beacon" not in content:
-    content = content.replace("</head>", CF_BEACON_SNIPPET + "</head>", 1)
-
-# 幂等：向 <div id="root"></div> 注入首页静态语义化 HTML（React 挂载后自动接管替换）。
-content = re.sub(
-    r'<div id="root">\s*<!-- static-seo-home-start -->.*?<!-- static-seo-home-end -->\s*</div>',
-    '<div id="root"></div>',
-    content,
-    flags=re.DOTALL,
-)
-if '<div id="root"></div>' in content:
-    content = content.replace(
-        '<div id="root"></div>',
-        f'<div id="root">\n{HOME_STATIC_HTML}\n</div>',
-        1,
+def strip_seo_head(doc: str) -> str:
+    cleaned = re.sub(r"<title>.*?</title>\s*", "", doc, flags=re.DOTALL)
+    cleaned = re.sub(
+        r'<meta\s+(?:name="(?:description|keywords|robots|google-site-verification|msvalidate\.01|twitter:[^"]*)"|property="(?:og:[^"]*|al:android:[^"]*)")[^>]*/?>\s*',
+        "",
+        cleaned,
     )
+    cleaned = re.sub(
+        r'<link\s+rel="(?:canonical|alternate)"[^>]*/?>\s*',
+        "",
+        cleaned,
+    )
+    cleaned = re.sub(
+        r'<script\s+type="application/ld\+json">.*?</script>\s*',
+        "",
+        cleaned,
+        flags=re.DOTALL,
+    )
+    cleaned = re.sub(
+        r'<div id="root">\s*<!-- static-seo-home-start -->.*?<!-- static-seo-home-end -->\s*</div>',
+        '<div id="root"></div>',
+        cleaned,
+        flags=re.DOTALL,
+    )
+    return cleaned
 
+
+def build_home_html(template: str, html_lang: str, seo_block: str, home_static_html: str) -> str:
+    doc = strip_seo_head(template)
+    if re.search(r'<html\b[^>]*\blang="[^"]*"', doc, flags=re.IGNORECASE):
+        doc = re.sub(
+            r'(<html\b[^>]*\blang=")[^"]*(")',
+            rf'\g<1>{html_lang}\g<2>',
+            doc,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    else:
+        doc = re.sub(r"<html\b", f'<html lang="{html_lang}"', doc, count=1, flags=re.IGNORECASE)
+    doc = doc.replace("</head>", seo_block + "</head>", 1)
+    if GA4_SNIPPET and "googletagmanager.com/gtag/js" not in doc:
+        doc = doc.replace("</head>", GA4_SNIPPET + "</head>", 1)
+    if CF_BEACON_SNIPPET and "cloudflareinsights.com/beacon" not in doc:
+        doc = doc.replace("</head>", CF_BEACON_SNIPPET + "</head>", 1)
+    if '<div id="root"></div>' in doc:
+        doc = doc.replace(
+            '<div id="root"></div>',
+            f'<div id="root">\n{home_static_html}\n</div>',
+            1,
+        )
+    return doc
+
+
+content = build_home_html(raw_shell, "en", SEO_BLOCK, HOME_STATIC_HTML)
 with open(index_path, "w") as f:
     f.write(content)
+
+# 生成静态西班牙语首页 dist/es/index.html（与 EN 首页共用同一套 SPA bundle + 独立西语 SEO shell）。
+es_home_dir = f"{EXPORT_DIR}/es"
+os.makedirs(es_home_dir, exist_ok=True)
+es_index_path = f"{es_home_dir}/index.html"
+es_content = build_home_html(raw_shell, "es", SEO_BLOCK_ES, HOME_STATIC_HTML_ES)
+with open(es_index_path, "w") as f:
+    f.write(es_content)
+print(f"es/index.html wrote (title {len(TITLE_ES)}, desc {len(DESC_ES)})")
 
 # OG 分享图：expo export 不会拷贝未被代码引用的 assets，手动拷到 dist/（幂等，直接覆盖）。
 og_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "og-image.png")
@@ -413,8 +558,12 @@ TOOL_SHELL_SLUGS = [
     "wire-size",
     "voltage-drop",
 ]
+TOOL_SHELL_TARGETS = [
+    *TOOL_SHELL_SLUGS,
+    *[f"es/{slug}" for slug in TOOL_SHELL_SLUGS],
+]
 if GA4_SNIPPET:
-    for slug in TOOL_SHELL_SLUGS:
+    for slug in TOOL_SHELL_TARGETS:
         shell_path = f"{EXPORT_DIR}/{slug}/index.html"
         if not os.path.exists(shell_path):
             continue
@@ -427,9 +576,9 @@ if GA4_SNIPPET:
             f.write(shell)
         print(f"GA4 injected into {slug}/index.html")
 
-# 4 个 SPA 工具页 shell 同样补齐 Cloudflare Web Analytics beacon。
+# 全部 EN + ES SPA 工具页 shell 同样补齐 Cloudflare Web Analytics beacon。
 if CF_BEACON_SNIPPET:
-    for slug in TOOL_SHELL_SLUGS:
+    for slug in TOOL_SHELL_TARGETS:
         shell_path = f"{EXPORT_DIR}/{slug}/index.html"
         if not os.path.exists(shell_path):
             continue
@@ -486,29 +635,51 @@ SEO_PATHS = [
     "3-point-saddle-3-inch-pipe-marks/",
 ]
 
+# Spanish static SEO routes (T46: 10 interactive ES tool shells + 3 ES worked guides; /es/ home added below).
+SEO_PATHS_ES = [
+    # 10 Spanish Interactive SEO Tools (scripts/gen-seo-tool-shells.ts).
+    "es/offset/",
+    "es/stub-up/",
+    "es/3-point-saddle/",
+    "es/conduit-fill/",
+    "es/4-point-saddle/",
+    "es/shrink/",
+    "es/rolling-offset/",
+    "es/kicked-90/",
+    "es/wire-size/",
+    "es/voltage-drop/",
+    # 3 Spanish Worked Electrician Field Guides (scripts/gen-seo-pages.py).
+    "es/offset-6-pulgadas-emt-3-4-30-grados/",
+    "es/doblez-90-emt-1-2-ajuste-deduccion/",
+    "es/silla-3-puntos-tubo-3-pulgadas-marcas/",
+]
+
 today_iso = datetime.date.today().isoformat()
+
+sitemap_entries = [
+    (f"{BASE_URL}/", "weekly", "1.0"),
+    *[(f"{BASE_URL}/{path}", "monthly", "0.8") for path in SEO_PATHS],
+    (f"{BASE_URL}/es/", "weekly", "0.9"),
+    *[(f"{BASE_URL}/{path}", "monthly", "0.8") for path in SEO_PATHS_ES],
+]
+sitemap_locs = [loc for loc, _, _ in sitemap_entries]
+assert len(sitemap_locs) == len(set(sitemap_locs)), "Duplicate URLs in sitemap.xml"
+assert len(sitemap_locs) == 44, f"Expected 44 sitemap URLs, got {len(sitemap_locs)}"
 
 with open(f"{EXPORT_DIR}/sitemap.xml", "w") as f:
     f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-    f.write(
-        "  <url>\n"
-        f"    <loc>{BASE_URL}/</loc>\n"
-        f"    <lastmod>{today_iso}</lastmod>\n"
-        "    <changefreq>weekly</changefreq>\n"
-        "    <priority>1.0</priority>\n"
-        "  </url>\n"
-    )
-    for path in SEO_PATHS:
+    for loc, changefreq, priority in sitemap_entries:
         f.write(
             "  <url>\n"
-            f"    <loc>{BASE_URL}/{path}</loc>\n"
+            f"    <loc>{loc}</loc>\n"
             f"    <lastmod>{today_iso}</lastmod>\n"
-            "    <changefreq>monthly</changefreq>\n"
-            "    <priority>0.8</priority>\n"
+            f"    <changefreq>{changefreq}</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
             "  </url>\n"
         )
     f.write("</urlset>\n")
+print(f"sitemap.xml wrote ({len(sitemap_locs)} unique canonical URLs)")
 
 # Google Play App Links: dist/.well-known/assetlinks.json
 raw_fingerprints = (os.environ.get("ANDROID_SHA256_FINGERPRINTS") or "").strip()

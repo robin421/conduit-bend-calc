@@ -12,6 +12,7 @@
 import type { SeoScreenName } from '../navigation/seoRoutes.ts';
 import { SEO_TOOL_SCREENS } from '../navigation/seoRoutes.ts';
 import { en, type TranslationKey } from '../i18n/dictionaries.ts';
+import { DEFAULT_LANG, localizePath, type Lang } from '../i18n/lang.ts';
 import { SEO_TOOL_PAGES, type SeoToolKey } from './toolPages.ts';
 
 export interface CalculatorNavItem {
@@ -62,6 +63,19 @@ export const CALCULATOR_NAV: readonly CalculatorNavItem[] = [
 /** 判断某 key 是否为当前激活项。 */
 export function isActiveCalculator(activeKey: string, itemKey: string): boolean {
   return activeKey === itemKey;
+}
+
+/**
+ * 为 Web 端内部导航链接构造带语言前缀与尾斜杠的规范 href：
+ * - `en`：`/` → `/`，`/stub-up` → `/stub-up/`
+ * - `es`：`/` → `/es/`，`/stub-up` → `/es/stub-up/`
+ */
+export function buildCalculatorNavHref(
+  path: string,
+  lang: Lang = DEFAULT_LANG,
+): string {
+  const localized = localizePath(path, lang);
+  return localized.endsWith('/') ? localized : `${localized}/`;
 }
 
 /* ------------------------------------------------------------------ */

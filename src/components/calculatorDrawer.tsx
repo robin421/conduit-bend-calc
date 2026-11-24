@@ -24,6 +24,7 @@ import { trackInternalLinkClick } from '../lib/analytics';
 import { useI18n } from '../i18n';
 import type { RootStackParamList } from '../navigation/rootStackTypes';
 import {
+  buildCalculatorNavHref,
   CALCULATOR_NAV,
   DRAWER_ANIMATION_MS,
   drawerWidthForViewport,
@@ -61,7 +62,7 @@ export default function CalculatorDrawer({
   onClose,
 }: CalculatorDrawerProps) {
   const theme = useTheme();
-  const { t } = useI18n();
+  const { lang, t } = useI18n();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { width } = useWindowDimensions();
   const drawerWidth = drawerWidthForViewport(width);
@@ -260,7 +261,7 @@ export default function CalculatorDrawer({
                 return (
                   <AnchorText
                     key={item.key}
-                    href={item.path}
+                    href={buildCalculatorNavHref(item.path, lang)}
                     onPress={(event: unknown) => handlePressItem(item, event)}
                     style={itemStyle}
                   >

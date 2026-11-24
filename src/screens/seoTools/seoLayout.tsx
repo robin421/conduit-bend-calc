@@ -31,6 +31,7 @@ import LanguageSwitcher from '../../components/languageSwitcher';
 import { CopyIcon, MenuIcon } from '../../components/toolIcons';
 import { useI18n } from '../../i18n';
 import {
+  buildCalculatorNavHref,
   CALCULATOR_NAV,
   calculatorNavMode,
   isWideDesktopViewport,
@@ -247,7 +248,7 @@ export function CalculatorSwitcher({
   wideDesktop?: boolean;
 }) {
   const theme = useTheme();
-  const { t } = useI18n();
+  const { lang, t } = useI18n();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const renderItem = (item: CalculatorNavItem, active: boolean) => {
@@ -290,7 +291,7 @@ export function CalculatorSwitcher({
       return (
         <View key={item.key} style={styles.switcherChip}>
           <AnchorText
-            href={item.path}
+            href={buildCalculatorNavHref(item.path, lang)}
             onPress={(event: unknown) => {
               const e = event as {
                 preventDefault?: () => void;
@@ -1441,6 +1442,7 @@ export function SeoLink({
   trackTo?: string;
 }) {
   const theme = useTheme();
+  const { lang } = useI18n();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const linkStyle: StyleProp<TextStyle> = {
     color: theme.colors.primaryText,
@@ -1458,7 +1460,7 @@ export function SeoLink({
   if (Platform.OS === 'web') {
     return (
       <AnchorText
-        href={path}
+        href={buildCalculatorNavHref(path, lang)}
         style={linkStyle}
         onPress={(event: unknown) => {
           const e = event as {

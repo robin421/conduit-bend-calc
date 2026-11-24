@@ -1,9 +1,8 @@
 /**
  * 语言基础定义（纯数据模块，可被 node --test 直接 import）。
  *
- * 与 React / react-native 无关：语言规范化、`?lang=` 解析、优先顺序、
- * URL 参数改写、localStorage 读写都做成纯函数，方便单测。
- * 只有 `?lang=` 支持（`/es/` 前缀改造留待后续），符合 brief 要求。
+ * 与 React / react-native 无关：语言规范化、`/es/` 路径前缀解析、`?lang=` 解析、
+ * 优先顺序、URL 改写、localStorage 读写都做成纯函数，方便单测。
  */
 
 export type Lang = 'en' | 'es';
@@ -80,16 +79,64 @@ export function resolveLangFromSearch(
 }
 
 /**
- * 初始语言优先级：URL `?lang=` > 用户已保存语言 > 系统 locale 检测 > 默认英语。
- * URL 显式指定时永远压过历史选择（分享链接能落到正确语言）；
+ * 从 URL pathname 解析 `/es` 或 `/es/...` 路径前缀；匹配返回 `'es'`，否则返回 null。
+ * 拒绝 `/escalator` 或 `/es-guide` 等非语言段前缀。
+ */
+export function resolveLangFromPath(
+  pathname: string | null | undefined,
+): Lang | null {
+  if (!pathname) {
+    return null;
+  }
+  const clean = pathname.trim().split(/[?#]/)[0];
+  return /^\/es(?:\/|$)/i.test(clean) ? 'es' : null;
+}
+
+/**
+ * 剥离路径开头的 `/es` 语言前缀（保留其余路径与尾斜杠）：
+ * `/es` / `/es/` → `/`，`/es/offset/` → `/offset/`，`/offset/` → `/offset/`。
+ */
+export function stripLangPrefix(pathname: string): string {
+  const trimmed = pathname.trim();
+  if (!trimmed) {
+    return '/';
+  }
+  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  if (/^\/es\/?$/i.test(withLeadingSlash)) {
+    return '/';
+  }
+  if (/^\/es\//i.test(withLeadingSlash)) {
+    return withLeadingSlash.slice(3);
+  }
+  return withLeadingSlash;
+}
+
+/**
+ * 为内部 Web 路由加上或移除 `/es` 语言前缀（幂等）：
+ * - `en`：`/` → `/`，`/es/offset/` → `/offset/`，`/offset` → `/offset`
+ * - `es`：`/` → `/es/`，`/offset` → `/es/offset`，`/offset/` → `/es/offset/`
+ */
+export function localizePath(pathname: string, lang: Lang): string {
+  const base = stripLangPrefix(pathname);
+  if (lang === DEFAULT_LANG) {
+    return base;
+  }
+  return base === '/' ? '/es/' : `/es${base}`;
+}
+
+/**
+ * 初始语言优先级：URL 路径 `/es/...` > URL `?lang=` > 用户已保存语言 > 系统 locale 检测 > 默认英语。
+ * URL 显式指定时永远压过历史选择（分享链接与静态 `/es/` 页能落到正确语言）；
  * 仅当 `stored` 为有效语言值时才视为已保存（区分未保存 null 与显式选 en）。
  */
 export function resolveInitialLang(
   search: string | null | undefined,
   stored: string | null | undefined,
   systemLocale?: string | null,
+  pathname?: string | null,
 ): Lang {
   return (
+    resolveLangFromPath(pathname) ??
     resolveLangFromSearch(search) ??
     parseStoredLang(stored) ??
     detectSystemLang(systemLocale)
@@ -155,4 +202,38 @@ export function withLangQuery(url: string, lang: Lang): string {
   }
   const nextQuery = params.join('&');
   return `${path}${nextQuery ? `?${nextQuery}` : ''}${hash}`;
+}
+
+/**
+ * 在 Web 端 EN ↔ ES 切换时构造规范的静态路径 URL：
+ * - `/` ↔ `/es/`，`/<slug>/` ↔ `/es/<slug>/`（无扩展名目录补尾斜杠与静态 canonical 一致）；
+ * - 剥离冗余的 `?lang=...` 参数，保留其它 query 参数与 `#hash`。
+ */
+export function withLangPath(
+  pathname: string,
+  search: string,
+  hash: string,
+  lang: Lang,
+): string {
+  const basePath = stripLangPrefix(pathname || '/');
+  const hasFileExt = /\/[^/]+\.[a-z0-9]+$/i.test(basePath);
+  const normalizedBase =
+    basePath === '/' || hasFileExt || basePath.endsWith('/')
+      ? basePath
+      : `${basePath}/`;
+  const nextPath =
+    lang === DEFAULT_LANG
+      ? normalizedBase
+      : normalizedBase === '/'
+        ? '/es/'
+        : `/es${normalizedBase}`;
+
+  const rawQuery = search ? search.replace(/^\?/, '') : '';
+  const params = rawQuery
+    .split('&')
+    .filter((pair) => pair.length > 0 && !/^lang=/i.test(pair));
+  const nextQuery = params.length > 0 ? `?${params.join('&')}` : '';
+  const nextHash = hash ? (hash.startsWith('#') ? hash : `#${hash}`) : '';
+
+  return `${nextPath}${nextQuery}${nextHash}`;
 }

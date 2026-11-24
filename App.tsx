@@ -8,7 +8,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initAmplitude, logAmplitudeScreenView, setAmplitudeUserProperties } from './src/lib/amplitude';
 import { configureAsyncLangStorage, getLang, hydrateStoredLang } from './src/i18n';
 import { loadUnitSystem } from './src/lib/unitStore';
-import { applyWebDocumentTitle, shouldApplyWebDocumentTitle } from './src/lib/documentTitle';
+import {
+  applyWebDocumentTitle,
+  getWebDocumentTitle,
+  shouldApplyWebDocumentTitle,
+} from './src/lib/documentTitle';
+import { applySeoHead } from './src/lib/seoHead';
 import { initFirebase, logFirebaseScreenView } from './src/lib/firebase';
 import { initPro, observeProResume } from './src/lib/proInit';
 import { initInAppReview } from './src/lib/inAppReview';
@@ -51,7 +56,7 @@ export default function App() {
       typeof window !== 'undefined' &&
       shouldApplyWebDocumentTitle(window.location.pathname)
     ) {
-      applyWebDocumentTitle(true, document);
+      applyWebDocumentTitle(true, document, getWebDocumentTitle(getLang()));
     }
     return stopProResume;
   }, []);
@@ -77,6 +82,9 @@ export default function App() {
             currentRouteRef.current = next;
             logFirebaseScreenView(next);
             logAmplitudeScreenView(next);
+            if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location) {
+              applySeoHead(getLang(), window.location.pathname);
+            }
           }
         }}
       >

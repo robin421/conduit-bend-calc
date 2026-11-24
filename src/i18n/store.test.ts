@@ -109,3 +109,55 @@ test('hydrateStoredLang：异步存储抛错时安全降级不抛异常', async 
   assert.doesNotThrow(() => setLang('en'));
   assert.equal(getLang(), 'en');
 });
+
+test('Web 端：/es/offset/ 优先于 localStorage 的 en，切换 EN ↔ ES 改写路径并剥离 ?lang=', () => {
+  const globalRecord = globalThis as unknown as Record<string, unknown>;
+  const previous = globalRecord.window;
+  const storageData: Record<string, string> = { [LANG_STORAGE_KEY]: 'en' };
+  const replacedUrls: string[] = [];
+  const fakeLocation = {
+    pathname: '/es/offset/',
+    search: '?lang=es&foo=1',
+    hash: '#calc',
+  };
+  globalRecord.window = {
+    location: fakeLocation,
+    localStorage: {
+      getItem: (key: string) => (key in storageData ? storageData[key] : null),
+      setItem: (key: string, value: string) => {
+        storageData[key] = value;
+      },
+    },
+    history: {
+      state: null,
+      replaceState: (_state: unknown, _title: string, url: string) => {
+        replacedUrls.push(url);
+        const [pathAndQuery, hashPart] = url.split('#');
+        const [pathPart, queryPart] = pathAndQuery.split('?');
+        fakeLocation.pathname = pathPart;
+        fakeLocation.search = queryPart ? `?${queryPart}` : '';
+        fakeLocation.hash = hashPart ? `#${hashPart}` : '';
+      },
+    },
+  };
+  try {
+    __resetI18nForTests();
+    assert.equal(initI18n('en-US'), 'es');
+    assert.equal(getLang(), 'es');
+    assert.equal(storageData[LANG_STORAGE_KEY], 'es');
+
+    setLang('en');
+    assert.equal(getLang(), 'en');
+    assert.equal(replacedUrls[0], '/offset/?foo=1#calc');
+
+    setLang('es');
+    assert.equal(getLang(), 'es');
+    assert.equal(replacedUrls[1], '/es/offset/?foo=1#calc');
+  } finally {
+    if (previous === undefined) {
+      delete globalRecord.window;
+    } else {
+      globalRecord.window = previous;
+    }
+  }
+});

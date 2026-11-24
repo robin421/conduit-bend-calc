@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import {
   buildCanonicalUrl,
   buildFaqPageJsonLd,
+  buildHomeCanonicalUrl,
   buildRelatedLinks,
   buildWebApplicationJsonLd,
   findSeoToolPageByPath,
@@ -221,13 +222,15 @@ test('related links 覆盖另外 9 个 slug 且指向正确路径', () => {
   assert.equal(toolLinks[0].description, first.tagline);
 });
 
-test('es related links 用西语 h1 / tagline，标题随语言切换', () => {
+test('es related links 用西语 h1 / tagline，路径保留 /es/ 前缀，标题随语言切换', () => {
   const page = getSeoToolPage('shrink');
-  const offset = buildRelatedLinks(page, 'es').find(
-    (link) => link.key === 'offset',
-  );
+  const links = buildRelatedLinks(page, 'es');
+  const offset = links.find((link) => link.key === 'offset');
+  const home = links.find((link) => link.key === 'home');
   assert.equal(offset?.title, getSeoToolPage('offset').es.h1);
   assert.equal(offset?.description, getSeoToolPage('offset').es.tagline);
+  assert.equal(offset?.path, '/es/offset');
+  assert.equal(home?.path, '/es/');
   assert.equal(getRelatedCalculatorsTitle(), 'Related calculators');
   assert.equal(getRelatedCalculatorsTitle('es'), 'Calculadoras relacionadas');
 });
@@ -310,22 +313,34 @@ test('getSeoToolPageCopy：en 平铺，es 取 page.es', () => {
   assert.equal(getSeoToolPageCopy(page).h1, page.h1);
 });
 
-test('findSeoToolPageByPath：容忍尾斜杠 / 大小写，非工具页 null', () => {
+test('findSeoToolPageByPath：支持 /<slug> 与 /es/<slug>、容忍尾斜杠 / 大小写，非工具页 null', () => {
   assert.equal(findSeoToolPageByPath('/offset')?.key, 'offset');
   assert.equal(findSeoToolPageByPath('/Offset/')?.key, 'offset');
+  assert.equal(findSeoToolPageByPath('/es/offset')?.key, 'offset');
+  assert.equal(findSeoToolPageByPath('/es/offset/')?.key, 'offset');
+  assert.equal(findSeoToolPageByPath('/ES/4-point-saddle/')?.key, 'saddle4');
   assert.equal(findSeoToolPageByPath('/4-point-saddle/')?.key, 'saddle4');
+  assert.equal(isSeoToolPath('/es/voltage-drop/'), true);
+  assert.equal(isSeoToolPath('/es/'), false);
+  assert.equal(isSeoToolPath('/es'), false);
   assert.equal(findSeoToolPageByPath('/'), null);
+  assert.equal(findSeoToolPageByPath('/es'), null);
+  assert.equal(findSeoToolPageByPath('/es/'), null);
+  assert.equal(findSeoToolPageByPath('/es/nope'), null);
   assert.equal(findSeoToolPageByPath('/nope'), null);
 });
 
-test('es canonical 带 ?lang=es，JSON-LD 用西语文案', () => {
+test('es canonical 使用静态 /es/<slug>/ 目录（非 ?lang=es），JSON-LD 用西语文案', () => {
   const page = getSeoToolPage('stubUp');
   assert.equal(
     buildCanonicalUrl(page, SEO_SITE_URL, 'es'),
-    `${SEO_SITE_URL}/stub-up/?lang=es`,
+    `${SEO_SITE_URL}/es/stub-up/`,
   );
+  assert.equal(buildHomeCanonicalUrl(SEO_SITE_URL, 'en'), `${SEO_SITE_URL}/`);
+  assert.equal(buildHomeCanonicalUrl(SEO_SITE_URL, 'es'), `${SEO_SITE_URL}/es/`);
   const jsonLd = buildWebApplicationJsonLd(page, SEO_SITE_URL, 'es');
   assert.equal(jsonLd.name, page.es.h1);
+  assert.equal(jsonLd.url, `${SEO_SITE_URL}/es/stub-up/`);
   assert.equal(jsonLd.inLanguage, 'es');
   const faq = buildFaqPageJsonLd(page, 'es');
   const mainEntity = faq.mainEntity as unknown[];

@@ -8,12 +8,22 @@
  * src/seo/toolPages.ts 生成），运行时不得被首页标题覆盖。
  */
 
+import type { Lang } from '../i18n/lang.ts';
 import { withBrandTitle } from '../seo/brand.ts';
 import { isSeoToolPath } from '../seo/toolPages.ts';
 
 export const WEB_DOCUMENT_TITLE = withBrandTitle(
   'Conduit Bend Calc — Free Conduit Bending Calculator',
 );
+
+export const WEB_DOCUMENT_TITLE_ES = withBrandTitle(
+  'Calculadora de Doblez Conduit EMT y NEC',
+);
+
+/** 返回对应语言的首页 SEO 标题（与 dist/index.html 及 dist/es/index.html 一致）。 */
+export function getWebDocumentTitle(lang: Lang = 'en'): string {
+  return lang === 'es' ? WEB_DOCUMENT_TITLE_ES : WEB_DOCUMENT_TITLE;
+}
 
 /**
  * 是否应该写入首页 SEO 标题。工具页返回 false，保留静态 shell 的页面级 title。

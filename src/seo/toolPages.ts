@@ -15,7 +15,12 @@
  */
 
 import { en, es } from '../i18n/dictionaries.ts';
-import { DEFAULT_LANG, type Lang } from '../i18n/lang.ts';
+import {
+  DEFAULT_LANG,
+  localizePath,
+  stripLangPrefix,
+  type Lang,
+} from '../i18n/lang.ts';
 
 export type SeoToolKey =
   | 'offset'
@@ -811,9 +816,10 @@ export function getSeoToolPageCopy(
   return lang === 'es' ? page.es : page;
 }
 
-/** 归一化 pathname（去尾斜杠、小写）后按路由找页面；非工具页返回 null。 */
+/** 归一化 pathname（剥离 `/es/` 前缀、去尾斜杠、小写）后按路由找页面；非工具页返回 null。 */
 export function findSeoToolPageByPath(pathname: string): SeoToolPageMeta | null {
-  const normalized = pathname.trim().toLowerCase().replace(/\/+$/, '') || '/';
+  const stripped = stripLangPrefix(pathname);
+  const normalized = stripped.trim().toLowerCase().replace(/\/+$/, '') || '/';
   return (
     SEO_TOOL_PAGES.find((page) => page.path.toLowerCase() === normalized) ?? null
   );
@@ -868,7 +874,7 @@ export function buildRelatedLinks(
     const copy = getSeoToolPageCopy(candidate, lang);
     return {
       key: candidate.key,
-      path: candidate.path,
+      path: localizePath(candidate.path, lang),
       title: copy.h1,
       description: copy.tagline,
     };
@@ -877,7 +883,7 @@ export function buildRelatedLinks(
     ...others,
     {
       key: 'home',
-      path: '/',
+      path: localizePath('/', lang),
       title: lang === 'es' ? es['nav.allCalculatorsLink'] : en['nav.allCalculatorsLink'],
       description: null,
     },
@@ -893,16 +899,31 @@ export interface JsonLdObject {
 }
 
 /**
- * canonical / 屏幕自身 URL：如 https://bendcalc.wattflow.net/offset/。
- * 非默认语言追加 `?lang=es`。
+ * 首页 canonical URL：英语为 `https://bendcalc.wattflow.net/`，
+ * 西班牙语为静态目录 `https://bendcalc.wattflow.net/es/`。
+ */
+export function buildHomeCanonicalUrl(
+  siteUrl: string = SEO_SITE_URL,
+  lang: Lang = DEFAULT_LANG,
+): string {
+  const origin = siteUrl.replace(/\/+$/, '');
+  return lang === DEFAULT_LANG ? `${origin}/` : `${origin}/${lang}/`;
+}
+
+/**
+ * canonical / 屏幕自身 URL：
+ * - `en` → `https://bendcalc.wattflow.net/offset/`
+ * - `es` → `https://bendcalc.wattflow.net/es/offset/`（真正静态 `/es/` 目录，非 `?lang=es`）
  */
 export function buildCanonicalUrl(
   page: SeoToolPageMeta,
   siteUrl: string = SEO_SITE_URL,
   lang: Lang = DEFAULT_LANG,
 ): string {
-  const base = `${siteUrl.replace(/\/$/, '')}/${page.slug}/`;
-  return lang === DEFAULT_LANG ? base : `${base}?lang=${lang}`;
+  const origin = siteUrl.replace(/\/+$/, '');
+  return lang === DEFAULT_LANG
+    ? `${origin}/${page.slug}/`
+    : `${origin}/${lang}/${page.slug}/`;
 }
 
 /** WebApplication schema：页面是免费、纯前端、无登录的在线工具。 */

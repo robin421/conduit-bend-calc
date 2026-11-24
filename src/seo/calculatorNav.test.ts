@@ -9,6 +9,7 @@ import {
   DRAWER_MAX_WIDTH,
   DRAWER_WIDTH_RATIO,
   MOBILE_NAV_BREAKPOINT,
+  buildCalculatorNavHref,
   calculatorNavMode,
   drawerWidthForViewport,
   isActiveCalculator,
@@ -114,4 +115,13 @@ test('宽屏工作区断点：>=1024pt 返回 true 且最大宽度 1120，否则
   assert.equal(workspaceMaxWidth(1024), 1120);
   assert.equal(workspaceMaxWidth(1440), 1120);
   assert.equal(workspaceMaxWidth(Number.NaN), 720);
+});
+
+test('buildCalculatorNavHref：西语保留 /es/ 前缀，英语保持 /<slug>/', () => {
+  assert.equal(buildCalculatorNavHref('/', 'en'), '/');
+  assert.equal(buildCalculatorNavHref('/', 'es'), '/es/');
+  assert.equal(buildCalculatorNavHref('/stub-up', 'en'), '/stub-up/');
+  assert.equal(buildCalculatorNavHref('/stub-up', 'es'), '/es/stub-up/');
+  assert.equal(buildCalculatorNavHref('/es/stub-up/', 'es'), '/es/stub-up/');
+  assert.equal(buildCalculatorNavHref('/es/stub-up/', 'en'), '/stub-up/');
 });

@@ -16,13 +16,17 @@ import {
   LANG_QUERY_PARAM,
   detectSystemLang,
   isLang,
+  localizePath,
   normalizeLang,
   parseStoredLang,
   persistLang,
   readRawStoredLang,
   readStoredLang,
   resolveInitialLang,
+  resolveLangFromPath,
   resolveLangFromSearch,
+  stripLangPrefix,
+  withLangPath,
   withLangQuery,
   type LangStorage,
 } from './lang.ts';
@@ -98,7 +102,40 @@ test('parseStoredLang / readRawStoredLang：区分未保存 null 与显式保存
   assert.equal(readRawStoredLang(fakeStorage({ [LANG_STORAGE_KEY]: 'bogus' })), null);
 });
 
-test('resolveInitialLang：URL ?lang= > 已保存语言 > systemLocale > 默认 en', () => {
+test('resolveLangFromPath：仅匹配 /es 或 /es/... 前缀', () => {
+  assert.equal(resolveLangFromPath('/es'), 'es');
+  assert.equal(resolveLangFromPath('/es/'), 'es');
+  assert.equal(resolveLangFromPath('/es/offset'), 'es');
+  assert.equal(resolveLangFromPath('/es/offset/'), 'es');
+  assert.equal(resolveLangFromPath('/ES/stub-up/?foo=1'), 'es');
+  assert.equal(resolveLangFromPath('/'), null);
+  assert.equal(resolveLangFromPath('/offset/'), null);
+  assert.equal(resolveLangFromPath('/escalator'), null);
+  assert.equal(resolveLangFromPath('/es-guide/'), null);
+  assert.equal(resolveLangFromPath(''), null);
+  assert.equal(resolveLangFromPath(null), null);
+  assert.equal(resolveLangFromPath(undefined), null);
+});
+
+test('stripLangPrefix / localizePath：幂等剥离与拼接 /es 前缀', () => {
+  assert.equal(stripLangPrefix('/es'), '/');
+  assert.equal(stripLangPrefix('/es/'), '/');
+  assert.equal(stripLangPrefix('/es/offset/'), '/offset/');
+  assert.equal(stripLangPrefix('/ES/stub-up'), '/stub-up');
+  assert.equal(stripLangPrefix('/offset/'), '/offset/');
+  assert.equal(stripLangPrefix('/'), '/');
+
+  assert.equal(localizePath('/', 'en'), '/');
+  assert.equal(localizePath('/', 'es'), '/es/');
+  assert.equal(localizePath('/es/', 'en'), '/');
+  assert.equal(localizePath('/es/', 'es'), '/es/');
+  assert.equal(localizePath('/offset', 'es'), '/es/offset');
+  assert.equal(localizePath('/offset/', 'es'), '/es/offset/');
+  assert.equal(localizePath('/es/offset/', 'es'), '/es/offset/');
+  assert.equal(localizePath('/es/offset/', 'en'), '/offset/');
+});
+
+test('resolveInitialLang：URL /es/... > URL ?lang= > 已保存语言 > systemLocale > 默认 en', () => {
   // 向后兼容 2 参数调用
   assert.equal(resolveInitialLang('?lang=es', 'en'), 'es');
   assert.equal(resolveInitialLang('?lang=en', 'es'), 'en');
@@ -115,6 +152,12 @@ test('resolveInitialLang：URL ?lang= > 已保存语言 > systemLocale > 默认 
   assert.equal(resolveInitialLang('?lang=es', 'en', 'en-US'), 'es');
   assert.equal(resolveInitialLang('?lang=en', 'es', 'es-MX'), 'en');
   assert.equal(resolveInitialLang('', null, 'en-US'), 'en');
+
+  // 4 参数调用：/es/... 路径优先级高于 ?lang=、stored 与 systemLocale
+  assert.equal(resolveInitialLang('', 'en', 'en-US', '/es/'), 'es');
+  assert.equal(resolveInitialLang('?lang=en', 'en', 'en-US', '/es/offset/'), 'es');
+  assert.equal(resolveInitialLang('?lang=es', 'en', 'en-US', '/offset/'), 'es');
+  assert.equal(resolveInitialLang('', 'en', 'es-MX', '/offset/'), 'en');
 });
 
 test('localStorage 持久化：写入后能读回，未知值回退默认', () => {
@@ -155,6 +198,22 @@ test('withLangQuery：es 加参数，en 移除参数，保留其它 query 与 ha
   );
   assert.equal(withLangQuery('/offset/#top', 'es'), '/offset/?lang=es#top');
   assert.equal(LANG_QUERY_PARAM, 'lang');
+});
+
+test('withLangPath：在 /<slug>/ ↔ /es/<slug>/ 与 / ↔ /es/ 间干净切换并剥离冗余 ?lang=', () => {
+  assert.equal(withLangPath('/', '', '', 'es'), '/es/');
+  assert.equal(withLangPath('/es/', '', '', 'en'), '/');
+  assert.equal(withLangPath('/es', '', '', 'en'), '/');
+  assert.equal(withLangPath('/es', '', '', 'es'), '/es/');
+  assert.equal(withLangPath('/offset/', '', '', 'es'), '/es/offset/');
+  assert.equal(withLangPath('/offset', '', '', 'es'), '/es/offset/');
+  assert.equal(withLangPath('/es/offset/', '', '', 'en'), '/offset/');
+  assert.equal(withLangPath('/es/offset', '', '', 'en'), '/offset/');
+  assert.equal(withLangPath('/offset/', '?lang=es', '', 'es'), '/es/offset/');
+  assert.equal(withLangPath('/offset/', '?lang=es&foo=1', '#faq', 'en'), '/offset/?foo=1#faq');
+  assert.equal(withLangPath('/offset/', '?foo=1&lang=es', '#faq', 'es'), '/es/offset/?foo=1#faq');
+  assert.equal(withLangPath('/es/', '?utm_source=x&lang=es', '#top', 'en'), '/?utm_source=x#top');
+  assert.equal(withLangPath('/privacy.html', '', '', 'en'), '/privacy.html');
 });
 
 test('es 文案无缺 key（与 en 结构 / 数量完全一致）', () => {

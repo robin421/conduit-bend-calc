@@ -15,8 +15,9 @@ import {
   persistLang,
   readRawStoredLang,
   resolveInitialLang,
+  resolveLangFromPath,
   resolveLangFromSearch,
-  withLangQuery,
+  withLangPath,
   type Lang,
   type LangStorage,
 } from './lang.ts';
@@ -89,13 +90,13 @@ function getBrowserStorage(): LangStorage | null {
   }
 }
 
-/** 用户显式切换时把 `?lang=` 写回地址栏（replaceState，不新增历史记录）。 */
+/** 用户显式切换时在 `/<slug>/` ↔ `/es/<slug>/`（及 `/` ↔ `/es/`）之间改写地址栏，并剥离冗余 `?lang=`。 */
 function replaceUrlLang(lang: Lang): void {
   if (typeof window === 'undefined' || !window.history?.replaceState || !window.location) {
     return;
   }
   const { pathname, search, hash } = window.location;
-  const next = withLangQuery(`${pathname}${search}${hash}`, lang);
+  const next = withLangPath(pathname, search, hash, lang);
   window.history.replaceState(window.history.state, '', next);
 }
 
@@ -135,22 +136,26 @@ export function setLang(next: Lang): void {
 }
 
 /**
- * 首屏初始化：URL `?lang=` > localStorage > 系统 locale > 默认英语。
- * 幂等，多次调用只生效一次；不在初始化时改写 URL（避免给 canonical URL 添参数）。
+ * 首屏初始化：URL 路径 `/es/...` > URL `?lang=` > localStorage > 系统 locale > 默认英语。
+ * 幂等，多次调用只生效一次；不在初始化时改写 URL（避免破坏静态 canonical）。
  */
 export function initI18n(systemLocale?: string | null): Lang {
   if (initialized) {
     return currentLang;
   }
   initialized = true;
+  const pathname =
+    typeof window !== 'undefined' && window.location
+      ? window.location.pathname
+      : '';
   const search =
     typeof window !== 'undefined' && window.location
       ? window.location.search
       : '';
-  const urlLang = resolveLangFromSearch(search);
+  const urlLang = resolveLangFromPath(pathname) ?? resolveLangFromSearch(search);
   const rawStored = readRawStoredLang(getBrowserStorage());
   const locale = systemLocale !== undefined ? systemLocale : resolveRuntimeLocale();
-  currentLang = resolveInitialLang(search, rawStored, locale);
+  currentLang = resolveInitialLang(search, rawStored, locale, pathname);
   if (urlLang !== null) {
     persistLang(getBrowserStorage(), urlLang);
   }
@@ -161,17 +166,21 @@ export function initI18n(systemLocale?: string | null): Lang {
 
 /**
  * 异步水合已保存语言（供 Native 启动时在注入 AsyncStorage 后调用）。
- * 仅在用户尚未手动切换且无 URL `?lang=` 覆盖时，使用已保存的有效语言覆盖首屏自动检测结果。
+ * 仅在用户尚未手动切换且无 URL 路径 `/es/...` / `?lang=` 覆盖时，使用已保存的有效语言覆盖首屏自动检测结果。
  */
 export async function hydrateStoredLang(): Promise<Lang> {
   if (!asyncStorage || hasExplicitUserSelection) {
     return currentLang;
   }
+  const pathname =
+    typeof window !== 'undefined' && window.location
+      ? window.location.pathname
+      : '';
   const search =
     typeof window !== 'undefined' && window.location
       ? window.location.search
       : '';
-  if (resolveLangFromSearch(search) !== null) {
+  if (resolveLangFromPath(pathname) !== null || resolveLangFromSearch(search) !== null) {
     return currentLang;
   }
   try {

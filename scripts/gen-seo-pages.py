@@ -45,9 +45,22 @@ CANONICAL_TOOLS = [
     ("voltage-drop", "NEC Voltage Drop Calculator"),
 ]
 
+CANONICAL_TOOLS_ES = [
+    ("es/offset", "Calculadora de desplazamiento (Offset)"),
+    ("es/stub-up", "Calculadora de doblez de 90°"),
+    ("es/3-point-saddle", "Calculadora de silla de 3 puntos"),
+    ("es/conduit-fill", "Calculadora de llenado de conducto NEC"),
+    ("es/4-point-saddle", "Calculadora de silla de 4 puntos"),
+    ("es/shrink", "Calculadora de contracción de conducto"),
+    ("es/rolling-offset", "Calculadora de desplazamiento compuesto"),
+    ("es/kicked-90", "Calculadora de codo 90° con kick"),
+    ("es/wire-size", "Calculadora de calibre de cable NEC"),
+    ("es/voltage-drop", "Calculadora de caída de tensión NEC"),
+]
+
 
 def build_play_url(slug: str, placement: str) -> str:
-    clean_slug = re.sub(r"[^a-z0-9_-]", "", slug.lower())
+    clean_slug = re.sub(r"[^a-z0-9_-]", "", slug.lower().replace("/", "_"))
     clean_placement = re.sub(r"[^a-z0-9_-]", "", placement.lower())
     referrer = (
         f"utm_source=web_seo&utm_medium=article_cta"
@@ -310,14 +323,14 @@ a { color: #0F2B46; }
 """
 
 PAGE_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
+<html lang="{html_lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}" />
 <link rel="canonical" href="{canonical}" />
-<link rel="alternate" href="android-app://com.robin421.conduitbendcalc/https/{host}/{slug}/" />
+{hreflang_links}<link rel="alternate" href="android-app://com.robin421.conduitbendcalc/https/{host}/{slug}/" />
 <meta property="al:android:package" content="com.robin421.conduitbendcalc" />
 <meta property="al:android:url" content="{canonical}" />
 <meta property="al:android:app_name" content="Conduit Bend Calc" />
@@ -339,8 +352,8 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand-link" href="{base}/">Conduit Bend Calc</a>
-    <a class="topbar-cta" href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','topbar_cta')">Open Calculator &rarr;</a>
+    <a class="brand-link" href="{brand_href}">Conduit Bend Calc</a>
+    <a class="topbar-cta" href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','topbar_cta')">{topbar_cta_label} &rarr;</a>
   </div>
 </header>
 <div class="page-shell">
@@ -350,18 +363,18 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 </main>
 <aside class="side-col">
 <div class="cta">
-<p><strong>Try it free:</strong> <a href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','sidebar_cta')">{cta_label}</a> &mdash; instant mark spacing &amp; shrink, no sign-up.</p>
-<p><a href="{play_url}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','sidebar_play_cta')">Get Conduit Bend Calc on Google Play</a> for 100% offline use and custom bender calibration.</p>
+<p><strong>{sidebar_try_prefix}</strong> <a href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','sidebar_cta')">{cta_label}</a> &mdash; {sidebar_try_suffix}</p>
+<p><a href="{play_url}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','sidebar_play_cta')">{sidebar_play_text}</a> {sidebar_play_suffix}</p>
 </div>
-<nav class="related" aria-label="Related calculators">
-<p><strong>Related:</strong></p>
+<nav class="related" aria-label="{related_aria}">
+<p><strong>{related_heading}</strong></p>
 <ul>
 {related}
 </ul>
 </nav>
 </aside>
 </div>
-<footer>&copy; 2026 Conduit Bend Calc &middot; <a href="{base}/">bendcalc.wattflow.net</a> &middot; <a href="{base}/privacy.html">Privacy Policy</a></footer>
+<footer>&copy; 2026 Conduit Bend Calc &middot; <a href="{footer_home_href}">{footer_home_label}</a> &middot; <a href="{base}/privacy.html">{footer_privacy_label}</a></footer>
 </body>
 </html>
 """
@@ -1832,6 +1845,8 @@ _GUIDE3_PLAY = html.escape(build_play_url("3-point-saddle-3-inch-pipe-marks", "i
 PAGES += [
     dict(
         slug="6-inch-offset-3-4-emt-30-degrees",
+        alt_en="6-inch-offset-3-4-emt-30-degrees",
+        alt_es="es/offset-6-pulgadas-emt-3-4-30-grados",
         title='6" Offset in 3/4" EMT at 30\u00b0: Exact Marks & Shrink',
         desc='Step-by-step tape-measure marks for a 6" offset in 3/4" EMT at 30\u00b0: '
              '12" mark spacing, 1-1/2" shrink allowance, cut-length correction, and dogleg checks.',
@@ -1960,6 +1975,8 @@ after rotating 180&deg;.</p>
     ),
     dict(
         slug="1-2-emt-90-stub-up-take-up-fix",
+        alt_en="1-2-emt-90-stub-up-take-up-fix",
+        alt_es="es/doblez-90-emt-1-2-ajuste-deduccion",
         title='Why Your 1/2" EMT 90\u00b0 Stub Lands Short (+ Take-Up Fix)',
         desc='Worked 14-3/8" stub-up on 1/2" EMT (5" take-up = 9-3/8" mark), Ideal vs '
              'Klein vs Greenlee shoe differences, back-of-90 check, and 12" scrap calibration.',
@@ -2080,6 +2097,8 @@ with a Greenlee 555 hook deduct (7&quot;) puts you <strong>2&quot; off</strong> 
     ),
     dict(
         slug="3-point-saddle-3-inch-pipe-marks",
+        alt_en="3-point-saddle-3-inch-pipe-marks",
+        alt_es="es/silla-3-puntos-tubo-3-pulgadas-marcas",
         title='3-Point Saddle Over a 3" Pipe: 45\u00b0/22.5\u00b0 Marks & Shrink',
         desc='Lay out a 3-point saddle over a 3" obstacle in 60 seconds: 2.5 spacing '
              'multiplier (7-1/2" side marks), 3/16"/in shrink (9/16"), and rim-notch/arrow steps.',
@@ -2192,23 +2211,407 @@ hop over a <strong>3&quot;</strong> obstacle in under 60 seconds.</p>
     ),
 ]
 
+# ---------------------------------------------------------------------------
+# T46: 3 Spanish Worked Electrician Field Guides (authentic US/MX terminology:
+# conducto / tubo conduit / desplazamiento / doblez de 90° / silla de 3 puntos).
+# ---------------------------------------------------------------------------
+_ES_GUIDE1_PLAY = html.escape(build_play_url("es/offset-6-pulgadas-emt-3-4-30-grados", "inline_play_cta"))
+_ES_GUIDE2_PLAY = html.escape(build_play_url("es/doblez-90-emt-1-2-ajuste-deduccion", "inline_play_cta"))
+_ES_GUIDE3_PLAY = html.escape(build_play_url("es/silla-3-puntos-tubo-3-pulgadas-marcas", "inline_play_cta"))
+
+PAGES += [
+    dict(
+        lang="es",
+        slug="es/offset-6-pulgadas-emt-3-4-30-grados",
+        alt_en="6-inch-offset-3-4-emt-30-degrees",
+        alt_es="es/offset-6-pulgadas-emt-3-4-30-grados",
+        title='Offset de 6" en EMT 3/4" a 30\u00b0: Marcas y Contracci\u00f3n',
+        desc='Marcas exactas para desplazamiento de 6" en tubo conduit EMT de 3/4" a 30\u00b0: '
+             '12" entre marcas, contracci\u00f3n de 1-1/2", marcas a 37-1/2" y 25-1/2".',
+        h1='Offset de 6" en EMT de 3/4" a 30\u00b0: Marcas Exactas y Contracci\u00f3n',
+        cta_label="Abrir Calculadora de Desplazamiento",
+        quick_links=[
+            ("/es/offset/", "Calculadora de desplazamiento"),
+            ("/es/shrink/", "Calculadora de contracción"),
+            ("/es/stub-up/", "Calculadora de doblez de 90°"),
+            ("/es/3-point-saddle/", "Calculadora de silla de 3 puntos"),
+            ("/es/conduit-fill/", "Llenado de conducto NEC"),
+        ],
+        related=[
+            ("/es/doblez-90-emt-1-2-ajuste-deduccion/", 'Doblez de 90° en EMT de 1/2": Ajuste de Deducción'),
+            ("/es/silla-3-puntos-tubo-3-pulgadas-marcas/", 'Silla de 3 Puntos Sobre Tubo de 3": Marcas 45°/22.5°'),
+            ("/es/offset/", "Calculadora de desplazamiento (Offset)"),
+            ("/es/stub-up/", "Calculadora de doblez de 90°"),
+            ("/es/3-point-saddle/", "Calculadora de silla de 3 puntos"),
+            ("/es/conduit-fill/", "Calculadora de llenado de conducto NEC"),
+        ],
+        body=f"""
+<p>Mides <strong>36&quot;</strong> desde el &uacute;ltimo cople hasta una viga estructural,
+doblas un <strong>desplazamiento (offset) de 6&quot; a 30&deg;</strong> en
+<strong>tubo conduit EMT de 3/4&quot;</strong>, lo subes en la plataforma y el segundo
+doblez pega en la viga <strong>1-1/2&quot; antes</strong>. No le&iacute;ste mal la cinta
+m&eacute;trica: falt&oacute; sumar la <em>contracci&oacute;n</em>. Aqu&iacute; tienes el
+trazado exacto paso a paso para que cada offset de 6&quot; libre a la primera.</p>
+
+<h2>Datos del trazado en obra</h2>
+<ul>
+<li><strong>Conducto y doblador:</strong> tubo conduit EMT de 3/4&quot; en doblador manual
+est&aacute;ndar de 3/4&quot; (Ideal 74-027 o Klein 51604; ambos con deducci&oacute;n de 6&quot; en 90&deg;).</li>
+<li><strong>Altura del desplazamiento:</strong> 6&quot; con &aacute;ngulo de <strong>30&deg;</strong>
+(cuenta sencilla en obra, jalado suave de cable y holgura bajo el l&iacute;mite NEC de 360&deg;).</li>
+<li><strong>Distancia del extremo fijo (cople/caja) al obst&aacute;culo:</strong> 36&quot;.</li>
+<li><strong>Tramo recto total (cople al tablero):</strong> 84&quot; (7&#39;-0&quot;).</li>
+</ul>
+
+<h2>Las dos constantes a 30&deg; (y tabla completa de &aacute;ngulos)</h2>
+<p>Para un desplazamiento a 30&deg;, el multiplicador es <strong>2.0</strong> (csc&nbsp;30&deg; = 2.0),
+lo que da <strong>6&quot; &times; 2.0 = 12&quot;</strong> entre marcas. La contracci&oacute;n es
+<strong>1/4&quot; por pulgada</strong> de altura, dando
+<strong>6&quot; &times; 1/4&quot; = 1-1/2&quot;</strong> (1.5&quot;) de contracci&oacute;n total.</p>
+<table>
+<tr><th>&Aacute;ngulo</th><th>Multiplicador</th><th>Contracci&oacute;n / pulgada</th><th>Contracci&oacute;n en offset de 6&quot;</th></tr>
+<tr><td>10&deg;</td><td>6.0</td><td>1/16&quot;</td><td>3/8&quot;</td></tr>
+<tr><td>15&deg;</td><td>3.9</td><td>1/8&quot;</td><td>3/4&quot;</td></tr>
+<tr><td>22.5&deg;</td><td>2.6</td><td>3/16&quot;</td><td>1-1/8&quot;</td></tr>
+<tr><td><strong>30&deg;</strong></td><td><strong>2.0</strong></td><td><strong>1/4&quot;</strong></td><td><strong>1-1/2&quot;</strong></td></tr>
+<tr><td>45&deg;</td><td>1.4</td><td>3/8&quot;</td><td>2-1/4&quot;</td></tr>
+<tr><td>60&deg;</td><td>1.2</td><td>1/2&quot;</td><td>3&quot;</td></tr>
+</table>
+
+<h2>Tabla de marcas en cinta m&eacute;trica (paso a paso)</h2>
+<p>Engancha la cinta en el <strong>extremo fijo</strong> (0&quot; en el cople o caja existente)
+y rodea todo el per&iacute;metro del tubo conduit EMT de 3/4&quot; con el l&aacute;piz para ver
+la marca con claridad despu&eacute;s de girar 180&deg;.</p>
+<table>
+<tr><th>Paso de trazado</th><th>F&oacute;rmula</th><th>Lectura en cinta</th><th>Referencia del doblador</th></tr>
+<tr><td>Marca 1 (lado del obst&aacute;culo)</td><td>36&quot; + 1-1/2&quot; contracci&oacute;n</td><td><strong>37-1/2&quot;</strong></td><td>Flecha &rarr; 30&deg;</td></tr>
+<tr><td>Marca 2 (lado del extremo fijo)</td><td>37-1/2&quot; &minus; 12&quot; distancia</td><td><strong>25-1/2&quot;</strong></td><td>Flecha &rarr; 30&deg;</td></tr>
+<tr><td>Verificaci&oacute;n de distancia</td><td>37-1/2&quot; &minus; 25-1/2&quot;</td><td><strong>12&quot;</strong></td><td>Exacto 6&quot; &times; 2.0</td></tr>
+<tr><td>Corte previo (tramo de 84&quot;)</td><td>84&quot; + 1-1/2&quot; contracci&oacute;n</td><td><strong>85-1/2&quot;</strong></td><td>O doblar tramo de 10&#39; y recortar</td></tr>
+</table>
+
+<div class="diagram-card">
+<svg viewBox="0 0 640 220" role="img" aria-label="Diagrama de desplazamiento de 6 pulgadas en conducto EMT de 3/4 de pulgada a 30 grados con Marca 2 a 25-1/2 pulgadas, Marca 1 a 37-1/2 pulgadas, 12 pulgadas entre marcas y 1-1/2 pulgadas de contraccion">
+  <rect x="0" y="0" width="640" height="220" fill="#FFFFFF" />
+  <text x="20" y="24" fill="#52677B" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">EMT 3/4&quot; &middot; Offset 6&quot; a 30&deg; &middot; Contracci&oacute;n +1-1/2&quot; &middot; Corte previo 85-1/2&quot;</text>
+  <line x1="40" y1="164" x2="600" y2="164" stroke="#D9E2EB" stroke-width="1.5" stroke-dasharray="5 4" />
+  <rect x="372" y="108" width="224" height="56" fill="#E8EEF4" stroke="#52677B" stroke-width="1.5" />
+  <text x="484" y="140" text-anchor="middle" fill="#0F2B46" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">Obst&aacute;culo (6&quot; alto, a 36&quot;)</text>
+  <path d="M 44 164 L 236 164 L 356 95 L 596 95" fill="none" stroke="#0F2B46" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <line x1="44" y1="152" x2="44" y2="176" stroke="#52677B" stroke-width="2" />
+  <text x="44" y="194" text-anchor="middle" fill="#52677B" font-size="11" font-weight="600" style="font-variant-numeric:tabular-nums">0&quot; Extremo fijo</text>
+  <line x1="236" y1="150" x2="236" y2="178" stroke="#C62828" stroke-width="3" />
+  <text x="236" y="196" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Marca 2: 25-1/2&quot;</text>
+  <text x="236" y="211" text-anchor="middle" fill="#52677B" font-size="11">Flecha (30&deg;)</text>
+  <line x1="356" y1="81" x2="356" y2="109" stroke="#C62828" stroke-width="3" />
+  <text x="356" y="57" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Marca 1: 37-1/2&quot;</text>
+  <text x="356" y="72" text-anchor="middle" fill="#52677B" font-size="11">Flecha (30&deg; &middot; 36&quot; + 1-1/2&quot; contracci&oacute;n)</text>
+  <line x1="244" y1="142" x2="344" y2="84" stroke="#52677B" stroke-width="1.5" stroke-dasharray="3 3" />
+  <text x="276" y="106" text-anchor="end" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Distancia 12&quot;</text>
+  <text x="276" y="121" text-anchor="end" fill="#52677B" font-size="11">(6&quot; &times; 2.0)</text>
+  <line x1="608" y1="95" x2="608" y2="164" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="602" y1="95" x2="614" y2="95" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="602" y1="164" x2="614" y2="164" stroke="#0F2B46" stroke-width="1.5" />
+  <text x="616" y="133" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">6&quot;</text>
+</svg>
+<p class="diagram-caption">Mant&eacute;n el gancho del doblador apuntando en la misma direcci&oacute;n en ambas marcas de flecha y gira el conducto 180&deg; entre dobleces para evitar desviaciones (dogleg).</p>
+</div>
+
+<h2>Secuencia de doblado (sin desviaci&oacute;n / cero dogleg)</h2>
+<ol>
+<li><strong>Primer doblez de 30&deg;:</strong> Alinea la <strong>flecha</strong> del doblador en <strong>25-1/2&quot;</strong>, apoya peso firme con el pie en el tal&oacute;n para que el conducto no resbale y jala con precisi&oacute;n hasta la marca de <strong>30&deg;</strong>.</li>
+<li><strong>Gira 180&deg; y desliza a 37-1/2&quot;:</strong> Mant&eacute;n el gancho del doblador viendo hacia el <em>mismo lado</em> del tramo, desliza hasta <strong>37-1/2&quot;</strong> y gira el tubo conduit exactamente <strong>180&deg;</strong>.</li>
+<li><strong>Alinea a ojo antes de jalar:</strong> P&aacute;rate detr&aacute;s del mango y verifica que la pierna ya doblada est&eacute; centrada con el mango; incluso un giro de 2&deg; saca el extremo final una pulgada de la pared.</li>
+<li><strong>Segundo doblez de 30&deg; y prueba en piso:</strong> Dobla en <strong>37-1/2&quot;</strong> hasta <strong>30&deg;</strong> y apoya el conducto sobre concreto plano para confirmar que ambos tramos queden paralelos con exactamente <strong>6&quot;</strong> de altura.</li>
+</ol>
+
+<h2>Lista de 4 errores comunes en obra</h2>
+<ul>
+<li><strong>Olvidar la contracci&oacute;n:</strong> Marcar en 36&quot; y 24&quot; deja el desplazamiento a 34-1/2&quot;, chocando 1-1/2&quot; antes contra la viga.</li>
+<li><strong>Usar la estrella o la muesca en lugar de la flecha:</strong> Un offset est&aacute;ndar usa siempre la <strong>flecha</strong> en ambas marcas para respetar los 12&quot; exactos.</li>
+<li><strong>Voltear la direcci&oacute;n del doblador entre marcas:</strong> Cambiar hacia d&oacute;nde apunta el gancho desplaza los puntos tangentes y arruina la altura de 6&quot;.</li>
+<li><strong>Pasarse de 30&deg; en EMT de 3/4&quot;:</strong> Detente justo en la l&iacute;nea de 30&deg; del cabezal y verifica con un nivel torpedo magn&eacute;tico o sobre el piso plano.</li>
+</ul>
+
+<div class="inline-cta-box">
+<p><strong>&iquest;Necesitas marcas para una altura irregular como 4-5/8&quot; a 22.5&deg; o conducto r&iacute;gido?</strong> Calc&uacute;lalo al instante en el navegador o sin conexi&oacute;n en cuartos el&eacute;ctricos.</p>
+<div class="inline-cta-actions">
+<a class="hero-cta" href="/es/offset/" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','inline_tool_cta')">Abrir Calculadora de Desplazamiento &rarr;</a>
+<a class="inline-cta-secondary" href="{_ES_GUIDE1_PLAY}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','inline_play_cta')">Descargar App Android sin conexi&oacute;n</a>
+</div>
+</div>
+""",
+        faqs=[
+            ('¿A qué distancia van las marcas de un desplazamiento de 6" a 30 grados?',
+             'A 12 pulgadas entre s&iacute;. El multiplicador de 30&deg; (csc 30&deg;) es exactamente 2.0, as&iacute; que 6&quot; &times; 2.0 = 12&quot; entre marcas tanto en EMT de 1/2&quot; como de 3/4&quot;.'),
+            ('¿Cuánto contrae un offset de 6" a 30 grados en tubo conduit?',
+             '1-1/2 pulgadas (1.5&quot;). A 30&deg; el conducto contrae 1/4&quot; por cada pulgada de altura: 6&quot; &times; 1/4&quot; = 1-1/2&quot;. Suma 1-1/2&quot; a tu distancia al obst&aacute;culo (36&quot; + 1-1/2&quot; = 37-1/2&quot;) y al corte previo.'),
+            ('¿Debo cortar el EMT de 3/4" a 85-1/2" antes de doblar un tramo de 84"?',
+             'Si debes cortar antes de doblar, suma la contracci&oacute;n de 1-1/2&quot; (84&quot; + 1-1/2&quot; = 85-1/2&quot;). Con un tramo completo de 10 pies es a&uacute;n m&aacute;s seguro doblar primero ambos 30&deg; y recortar al final a 84&quot;.'),
+            ('¿Qué marca del doblador se usa para un desplazamiento a 30 grados?',
+             'Usa la flecha del doblador en ambas marcas (25-1/2&quot; y 37-1/2&quot;) manteniendo el gancho apuntando en la misma direcci&oacute;n a lo largo del conducto para conservar la separaci&oacute;n de 12&quot;.'),
+        ],
+    ),
+    dict(
+        lang="es",
+        slug="es/doblez-90-emt-1-2-ajuste-deduccion",
+        alt_en="1-2-emt-90-stub-up-take-up-fix",
+        alt_es="es/doblez-90-emt-1-2-ajuste-deduccion",
+        title='Doblez de 90\u00b0 en EMT 1/2": Ajuste de Deducci\u00f3n y Marcas',
+        desc='Subida de 90\u00b0 de 14-3/8" en EMT 1/2": prueba de recorte de 12", '
+             'Ideal 74-026 vs Klein 51603 vs Greenlee 555/1800 y ajuste real de deducci\u00f3n.',
+        h1='Por qu\u00e9 tu Doblez de 90\u00b0 en EMT de 1/2" Queda Corto (Ajuste de Deducci\u00f3n)',
+        cta_label="Abrir Calculadora de Doblez de 90°",
+        quick_links=[
+            ("/es/stub-up/", "Calculadora de doblez de 90°"),
+            ("/es/offset/", "Calculadora de desplazamiento"),
+            ("/es/3-point-saddle/", "Calculadora de silla de 3 puntos"),
+            ("/es/conduit-fill/", "Llenado de conducto NEC"),
+        ],
+        related=[
+            ("/es/offset-6-pulgadas-emt-3-4-30-grados/", 'Offset de 6" en EMT 3/4" a 30°: Marcas y Contracción'),
+            ("/es/silla-3-puntos-tubo-3-pulgadas-marcas/", 'Silla de 3 Puntos Sobre Tubo de 3": Marcas 45°/22.5°'),
+            ("/es/stub-up/", "Calculadora de doblez de 90°"),
+            ("/es/offset/", "Calculadora de desplazamiento (Offset)"),
+            ("/es/3-point-saddle/", "Calculadora de silla de 3 puntos"),
+            ("/es/conduit-fill/", "Calculadora de llenado de conducto NEC"),
+        ],
+        body=f"""
+<p>Todo electricista aprende la regla desde el primer d&iacute;a: resta <strong>5&quot;</strong>
+de deducci&oacute;n (recogida / take-up) en un <strong>doblez de 90&deg; de conducto EMT de
+1/2&quot;</strong>. Necesitas una subida de <strong>14-3/8&quot;</strong> hacia un desconectador,
+marcas a <strong>9-3/8&quot;</strong>, doblas 90&deg;, lo paras en la losa y tu cinta mide
+14-1/8&quot; o 14-3/4&quot;. Aqu&iacute; ves por qu&eacute; los dobladores no siempre coinciden
+y la prueba de recorte de 12&quot; en 60 segundos para ajustar cada subida a 1/16&quot;.</p>
+
+<h2>Ejemplo pr&aacute;ctico: subida de 90&deg; de 14-3/8&quot; en EMT de 1/2&quot;</h2>
+<p>Altura terminada objetivo <strong>H = 14-3/8&quot;</strong> (14.375&quot;), medida desde
+la <strong>espalda exterior del 90&deg;</strong> (piso plano) hasta el corte superior del tramo
+vertical. Con la deducci&oacute;n est&aacute;ndar de <strong>5&quot;</strong>:
+<strong>Marca desde el extremo = 14-3/8&quot; &minus; 5&quot; = 9-3/8&quot;</strong>.</p>
+<table>
+<tr><th>Di&aacute;metro EMT</th><th>Deducci&oacute;n est&aacute;ndar</th><th>Marca para subida de 14-3/8&quot;</th><th>Referencia</th></tr>
+<tr><td><strong>1/2&quot; EMT</strong></td><td><strong>5&quot;</strong></td><td><strong>9-3/8&quot;</strong></td><td>Flecha</td></tr>
+<tr><td>3/4&quot; EMT</td><td>6&quot;</td><td>8-3/8&quot;</td><td>Flecha</td></tr>
+<tr><td>1&quot; EMT</td><td>8&quot;</td><td>6-3/8&quot;</td><td>Flecha</td></tr>
+</table>
+
+<div class="diagram-card">
+<svg viewBox="0 0 640 230" role="img" aria-label="Diagrama de doblez de 90 grados de 14-3/8 pulgadas en conducto EMT de 1/2 pulgada mostrando marca de flecha a 9-3/8 pulgadas, deduccion de 5 pulgadas y prueba de calibracion de 12 pulgadas">
+  <rect x="0" y="0" width="640" height="230" fill="#FFFFFF" />
+  <text x="20" y="22" fill="#52677B" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">EMT 1/2&quot; Doblez de 90&deg; &middot; Objetivo 14-3/8&quot; &minus; 5&quot; Deducci&oacute;n = Marca 9-3/8&quot;</text>
+  <line x1="36" y1="192" x2="604" y2="192" stroke="#52677B" stroke-width="2" />
+  <text x="598" y="210" text-anchor="end" fill="#52677B" font-size="11" font-weight="600">Piso / Espalda del 90&deg; (Medir desde aqu&iacute;)</text>
+  <path d="M 430 188 L 216 188 A 62 62 0 0 1 154 126 L 154 38" fill="none" stroke="#0F2B46" stroke-width="7" stroke-linecap="round" />
+  <line x1="140" y1="126" x2="168" y2="126" stroke="#C62828" stroke-width="3" />
+  <text x="176" y="122" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Marca flecha: 9-3/8&quot;</text>
+  <text x="176" y="137" fill="#52677B" font-size="11">medida desde el corte superior</text>
+  <line x1="104" y1="38" x2="104" y2="192" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="98" y1="38" x2="110" y2="38" stroke="#0F2B46" stroke-width="1.5" />
+  <line x1="98" y1="192" x2="110" y2="192" stroke="#0F2B46" stroke-width="1.5" />
+  <text x="94" y="110" text-anchor="end" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">14-3/8&quot;</text>
+  <text x="94" y="125" text-anchor="end" fill="#52677B" font-size="11">Espalda 90&deg;</text>
+  <line x1="130" y1="126" x2="130" y2="192" stroke="#C62828" stroke-width="1.5" stroke-dasharray="3 2" />
+  <text x="124" y="164" text-anchor="end" fill="#C62828" font-size="11" font-weight="700" style="font-variant-numeric:tabular-nums">5&quot; Deducci&oacute;n</text>
+  <rect x="360" y="42" width="256" height="114" rx="6" fill="#F5F8FB" stroke="#D9E2EB" stroke-width="1.5" />
+  <text x="374" y="64" fill="#0F2B46" font-size="12" font-weight="700">Prueba de 12&quot; en 60 segundos</text>
+  <text x="374" y="84" fill="#52677B" font-size="11.5" style="font-variant-numeric:tabular-nums">1. Marca 12&quot; en recorte y dobla 90&deg;</text>
+  <text x="374" y="102" fill="#52677B" font-size="11.5" style="font-variant-numeric:tabular-nums">2. Mide altura piso-a-punta (S)</text>
+  <text x="374" y="122" fill="#0F2B46" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Deducci&oacute;n real = S &minus; 12&quot;</text>
+  <text x="374" y="141" fill="#C62828" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">Ej: 17-3/8&quot; &minus; 12&quot; = 5-3/8&quot; &rarr; Marca 9&quot;</text>
+</svg>
+<p class="diagram-caption">Introduce la punta medida de 9-3/8&quot; hacia adelante por el gancho del doblador, alinea la flecha en la marca y mide la altura terminada apoyando el codo sobre piso plano.</p>
+</div>
+
+<h2>Por qu&eacute; Ideal, Klein y Greenlee no siempre coinciden</h2>
+<p>Dos dobladores manuales marcados con &laquo;5&quot; Take-Up&raquo; tienen radios de zapata distintos,
+y los dobladores el&eacute;ctricos o mec&aacute;nicos cambian el <strong>punto de referencia</strong>
+de la flecha al <strong>frente del gancho</strong>:</p>
+<table>
+<tr><th>Modelo de doblador</th><th>Conducto</th><th>Radio central (R)</th><th>Deducci&oacute;n / Take-Up</th><th>Punto de referencia</th></tr>
+<tr><td><strong>Ideal 74-026</strong></td><td>1/2&quot; EMT</td><td>4-5/16&quot; (4.3125&quot;)</td><td>5&quot;</td><td>Flecha</td></tr>
+<tr><td><strong>Klein 51603</strong></td><td>1/2&quot; EMT</td><td>4-5/8&quot; (4.625&quot;)</td><td>5&quot;</td><td>Flecha</td></tr>
+<tr><td><strong>Greenlee 555</strong> (el&eacute;ctrico)</td><td>1/2&quot; EMT</td><td>4-5/16&quot; (4.3125&quot;)</td><td>7&quot;</td><td>Frente del gancho</td></tr>
+<tr><td><strong>Greenlee 1800</strong> (mec&aacute;nico)</td><td>1/2&quot; R&iacute;gido</td><td>2-5/8&quot; (2.625&quot;)</td><td>5-1/2&quot; (subida m&iacute;n. 6-1/2&quot;)</td><td>Frente del gancho</td></tr>
+</table>
+<p>El radio central del Klein 51603 es <strong>5/16&quot; mayor</strong> que el del Ideal 74-026,
+lo que cambia la ganancia y los dobleces espalda con espalda. Y confundir una deducci&oacute;n
+manual de flecha (5&quot;) con el gancho del Greenlee 555 (7&quot;) te deja <strong>2&quot; fuera</strong>
+al instante.</p>
+
+<h2>Prueba de calibraci&oacute;n con recorte de 12&quot; en 60 segundos</h2>
+<ol>
+<li>Marca exactamente <strong>12&quot;</strong> desde un extremo cortado a escuadra en un recorte de EMT de 1/2&quot; (m&iacute;nimo 24&quot; de largo).</li>
+<li>Alinea la <strong>flecha</strong> en 12&quot;, aplica presi&oacute;n fuerte con el pie en el tal&oacute;n y dobla un <strong>90&deg;</strong> exacto verificado con nivel torpedo magn&eacute;tico (jala ~91&deg;&ndash;92&deg; para compensar el rebote el&aacute;stico).</li>
+<li>Apoya el conducto sobre una losa plana y mide del piso hasta la punta del tramo vertical (<em>S</em>).</li>
+<li>Calcula <strong>Deducci&oacute;n real = S &minus; 12&quot;</strong>. Ejemplo: si <em>S</em> = <strong>17-3/8&quot;</strong>, tu deducci&oacute;n real es <strong>17-3/8&quot; &minus; 12&quot; = 5-3/8&quot;</strong>, as&iacute; que tu subida de 14-3/8&quot; se marca a <strong>14-3/8&quot; &minus; 5-3/8&quot; = 9&quot; exactas</strong>.</li>
+</ol>
+<div class="callout-box">
+<p><strong>Comprobaci&oacute;n extra de ganancia y radio:</strong> Corta un recorte a exactamente <strong>24&quot;</strong>, dobla un 90&deg; al centro y mide ambas piernas <em>A</em> y <em>B</em> desde la espalda del 90&deg; hasta cada punta. La ganancia exacta del 90&deg; es <strong>G = A + B &minus; 24&quot;</strong> y el radio central real es <strong>R = G &divide; 0.4292</strong>.</p>
+</div>
+
+<h2>Lista de 4 errores comunes en obra</h2>
+<ul>
+<li><strong>Punta orientada hacia atr&aacute;s:</strong> El tramo medido de 9-3/8&quot; debe pasar hacia adelante a trav&eacute;s del gancho, no hacia el lado del mango.</li>
+<li><strong>Medir hasta la esquina interior:</strong> La altura de subida siempre se mide desde la espalda exterior (piso plano) hasta el extremo cortado vertical.</li>
+<li><strong>Quedarse corto a 87&deg;&ndash;88&deg; o presionar poco con el pie:</strong> Si la zapata resbala se mueve la marca de la flecha, y un 90&deg; abierto se balancea y falsea la lectura.</li>
+<li><strong>Mezclar referencias de marca:</strong> Usar 5&quot; de flecha en un Greenlee 555 (7&quot; en frente del gancho) o un Greenlee 1800 (5-1/2&quot; en EMT/r&iacute;gido de 1/2&quot;) arruina el tubo conduit de inmediato.</li>
+</ul>
+
+<div class="inline-cta-box">
+<p><strong>Calcula cualquier doblez de 90&deg; en EMT o conducto r&iacute;gido/IMC al instante</strong> &mdash; o usa el flujo guiado de calibraci&oacute;n de 12&quot; en nuestra app Android sin conexi&oacute;n.</p>
+<div class="inline-cta-actions">
+<a class="hero-cta" href="/es/stub-up/" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','inline_tool_cta')">Abrir Calculadora de Doblez de 90&deg; &rarr;</a>
+<a class="inline-cta-secondary" href="{_ES_GUIDE2_PLAY}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','inline_play_cta')">Descargar App Android sin conexi&oacute;n</a>
+</div>
+</div>
+""",
+        faqs=[
+            ('¿Dónde marco el conducto EMT de 1/2" para una subida de 90° de 14-3/8"?',
+             'A 9-3/8&quot; desde el extremo cortado en un doblador manual est&aacute;ndar de 1/2&quot; EMT (14-3/8&quot; &minus; 5&quot; de deducci&oacute;n = 9-3/8&quot;). Pasa esa punta por el gancho y coloca la flecha sobre la marca.'),
+            ('¿Por qué mi doblez de 90° en EMT de 1/2" queda 1/4" o 3/8" corto?',
+             'Las causas m&aacute;s comunes son una zapata desgastada cuya deducci&oacute;n real ya cambi&oacute; (por ejemplo 5-3/8&quot; en vez de 5&quot;), poca presi&oacute;n del pie que deja caminar el conducto o pasarse de 90&deg;. La prueba de 12&quot; te da la deducci&oacute;n real en 60 segundos.'),
+            ('¿Cuál es la diferencia entre Ideal 74-026, Klein 51603 y Greenlee 555?',
+             'Ideal 74-026 (R = 4-5/16&quot;) y Klein 51603 (R = 4-5/8&quot;) usan deducci&oacute;n de 5&quot; en la flecha para 1/2&quot; EMT pero tienen radios distintos. El Greenlee 555 el&eacute;ctrico usa 7&quot; de deducci&oacute;n medidos desde el frente del gancho.'),
+            ('¿Cómo se mide con precisión un doblez de 90° en obra?',
+             'Apoya el conducto de pie sobre una losa plana para que el tramo horizontal asiente parejo, verifica 90&deg; a plomo con nivel torpedo y apoya la cinta en el piso junto al tramo vertical hasta la punta cortada.'),
+        ],
+    ),
+    dict(
+        lang="es",
+        slug="es/silla-3-puntos-tubo-3-pulgadas-marcas",
+        alt_en="3-point-saddle-3-inch-pipe-marks",
+        alt_es="es/silla-3-puntos-tubo-3-pulgadas-marcas",
+        title='Silla de 3 Puntos para Obst\u00e1culo de 3": Marcas 45\u00b0/22.5\u00b0',
+        desc='Traza una silla de 3 puntos en tubo conduit sobre un obst\u00e1culo de 3" a 36": '
+             '7-1/2" a cada lado (2.5\u00d7), contracci\u00f3n de 9/16" y verificaci\u00f3n OD de 3-1/2".',
+        h1='Silla de 3 Puntos Sobre un Tubo de 3": Marcas a 45\u00b0/22.5\u00b0 y Contracci\u00f3n',
+        cta_label="Abrir Calculadora de Silla de 3 Puntos",
+        quick_links=[
+            ("/es/3-point-saddle/", "Calculadora de silla de 3 puntos"),
+            ("/es/4-point-saddle/", "Calculadora de silla de 4 puntos"),
+            ("/es/offset/", "Calculadora de desplazamiento"),
+            ("/es/stub-up/", "Calculadora de doblez de 90°"),
+            ("/es/conduit-fill/", "Llenado de conducto NEC"),
+        ],
+        related=[
+            ("/es/offset-6-pulgadas-emt-3-4-30-grados/", 'Offset de 6" en EMT 3/4" a 30°: Marcas y Contracción'),
+            ("/es/doblez-90-emt-1-2-ajuste-deduccion/", 'Doblez de 90° en EMT de 1/2": Ajuste de Deducción'),
+            ("/es/3-point-saddle/", "Calculadora de silla de 3 puntos"),
+            ("/es/offset/", "Calculadora de desplazamiento (Offset)"),
+            ("/es/stub-up/", "Calculadora de doblez de 90°"),
+            ("/es/conduit-fill/", "Calculadora de llenado de conducto NEC"),
+        ],
+        body=f"""
+<p>Una silla de 3 puntos combina un <strong>doblez central de 45&deg;</strong> con dos
+<strong>dobleces laterales de regreso a 22.5&deg;</strong> (22.5&deg; + 22.5&deg; = 45&deg;).
+Memoriza dos constantes de obra &mdash; <strong>2.5</strong> para la separaci&oacute;n lateral
+y <strong>3/16&quot; por pulgada</strong> para la contracci&oacute;n central &mdash; y podr&aacute;s
+trazar una silla limpia sobre un obst&aacute;culo de <strong>3&quot;</strong> en menos de un minuto.</p>
+
+<h2>Datos en obra y c&aacute;lculo exacto</h2>
+<ul>
+<li><strong>Altura libre de la silla (H):</strong> 3&quot; (por ejemplo, cruzar un tubo de 3&quot; de di&aacute;metro exterior real o un EMT de 2-1/2&quot; de 2.875&quot; OD con 1/8&quot; de holgura).</li>
+<li><strong>Distancia desde el extremo fijo (0&quot;) al centro del obst&aacute;culo:</strong> 36&quot;.</li>
+<li><strong>Separaci&oacute;n lateral (multiplicador de obra 2.5&times;):</strong> 3&quot; &times; 2.5 = <strong>7-1/2&quot;</strong> a cada lado (<strong>15&quot;</strong> de ancho total; csc&nbsp;22.5&deg; &asymp; 2.613 se redondea a 2.5 por el radio de la zapata).</li>
+<li><strong>Contracci&oacute;n en la marca central (3/16&quot; por pulgada):</strong> 3&quot; &times; 3/16&quot; = <strong>9/16&quot;</strong> (0.5625&quot;).</li>
+</ul>
+
+<h2>Tabla de marcas en cinta m&eacute;trica (0&quot; = extremo fijo)</h2>
+<table>
+<tr><th>Marca</th><th>F&oacute;rmula</th><th>Lectura en cinta</th><th>Doblez y referencia del doblador</th></tr>
+<tr><td>Marca 1 (Lado izquierdo)</td><td>36-9/16&quot; &minus; 7-1/2&quot;</td><td><strong>29-1/16&quot;</strong></td><td>22.5&deg; &middot; Flecha (gancho hacia el centro)</td></tr>
+<tr><td><strong>Marca 2 (Centro C)</strong></td><td>36&quot; + 9/16&quot; contracci&oacute;n</td><td><strong>36-9/16&quot;</strong></td><td><strong>45&deg; &middot; Muesca del borde (doblar primero)</strong></td></tr>
+<tr><td>Marca 3 (Lado derecho)</td><td>36-9/16&quot; + 7-1/2&quot;</td><td><strong>44-1/16&quot;</strong></td><td>22.5&deg; &middot; Flecha (gancho hacia el centro)</td></tr>
+<tr><td>Verificaci&oacute;n de ancho</td><td>44-1/16&quot; &minus; 29-1/16&quot;</td><td><strong>15&quot;</strong></td><td>7-1/2&quot; izq. + 7-1/2&quot; der.</td></tr>
+</table>
+
+<div class="callout-box">
+<p><strong>Verificaci&oacute;n clave en obra: &iexcl;un tubo nominal de 3&quot; mide 3-1/2&quot; OD!</strong></p>
+<p>El conducto EMT nominal de 3&quot;, el conducto r&iacute;gido de 3&quot; y el tubo de acero C&eacute;dula 40 de 3&quot; miden en realidad <strong>3-1/2&quot; (3.5&quot;) de di&aacute;metro exterior (OD)</strong>. Mide siempre con tu cinta: para <strong>H = 3-1/2&quot;</strong>, la separaci&oacute;n lateral es 3.5&quot; &times; 2.5 = <strong>8-3/4&quot;</strong> (<strong>17-1/2&quot;</strong> en total) y la contracci&oacute;n central es 3.5&quot; &times; 3/16&quot; = <strong>21/32&quot;</strong> (&asymp; <strong>5/8&quot;</strong> en cinta).</p>
+</div>
+
+<div class="diagram-card">
+<svg viewBox="0 0 640 225" role="img" aria-label="Diagrama de silla de 3 puntos sobre un obstaculo de 3 pulgadas mostrando Marca 1 a 29-1/16 pulgadas, Marca central 2 a 36-9/16 pulgadas en muesca del borde, Marca 3 a 44-1/16 pulgadas y 7-1/2 pulgadas a cada lado">
+  <rect x="0" y="0" width="640" height="225" fill="#FFFFFF" />
+  <text x="20" y="22" fill="#52677B" font-size="12" font-weight="600" style="font-variant-numeric:tabular-nums">Silla de 3 Puntos 45&deg;/22.5&deg; &middot; Altura 3&quot; &middot; Lados 7-1/2&quot; (2.5&times;) &middot; Contracci&oacute;n +9/16&quot;</text>
+  <line x1="36" y1="168" x2="604" y2="168" stroke="#D9E2EB" stroke-width="1.5" stroke-dasharray="5 4" />
+  <circle cx="320" cy="144" r="24" fill="#E8EEF4" stroke="#52677B" stroke-width="2" />
+  <text x="320" y="148" text-anchor="middle" fill="#0F2B46" font-size="11" font-weight="700" style="font-variant-numeric:tabular-nums">3&quot; H</text>
+  <path d="M 44 168 L 190 168 L 320 112 L 450 168 L 596 168" fill="none" stroke="#0F2B46" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <line x1="44" y1="156" x2="44" y2="180" stroke="#52677B" stroke-width="2" />
+  <text x="44" y="196" text-anchor="middle" fill="#52677B" font-size="11" font-weight="600">0&quot; Fin</text>
+  <line x1="190" y1="154" x2="190" y2="182" stroke="#C62828" stroke-width="3" />
+  <text x="190" y="199" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Marca 1: 29-1/16&quot;</text>
+  <text x="190" y="214" text-anchor="middle" fill="#52677B" font-size="11">Flecha 22.5&deg; (gancho &rarr; C)</text>
+  <line x1="320" y1="98" x2="320" y2="126" stroke="#C62828" stroke-width="3" />
+  <text x="320" y="64" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Marca 2 (C): 36-9/16&quot;</text>
+  <text x="320" y="79" text-anchor="middle" fill="#52677B" font-size="11">Muesca 45&deg; (36&quot; + 9/16&quot; contracci&oacute;n)</text>
+  <line x1="450" y1="154" x2="450" y2="182" stroke="#C62828" stroke-width="3" />
+  <text x="450" y="199" text-anchor="middle" fill="#C62828" font-size="12" font-weight="700" style="font-variant-numeric:tabular-nums">Marca 3: 44-1/16&quot;</text>
+  <text x="450" y="214" text-anchor="middle" fill="#52677B" font-size="11">Flecha 22.5&deg; (gancho &larr; C)</text>
+  <text x="242" y="128" text-anchor="end" fill="#0F2B46" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">7-1/2&quot;</text>
+  <text x="398" y="128" text-anchor="start" fill="#0F2B46" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">7-1/2&quot;</text>
+  <text x="320" y="196" text-anchor="middle" fill="#0F2B46" font-size="11.5" font-weight="700" style="font-variant-numeric:tabular-nums">Ancho total 15&quot;</text>
+</svg>
+<p class="diagram-caption">Dobla primero la cresta central de 45&deg; en la muesca del borde (rim notch), luego gira el conducto y haz los dos dobleces de regreso a 22.5&deg; en la flecha con el gancho viendo hacia el centro.</p>
+</div>
+
+<h2>Secuencia de doblado: muesca central primero, luego flechas</h2>
+<ol>
+<li><strong>Doblez 1 &mdash; Centro a 45&deg; (Muesca del borde):</strong> Alinea la Marca 2 (<strong>36-9/16&quot;</strong>, rotulada <em>C</em>) con la <strong>muesca del borde</strong> (l&aacute;grima / rim notch) y jala un doblez limpio a <strong>45&deg;</strong>.</li>
+<li><strong>Doblez 2 &mdash; Izquierdo a 22.5&deg; (Flecha, gancho hacia el centro):</strong> Gira el conducto <strong>180&deg;</strong> en su plano, desliza el doblador a la Marca 1 (<strong>29-1/16&quot;</strong>) con el <strong>gancho viendo hacia el doblez central de 45&deg;</strong>, alinea la <strong>flecha</strong>, revisa que no haya desv&iacute;o y dobla a <strong>22.5&deg;</strong>.</li>
+<li><strong>Doblez 3 &mdash; Derecho a 22.5&deg; (Flecha, gancho hacia el centro):</strong> Voltea el tramo punta por punta para que el gancho vuelva a apuntar hacia el centro, coloca la <strong>flecha</strong> en la Marca 3 (<strong>44-1/16&quot;</strong>), alinea plano y dobla a <strong>22.5&deg;</strong>.</li>
+<li><strong>Prueba sobre piso plano:</strong> Ambas piernas exteriores deben quedar en l&iacute;nea recta y planas sobre el concreto con <strong>3&quot;</strong> libres bajo la cresta.</li>
+</ol>
+
+<h2>Lista de 4 errores comunes en obra</h2>
+<ul>
+<li><strong>Usar el di&aacute;metro nominal en lugar del OD real:</strong> Un tubo nominal de 3&quot; mide 3-1/2&quot; por fuera; mide siempre el di&aacute;metro exterior real antes de calcular.</li>
+<li><strong>Poner el centro en la flecha en vez de la muesca del borde:</strong> El doblez central de 45&deg; va en la muesca (rim notch) para que la cresta quede centrada sobre el obst&aacute;culo.</li>
+<li><strong>Apuntar el gancho hacia afuera en los 22.5&deg;:</strong> Los dos dobleces laterales deben hacerse con el gancho hacia adentro apuntando a la cresta central para que la silla cierre sim&eacute;trica.</li>
+<li><strong>Usar silla de 3 puntos en obst&aacute;culos de m&aacute;s de ~6&quot; de ancho:</strong> Para ductos de aire acondicionado o charolas anchas, cambia a la <a href="/es/4-point-saddle/">Calculadora de silla de 4 puntos</a> (dos offsets donde la contracci&oacute;n aplica doble).</li>
+</ul>
+
+<div class="inline-cta-box">
+<p><strong>Comprueba cualquier altura de silla de 3 puntos (3&quot;, 3-1/2&quot; o mil&iacute;metros)</strong> con diagrama interactivo en el navegador o sin conexi&oacute;n en Android.</p>
+<div class="inline-cta-actions">
+<a class="hero-cta" href="/es/3-point-saddle/" onclick="if(window.__ampTrack)window.__ampTrack('seo_landing_cta_clicked','inline_tool_cta')">Abrir Calculadora de Silla de 3 Puntos &rarr;</a>
+<a class="inline-cta-secondary" href="{_ES_GUIDE3_PLAY}" target="_blank" rel="noopener noreferrer" onclick="if(window.gtag)gtag('event','google_play_click',{{source:'seo_page'}});if(window.__ampTrack)window.__ampTrack('google_play_cta_clicked','inline_play_cta')">Descargar App Android sin conexi&oacute;n</a>
+</div>
+</div>
+""",
+        faqs=[
+            ('¿Cuál es el multiplicador para una silla de 3 puntos de 45° / 22.5°?',
+             '2.5 pulgadas por cada pulgada de altura del obst&aacute;culo a cada lado de la marca central. Para 3&quot; de altura, coloca las marcas laterales de 22.5&deg; a 7-1/2&quot; a izquierda y derecha del centro (15&quot; en total).'),
+            ('¿Cuánto contrae una silla de 3 puntos sobre un obstáculo de 3"?',
+             '9/16 de pulgada (0.5625&quot;). Una silla de 45&deg;/22.5&deg; contrae 3/16&quot; por pulgada de altura, as&iacute; que 3&quot; &times; 3/16&quot; = 9/16&quot;. Adelanta tu marca central 9/16&quot; (de 36&quot; a 36-9/16&quot;) antes de trazar las marcas laterales.'),
+            ('¿Un tubo nominal de 3" mide realmente 3 pulgadas por fuera?',
+             'No. Un conducto EMT de 3&quot;, r&iacute;gido de 3&quot; o tubo de acero C&eacute;dula 40 de 3&quot; mide 3-1/2&quot; (3.5&quot;) de di&aacute;metro exterior. Calcula con H = 3-1/2&quot; (o 3-3/4&quot; con holgura): 8-3/4&quot; a cada lado y 21/32&quot; (&asymp; 5/8&quot;) de contracci&oacute;n.'),
+            ('¿Qué marcas del doblador se usan en una silla de 3 puntos?',
+             'Dobla primero la marca central de 45&deg; en la muesca del borde (rim notch), luego gira el conducto y haz ambos dobleces laterales de 22.5&deg; en la flecha con el gancho apuntando hacia el doblez central.'),
+        ],
+    ),
+]
+
 def word_count(html_body: str) -> int:
     text = re.sub(r"<[^>]+>", " ", html_body)
     text = html.unescape(text)
     return len([w for w in text.split() if w.strip()])
 
 
-def render_faq_section(faqs: list) -> str:
+def render_faq_section(faqs: list, lang: str = "en") -> str:
     """Visible FAQ section appended after the body. Answers are HTML."""
     if not faqs:
         return ""
-    parts = ["\n<h2>Frequently asked questions</h2>"]
+    heading = "Preguntas frecuentes" if lang == "es" else "Frequently asked questions"
+    parts = [f"\n<h2>{heading}</h2>"]
     for q, a in faqs:
         parts.append(f"<h3>{html.escape(q)}</h3>\n<p>{a}</p>")
     return "\n".join(parts) + "\n"
 
 
-def render_faq_jsonld(faqs: list) -> str:
+def render_faq_jsonld(faqs: list, lang: str = "en") -> str:
     """FAQPage JSON-LD for <head>. Answers are plain text (tags stripped)."""
     if not faqs:
         return ""
@@ -2225,6 +2628,7 @@ def render_faq_jsonld(faqs: list) -> str:
     data = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
+        "inLanguage": lang,
         "mainEntity": entities,
     }
     return (
@@ -2234,29 +2638,38 @@ def render_faq_jsonld(faqs: list) -> str:
     )
 
 
-def calculator_url_for_slug(slug: str, base_url: str) -> str:
+def calculator_url_for_slug(slug: str, base_url: str, lang: str = "en") -> str:
     """Map each landing page slug to its canonical interactive calculator route."""
+    prefix = "/es" if lang == "es" else ""
     if "rolling" in slug:
-        return f"{base_url}/rolling-offset/"
+        return f"{base_url}{prefix}/rolling-offset/"
     if "kick" in slug:
-        return f"{base_url}/kicked-90/"
+        return f"{base_url}{prefix}/kicked-90/"
     if "wire-size" in slug:
-        return f"{base_url}/wire-size/"
+        return f"{base_url}{prefix}/wire-size/"
     if "voltage-drop" in slug:
-        return f"{base_url}/voltage-drop/"
+        return f"{base_url}{prefix}/voltage-drop/"
     if "4-point" in slug:
-        return f"{base_url}/4-point-saddle/"
-    if "3-point" in slug or "saddle" in slug:
-        return f"{base_url}/3-point-saddle/"
+        return f"{base_url}{prefix}/4-point-saddle/"
+    if "3-point" in slug or "saddle" in slug or "silla-3-puntos" in slug:
+        return f"{base_url}{prefix}/3-point-saddle/"
     if "fill" in slug or "emt-sizes" in slug:
-        return f"{base_url}/conduit-fill/"
+        return f"{base_url}{prefix}/conduit-fill/"
     if "shrink" in slug:
-        return f"{base_url}/shrink/"
-    if "stub" in slug or "deduct" in slug or "take-up" in slug or "hand-bender" in slug or "90-degree" in slug:
-        return f"{base_url}/stub-up/"
+        return f"{base_url}{prefix}/shrink/"
+    if (
+        "stub" in slug
+        or "deduct" in slug
+        or "deduccion" in slug
+        or "doblez-90" in slug
+        or "take-up" in slug
+        or "hand-bender" in slug
+        or "90-degree" in slug
+    ):
+        return f"{base_url}{prefix}/stub-up/"
     if "offset" in slug or "multiplier" in slug or "parallel" in slug or "dogleg" in slug or "chart" in slug:
-        return f"{base_url}/offset/"
-    return f"{base_url}/"
+        return f"{base_url}{prefix}/offset/"
+    return f"{base_url}{prefix}/"
 
 
 def enhance_body_html(
@@ -2265,6 +2678,7 @@ def enhance_body_html(
     cta_label: str,
     base_url: str,
     quick_links: list | None = None,
+    lang: str = "en",
 ) -> str:
     """Wrap tables in .table-wrap and inject a hero CTA bar after the lead paragraph."""
     wrapped = re.sub(
@@ -2282,9 +2696,14 @@ def enhance_body_html(
             for path, label in quick_links
         )
         quick_html = f'<div class="quick-tools">{pills}</div>'
+    free_caption = (
+        "Herramienta interactiva gratis &mdash; sin registro"
+        if lang == "es"
+        else "Free interactive tool &mdash; no sign-up"
+    )
     hero_cta = (
         f'\n<div class="hero-cta-bar">'
-        f'<span class="muted">Free interactive tool &mdash; no sign-up</span>'
+        f'<span class="muted">{free_caption}</span>'
         f'<a class="hero-cta" href="{tool_url}" onclick="if(window.__ampTrack)window.__ampTrack(\'seo_landing_cta_clicked\',\'hero_cta\')">{html.escape(cta_label)} &rarr;</a>'
         f'{quick_html}'
         f'</div>\n'
@@ -2294,10 +2713,26 @@ def enhance_body_html(
     return hero_cta + wrapped
 
 
+def render_hreflang_links(page: dict, base_url: str) -> str:
+    alt_en = page.get("alt_en")
+    alt_es = page.get("alt_es")
+    if not alt_en or not alt_es:
+        return ""
+    en_url = f"{base_url}/{alt_en.strip('/')}/"
+    es_url = f"{base_url}/{alt_es.strip('/')}/"
+    return (
+        f'<link rel="alternate" hreflang="en" href="{en_url}" />\n'
+        f'<link rel="alternate" hreflang="es" href="{es_url}" />\n'
+        f'<link rel="alternate" hreflang="x-default" href="{en_url}" />\n'
+    )
+
+
 def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
+    lang = page.get("lang", "en")
+    is_es = lang == "es"
     canonical = f"{base_url}/{page['slug']}/"
     host = urlparse(base_url).netloc or "bendcalc.wattflow.net"
-    tool_url = calculator_url_for_slug(page["slug"], base_url)
+    tool_url = calculator_url_for_slug(page["slug"], base_url, lang)
     play_url = build_play_url(page["slug"], "sidebar_play_cta")
     seen_paths: set[str] = {f"/{page['slug']}/"}
     related_items: list[str] = []
@@ -2313,10 +2748,15 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
 
     for path, label in page.get("related", []):
         add_related(path, label)
-    for tool_slug, label in CANONICAL_TOOLS:
+    tools_list = CANONICAL_TOOLS_ES if is_es else CANONICAL_TOOLS
+    for tool_slug, label in tools_list:
         add_related(f"/{tool_slug}/", label)
     for p in PAGES:
-        if p["slug"] != page["slug"] and p["slug"] not in REDIRECTED_SLUGS:
+        if (
+            p.get("lang", "en") == lang
+            and p["slug"] != page["slug"]
+            and p["slug"] not in REDIRECTED_SLUGS
+        ):
             add_related(f"/{p['slug']}/", p["h1"])
     related = "\n".join(related_items)
     import json
@@ -2326,18 +2766,21 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         page_slug=json.dumps(page["slug"]),
     )
     faqs = page.get("faqs", [])
-    raw_body = page["body"] + render_faq_section(faqs)
+    raw_body = page["body"] + render_faq_section(faqs, lang)
     body = enhance_body_html(
         raw_body,
         tool_url,
         page["cta_label"],
         base_url,
         page.get("quick_links"),
+        lang,
     )
     return PAGE_TEMPLATE.format(
+        html_lang=lang,
         title=html.escape(page["title"]),
         desc=html.escape(page["desc"]),
         canonical=canonical,
+        hreflang_links=render_hreflang_links(page, base_url),
         host=host,
         slug=page["slug"],
         h1=html.escape(page["h1"]),
@@ -2345,12 +2788,35 @@ def render_page(page: dict, base_url: str, ga4_id: str | None) -> str:
         cta_label=html.escape(page["cta_label"]),
         tool_url=tool_url,
         base=base_url,
+        brand_href=f"{base_url}/es/" if is_es else f"{base_url}/",
+        topbar_cta_label="Abrir calculadora" if is_es else "Open Calculator",
+        sidebar_try_prefix="Pru&eacute;bala gratis:" if is_es else "Try it free:",
+        sidebar_try_suffix=(
+            "distancia entre marcas y contracci&oacute;n al instante, sin registro."
+            if is_es
+            else "instant mark spacing &amp; shrink, no sign-up."
+        ),
+        sidebar_play_text=(
+            "Descarga Conduit Bend Calc en Google Play"
+            if is_es
+            else "Get Conduit Bend Calc on Google Play"
+        ),
+        sidebar_play_suffix=(
+            "para usarla 100% sin conexi&oacute;n y calibrar tu doblador."
+            if is_es
+            else "for 100% offline use and custom bender calibration."
+        ),
+        related_aria="Calculadoras relacionadas" if is_es else "Related calculators",
+        related_heading="Relacionado:" if is_es else "Related:",
+        footer_home_href=f"{base_url}/es/" if is_es else f"{base_url}/",
+        footer_home_label="bendcalc.wattflow.net/es/" if is_es else "bendcalc.wattflow.net",
+        footer_privacy_label="Pol&iacute;tica de privacidad" if is_es else "Privacy Policy",
         play_url=html.escape(play_url),
         related=related,
         css=BASE_CSS.strip(),
         ga4=ga4,
         amp_script=amp_script,
-        faq_jsonld=render_faq_jsonld(faqs),
+        faq_jsonld=render_faq_jsonld(faqs, lang),
     )
 
 
@@ -2370,13 +2836,19 @@ def main() -> None:
 
     active_pages = [p for p in PAGES if p["slug"] not in REDIRECTED_SLUGS]
 
-    # Sanity checks: title/description lengths and body word counts.
+    # Sanity checks: title/description lengths, body word counts, and Spanish terminology.
     for page in active_pages:
+        lang = page.get("lang", "en")
         assert len(page["title"]) <= 60, f"title too long ({len(page['title'])}): {page['slug']}"
         assert len(page["desc"]) <= 160, f"desc too long ({len(page['desc'])}): {page['slug']}"
-        full_body = page["body"] + render_faq_section(page.get("faqs", []))
+        full_body = page["body"] + render_faq_section(page.get("faqs", []), lang)
         wc = word_count(full_body)
         assert 250 <= wc <= 1500, f"word count {wc} out of range: {page['slug']}"
+        if lang == "es":
+            combined = " ".join(
+                [page["title"], page["desc"], page["h1"], full_body]
+            ).lower()
+            assert "tuber" not in combined, f"forbidden plumbing term in {page['slug']}"
 
     for page in active_pages:
         out_dir = os.path.join(export_dir, page["slug"])
@@ -2384,8 +2856,10 @@ def main() -> None:
         out_path = os.path.join(out_dir, "index.html")
         with open(out_path, "w") as f:
             f.write(render_page(page, base_url, ga4_id))
-        print(f"wrote {out_path} ({word_count(page['body'])} words, ga4={'on' if ga4_id else 'off'})")
-    print(f"SEO landing pages: {len(active_pages)} active ({len(REDIRECTED_SLUGS)} deduplicated via _redirects)")
+        print(f"wrote {out_path} ({word_count(page['body'])} words, lang={page.get('lang', 'en')}, ga4={'on' if ga4_id else 'off'})")
+    en_count = sum(1 for p in active_pages if p.get("lang", "en") == "en")
+    es_count = sum(1 for p in active_pages if p.get("lang", "en") == "es")
+    print(f"SEO landing pages: {len(active_pages)} active ({en_count} EN + {es_count} ES, {len(REDIRECTED_SLUGS)} deduplicated via _redirects)")
 
 
 if __name__ == "__main__":
