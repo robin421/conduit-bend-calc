@@ -19,6 +19,7 @@ import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
 import QuickUnitToggle from '../components/quickUnitToggle';
+import ResultActions from '../components/resultActions';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
@@ -39,6 +40,7 @@ import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
+import { buildSaddleCopyText } from '../lib/copyResult';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement, type UnitSystem } from '../lib/units';
@@ -231,6 +233,18 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
     result !== null ? applyCalibrationOffset(result.markSpacingInches, activeProfile) : null;
   const spacingMeasurement =
     calibratedSpacing !== null ? formatMeasurement(calibratedSpacing, unit) : undefined;
+  const spanMeasurement = result ? formatMeasurement(result.spanInches, unit) : undefined;
+  const totalShrinkMeasurement =
+    result && result.totalShrinkInches !== undefined ? formatMeasurement(result.totalShrinkInches, unit) : undefined;
+  const copyText = result && calibratedSpacing !== null
+    ? buildSaddleCopyText({
+        angle,
+        markSpacing: calibratedSpacing,
+        span: result.spanInches,
+        totalShrink: result.totalShrinkInches ?? null,
+        unit,
+      })
+    : null;
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
@@ -304,6 +318,11 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
           value: spacingMeasurement?.value,
           unit: spacingMeasurement?.unit,
         }}
+        rows={[
+          { label: t('saddle4.totalSpan'), value: spanMeasurement?.value, unit: spanMeasurement?.unit },
+          { label: t('saddle4.totalShrink'), value: totalShrinkMeasurement?.value, unit: totalShrinkMeasurement?.unit },
+          { label: t('table.multiplier'), value: result ? `× ${result.multiplier.toFixed(1)}` : undefined },
+        ]}
         hint={hint}
       />
 
@@ -414,7 +433,7 @@ export default function FourPointSaddleScreen({ route, navigation }: Props) {
         unit={unit}
       />
 
-      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
+      <ResultActions copyText={copyText} toolName="saddle4" onClear={handleClear} />
     </>
   );
 

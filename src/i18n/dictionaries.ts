@@ -603,6 +603,8 @@ export const en = {
   'saddle3.centerMarkShrink': 'Center mark shrink',
   'saddle3.addToCenterMark': 'Add to the center mark',
   'saddle4.bendSpacing': 'Bend spacing (edge ↔ bend)',
+  'saddle4.totalSpan': 'Mark 1 → Mark 4 (total span)',
+  'saddle4.totalShrink': 'Total shrink (from a fixed point)',
   'saddle4.clearanceNote':
     'Leave about {clearance} past the inner marks so the conduit clears the obstacle.',
   'saddle4.fixedPointNote':
@@ -1361,6 +1363,8 @@ export const es: Record<TranslationKey, string> = {
   'saddle3.centerMarkShrink': 'Contracción de la marca central',
   'saddle3.addToCenterMark': 'Sumar a la marca central',
   'saddle4.bendSpacing': 'Distancia entre dobleces (borde ↔ doblez)',
+  'saddle4.totalSpan': 'Marca 1 → Marca 4 (separación total)',
+  'saddle4.totalShrink': 'Contracción total (desde un punto fijo)',
   'saddle4.clearanceNote':
     'Deja aproximadamente {clearance} después de las marcas interiores para que el conducto libre el obstáculo.',
   'saddle4.fixedPointNote':

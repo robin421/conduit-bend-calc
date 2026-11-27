@@ -79,6 +79,19 @@ test('shrink：区分 offset 与 saddle 文案', () => {
   );
 });
 
+test('offset：App 计算器不给起点时只输出间距与 shrink', () => {
+  assert.equal(
+    buildOffsetCopyText({ angle: 30, spacing: 10, shrink: 1.5, mark1: null, mark2: null, unit: 'fractional' }),
+    'Offset at 30°: mark spacing 10", shrink 1-1/2".',
+  );
+});
+
+test('stub：metric 模式下 take-up 也按毫米输出', () => {
+  const text = buildStubCopyText({ sizeLabel: '1/2" EMT', takeUp: 5, mark: 7, unit: 'metric' });
+  assert.ok(!text.includes('5"'), text);
+  assert.ok(text.includes('127'), text);
+});
+
 test('stub：包含 mark 位置与 take-up', () => {
   const text = buildStubCopyText({
     sizeLabel: '1/2" EMT',

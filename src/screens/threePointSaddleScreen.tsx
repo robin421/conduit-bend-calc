@@ -19,6 +19,7 @@ import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
 import QuickUnitToggle from '../components/quickUnitToggle';
+import ResultActions from '../components/resultActions';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
@@ -39,6 +40,7 @@ import { createHistoryId, useHistoryAutoSave } from '../lib/history';
 import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
+import { buildThreePointSaddleCopyText } from '../lib/copyResult';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement, type UnitSystem } from '../lib/units';
@@ -212,6 +214,15 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
     result && result.shrinkInches !== undefined
       ? formatMeasurement(result.shrinkInches, unit)
       : undefined;
+  const copyText = result && calibratedSpacing !== null
+    ? buildThreePointSaddleCopyText({
+        centerAngle: angle,
+        sideSpacing: calibratedSpacing,
+        span: result.spanInches,
+        shrink: result.shrinkInches ?? 0,
+        unit,
+      })
+    : null;
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
@@ -281,6 +292,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
             value: shrinkMeasurement?.value,
             unit: shrinkMeasurement?.unit,
           },
+          { label: t('table.multiplier'), value: result ? `× ${result.multiplier.toFixed(1)}` : undefined },
         ]}
         hint={hint}
       />
@@ -384,7 +396,7 @@ export default function ThreePointSaddleScreen({ route, navigation }: Props) {
         unit={unit}
       />
 
-      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
+      <ResultActions copyText={copyText} toolName="saddle3" onClear={handleClear} />
     </>
   );
 

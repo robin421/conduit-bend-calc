@@ -17,6 +17,7 @@ import ExpectedActualFeedback from '../components/expectedActualFeedback';
 import FeasibilityPanel from '../components/feasibilityPanel';
 import ImperialInput from '../components/imperialInput';
 import QuickUnitToggle from '../components/quickUnitToggle';
+import ResultActions from '../components/resultActions';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import WebCalcShell from '../components/webCalcShell';
@@ -37,6 +38,7 @@ import { useHistoryAutoSave, createHistoryId } from '../lib/history';
 import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
+import { buildOffsetCopyText } from '../lib/copyResult';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
@@ -194,6 +196,9 @@ export default function OffsetScreen({ route, navigation }: Props) {
     : null;
   const distance = calibratedDistance !== null ? formatMeasurement(calibratedDistance, unit) : undefined;
   const shrink = result ? formatMeasurement(result.shrink, unit) : undefined;
+  const copyText = result && calibratedDistance !== null
+    ? buildOffsetCopyText({ angle, spacing: calibratedDistance, shrink: result.shrink, mark1: null, mark2: null, unit })
+    : null;
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
@@ -253,7 +258,10 @@ export default function OffsetScreen({ route, navigation }: Props) {
     <>
       <ResultGroup
         hero={{ label: t('offset.markSpacing'), value: distance?.value, unit: distance?.unit }}
-        rows={[{ label: t('shrink.shrink'), value: shrink?.value, unit: shrink?.unit }]}
+        rows={[
+          { label: t('shrink.shrink'), value: shrink?.value, unit: shrink?.unit },
+          { label: t('table.multiplier'), value: result ? `× ${result.multiplier.toFixed(1)}` : undefined },
+        ]}
         hint={!result ? t('calc.enterValuesHint') : undefined}
       />
 
@@ -298,7 +306,7 @@ export default function OffsetScreen({ route, navigation }: Props) {
         unit={unit}
       />
 
-      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
+      <ResultActions copyText={copyText} toolName="offset" onClear={handleClear} />
     </>
   );
 

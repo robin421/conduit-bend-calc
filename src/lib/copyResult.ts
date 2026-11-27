@@ -19,15 +19,18 @@ export interface OffsetCopyData {
   angle: OffsetAngle;
   spacing: number;
   shrink: number;
-  mark1: number;
+  /** null = 未给定起点（App 计算器只算间距，不算绝对标记位置）。 */
+  mark1: number | null;
   mark2: number | null;
   unit: UnitSystem;
 }
 
 export function buildOffsetCopyText(data: OffsetCopyData): string {
-  const base =
+  const head =
     `Offset at ${data.angle}°: mark spacing ${len(data.spacing, data.unit)}, ` +
-    `shrink ${len(data.shrink, data.unit)}. Mark 1 at ${len(data.mark1, data.unit)}`;
+    `shrink ${len(data.shrink, data.unit)}`;
+  if (data.mark1 === null) return `${head}.`;
+  const base = `${head}. Mark 1 at ${len(data.mark1, data.unit)}`;
   return data.mark2 !== null
     ? `${base}, mark 2 at ${len(data.mark2, data.unit)}.`
     : `${base}.`;
@@ -70,7 +73,7 @@ export interface StubCopyData {
 }
 
 export function buildStubCopyText(data: StubCopyData): string {
-  return `90° stub in ${data.sizeLabel}: mark the conduit at ${len(data.mark, data.unit)} from the end (${data.takeUp}" take-up).`;
+  return `90° stub in ${data.sizeLabel}: mark the conduit at ${len(data.mark, data.unit)} from the end (${len(data.takeUp, data.unit)} take-up).`;
 }
 
 export interface ThreePointSaddleCopyData {

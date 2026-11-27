@@ -26,6 +26,7 @@ import FeasibilityPanel from '../components/feasibilityPanel';
 import WebCalcShell from '../components/webCalcShell';
 import ImperialInput from '../components/imperialInput';
 import QuickUnitToggle from '../components/quickUnitToggle';
+import ResultActions from '../components/resultActions';
 import ResultGroup from '../components/resultGroup';
 import WarningBar from '../components/warningBar';
 import { stubFeasibility } from '../calculators/feasibility/feasibility';
@@ -49,6 +50,7 @@ import {
 import { trackEvent, useCalculatorAnalytics } from '../lib/analytics';
 import { useFirebaseCalculationCompleted } from '../lib/firebase';
 import { useReviewOnSuccessfulCalc } from '../lib/inAppReview';
+import { buildStubCopyText } from '../lib/copyResult';
 import { useScreenMemory } from '../lib/screenMemory';
 import { useUnitSystem } from '../lib/unitStore';
 import { formatLength, formatMeasurement } from '../lib/units';
@@ -251,6 +253,10 @@ export default function StubScreen({ route, navigation }: Props) {
     markPoint !== null ? applyCalibrationOffset(markPoint, activeProfile) : null;
   const markMeasurement =
     calibratedMark !== null ? formatMeasurement(calibratedMark, unit) : undefined;
+  const takeUpMeasurement = formatMeasurement(spec.takeUp, unit);
+  const copyText = calibratedMark !== null
+    ? buildStubCopyText({ sizeLabel: spec.conduit, takeUp: spec.takeUp, mark: calibratedMark, unit })
+    : null;
 
   const leftColumn = (
     <Card style={{ padding: theme.spacing.sm }}>
@@ -381,6 +387,7 @@ export default function StubScreen({ route, navigation }: Props) {
           value: markMeasurement?.value,
           unit: markMeasurement?.unit,
         }}
+        rows={[{ label: t('stub.takeUp'), value: takeUpMeasurement.value, unit: takeUpMeasurement.unit }]}
         hint={hint}
       />
 
@@ -508,7 +515,7 @@ export default function StubScreen({ route, navigation }: Props) {
         unit={unit}
       />
 
-      <BigButton title={t('common.clear')} variant="secondary" onPress={handleClear} />
+      <ResultActions copyText={copyText} toolName="stub" onClear={handleClear} />
     </>
   );
 
