@@ -97,6 +97,11 @@ export function createRnIapGateway(
       }
     },
 
+    async end(): Promise<void> {
+      // 失败后重建 BillingClient：旧连接可能卡在 DISCONNECTED/CLOSED 状态。
+      await nativeLoader().endConnection();
+    },
+
     async fetchProduct(sku: string): Promise<{ productId: string; localizedPrice: string } | null> {
       const m = nativeLoader();
       // v12 没有 fetchProducts，实际函数是 getProducts({ skus })。

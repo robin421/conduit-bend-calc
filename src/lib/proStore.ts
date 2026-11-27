@@ -16,6 +16,8 @@ import {
   PRO_ENTITLEMENT_STORAGE_KEY,
   PRO_SKU,
   SKU_UNAVAILABLE_MESSAGE,
+  STORE_LOAD_TIMEOUT_MS,
+  telemetryErrorCode,
   extractPurchaseErrorCode,
   parseProEntitlement,
   purchaseErrorMessage,
@@ -25,6 +27,7 @@ import {
   type IapPurchaseInfo,
   type ProAccess,
   type SkuAvailability,
+  type SkuFailureReason,
 } from './iap.ts';
 import type { HistoryStorage } from './historyStore.ts';
 import { createPurchaseFinisher, purchaseKey } from './purchaseCompletion.ts';
@@ -49,8 +52,12 @@ export interface ProAccessState {
   phase: PurchasePhase;
   access: ProAccess;
   skuAvailability: SkuAvailability;
-  /** fetchProducts 返回的 localizedPrice；未知时为 null。 */
+  /** getProducts 返回的 localizedPrice；未知时为 null。 */
   productPrice: string | null;
+  /** 最近一次加载未拿到可购买价格的原因；成功时为 null。 */
+  skuFailureReason: SkuFailureReason | null;
+  /** 最近一次加载失败的原生错误码（已收敛为低基数），供埋点。 */
+  skuErrorCode: string | null;
   initialized: boolean;
   /** 最近一次购买/恢复错误的英文提示；无错误时为 null。 */
   lastError: string | null;
@@ -63,6 +70,8 @@ interface InternalState {
   skuAvailability: SkuAvailability;
   purchased: boolean;
   productPrice: string | null;
+  skuFailureReason: SkuFailureReason | null;
+  skuErrorCode: string | null;
   initialized: boolean;
   lastError: string | null;
   pendingPurchase: boolean;
@@ -73,6 +82,8 @@ const INITIAL_STATE: InternalState = {
   skuAvailability: 'unknown',
   purchased: false,
   productPrice: null,
+  skuFailureReason: null,
+  skuErrorCode: null,
   initialized: false,
   lastError: null,
   pendingPurchase: false,
@@ -95,14 +106,46 @@ export type IapGatewayProvider = () => Promise<IapGateway>;
 
 export const PRO_PENDING_STORAGE_KEY = '@cbc:pro-pending-v1';
 
+/** 连接类失败后自动重试一次前的等待（毫秒）。 */
+export const STORE_AUTO_RETRY_DELAY_MS = 2_000;
+
+class StoreTimeoutError extends Error {
+  constructor() { super('Store request timed out'); }
+}
+
+function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new StoreTimeoutError()), ms);
+    work.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error: unknown) => { clearTimeout(timer); reject(error); },
+    );
+  });
+}
+
+export interface ProStoreTimings {
+  loadTimeoutMs?: number;
+  autoRetryDelayMs?: number;
+  sleep?: (ms: number) => Promise<void>;
+}
+
 export function createProStore(
   storage: HistoryStorage,
   getGateway: IapGatewayProvider,
   options: {
     onEvent?: (name: GrowthEvent, params: GrowthEventParams) => void;
     onUserProperties?: (props: { is_pro: boolean }) => void;
+    timings?: ProStoreTimings;
   } = {},
 ): ProStore {
+  const loadTimeoutMs = options.timings?.loadTimeoutMs ?? STORE_LOAD_TIMEOUT_MS;
+  const autoRetryDelayMs = options.timings?.autoRetryDelayMs ?? STORE_AUTO_RETRY_DELAY_MS;
+  const sleep = options.timings?.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  /** 上次连接失败/超时：下次 init 前先 endConnection 重建 BillingClient。 */
+  let needsReconnect = false;
+  /** 每次 buy() 递增；同一次结账的取消/失败只上报一次（reject 与 errorListener 可能双发）。 */
+  let checkoutAttempt = 0;
+  let errorReportedForAttempt = -1;
   let state: InternalState = { ...INITIAL_STATE };
   const listeners = new Set<() => void>();
   let loadPromise: Promise<void> | null = null;
@@ -126,8 +169,8 @@ export function createProStore(
     lastReportedIsPro = isPro;
     try { options.onUserProperties?.({ is_pro: isPro }); } catch { /* telemetry is best-effort */ }
   }
-  function emit(outcome: string): void {
-    emitEvent('pro_purchase_result', { ...checkoutContext, outcome, product_id: PRO_SKU });
+  function emit(outcome: string, extra: GrowthEventParams = {}): void {
+    emitEvent('pro_purchase_result', { ...checkoutContext, ...extra, outcome, product_id: PRO_SKU });
   }
   function setPatch(patch: Partial<InternalState>): void {
     state = { ...state, ...patch };
@@ -195,7 +238,9 @@ export function createProStore(
     const cancelled = error.code === 'E_USER_CANCELLED';
     setPatch({ lastError: purchaseErrorMessage(error.code), phase: cancelled ? 'cancelled' : 'error' });
     void setPending(false);
-    emit(cancelled ? 'cancelled' : 'failed');
+    if (errorReportedForAttempt === checkoutAttempt) return;
+    errorReportedForAttempt = checkoutAttempt;
+    emit(cancelled ? 'cancelled' : 'failed', cancelled ? {} : { error_code: telemetryErrorCode(error) });
   }
   function registerListeners(gw: IapGateway): void {
     if (listenersRegistered) return;
@@ -243,23 +288,56 @@ export function createProStore(
     try {
       const gw = await gatewayProvider();
       activeGateway = gw;
-      await gw.init();
-      registerListeners(gw);
+      let connected = false;
       try {
-        const product = await gw.fetchProduct(PRO_SKU);
-        setPatch({ skuAvailability: product ? 'available' : 'unavailable', productPrice: product?.localizedPrice?.trim() || null });
-      } catch { setPatch({ skuAvailability: 'unknown', productPrice: null }); }
-      // Ownership must be queried even if product lookup is unavailable.
-      try { await queryPurchases(gw, initial ? 'startup' : 'refresh'); } catch { /* retain offline entitlement / pending state */ }
-      for (const purchase of unfinished.values()) await acknowledge(purchase);
-    } catch { setPatch({ skuAvailability: 'unknown', productPrice: null }); }
+        const product = await withTimeout((async () => {
+          if (needsReconnect && gw.end) { try { await gw.end(); } catch { /* reconnect anyway */ } }
+          try { await gw.init(); } catch (error) { throw { stage: 'connect', error }; }
+          connected = true;
+          needsReconnect = false;
+          registerListeners(gw);
+          try { return await gw.fetchProduct(PRO_SKU); } catch (error) { throw { stage: 'query', error }; }
+        })(), loadTimeoutMs);
+        const price = product?.localizedPrice?.trim() || null;
+        const reason: SkuFailureReason | null = !product ? 'product_empty' : !price ? 'price_blank' : null;
+        setPatch({
+          skuAvailability: product ? 'available' : 'unavailable', productPrice: price,
+          skuFailureReason: reason, skuErrorCode: null,
+          // A stale "store unavailable" message must not sit under a freshly loaded price.
+          ...(reason === null && state.lastError === SKU_UNAVAILABLE_MESSAGE ? { lastError: null } : {}),
+        });
+      } catch (raw) {
+        const staged = raw as { stage?: 'connect' | 'query'; error?: unknown };
+        const reason: SkuFailureReason = raw instanceof StoreTimeoutError ? 'timeout'
+          : staged?.stage === 'query' ? 'query_failed' : 'connection_failed';
+        if (reason !== 'query_failed') needsReconnect = true;
+        setPatch({ skuAvailability: 'unknown', productPrice: null, skuFailureReason: reason,
+          skuErrorCode: reason === 'timeout' ? null : telemetryErrorCode(staged?.error) ?? null });
+      }
+      if (connected) {
+        // Ownership must be queried even if product lookup is unavailable.
+        try { await withTimeout(queryPurchases(gw, initial ? 'startup' : 'refresh'), loadTimeoutMs); } catch { /* retain offline entitlement / pending state */ }
+        for (const purchase of unfinished.values()) await acknowledge(purchase);
+      }
+    } catch (error) {
+      needsReconnect = true;
+      setPatch({ skuAvailability: 'unknown', productPrice: null, skuFailureReason: 'connection_failed', skuErrorCode: telemetryErrorCode(error) ?? null });
+    }
     finally {
       setPatch({ initialized: true, phase: state.pendingPurchase ? 'pending' : state.phase === 'loading' ? 'idle' : state.phase });
       emitUserPro(state.purchased);
     }
   }
+  async function initializeWithRetry(): Promise<void> {
+    await initialize();
+    // 连接类瞬时失败（BillingClient 未就绪/服务断开）自动重试一次；超时不自动重试，避免长时间 Loading。
+    if (state.skuFailureReason === 'connection_failed') {
+      await sleep(autoRetryDelayMs);
+      await initialize();
+    }
+  }
   function load(): Promise<void> {
-    if (!loadPromise) loadPromise = initialize().finally(() => { loadPromise = null; });
+    if (!loadPromise) loadPromise = initializeWithRetry().finally(() => { loadPromise = null; });
     return loadPromise;
   }
   function init(): Promise<void> { return state.initialized ? Promise.resolve() : load(); }
@@ -277,6 +355,7 @@ export function createProStore(
       if (state.pendingPurchase) return { ok: false, message: 'Payment is pending. Do not purchase again.' };
       if (state.skuAvailability !== 'available' || !state.productPrice) {
         setPatch({ lastError: SKU_UNAVAILABLE_MESSAGE, phase: 'error' });
+        emit('blocked_no_price', { sku_status: state.skuAvailability, failure_reason: state.skuFailureReason ?? undefined });
         return { ok: false, message: SKU_UNAVAILABLE_MESSAGE };
       }
       const gw = activeGateway ?? await gatewayProvider();
@@ -284,6 +363,7 @@ export function createProStore(
       registerListeners(gw);
       setPatch({ phase: 'purchasing', lastError: null });
       purchaseEpoch++;
+      checkoutAttempt++;
       emitEvent('pro_checkout_started', { ...checkoutContext, product_id: PRO_SKU });
       await gw.requestPurchase(PRO_SKU);
       // Resolving requestPurchase only means the store sheet was launched.
@@ -306,9 +386,13 @@ export function createProStore(
     try {
       const gw = activeGateway ?? await gatewayProvider();
       activeGateway = gw;
-      await gw.init();
-      registerListeners(gw);
-      const found = await queryPurchases(gw, 'restore');
+      const found = await withTimeout((async () => {
+        if (needsReconnect && gw.end) { try { await gw.end(); } catch { /* reconnect anyway */ } }
+        await gw.init();
+        needsReconnect = false;
+        registerListeners(gw);
+        return queryPurchases(gw, 'restore');
+      })(), loadTimeoutMs);
       if (found) {
         emit('restored');
         emitEvent('pro_entitlement_granted', { ...checkoutContext, outcome: 'restored', product_id: PRO_SKU });
@@ -321,6 +405,7 @@ export function createProStore(
       emitEvent('pro_restore_result', { outcome: 'not_found' });
       return { ok: true, found: false, message };
     } catch {
+      needsReconnect = true;
       const message = purchaseErrorMessage('E_NETWORK_ERROR');
       setPatch({ phase: state.pendingPurchase ? 'pending' : 'error', lastError: message });
       emitEvent('pro_restore_result', { outcome: 'failed' });

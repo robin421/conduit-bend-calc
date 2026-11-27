@@ -46,6 +46,26 @@ export function resolveProAccess(sku: SkuAvailability, purchased: boolean): ProA
 export const SKU_UNAVAILABLE_MESSAGE =
   'Purchase temporarily unavailable. Please check your connection and try again.';
 
+/**
+ * 价格/商品加载失败的原因（低基数，可直接上报埋点）：
+ * - 'timeout'：initConnection/getProducts 超时未返回；
+ * - 'connection_failed'：initConnection 抛错或返回 false；
+ * - 'query_failed'：已连接，但 getProducts 抛错；
+ * - 'product_empty'：getProducts 返回空（SKU 未激活 / 非 Play 安装 / 测试账号未授权）；
+ * - 'price_blank'：商品返回但 localizedPrice 为空。
+ */
+export type SkuFailureReason = 'timeout' | 'connection_failed' | 'query_failed' | 'product_empty' | 'price_blank';
+
+/** 商店加载整体超时（毫秒）。 */
+export const STORE_LOAD_TIMEOUT_MS = 10_000;
+
+/** 将原生错误码收敛为低基数埋点值；非 E_XXX 形式一律 'other'。 */
+export function telemetryErrorCode(error: unknown): string | undefined {
+  if (error === undefined || error === null) return undefined;
+  const code = extractPurchaseErrorCode(error);
+  return code && /^E_[A-Z_]{1,40}$/.test(code) ? code : 'other';
+}
+
 /** 本地 entitlement：是否已购买 Pro。 */
 export interface ProEntitlement {
   purchased: boolean;
@@ -105,6 +125,8 @@ export type IapUnsubscribe = () => void;
 export interface IapGateway {
   /** 连接商店（Android 必需）。失败时抛异常。 */
   init(): Promise<void>;
+  /** 断开商店连接；失败后重连前调用，可选。 */
+  end?(): Promise<void>;
   /** 查询单个商品；解析不到返回 null（SKU 未配置）。失败时抛异常。 */
   fetchProduct(sku: string): Promise<{ productId: string; localizedPrice: string } | null>;
   /** 发起购买。购买结果经由 onPurchaseUpdate 回调送达（iOS 可能直接 resolve）。 */

@@ -25,6 +25,7 @@ import { createProActionGuard, type ProAction } from '../lib/proActionGuard';
 import {
   buildPaywallBuyTapParams,
   buildPaywallDismissParams,
+  buildPaywallPriceStatusParams,
   buildPaywallRetryTapParams,
   buildPaywallSkuLoadedParams,
   buildPaywallViewedExtra,
@@ -98,14 +99,33 @@ export default function PaywallScreen({ route, navigation }: Props) {
       }
     });
 
-    if (Platform.OS !== 'web' && (!getCurrentProState().initialized || !getCurrentProState().productPrice)) {
-      void refreshProIap().catch(() => undefined);
+    if (Platform.OS !== 'web') {
+      const openedAt = Date.now();
+      const atOpen = getCurrentProState();
+      const settled = atOpen.initialized && atOpen.phase !== 'loading' && Boolean(atOpen.productPrice)
+        ? Promise.resolve()
+        // refreshProIap 会复用正在进行的启动加载；加载内含超时，保证一定会结束。
+        : refreshProIap().catch(() => undefined);
+      void settled.then(() => reportPriceStatus('open', openedAt));
     }
 
     return () => {
       active = false;
     };
   }, [source]);
+
+  function reportPriceStatus(action: 'open' | 'retry', startedAt: number): void {
+    trackGrowthEvent(
+      'pro_paywall_price_status',
+      buildPaywallPriceStatusParams({
+        source,
+        scene: sceneRef.current,
+        action,
+        loadMs: Date.now() - startedAt,
+        snapshot: getCurrentProState(),
+      }),
+    );
+  }
 
   // 从 Paywall 试测入口跳转校准后再返回时，刷新本地草稿与历史条数。
   useEffect(() => {
@@ -198,7 +218,10 @@ export default function PaywallScreen({ route, navigation }: Props) {
         const result = await restorePro();
         if (!result.found) await clearPendingProTask(task.id);
       } else {
+        clearProError();
+        const startedAt = Date.now();
         await refreshProIap();
+        reportPriceStatus('retry', startedAt);
       }
     } catch (error) {
       failed = true;
@@ -219,6 +242,7 @@ export default function PaywallScreen({ route, navigation }: Props) {
     unlocked={Platform.OS !== 'web' && state.access === 'unlocked'}
     available={state.skuAvailability === 'available'}
     price={state.productPrice}
+    failureReason={state.skuFailureReason}
     error={localError ?? state.lastError}
     isWeb={Platform.OS === 'web'}
     continuing={actions.has('continue')}

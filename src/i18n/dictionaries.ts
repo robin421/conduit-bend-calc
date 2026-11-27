@@ -469,6 +469,10 @@ export const en = {
   'paywall.unlockCta': 'Unlock Pro Lifetime',
   'paywall.storeUnavailableCaption':
     'Unable to load your store price. Free calculators are still available.',
+  'paywall.storeUnavailable.productEmpty':
+    'Pro is not available on this install. Install Conduit Bend Calc from Google Play, then try again. Free calculators are still available.',
+  'paywall.storeUnavailable.connection':
+    "Couldn't reach Google Play. Check your connection and make sure the Play Store app is up to date, then retry.",
   'paywall.retryStore': 'Retry store connection',
   'paywall.restorePurchase': 'Restore purchase',
   'paywall.backToCalculators': 'Back to calculators',
@@ -1195,6 +1199,10 @@ export const es: Record<TranslationKey, string> = {
   'paywall.unlockCta': 'Desbloquear Pro de por vida',
   'paywall.storeUnavailableCaption':
     'No se pudo cargar el precio de la tienda. Las calculadoras gratuitas siguen disponibles.',
+  'paywall.storeUnavailable.productEmpty':
+    'Pro no está disponible en esta instalación. Instala Conduit Bend Calc desde Google Play y vuelve a intentarlo. Las calculadoras gratuitas siguen disponibles.',
+  'paywall.storeUnavailable.connection':
+    'No se pudo conectar con Google Play. Revisa tu conexión y que la app de Play Store esté actualizada, y vuelve a intentarlo.',
   'paywall.retryStore': 'Reintentar conexión con la tienda',
   'paywall.restorePurchase': 'Restaurar compra',
   'paywall.backToCalculators': 'Volver a calculadoras',

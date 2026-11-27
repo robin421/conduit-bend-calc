@@ -115,7 +115,7 @@ function createStore(
   storage?: HistoryStorage & { data: Map<string, string> },
 ): { store: ProStore; storage: HistoryStorage & { data: Map<string, string> } } {
   const mem = storage ?? createMemoryStorage();
-  return { store: createProStore(mem, () => Promise.resolve(gateway)), storage: mem };
+  return { store: createProStore(mem, () => Promise.resolve(gateway), { timings: { sleep: () => Promise.resolve() } }), storage: mem };
 }
 
 const tick = () => new Promise((resolve) => setImmediate(resolve));

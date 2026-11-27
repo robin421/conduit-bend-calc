@@ -3,7 +3,7 @@ export type GrowthEvent =
   | 'review_request_attempted' | 'review_store_open' | 'review_request_result'
   | 'pro_checkout_started' | 'pro_purchase_result' | 'pro_next_step_started' | 'pro_preview_changed'
   | 'pro_restore_started' | 'pro_restore_result' | 'pro_paywall_dismissed'
-  | 'pro_buy_tapped' | 'pro_retry_tapped' | 'pro_paywall_sku_loaded' | 'pro_entitlement_granted'
+  | 'pro_buy_tapped' | 'pro_retry_tapped' | 'pro_paywall_sku_loaded' | 'pro_paywall_price_status' | 'pro_entitlement_granted'
   | 'pro_paywall_demo_interacted'
   | 'calibration_try_started' | 'calibration_result_previewed' | 'calibration_save_gated' | 'calibration_draft_auto_applied'
   | 'history_saved' | 'history_exported' | 'history_reused' | 'bender_calibrated' | 'result_copied'
@@ -25,4 +25,7 @@ export interface GrowthEventParams {
   price_loaded?: boolean;
   dismiss_method?: string;
   product_id?: string;
+  failure_reason?: string;
+  error_code?: string;
+  load_ms?: number;
 }

@@ -7,6 +7,7 @@ import { offsetFeasibility } from '../calculators/feasibility/feasibility';
 import { calculateOffset } from '../calculators/offset/offset';
 import { useI18n, type TranslationKey } from '../i18n';
 import { HISTORY_LIMIT } from '../lib/historyStore';
+import type { SkuFailureReason } from '../lib/iap';
 import { TEST_BEND_MARK } from '../lib/guidedCalibrationFlow';
 import {
   computeTakeUpComparison,
@@ -26,6 +27,8 @@ export interface ProPaywallViewProps {
   unlocked: boolean;
   price: string | null;
   available: boolean;
+  /** 价格未加载的原因，决定提示文案。 */
+  failureReason?: SkuFailureReason | null;
   isWeb?: boolean;
   error?: string | null;
   continuing?: boolean;
@@ -751,7 +754,15 @@ export default function ProPaywallView(props: ProPaywallViewProps) {
         </>
       ) : (
         <>
-          <Caption>{t('paywall.storeUnavailableCaption')}</Caption>
+          <Caption>
+            {t(
+              props.failureReason === 'product_empty'
+                ? 'paywall.storeUnavailable.productEmpty'
+                : props.failureReason === 'connection_failed' || props.failureReason === 'timeout'
+                  ? 'paywall.storeUnavailable.connection'
+                  : 'paywall.storeUnavailableCaption',
+            )}
+          </Caption>
           <BigButton title={t('paywall.retryStore')} variant="secondary" onPress={props.onRetry} disabled={disabled} />
         </>
       )}
