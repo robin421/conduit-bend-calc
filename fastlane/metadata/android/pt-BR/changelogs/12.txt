@@ -1,0 +1,3 @@
+• Localização completa em espanhol em todas as calculadoras e ferramentas: enchimento de eletroduto, bitola de cabo, queda de tensão, sela de 4 pontos, desvio composto, 90° com kick, referência rápida, calibração de curvador e diagramas
+• Terminologia elétrica de obra consistente em telas, instruções e alertas
+• Melhorias gerais de estabilidade e desempenho

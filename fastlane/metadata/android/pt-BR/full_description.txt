@@ -1,0 +1,18 @@
+Curvador de Eletroduto EMT é a calculadora de campo criada para eletricistas que precisam de marcações rápidas e precisas na obra – funcionando 100% offline, sem sinal e sem complicação.
+
+Calcule desvios (offset), selas de 3 e 4 pontos, curvas de 90 graus, descontos (deduct), ganho e encolhimento (shrink) em segundos, reduzindo desperdício de tubo e retrabalho no canteiro.
+
+CÁLCULOS INCLUÍDOS
+• Desvio (Offset): Distância entre marcas, multiplicadores para 10°, 22,5°, 30°, 45° e 60°, além de encolhimento exato
+• Sela de 3 pontos e 4 pontos: Marcação central e lateral com compensação automática para cruzar obstáculos e tubulações
+• Curva de 90° (Stub-Up) e Back-to-Back: Desconto do curvador por bitola para acertar a altura final na primeira tentativa
+• Curva com desvio (Kick 90°) e desvios paralelos: Mantenha eletrodutos perfeitamente alinhados em bandejas e paredes
+• Conversão rápida: Polegadas com frações e milímetros em um toque, pronto para obra
+
+FEITO PARA O CANTEIRO DE OBRAS
+• Funciona 100% offline em subsolos, galpões industriais e áreas sem internet
+• Interface limpa de alto contraste para leitura rápida com uma mão
+• Referência direta de multiplicadores e descontos de curvadores manuais
+
+AVISO TÉCNICO
+Os valores calculados seguem fórmulas padrão de dobramento de eletrodutos. Sempre confira o desconto real do seu curvador e as normas elétricas locais antes de cortar ou dobrar o material.

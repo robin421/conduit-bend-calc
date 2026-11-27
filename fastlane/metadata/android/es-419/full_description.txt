@@ -1,6 +1,6 @@
-Deja de desperdiciar tubo conduit con dobleces a prueba y error. Doblador de Tubos EMT Conduit es la calculadora rápida y 100% offline creada para electricistas comerciales, industriales y aprendices en México y Latinoamérica.
+Ahorra tubo EMT y evita dobleces a prueba y error. Doblador de Tubos EMT Conduit es la dobladora de tubos conduit y calculadora eléctrica NEC 100% offline para electricistas en México y Latinoamérica.
 
-Calcula separación exacta entre marcas, contracción (shrink) y marcas de subida de 90° en segundos. Cambia con un toque entre fracciones reales de cinta métrica (1/16"), pulgadas decimales y milímetros (mm/cm)—sin hacer conversiones mentales arriba de la escalera.
+Calcula marcas, contracción (shrink), subidas de 90° y llenado NEC al instante. Cambia con un toque entre fracciones (1/16"), pulgadas decimales y milímetros (mm/cm)—sin hacer cuentas mentales en la escalera.
 
 ----------------------------------------
 CALCULADORAS DE DOBLADO DE CONDUIT

@@ -1,0 +1,18 @@
+Rohrbiegerechner Elektro EMT ist der praxisnahe Baustellenrechner für Elektriker und Elektroinstallateure. Berechnen Sie exakte Anreißmaße für Elektroinstallationsrohre in Sekunden – komplett offline und ohne Ablenkung.
+
+Sparen Sie wertvolle Zeit und vermeiden Sie Verschnitt bei Etagenbögen (Versatz), 3-Punkt- und 4-Punkt-Sätteln sowie präzisen 90-Grad-Bögen.
+
+BERECHNUNGEN FÜR DIE PRAXIS
+• Versatz / Etagenbogen (Offset): Abstand zwischen den Biegemarken, Multiplikatoren für 10°, 22,5°, 30°, 45° und 60° sowie exakte Verkürzung (Shrink)
+• 3-Punkt- und 4-Punkt-Sattel: Exakte Mitten- und Außenmarkierungen zum sauberen Überbrücken von Hindernissen und Rohren
+• 90°-Bogen (Stub-Up) & Gegenbogen: Biegeabzug (Deduct) passend zum Rohrdurchmesser für maßhaltige Endlängen
+• Parallele Versätze & Kick-90°: Saubere, gleichmäßige Rohrführung bei Mehrfachinstallationen
+• Millimeter & Zoll: Schneller Wechsel zwischen metrischem System und Zoll mit Brüchen
+
+FÜR DIE BAUSTELLE ENTWICKELT
+• 100% offline einsatzbereit – funktioniert im Keller, im Rohbau und in Industriehallen ohne Empfang
+• Klare, kontrastreiche Darstellung für schnelle Ablesbarkeit direkt am Biegewerkzeug
+• Integrierte Referenztabelle für gängige Biegewinkel, Multiplikatoren und Verkürzungen
+
+HINWEIS
+Alle Ergebnisse beruhen auf Standard-Biegeformeln. Prüfen Sie vor dem Biegen stets die genauen Abzugsmaße Ihres Biegegeräts sowie die geltenden Vorschriften vor Ort.

@@ -1,0 +1,3 @@
+• Added a "More Offline Trade Tools by Billin" section on the Home and Reference tabs (in English and Spanish) to discover companion offline contractor calculators
+• Verified Spanish localization polish across screens
+• General stability and reliability improvements

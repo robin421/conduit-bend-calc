@@ -1,0 +1,3 @@
+• Neuer Bereich „More Offline Trade Tools by Billin“ auf den Tabs Startseite und Referenz (auf Englisch und Spanisch), um weitere Offline-Handwerkerrechner von Billin zu entdecken
+• Geprüfter Feinschliff der spanischen Lokalisierung
+• Allgemeine Stabilitäts- und Leistungsverbesserungen

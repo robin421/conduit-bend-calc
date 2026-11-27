@@ -1,0 +1,3 @@
+• Nova seção "More Offline Trade Tools by Billin" nas abas Início e Referência (em inglês e espanhol) para descobrir outras calculadoras offline de obra da Billin
+• Revisão e refinamento verificados da localização em espanhol
+• Melhorias gerais de estabilidade e desempenho

@@ -1,0 +1,3 @@
+• Nueva sección «Más herramientas de oficio sin conexión de Billin» en las pestañas Inicio y Referencia (en inglés y español) para descubrir calculadoras complementarias sin conexión para contratistas
+• Revisión y pulido verificado de la localización al español
+• Mejoras generales de estabilidad y rendimiento

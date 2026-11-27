@@ -19,6 +19,7 @@ import BigButton from '../components/bigButton';
 import Card from '../components/card';
 import LanguageSwitcher from '../components/languageSwitcher';
 import RatingCard from '../components/ratingCard';
+import TradeToolsCard from '../components/tradeToolsCard';
 import FeedbackCard from '../components/feedbackCard';
 import { useI18n, type TranslationKey } from '../i18n';
 import {
@@ -370,6 +371,7 @@ export default function CalcHomeScreen({ navigation }: Props) {
         </View>
       ))}
       <FeedbackCard />
+      <TradeToolsCard source="home" />
     </View>
   );
 

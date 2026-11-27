@@ -1,0 +1,3 @@
+• Localisation complète en espagnol pour tous les calculateurs et outils : remplissage de conduit, section de câble, chute de tension, selle 4 points, décalage composé, coude 90° avec kick, référence rapide, réglage de cintreuse et schémas
+• Terminologie électrique de chantier cohérente sur tous les écrans et alertes
+• Améliorations générales de stabilité et de fiabilité

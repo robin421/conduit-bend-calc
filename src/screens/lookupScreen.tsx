@@ -3,6 +3,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimen
 
 import Card from '../components/card';
 import RatingCard from '../components/ratingCard';
+import TradeToolsCard from '../components/tradeToolsCard';
 import FeedbackCard from '../components/feedbackCard';
 import { OFFSET_ANGLES, OFFSET_CONSTANTS, TAKE_UP_OPTIONS } from '../constants';
 import { useI18n } from '../i18n';
@@ -196,6 +197,7 @@ export default function LookupScreen() {
 
         <View style={[isWideWeb ? styles.wideCell : undefined, { gap: theme.spacing.md }]}>
           <RatingCard source="reference" />
+          <TradeToolsCard source="reference" />
           <FeedbackCard />
         </View>
       </View>

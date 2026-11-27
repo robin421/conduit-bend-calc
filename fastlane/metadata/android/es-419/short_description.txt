@@ -1,1 +1,1 @@
-Offsets, curvas 90° y llenado NEC en EMT/IMC/Rigid. 1/16" y mm/cm, offline.
+Dobladora de tubos conduit EMT y calculadora eléctrica NEC. 1/16" y mm, offline

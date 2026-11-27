@@ -1,0 +1,3 @@
+• Vollständige spanische Lokalisierung für alle Rechner und Werkzeuge: Rohrfüllung, Leiterquerschnitt, Spannungsfall, 4-Punkt-Sattel, zusammengesetzter Versatz, 90°-Kick, Kurzreferenz, Bieger-Kalibrierung und Biegediagramme
+• Einheitliche Elektriker-Fachbegriffe in allen Ansichten, Anleitungen und Hinweisen
+• Allgemeine Stabilitäts- und Leistungsverbesserungen

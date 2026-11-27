@@ -1,0 +1,3 @@
+• Nouvelle section « More Offline Trade Tools by Billin » dans les onglets Accueil et Référence (en anglais et en espagnol) pour découvrir d'autres calculateurs hors ligne pour artisans
+• Vérification et peaufinage de la localisation en espagnol
+• Améliorations générales de stabilité et de fiabilité

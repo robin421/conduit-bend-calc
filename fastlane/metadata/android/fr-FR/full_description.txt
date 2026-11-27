@@ -1,0 +1,18 @@
+Cintrage Conduit EMT Calcul est le calculateur de chantier conçu pour les électriciens qui veulent des repères précis dès le premier cintrage – 100 % hors ligne, sans inscription et lisible instantanément.
+
+Calculez en quelques secondes vos décalages (offsets), selles à 3 et 4 points, coudes à 90 degrés, déductions et retraits afin d'éviter les erreurs de coupe et le gaspillage de conduits.
+
+CALCULS ESSENTIELS
+• Décalage (Offset) : Espacement entre repères, multiplicateurs pour 10°, 22,5°, 30°, 45° et 60°, plus retrait exact (shrink)
+• Selles 3 points et 4 points : Repères centraux et latéraux précis pour franchir proprement les obstacles
+• Coude à 90° (Stub-Up) et dos-à-dos : Déduction selon le diamètre du conduit pour obtenir la hauteur exacte
+• Décalages parallèles et Kick 90° : Alignement propre sur chemins de câbles et murs techniques
+• Unités métriques et impériales : Passez facilement des millimètres aux pouces fractionnaires
+
+CONÇU POUR LE TERRAIN
+• Fonctionne 100 % hors ligne en sous-sol, en usine ou sur chantier sans réseau
+• Interface nette à fort contraste pensée pour une utilisation rapide à une main
+• Tableaux de référence intégrés pour les multiplicateurs et retraits courants
+
+AVERTISSEMENT
+Les résultats sont basés sur les formules standards de cintrage. Vérifiez toujours la déduction réelle de votre cintreuse et les normes électriques locales avant toute coupe ou pose.

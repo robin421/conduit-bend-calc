@@ -619,6 +619,24 @@ export const en = {
   'rating.error':
     'Could not open Google Play. Check your connection and try again.',
 
+  // 技工矩阵轻量互推卡
+  'tradeTools.title': 'More Offline Trade Tools by Billin',
+  'tradeTools.subtitle':
+    'Built for job sites and shops — 100% offline, no accounts.',
+  'tradeTools.firstbend.desc':
+    'Press brake bend setups, tonnage & V-die calc',
+  'tradeTools.snapproof.desc':
+    'Before & after job site photo PDF reports',
+  'tradeTools.squarefootage.desc':
+    'Room area, flooring, tile & paint estimates',
+  'tradeTools.measurequote.desc':
+    'Photo dimension markup & material takeoffs',
+  'tradeTools.hvacgauge.desc':
+    'Refrigerant P-T charts, superheat & subcooling',
+  'tradeTools.wrenchquote.desc':
+    'Offline flat-rate labor guide & auto RO PDFs',
+  'tradeTools.openA11y': 'Open {name} on Google Play',
+
   // BendGuide / BenderPicker / Feasibility / ExpectedActual
   'bendGuide.showDiagram': 'Show bend diagram',
   'bendGuide.hideDiagram': 'Hide bend diagram',
@@ -1358,6 +1376,24 @@ export const es: Record<TranslationKey, string> = {
   'rating.opening': 'Abriendo Google Play…',
   'rating.error':
     'No se pudo abrir Google Play. Revisa tu conexión e inténtalo de nuevo.',
+
+  // 技工矩阵轻量互推卡
+  'tradeTools.title': 'Más herramientas de oficio sin conexión de Billin',
+  'tradeTools.subtitle':
+    'Hechas para la obra y el taller: 100% sin conexión y sin cuentas.',
+  'tradeTools.firstbend.desc':
+    'Ajustes de plegadora, tonelaje y matriz en V',
+  'tradeTools.snapproof.desc':
+    'Reportes PDF con fotos de antes y después en obra',
+  'tradeTools.squarefootage.desc':
+    'Cálculo de área, pisos, azulejos y pintura',
+  'tradeTools.measurequote.desc':
+    'Medidas sobre fotos y presupuestos de material',
+  'tradeTools.hvacgauge.desc':
+    'Tablas P-T de refrigerantes, recalentamiento y subenfriamiento',
+  'tradeTools.wrenchquote.desc':
+    'Guía de tiempos de taller y órdenes de reparación PDF',
+  'tradeTools.openA11y': 'Abrir {name} en Google Play',
 
   // BendGuide / BenderPicker / Feasibility / ExpectedActual
   'bendGuide.showDiagram': 'Mostrar diagrama de doblez',
