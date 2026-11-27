@@ -1,0 +1,4 @@
+• Novo botão Copiar resultado em Desvio, Stub de 90°, Sela de 3 e 4 pontos
+• Os resultados agora mostram o multiplicador, além do vão e encolhimento totais na sela de 4 pontos
+• Pro: carregamento da loja mais rápido e claro, com reconexão ao Google Play
+• Cálculos de dobra reverificados com as tabelas padrão

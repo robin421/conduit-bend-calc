@@ -1,0 +1,4 @@
+• Botón Copiar resultado en Desplazamiento, Stub de 90°, Silla de 3 y 4 puntos: pega el trazado completo en un mensaje o nota
+• Los resultados muestran el multiplicador, además de la separación y contracción total en sillas de 4 puntos y la deducción en stubs
+• Pro: carga de la tienda más rápida y clara, con reintento que reconecta con Google Play
+• Cálculos de doblado verificados de nuevo con las tablas estándar

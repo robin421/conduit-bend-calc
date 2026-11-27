@@ -1,0 +1,4 @@
+• Nouveau bouton « Copier le résultat » pour Décalage, Stub 90°, Selle 3 et 4 points
+• Les résultats affichent le multiplicateur, ainsi que la portée et le raccourcissement totaux pour la selle 4 points
+• Pro : chargement de la boutique plus rapide et plus clair, avec reconnexion à Google Play
+• Calculs de cintrage revérifiés avec les tables standard

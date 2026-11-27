@@ -1,0 +1,4 @@
+• Neuer Button „Ergebnis kopieren“ für Versatz, 90°-Stub, 3- und 4-Punkt-Sattel
+• Ergebnisse zeigen jetzt den Multiplikator sowie Gesamtspanne und Gesamtverkürzung beim 4-Punkt-Sattel
+• Pro: schnelleres, klareres Laden des Stores mit erneuter Verbindung zu Google Play
+• Biegeberechnungen erneut mit Standardtabellen geprüft

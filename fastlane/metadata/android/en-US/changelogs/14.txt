@@ -1,0 +1,4 @@
+• Copy result button on Offset, 90° Stub, 3-Point and 4-Point Saddle — paste the full layout into a text or notes
+• Results now show the multiplier, plus total span and total shrink on 4-point saddles and take-up on stubs
+• Pro: faster, clearer store loading with a retry that reconnects to Google Play
+• Bend math re-verified against standard bender tables
