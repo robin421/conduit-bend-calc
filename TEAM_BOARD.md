@@ -68,6 +68,7 @@
 | T51 | 补记已上线 `v1.12.1 (vc13)`：Billin 交叉推广卡 + de/fr/pt-BR 商店元数据 | ai-manager | T49 | DONE | `src/components/tradeToolsCard.tsx`, `src/lib/tradeToolsMatrix.ts`, `fastlane/metadata/android/*` | git 与 production 一致 |
 | T52 | 四个核心计算器：复制结果按钮、乘数/总跨度/总 shrink/take-up 结果行、金标准精度单测 | ai-manager | T50 | DONE | `src/components/resultActions.tsx`, 4 个原生计算屏, `src/calculators/coreGolden.test.ts` | PASS（`471/471` 单测；Web 端 4 屏手算核对 + 复制实测） |
 | T53 | 发布 `v1.12.2 (vc14)`（T50+T52）到 Google Play 正式版 | ai-manager | T52 | DONE | `dist/conduit-bend-calc-1.12.2-vc14.aab`（55 MB）+ 7 语种 `changelogs/14.txt` | PASS（APFS 构建副本 `/Volumes/SheetMileBuild/Builds/cbc-src` 出包；上传密钥 SHA1 与 Play 一致；42/42 `.so` 16 KB 通过；`fastlane android status` → `production: 1.12.2 / vc14 completed`） |
+| T55 | 发布 `v1.12.4 (vc16)`（T54 首页 "Start here" 示例）到 Google Play 正式版 | ai-manager | T54 | DONE | `dist/conduit-bend-calc-1.12.4-vc16.aab`（50 MB）+ 8 语种 `changelogs/16.txt` | PASS（APFS 构建副本 `/Volumes/SheetMileBuild/Builds/cbc-src` 出包；上传密钥 SHA1 与 vc14 一致；bundle 含 `home_starter_tapped`；`fastlane android deploy` → `production` 成功） |
 
 ## 风险与决策日志
 - **[2026-11-14] Amplitude 接入方式**：采用轻量级 HTTP API v2 + `AsyncStorage` 持久化匿名 ID，零原生二进制依赖，兼容 Android 16KB 页面要求与 Web 端。

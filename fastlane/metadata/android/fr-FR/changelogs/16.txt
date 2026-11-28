@@ -1,0 +1,3 @@
+Nouveautés de la v1.12.4 :
+• Nouveau ? Touchez « Commencer ici » sur l'accueil pour un exemple de cintrage de décalage prêt à l'emploi
+• Petites améliorations de stabilité

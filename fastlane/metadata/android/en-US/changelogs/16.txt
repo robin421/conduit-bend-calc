@@ -1,0 +1,3 @@
+What's new in v1.12.4:
+• New here? Tap "Start here" on the home screen for a ready-made offset bend example
+• Small stability improvements

@@ -1,0 +1,3 @@
+Novedades en v1.12.4:
+• ¿Eres nuevo? Toca "Empieza aquí" en la pantalla de inicio para ver un ejemplo listo de doblez de desvío
+• Pequeñas mejoras de estabilidad

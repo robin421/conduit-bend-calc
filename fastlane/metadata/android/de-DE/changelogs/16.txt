@@ -1,0 +1,3 @@
+Neu in v1.12.4:
+• Neu hier? Tippe auf dem Startbildschirm auf "Hier starten" für ein fertiges Beispiel einer Versatzbiegung
+• Kleine Verbesserungen der Stabilität

@@ -1,0 +1,3 @@
+Novidades da v1.12.4:
+• Primeira vez? Toque em "Comece aqui" na tela inicial para ver um exemplo pronto de curva de desvio
+• Pequenas melhorias de estabilidade
