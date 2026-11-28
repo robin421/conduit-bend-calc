@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useState, type ComponentType } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
@@ -42,6 +43,14 @@ import {
   workspaceMaxWidth,
 } from '../seo/calculatorNav';
 import { HISTORY_CALCULATOR_SCREENS } from '../lib/homeContent';
+import {
+  homeStarterHeightLabel,
+  homeStarterOffsetParams,
+  loadHomeStarterState,
+  markHomeStarterUsed,
+  shouldShowHomeStarter,
+} from '../lib/homeStarter';
+import { trackGrowthEvent } from '../lib/growth';
 import { loadHistory, subscribeHistory } from '../lib/history';
 import type { HistoryEntry } from '../lib/historyStore';
 import type { CalcStackParamList } from '../navigation/calcStack';
@@ -98,6 +107,8 @@ export default function CalcHomeScreen({ navigation }: Props) {
   const [pendingTask, setPendingTask] = useState<PendingProTask | null>(null);
   const [recent, setRecent] = useState<HistoryEntry | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [starter, setStarter] = useState<{ starterUsed: boolean; successfulCalcCount: number } | null>(null);
 
   const isWideWeb = Platform.OS === 'web' && isWideDesktopViewport(width);
   const containerMaxWidth = Platform.OS === 'web' ? workspaceMaxWidth(width) : 720;
@@ -121,13 +132,31 @@ export default function CalcHomeScreen({ navigation }: Props) {
     let updated = false;
     const unsubscribe = subscribeHistory((entries) => {
       updated = true;
-      if (active) setRecent(entries[0] ?? null);
+      if (active) { setRecent(entries[0] ?? null); setHistoryLoaded(true); }
     });
     void loadHistory().then((entries) => {
       if (active && !updated) setRecent(entries[0] ?? null);
-    }).catch(() => undefined);
+    }).catch(() => undefined).finally(() => {
+      if (active) setHistoryLoaded(true);
+    });
+    void loadHomeStarterState(AsyncStorage).then((state) => {
+      if (active) setStarter(state);
+    });
     return () => { active = false; unsubscribe(); };
   }, []));
+
+  const showStarter = historyLoaded && starter !== null && shouldShowHomeStarter({
+    hasRecentHistory: recent !== null,
+    starterUsed: starter.starterUsed,
+    successfulCalcCount: starter.successfulCalcCount,
+  });
+
+  const handleStarterPress = () => {
+    trackGrowthEvent('home_starter_tapped', { source: 'home', tool_name: 'offset', unit_mode: unit });
+    setStarter((prev) => (prev ? { ...prev, starterUsed: true } : prev));
+    void markHomeStarterUsed(AsyncStorage);
+    navigation.navigate('Offset', { backfill: homeStarterOffsetParams(unit) });
+  };
 
   const handleUnitChange = (next: UnitSystem) => {
     if (next !== unit) {
@@ -185,6 +214,24 @@ export default function CalcHomeScreen({ navigation }: Props) {
             {access === 'unlocked' ? t('home.proReadyBody') : t('home.proPendingBody')}
           </Text>
           <BigButton title={access === 'unlocked' ? t('home.proContinueButton') : t('home.proCheckStatusButton')} variant="secondary" onPress={() => navigation.navigate('Paywall', { triggerSource: 'pending_resume', intent: pendingTask?.intent ?? { kind: 'calibration' }, pendingTaskId: pendingTask?.id })} />
+        </Card>
+      ) : null}
+      {showStarter ? (
+        <Card
+          onPress={handleStarterPress}
+          accessibilityRole="button"
+          accessibilityLabel={t('home.starter.title', { height: homeStarterHeightLabel(unit) })}
+          style={{ gap: theme.spacing.xs }}
+        >
+          <Text style={{ color: theme.colors.accentText, fontSize: theme.fontSize.secondary, fontWeight: theme.fontWeight.semibold }}>
+            {t('home.starter.label')}
+          </Text>
+          <Text style={{ color: theme.colors.textPrimary, fontSize: theme.fontSize.body, fontWeight: theme.fontWeight.semibold }}>
+            {t('home.starter.title', { height: homeStarterHeightLabel(unit) })}
+          </Text>
+          <Text style={{ color: theme.colors.textSecondary, fontSize: theme.fontSize.secondary }}>
+            {t('home.starter.body')}
+          </Text>
         </Card>
       ) : null}
       {recent ? (

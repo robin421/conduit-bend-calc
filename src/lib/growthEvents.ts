@@ -8,7 +8,8 @@ export type GrowthEvent =
   | 'calibration_try_started' | 'calibration_result_previewed' | 'calibration_save_gated' | 'calibration_draft_auto_applied'
   | 'history_saved' | 'history_exported' | 'history_reused' | 'bender_calibrated' | 'result_copied'
   | 'feedback_opened' | 'feedback_submitted' | 'feedback_submit_failed'
-  | 'cross_promo_tapped';
+  | 'cross_promo_tapped'
+  | 'home_starter_tapped';
 export interface GrowthEventParams {
   source?: string;
   outcome?: string;
